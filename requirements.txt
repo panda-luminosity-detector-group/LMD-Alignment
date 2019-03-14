@@ -1,6 +1,5 @@
-numpy==1.14.5
-uproot==3.4.6
-matplotlib==2.2.2
-ROOT==0.0.1
-pandas==0.24.2
-scikit_learn==0.20.3
+numpy>=1.14.5
+uproot>=3.4.6
+matplotlib>=2.2.2
+pandas>=0.24.2
+scikit_learn>=0.20.3
