@@ -11,7 +11,7 @@ import os
 import sys
 from matplotlib.backends.backend_pdf import PdfPages
 
-matrices = ri.readJSON("matricesIdeal.json")
+matrices = ri.readJSON("input/matricesIdeal.json")
 
 
 def histBinaryPairDistancesForDPG(pathpre, misalign, pathpost, cutPercent=0, overlap='0', use2Dcut=True):
@@ -79,12 +79,13 @@ def histBinaryPairDistancesForDPG(pathpre, misalign, pathpost, cutPercent=0, ove
 def pairDxDyDPG():
 
     overlap = '0'
-    pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
+    #pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
+    pathpre = 'input/2018-08-himster2-'
     pathpost = '/binaryPairFiles/pairs-' + overlap + '-cm.bin'
     misaligns = [
         'misalign-200u',
     ]
-    outpath = 'forDPG'
+    outpath = 'output/forDPG'
     cuts = [0, 2]
 
     use2Dcuts = [True, False]

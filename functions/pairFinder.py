@@ -2,7 +2,7 @@
 
 import numpy as np
 import functions.rootInterface as ri
-import functions.icp
+import functions.icp as icp
 
 
 def dynamicCut(fileUsable, cutPercent=0, use2D=True):
