@@ -2,13 +2,12 @@
 
 import numpy as np
 import functions.rootInterface as ri
-import functions.icp as icp
+from functions import icp
 
 
-def dynamicCut(fileUsable, cutPercent=0, use2D=True):
+def dynamicCut(fileUsable, cutPercent=2, use2D=True):
 
     if cutPercent == 0:
-        print('not really cutting it, are we?')
         return fileUsable
 
     if not use2D:
@@ -47,6 +46,8 @@ def dynamicCut(fileUsable, cutPercent=0, use2D=True):
             fileUsable = fileUsable[:-cut]
 
         return fileUsable
+
+#! this needs to be updated!
 
 
 def findMatrix(path, overlap, cut, matrices):
