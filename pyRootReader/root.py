@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 sys.path.append('../..')
 from ROOT import gROOT, TFile, TGraph2DErrors
@@ -78,7 +80,7 @@ class PlotCollection:
           self.data_dict[key] = temp      
   
     def createRelativeDifference(self):
-      print 'creating relative difference...'
+      print('creating relative difference...')
       reldiff=copy.deepcopy(self.data_dict['data'])
       model=self.data_dict['model']
       counter=0
@@ -88,7 +90,7 @@ class PlotCollection:
           reldiff.z_vals[counter]=(mz-z)/math.sqrt(z)
         counter=counter+1
       self.data_dict['reldiff'] = reldiff
-      print 'done!'
+      print('done!')
       
     def getHist(self, key):
         return self.data_dict[key]
