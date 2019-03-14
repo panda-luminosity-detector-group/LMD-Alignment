@@ -52,7 +52,7 @@ def dynamicCut(fileUsable, cutPercent=2, use2D=True):
 def findMatrix(path, overlap, cut, matrices):
 
     # TODO: don't hardcode these!
-    filename = path + 'input/2018-08-himster2-misalign-200u/binaryPairFiles/pairs-'
+    filename = path + 'binaryPairFiles/pairs-'
     filename += overlap + '-cm.bin'
 
     # read binary pairs
