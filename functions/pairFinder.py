@@ -31,39 +31,25 @@ def dynamicCut(fileUsable, cutPercent=0, use2D=True):
     com = np.average(dRaw, axis=0)
     
     # shift newhit2 by com of differences
-    #fileUsable[:,3:6] = fileUsable[:,3:6] - com
     newhit2 = fileUsable[:,3:6] - com
 
     # calculate new distance for cut
-    #dRaw = fileUsable[:,3:6] - fileUsable[:,:3]
     dRaw = newhit2 - fileUsable[:,:3]
     newDist = np.power(dRaw[:,0] , 2) + np.power(dRaw[:,1] , 2)
-    #fileUsable[:,6] = np.sqrt(np.power(dRaw[:,0] , 2) + np.power(dRaw[:,1] , 2))
     
     if cutPercent > 0:
       # sort by distance and cut some percent from start and end (discard outliers)
       cut = int(len(fileUsable) * cutPercent/100.0 )
       # sort by new distance
-      #fileUsable = fileUsable[fileUsable[:,6].argsort()]
       fileUsable = fileUsable[newDist.argsort()]
       # cut off largest distances, NOT lowest
       fileUsable = fileUsable[:-cut]
     
-    # shift hit2 back from com
-    #fileUsable[:,3:6] = fileUsable[:,3:6] + com
-    
-    # determine x-y distance after cutPercent
-    #dRaw = fileUsable[:,3:6] - fileUsable[:,:3]
-    #fileUsable[:,6] = np.sqrt(np.power(dRaw[:,0] , 2) + np.power(dRaw[:,1] , 2))
-    #newDist = np.sqrt(np.power(dRaw[:,0] , 2) + np.power(dRaw[:,1] , 2))
-    
-    # remove possible bias from sorting
-    # np.random.shuffle(fileUsable)
-      
     return fileUsable
 
 def findMatrix(path, overlap, cut, matrices):
   
+  #TODO: don't hardcode these!
   filename = path + 'binaryPairFiles/pairs-'
   filename += overlap + '-cm.bin'
   
@@ -74,6 +60,7 @@ def findMatrix(path, overlap, cut, matrices):
   fileUsable = dynamicCut(fileUsable, cut)
   
   # get lmd to sensor1 matrix1
+  #TODO: don't hardcode these!
   toSen1 = np.array(matrices[overlap]['matrix1']).reshape(4,4)
   
   # invert to transform pairs from lmd to sensor
