@@ -49,7 +49,7 @@ def dynamicCut(fileUsable, cutPercent=2, use2D=True):
 
 
 # TODO: this next function needs to be updated!
-def findMatrix(path, overlap, cut, matrices):
+def findMatrix(path, overlap, cut, matrices, use2D=True):
 
     # TODO: don't hardcode these!
     filename = path + 'binaryPairFiles/pairs-'
@@ -59,7 +59,7 @@ def findMatrix(path, overlap, cut, matrices):
     fileUsable = ri.readBinaryPairFile(filename)
 
     # apply dynamic cut
-    fileUsable = dynamicCut(fileUsable, cut)
+    fileUsable = dynamicCut(fileUsable, cut, use2D)
 
     # get lmd to sensor1 matrix1
     # TODO: don't hardcode these!
