@@ -3,8 +3,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import functions.rootInterface as ri
-import functions.pairFinder as finder
+from functions import rootInterface as ri
+from functions import pairFinder as finder
 import histogramers as hi
 from matplotlib.colors import LogNorm
 import os
