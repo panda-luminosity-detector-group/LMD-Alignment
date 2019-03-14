@@ -47,9 +47,8 @@ def dynamicCut(fileUsable, cutPercent=2, use2D=True):
 
         return fileUsable
 
-#! this needs to be updated!
 
-
+# TODO: this next function needs to be updated!
 def findMatrix(path, overlap, cut, matrices):
 
     # TODO: don't hardcode these!
@@ -90,6 +89,47 @@ def findMatrix(path, overlap, cut, matrices):
         # make 3D versions for ICP
         A = hit1T[:, :3]
         B = hit2T[:, :3]
+
+    # find ideal transformation
+    T, _, _ = icp.best_fit_transform(B, A)
+
+    # copy 3x3 Matrix to 4x4 Matrix
+    if icpDimension == 2:
+        M = np.identity(4)
+        M[:2, :2] = T[:2, :2]
+        M[:2, 3] = T[:2, 2]
+        return M
+
+    elif icpDimension == 3:
+        return T
+
+
+#! attention! both vectors must be in the same system of reference (e.g. the first sensor's)
+def findMatrix1to2(cloud1, cloud2):
+
+    numPairs = len(cloud1)
+
+    if numPairs != len(cloud2):
+        print('vectors are not equally long!')
+        return
+
+    # Make C a homogeneous representation of hits1 and hits2
+    hit1H = np.ones(numPairs, 4)
+    hit1H[:, 0:3] = cloud1[:, :3]
+
+    hit2H = np.ones(numPairs, 4)
+    hit2H[:, 0:3] = cloud2[:, :3]
+
+    icpDimension = 2
+
+    if icpDimension == 2:
+        # make 2D versions for ICP
+        A = hit1H[:, :2]
+        B = hit2H[:, :2]
+    elif icpDimension == 3:
+        # make 3D versions for ICP
+        A = hit1H[:, :3]
+        B = hit2H[:, :3]
 
     # find ideal transformation
     T, _, _ = icp.best_fit_transform(B, A)
