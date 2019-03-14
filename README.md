@@ -4,14 +4,8 @@ This is my collection of useful python scripts I wrote for the development of th
 
 # Requirements
 
-The requirements are generated with `pipreqs` (https://github.com/bndr/pipreqs):
+These scripts work only with python3. The requirements can be installed with:
 
 ```
-pipreqs .
-```
-
-They can be installed with:
-
-```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
