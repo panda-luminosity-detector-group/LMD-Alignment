@@ -1,0 +1,5 @@
+# Ignore large data directories
+2018*
+
+# But never these files...
+!.gitignore
