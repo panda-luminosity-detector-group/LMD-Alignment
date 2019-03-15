@@ -74,7 +74,7 @@ def histBinaryPairDistancesForDPG(misalign, values, use2Dcut=True, cutPercent=0)
     fig = plt.figure(figsize=(4, 4))
 
     if cutPercent == 0:
-        fig.suptitle('{}u, no cut'.format(misalign, cutPercent), fontsize=16)
+        fig.suptitle('{}u, no cut'.format(misalign), fontsize=16)
     elif use2Dcut:
         fig.suptitle('{}u, {}% 2D cut'.format(misalign, cutPercent), fontsize=16)
     elif not use2Dcut:
