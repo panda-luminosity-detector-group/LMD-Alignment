@@ -71,7 +71,7 @@ def histBinaryPairDistancesForDPG(misalign, values, use2Dcut=True, cutPercent=0)
     textStr = 'σx={:1.2f}'.format(sigX)
 
     # plot differnce hit array
-    fig = plt.figure(figsize=(4, 4))
+    fig = plt.figure(figsize=(6, 4))
 
     if cutPercent == 0:
         fig.suptitle('{}u, no cut'.format(misalign), fontsize=16)
@@ -94,11 +94,16 @@ def histBinaryPairDistancesForDPG(misalign, values, use2Dcut=True, cutPercent=0)
 def histogramICP():
 
     misaligns = ['0', '100', '200']
-    cuts = [2]
-    twoD = [False]
+    cuts = [0, 2]
+    twoD = [False, True]
 
-    for cut in cuts:
-        for misalign in misaligns:
+    pdfOutPath = './output/forDPG/'
+
+    if not os.path.exists(pdfOutPath):
+        os.makedirs(pdfOutPath)
+
+    for misalign in misaligns:
+        for cut in cuts:
             for use2D in twoD:
                 print('generating for misalign {}, cut {}'.format(misalign, cut))
                 values = computeAllMatrices(cut, misalign, use2D)
@@ -108,7 +113,7 @@ def histogramICP():
                     d = '2D'
                 else:
                     d = '1D'
-                plt.savefig('./output/forDPG/dx-mis{}-cut{}-{}.png'.format(misalign, cut, d), dpi=150)
+                plt.savefig(pdfOutPath + 'dx-mis{}-cut{}-{}.png'.format(misalign, cut, d), dpi=150)
 
 
 if __name__ == "__main__":
