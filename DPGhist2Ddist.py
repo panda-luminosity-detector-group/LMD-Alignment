@@ -2,6 +2,10 @@
 
 import numpy as np
 import pandas as pd
+
+import matplotlib
+matplotlib.use('Agg')   # so matplotlib works over ssh
+
 import matplotlib.pyplot as plt
 from functions import rootInterface as ri
 from functions import pairFinder as finder
