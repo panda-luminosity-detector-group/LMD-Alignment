@@ -5,6 +5,10 @@ from functions import pairFinder as finder
 from functions import rootInterface as ri
 
 import numpy as np
+
+import matplotlib
+matplotlib.use('Agg')   # so matplotlib works over ssh
+
 import matplotlib.pyplot as plt
 
 import os
@@ -83,7 +87,7 @@ def histBinaryPairDistancesForDPG(misalign, values, use2Dcut=True, cutPercent=0)
     fig.subplots_adjust(wspace=0.05)
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
     histA = fig.add_subplot(1, 1, 1)
-    histA.hist(values, bins=20)  # this is only the z distance
+    histA.hist(values, bins=20, range=[-6.0, 6.0])  # this is only the z distance
     histA.set_title('distance ICP matrix - generated')   # change to mm!
     histA.set_xlabel('d [µm]')
     histA.set_ylabel('count')
