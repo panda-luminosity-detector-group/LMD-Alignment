@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print('iterating over dirs...')
     dirs=0
 
-    resultTable = 'Momentum & Misalign & $IP_x$ [\\mum] & $IP_y$ [\\mm] & $IP_z$ [\\mm] & Lumi Error [\\%] \\\\ \\hline \n'
+    resultTable = 'Momentum & Misalign & $IP_x$ [mm] & $IP_y$ [mm] & $IP_z$ [mm] & Lumi Error [\\%] \\\\ \\hline \n'
     x, y, z = ('ERR', 'ERR', 'ERR')
     LumiError = 'no data' 
 
@@ -69,7 +69,7 @@ if __name__ == "__main__":
                 dirs += 1
                 with open(filename) as json_file:  
                     data = json.load(json_file)
-                    x, y, z = (str(round(float(data['ip_x']) * 1e4, 2)), str(round(float(data['ip_y']) * 1e4, 2)), str(round(float(data['ip_z']) * 1e4, 2)))
+                    x, y, z = (str(round(float(data['ip_x']) * 1e3, 2)), str(round(float(data['ip_y']) * 1e3, 2)), str(round(float(data['ip_z']) * 1e3, 2)))
                     #print('x: {}, y:{}, z:{}'.format(x, y, z))
             else:
                 #print('no reco IP values found')
