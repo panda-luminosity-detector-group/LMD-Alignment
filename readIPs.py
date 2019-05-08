@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json, os
+import json, os, sys
 
 """
 This script iterates over lumi fit paths, collects IP poisitions and prints them to a LaTeX table.
@@ -19,7 +19,13 @@ def test():
 if __name__ == "__main__":
     test()
 
-    path0 = os.environ["LMDFIT_DATA_DIR"]
+    try:
+        os.environ["LMDFIT_DATA_DIR"]
+        path0 = os.environ["LMDFIT_DATA_DIR"]
+    except:
+        print('Error: environment variable "LMDFIT_DATA_DIR" not set!')
+        sys.exit()
+
     path1 = {   "plab_1.5GeV/", "plab_15.0GeV/"   }
     path2 = "dpm_elastic_theta_2.7-13.0mrad_recoil_corrected"
 
