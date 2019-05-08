@@ -13,6 +13,10 @@ $LMDFIT_DATA_DIR
 
 """
 
+class table:
+    def __init__(self, dir_path_):
+        pass
+
 def test():
     print('hi!')
 
@@ -51,6 +55,11 @@ if __name__ == "__main__":
 
     print('iterating over dirs...')
     dirs=0
+
+    resultTable = ''
+    x, y, z = (0, 0, 0)
+    LumiError = 'FIT FAILED' 
+
     # read reco_ip.json
     for mom in path1:
         for misalign in misalignDirs:
@@ -60,13 +69,21 @@ if __name__ == "__main__":
                 dirs += 1
                 with open(filename) as json_file:  
                     data = json.load(json_file)
-                    print('x: {}, y:{}, z:{}'.format(data['ip_x'],data['ip_y'], data['ip_z']))
-            
+                    x, y, z = (data['ip_x'],data['ip_y'], data['ip_z'])
+                    print('x: {}, y:{}, z:{}'.format(x, y, z))
+            else:
+                print('no reco IP values found')
+                x, y, z = (0, 0, 0)
+
             filename2 = path0 + mom + path2 + misalign + path4
             if os.path.isfile(filename2):
                 with open(filename2) as json_file2:  
                     data2 = json.load(json_file2)
-                    print('error:{}'.format(data2['relative_deviation_in_percent']))
+                    LumiError = data2['relative_deviation_in_percent']
+                    print('error:{}'.format(LumiError))
+            else:
+                print('no lumi values found')
+                LumiError = 'FIT FAILED' 
 
     if dirs < 1:
         print('no valid files found!')
