@@ -85,7 +85,7 @@ if __name__ == "__main__":
                 print('no lumi values found')
                 LumiError = 'FIT FAILED'
             
-            resultTable += mom + ' & ' + misalign + ' & ' + str(x) + ' & ' + str(y) + ' & ' + str(z) + ' & ' + LumiError
+            resultTable += mom + ' & ' + misalign + ' & ' + str(x) + ' & ' + str(y) + ' & ' + str(z) + ' & ' + LumiError + '\n'
 
     if dirs < 1:
         print('no valid files found!')
