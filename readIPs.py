@@ -48,16 +48,19 @@ if __name__ == "__main__":
 
     path3 = "/100000/1-500_uncut/bunches_10/binning_300/merge_data/reco_ip.json"
 
+    print('iterating over dirs...')
+    dirs=0
     # read reco_ip.json
-
     for mom in path1:
         for misalign in misalignDirs:
             filename = path0 + mom + path2 + misalign + path3
-
+            print('trying ', filename, '...')
             if os.path.isfile(filename):
+                dirs += 1
                 with open(filename) as json_file:  
                     data = json.load(json_file)
                     print('x: {}, y:{}, z:{}'.format(data['ip_x'],data['ip_y'], data['ip_z']))
-
+    if dirs < 1:
+        print('no valid files found!')
 
     # put to LaTeX table
