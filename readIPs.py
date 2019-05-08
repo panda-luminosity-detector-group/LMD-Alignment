@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error \\\\ \\hline \n'
     x, y, z = ('ERR', 'ERR', 'ERR')
-    LumiError = 'FIT FAILED' 
+    LumiError = 'no data' 
 
     # read reco_ip.json
     for mom in path1:
@@ -70,20 +70,20 @@ if __name__ == "__main__":
                 with open(filename) as json_file:  
                     data = json.load(json_file)
                     x, y, z = (str(round(float(data['ip_x']), 2)), str(round(float(data['ip_y']), 2)), str(round(float(data['ip_z']), 2)))
-                    print('x: {}, y:{}, z:{}'.format(x, y, z))
+                    #print('x: {}, y:{}, z:{}'.format(x, y, z))
             else:
-                print('no reco IP values found')
-                x, y, z = ('ERR', 'ERR', 'ERR')
+                #print('no reco IP values found')
+                x, y, z = ('no data', 'no data', 'no data')
 
             filename2 = path0 + mom + path2 + misalign + path4
             if os.path.isfile(filename2):
                 with open(filename2) as json_file2:  
                     data2 = json.load(json_file2)
-                    LumiError = str(data2['relative_deviation_in_percent'])
-                    print('error:{}'.format(LumiError))
+                    LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
+                    #print('error:{}'.format(LumiError))
             else:
-                print('no lumi values found')
-                LumiError = 'FIT FAILED'
+                #print('no lumi values found')
+                LumiError = 'no data'
             
           
             mom2 = mom.replace('plab_', '')
