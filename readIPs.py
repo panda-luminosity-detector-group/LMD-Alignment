@@ -69,7 +69,7 @@ if __name__ == "__main__":
                 dirs += 1
                 with open(filename) as json_file:  
                     data = json.load(json_file)
-                    x, y, z = (str(round(float(data['ip_x']) * 1e3, 2)), str(round(float(data['ip_y']) * 1e3, 2)), str(round(float(data['ip_z']) * 1e3, 2)))
+                    x, y, z = (str(round(float(data['ip_x']) * 1e1, 2)), str(round(float(data['ip_y']) * 1e1, 2)), str(round(float(data['ip_z']) * 1e1, 2)))
                     #print('x: {}, y:{}, z:{}'.format(x, y, z))
             else:
                 #print('no reco IP values found')
