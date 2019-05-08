@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print('iterating over dirs...')
     dirs=0
 
-    resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error \\\\'
+    resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error \\\\ \n'
     x, y, z = ('ERR', 'ERR', 'ERR')
     LumiError = 'FIT FAILED' 
 
@@ -86,10 +86,10 @@ if __name__ == "__main__":
                 LumiError = 'FIT FAILED'
             
           
-            mom.replace('plab_', '')
-            mom.replace('_', '\_')
-            misalign.replace('geo_misalignment', '')
-            misalign.replace('_', '\_')
+            mom = mom.replace("plab", " ")
+            mom = mom.replace('_', '\_')
+            misalign = misalign.replace('geo_misalignment', '')
+            misalign = misalign.replace('_', '\_')
             resultTable += mom + ' & ' + misalign + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
 
     if dirs < 1:
