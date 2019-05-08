@@ -47,6 +47,7 @@ if __name__ == "__main__":
     }
 
     path3 = "100000/1-500_uncut/bunches_10/binning_300/merge_data/reco_ip.json"
+    path4 = "100000/1-100_xy_m_cut_real/bunches_10/binning_300/merge_data/lumi-values.json"
 
     print('iterating over dirs...')
     dirs=0
@@ -60,6 +61,13 @@ if __name__ == "__main__":
                 with open(filename) as json_file:  
                     data = json.load(json_file)
                     print('x: {}, y:{}, z:{}'.format(data['ip_x'],data['ip_y'], data['ip_z']))
+            
+            filename2 = path0 + mom + path2 + misalign + path4
+            if os.path.isfile(filename2):
+                with open(filename2) as json_file2:  
+                    data2 = json.load(json_file2)
+                    print('error:{}'.format(data2['relative_deviation_in_percent']))
+
     if dirs < 1:
         print('no valid files found!')
 
