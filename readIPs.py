@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print('iterating over dirs...')
     dirs=0
 
-    resultTable = ''
+    resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error'
     x, y, z = (0, 0, 0)
     LumiError = 'FIT FAILED' 
 
@@ -79,13 +79,17 @@ if __name__ == "__main__":
             if os.path.isfile(filename2):
                 with open(filename2) as json_file2:  
                     data2 = json.load(json_file2)
-                    LumiError = data2['relative_deviation_in_percent']
+                    LumiError = str(data2['relative_deviation_in_percent'])
                     print('error:{}'.format(LumiError))
             else:
                 print('no lumi values found')
-                LumiError = 'FIT FAILED' 
+                LumiError = 'FIT FAILED'
+            
+            resultTable += mom + ' & ' + misalign + ' & ' + str(x) + ' & ' + str(y) + ' & ' + str(z) + ' & ' + LumiError
 
     if dirs < 1:
         print('no valid files found!')
+    else:
+        print('here comes the table:\n\n', resultTable)
 
     # put to LaTeX table
