@@ -69,7 +69,7 @@ if __name__ == "__main__":
                 dirs += 1
                 with open(filename) as json_file:  
                     data = json.load(json_file)
-                    x, y, z = (data['ip_x'],data['ip_y'], data['ip_z'])
+                    x, y, z = (round(data['ip_x'], 2), round(data['ip_y'], 2), round(data['ip_z'], 2))
                     print('x: {}, y:{}, z:{}'.format(x, y, z))
             else:
                 print('no reco IP values found')
@@ -86,9 +86,12 @@ if __name__ == "__main__":
                 LumiError = 'FIT FAILED'
             
           
-            mom2 = mom.replace('plab', '')
+            mom2 = mom.replace('plab_', '')
             mom2 = mom2.replace('_', '\_')
+            mom2 = mom2.replace('GeV/', 'GeV')
             misalign2 = misalign.replace('geo_misalignment', '')
+            misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
+            misalign2 = misalign2.replace('no_', 'aligned')
             misalign2 = misalign2.replace('_', '\_')
             resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
 
