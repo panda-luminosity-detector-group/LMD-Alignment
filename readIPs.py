@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     try:
         os.environ["LMDFIT_DATA_DIR"]
-        path0 = os.environ["LMDFIT_DATA_DIR"]
+        path0 = os.environ["LMDFIT_DATA_DIR"] = '/'
     except:
         print('Error: environment variable "LMDFIT_DATA_DIR" not set!')
         sys.exit()
