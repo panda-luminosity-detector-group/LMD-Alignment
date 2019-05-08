@@ -27,7 +27,7 @@ if __name__ == "__main__":
         sys.exit()
 
     path1 = {   "plab_1.5GeV/", "plab_15.0GeV/"   }
-    path2 = "dpm_elastic_theta_2.7-13.0mrad_recoil_corrected"
+    path2 = "dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/"
 
     # iterate over dirs
     misalignDirs = {    "no_geo_misalignment/",
@@ -46,7 +46,7 @@ if __name__ == "__main__":
                         "geo_misalignmentmisalignMatrices-SensorsOnly-250/"
     }
 
-    path3 = "/100000/1-500_uncut/bunches_10/binning_300/merge_data/reco_ip.json"
+    path3 = "100000/1-500_uncut/bunches_10/binning_300/merge_data/reco_ip.json"
 
     print('iterating over dirs...')
     dirs=0
