@@ -86,11 +86,11 @@ if __name__ == "__main__":
                 LumiError = 'FIT FAILED'
             
           
-            mom = mom.replace("plab", " ")
-            mom = mom.replace('_', '\_')
-            misalign = misalign.replace('geo_misalignment', '')
-            misalign = misalign.replace('_', '\_')
-            resultTable += mom + ' & ' + misalign + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
+            mom2 = mom.replace("plab", " ")
+            mom2 = mom.replace('_', '\_')
+            misalign2 = misalign.replace('geo_misalignment', '')
+            misalign2 = misalign.replace('_', '\_')
+            resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
 
     if dirs < 1:
         print('no valid files found!')
