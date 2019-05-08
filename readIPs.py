@@ -57,7 +57,7 @@ if __name__ == "__main__":
     dirs=0
 
     resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error'
-    x, y, z = (0, 0, 0)
+    x, y, z = ('ERR', 'ERR', 'ERR')
     LumiError = 'FIT FAILED' 
 
     # read reco_ip.json
@@ -73,7 +73,7 @@ if __name__ == "__main__":
                     print('x: {}, y:{}, z:{}'.format(x, y, z))
             else:
                 print('no reco IP values found')
-                x, y, z = (0, 0, 0)
+                x, y, z = ('ERR', 'ERR', 'ERR')
 
             filename2 = path0 + mom + path2 + misalign + path4
             if os.path.isfile(filename2):
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                 print('no lumi values found')
                 LumiError = 'FIT FAILED'
             
-            resultTable += mom + ' & ' + misalign + ' & ' + str(x) + ' & ' + str(y) + ' & ' + str(z) + ' & ' + LumiError + '\n'
+            resultTable += mom + ' & ' + misalign + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + '\n'
 
     if dirs < 1:
         print('no valid files found!')
