@@ -54,7 +54,7 @@ if __name__ == "__main__":
     for mom in path1:
         for misalign in misalignDirs:
             filename = path0 + mom + path2 + misalign + path3
-            print('trying ', filename, '...')
+            #print('trying ', filename, '...')
             if os.path.isfile(filename):
                 dirs += 1
                 with open(filename) as json_file:  
