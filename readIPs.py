@@ -86,10 +86,10 @@ if __name__ == "__main__":
                 LumiError = 'FIT FAILED'
             
           
-            mom2 = mom.replace("plab", " ")
-            mom2 = mom.replace('_', '\_')
+            mom2 = mom.replace('plab', '')
+            mom2 = mom2.replace('_', '\_')
             misalign2 = misalign.replace('geo_misalignment', '')
-            misalign2 = misalign.replace('_', '\_')
+            misalign2 = misalign2.replace('_', '\_')
             resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
 
     if dirs < 1:
