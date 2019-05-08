@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print('iterating over dirs...')
     dirs=0
 
-    resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error'
+    resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error \\\\'
     x, y, z = ('ERR', 'ERR', 'ERR')
     LumiError = 'FIT FAILED' 
 
@@ -85,7 +85,12 @@ if __name__ == "__main__":
                 print('no lumi values found')
                 LumiError = 'FIT FAILED'
             
-            resultTable += mom + ' & ' + misalign + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + '\n'
+          
+            mom.replace('plab_', '')
+            mom.replace('_', '\_')
+            misalign.replace('geo_misalignment', '')
+            misalign.replace('_', '\_')
+            resultTable += mom + ' & ' + misalign + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
 
     if dirs < 1:
         print('no valid files found!')
