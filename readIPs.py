@@ -30,11 +30,11 @@ if __name__ == "__main__":
         print('Error: environment variable "LMDFIT_DATA_DIR" not set!')
         sys.exit()
 
-    path1 = {   "plab_1.5GeV/", "plab_15.0GeV/"   }
+    path1 = [   "plab_1.5GeV/", "plab_15.0GeV/"   ]
     path2 = "dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/"
 
     # iterate over dirs
-    misalignDirs = {    "no_geo_misalignment/",
+    misalignDirs = [    "no_geo_misalignment/",
                         "geo_misalignmentmisMat-modules-0.25/",
                         "geo_misalignmentmisMat-modules-0.50/",
                         "geo_misalignmentmisMat-modules-0.75/",
@@ -48,7 +48,7 @@ if __name__ == "__main__":
                         "geo_misalignmentmisalignMatrices-SensorsOnly-150/",
                         "geo_misalignmentmisalignMatrices-SensorsOnly-200/",
                         "geo_misalignmentmisalignMatrices-SensorsOnly-250/"
-    }
+    ]
 
     path3 = "100000/1-500_uncut/bunches_10/binning_300/merge_data/reco_ip.json"
     path4 = "100000/1-100_xy_m_cut_real/bunches_10/binning_300/merge_data/lumi-values.json"
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print('iterating over dirs...')
     dirs=0
 
-    resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error \\\\ \n'
+    resultTable = 'Momentum & Misalign & $IP_x$ & $IP_y$ & $IP_z$ & Lumi Error \\\\ \\hline \n'
     x, y, z = ('ERR', 'ERR', 'ERR')
     LumiError = 'FIT FAILED' 
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
           
             mom2 = mom.replace('plab_', '')
             mom2 = mom2.replace('_', '\_')
-            mom2 = mom2.replace('GeV/', 'GeV')
+            mom2 = mom2.replace('GeV/', ' GeV')
             misalign2 = misalign.replace('geo_misalignment', '')
             misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
             misalign2 = misalign2.replace('no_', 'aligned')
