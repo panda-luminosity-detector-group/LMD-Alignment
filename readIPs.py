@@ -89,7 +89,7 @@ if __name__ == "__main__":
             if check1 == 1:
                 if check2 < 1:
                     LumiError = 'no data'
-                else if check2 > 1:
+                elif check2 > 1:
                     continue
 
                 dirs += 1
