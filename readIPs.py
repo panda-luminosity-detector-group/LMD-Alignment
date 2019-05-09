@@ -86,7 +86,12 @@ if __name__ == "__main__":
                     data2 = json.load(json_file2)
                     LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
 
-            if check1 == 1 & check2 == 1:
+            if check1 == 1:
+                if check2 < 1:
+                    LumiError = 'no data'
+                else if check2 > 1:
+                    continue
+
                 dirs += 1
                 mom2 = mom.replace('plab_', '')
                 mom2 = mom2.replace('_', '\_')
