@@ -50,66 +50,59 @@ if __name__ == "__main__":
                         "geo_misalignmentmisalignMatrices-SensorsOnly-250/"
     ]
 
-    path3 = "*/*-*_uncut/bunches_*/binning_*/merge_data/reco_ip.json"
-    path4 = "*/*-*_xy_m_cut_real/bunches_*/binning_*/merge_data/lumi-values.json"
+    path3 = "*/*_uncut/bunches_*/binning_*/merge_data/reco_ip.json"
+    path4 = "*/*_xy_m_cut_real/bunches_*/binning_*/merge_data/lumi-values.json"
 
     print('iterating over dirs...')
     dirs=0
 
     resultTable = 'Momentum & Misalign & $IP_x$ [mm] & $IP_y$ [mm] & $IP_z$ [mm] & Lumi Error [\\%] \\\\ \\hline \n'
-    x, y, z = ('ERR', 'ERR', 'ERR')
+    x, y, z = ('no data', 'no data', 'no data')
     LumiError = 'no data' 
+
+    check1, check2 = 0, 0
 
     # read reco_ip.json
     for mom in path1:
         for misalign in misalignDirs:
+
+            # reset check counter
+            check1, check2 = 0, 0
+
+            # prep filename1
             filename = path0 + mom + path2 + misalign + path3
-            #print('trying ', filename, '...')
-            
+
             for match in glob.glob(filename):
+                check1 += 1
                 with open(match) as json_file:  
                     data = json.load(json_file)
                     x, y, z = (str(round(float(data['ip_x']) * 1e1, 2)), str(round(float(data['ip_y']) * 1e1, 2)), str(round(float(data['ip_z']) * 1e1, 2)))
-                    #print('x: {}, y:{}, z:{}'.format(x, y, z))
-            
-            # if os.path.isfile(filename):
-            #     dirs += 1
-            #     with open(filename) as json_file:  
-            #         data = json.load(json_file)
-            #         x, y, z = (str(round(float(data['ip_x']) * 1e1, 2)), str(round(float(data['ip_y']) * 1e1, 2)), str(round(float(data['ip_z']) * 1e1, 2)))
-            #         #print('x: {}, y:{}, z:{}'.format(x, y, z))
-            # else:
-            #     #print('no reco IP values found')
-            #     x, y, z = ('no data', 'no data', 'no data')
-
+        
+            # prep filename1
             filename2 = path0 + mom + path2 + misalign + path4
             for match2 in glob.glob(filename2):
+                check2 += 1
                 with open(match2) as json_file2:  
                     data2 = json.load(json_file2)
                     LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
 
-            # if os.path.isfile(filename2):
-            #     with open(filename2) as json_file2:  
-            #         data2 = json.load(json_file2)
-            #         LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
-            #         #print('error:{}'.format(LumiError))
-            # else:
-            #     #print('no lumi values found')
-            #     LumiError = 'no data'
-            
-          
-            mom2 = mom.replace('plab_', '')
-            mom2 = mom2.replace('_', '\_')
-            mom2 = mom2.replace('GeV/', ' GeV')
-            misalign2 = misalign.replace('geo_misalignment', '')
-            misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
-            misalign2 = misalign2.replace('no_', 'aligned')
-            misalign2 = misalign2.replace('_', '\_')
-            resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
+            if check1 == 1 & check2 == 1:
+                dirs += 1
+                mom2 = mom.replace('plab_', '')
+                mom2 = mom2.replace('_', '\_')
+                mom2 = mom2.replace('GeV/', ' GeV')
+                misalign2 = misalign.replace('geo_misalignment', '')
+                misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
+                misalign2 = misalign2.replace('no_', 'aligned')
+                misalign2 = misalign2.replace('_', '\_')
+                resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
+            else:
+                continue
 
     if dirs < 1:
         print('no valid files found!')
     else:
-        print('here comes the table:\n\n', resultTable)
+        print('here comes the table:\n\n')
+        print(resultTable)
 
     # put to LaTeX table
