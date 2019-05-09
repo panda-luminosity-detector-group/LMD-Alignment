@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json, os, sys
+import json, os, sys, glob
 
 """
 This script iterates over lumi fit paths, collects IP poisitions and prints them to a LaTeX table.
@@ -50,8 +50,8 @@ if __name__ == "__main__":
                         "geo_misalignmentmisalignMatrices-SensorsOnly-250/"
     ]
 
-    path3 = "100000/1-500_uncut/bunches_10/binning_300/merge_data/reco_ip.json"
-    path4 = "100000/1-100_xy_m_cut_real/bunches_10/binning_300/merge_data/lumi-values.json"
+    path3 = "*/*-*_uncut/bunches_*/binning_*/merge_data/reco_ip.json"
+    path4 = "*/*-*_xy_m_cut_real/bunches_*/binning_*/merge_data/lumi-values.json"
 
     print('iterating over dirs...')
     dirs=0
@@ -65,25 +65,37 @@ if __name__ == "__main__":
         for misalign in misalignDirs:
             filename = path0 + mom + path2 + misalign + path3
             #print('trying ', filename, '...')
-            if os.path.isfile(filename):
-                dirs += 1
-                with open(filename) as json_file:  
+            
+            for match in glob.glob(filename):
+                with open(match) as json_file:  
                     data = json.load(json_file)
                     x, y, z = (str(round(float(data['ip_x']) * 1e1, 2)), str(round(float(data['ip_y']) * 1e1, 2)), str(round(float(data['ip_z']) * 1e1, 2)))
                     #print('x: {}, y:{}, z:{}'.format(x, y, z))
-            else:
-                #print('no reco IP values found')
-                x, y, z = ('no data', 'no data', 'no data')
+            
+            # if os.path.isfile(filename):
+            #     dirs += 1
+            #     with open(filename) as json_file:  
+            #         data = json.load(json_file)
+            #         x, y, z = (str(round(float(data['ip_x']) * 1e1, 2)), str(round(float(data['ip_y']) * 1e1, 2)), str(round(float(data['ip_z']) * 1e1, 2)))
+            #         #print('x: {}, y:{}, z:{}'.format(x, y, z))
+            # else:
+            #     #print('no reco IP values found')
+            #     x, y, z = ('no data', 'no data', 'no data')
 
             filename2 = path0 + mom + path2 + misalign + path4
-            if os.path.isfile(filename2):
-                with open(filename2) as json_file2:  
+            for match2 in glob.glob(filename2):
+                with open(match2) as json_file2:  
                     data2 = json.load(json_file2)
                     LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
-                    #print('error:{}'.format(LumiError))
-            else:
-                #print('no lumi values found')
-                LumiError = 'no data'
+
+            # if os.path.isfile(filename2):
+            #     with open(filename2) as json_file2:  
+            #         data2 = json.load(json_file2)
+            #         LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
+            #         #print('error:{}'.format(LumiError))
+            # else:
+            #     #print('no lumi values found')
+            #     LumiError = 'no data'
             
           
             mom2 = mom.replace('plab_', '')
