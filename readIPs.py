@@ -56,9 +56,10 @@ if __name__ == "__main__":
     print('iterating over dirs...')
     dirs=0
 
-    resultTable = 'Momentum & Misalign & $IP_x$ [mm] & $IP_y$ [mm] & $IP_z$ [mm] & Lumi Error [\\%] \\\\ \\hline \n'
+    resultTable = 'Momentum & Misalign & $IP_x$ [mm] & $IP_y$ [mm] & $IP_z$ [mm] & Lumi Deviation [\\%] & Lumi Deviation Error [\\%] \\\\ \\hline \n'
     x, y, z = ('no data', 'no data', 'no data')
     LumiError = 'no data' 
+    LumiErrorError = 'no data'
 
     check1, check2 = 0, 0
 
@@ -85,6 +86,7 @@ if __name__ == "__main__":
                 with open(match2) as json_file2:  
                     data2 = json.load(json_file2)
                     LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
+                    LumiErrorError = str(round(float(data2['relative_deviation_error_in_percent']),3))
 
             if check1 == 1:
                 if check2 < 1:
@@ -100,7 +102,7 @@ if __name__ == "__main__":
                 misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
                 misalign2 = misalign2.replace('no_', 'aligned')
                 misalign2 = misalign2.replace('_', '\_')
-                resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError + ' \\\\ \n'
+                resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError  + ' & ' + LumiErrorError + ' \\\\ \n'
             else:
                 continue
 
