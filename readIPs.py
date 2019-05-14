@@ -30,7 +30,7 @@ if __name__ == "__main__":
         print('Error: environment variable "LMDFIT_DATA_DIR" not set!')
         sys.exit()
 
-    path1 = [   "plab_1.5GeV/", "plab_15.0GeV/"   ]
+    path1 = [   "plab_1.5GeV/", "plab_4.06GeV/", "plab_15.0GeV/"   ]
     path2 = "dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/"
 
     # iterate over dirs
