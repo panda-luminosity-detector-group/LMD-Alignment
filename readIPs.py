@@ -91,6 +91,7 @@ if __name__ == "__main__":
             if check1 == 1:
                 if check2 < 1:
                     LumiError = 'no data'
+                    LumiErrorError = 'no data'
                 elif check2 > 1:
                     continue
 
