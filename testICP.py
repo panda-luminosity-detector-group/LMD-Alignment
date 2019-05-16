@@ -30,7 +30,7 @@ def test_best_fit():
 
     total_time = 0
 
-    for i in range(num_tests):
+    for _ in range(num_tests):
 
         B = np.copy(A)
 
@@ -96,7 +96,7 @@ def test_icp():
 
         # Run ICP
         start = time.time()
-        T, distances, iterations = icp.icp(B, A, tolerance=0.000001)
+        T, distances, _ = icp.icp(B, A, tolerance=0.000001)
         total_time += time.time() - start
 
         # Make C a homogeneous representation of B
