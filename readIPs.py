@@ -49,7 +49,6 @@ if __name__ == "__main__":
                         "geo_misalignmentmisMat-modules-0.10/",
                         "geo_misalignmentmisMat-modules-0.15/",
                         "geo_misalignmentmisMat-modules-0.25/",
-                        "geo_misalignmentmisMat-modules-0.25/",
                         "geo_misalignmentmisMat-modules-0.50/",
                         "geo_misalignmentmisMat-modules-0.75/",
                         "geo_misalignmentmisMat-modules-1.00/",
