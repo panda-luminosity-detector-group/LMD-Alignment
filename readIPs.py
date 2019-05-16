@@ -13,6 +13,12 @@ $LMDFIT_DATA_DIR
 
 """
 
+"""
+TODO: 
+- cleanup functions
+- better latex table generation
+"""
+
 class table:
     def __init__(self, dir_path_):
         pass
@@ -35,6 +41,14 @@ if __name__ == "__main__":
 
     # iterate over dirs
     misalignDirs = [    "no_geo_misalignment/",
+                        "geo_misalignmentmisMat-box-0.50.root",
+                        "geo_misalignmentmisMat-box-1.00.root",
+                        "geo_misalignmentmisMat-box-2.00.root",
+                        "geo_misalignmentmisMat-modules-0.01/",
+                        "geo_misalignmentmisMat-modules-0.05/",
+                        "geo_misalignmentmisMat-modules-0.10/",
+                        "geo_misalignmentmisMat-modules-0.15/",
+                        "geo_misalignmentmisMat-modules-0.25/",
                         "geo_misalignmentmisMat-modules-0.25/",
                         "geo_misalignmentmisMat-modules-0.50/",
                         "geo_misalignmentmisMat-modules-0.75/",
