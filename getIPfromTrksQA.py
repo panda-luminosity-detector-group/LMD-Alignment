@@ -11,7 +11,8 @@ look for 'X Y Z ip something'
 
 import numpy as np                  # for arrays
 import matplotlib.pyplot as plt     # for plots
-from scipy.stats import norm        # for normal distribution
+from scipy.stats import norm       # for normal distribution
+import seaborn as sns               # for combined hist and gaus fit plot
 import uproot
 
 def readFile(fileName):
@@ -42,7 +43,7 @@ def fitValues(array):
     #print('length of module with rec status 0:', len(module))     # 789498, apparently there are multiple entries per event (10 tracks/event?)
 
     # create another mask for successful recStatus and remove outliers
-    recMask = (recStatus == 0) & (np.abs(recX) < 3) & (np.abs(recY) < 3)
+    recMask = (recStatus == 0) & (np.abs(recX) < 5) & (np.abs(recY) < 5)
     #print(len(module[recMask]))     #only 64384 events were reconstructed successfully
 
     # create a new array that holds the values for module, x, y and z
@@ -66,7 +67,7 @@ def fitValues(array):
         "ip_z": "0"
     }
 
-    hm, thats now right... maybe we need to do the gaus fit? let's look at the standard deviation values.
+    hm, thats not right... maybe we need to do the gaus fit? let's look at the standard deviation values.
     '''
     #ipSTD = np.std(recX[recMask]), np.std(recY[recMask])
     #print('standard deviation: ', ipSTD)
@@ -78,6 +79,15 @@ def fitValues(array):
     # try a gaus fit
     # best fit of data
     #(mu, sigma) = norm.fit(recX[recMask])
+    
+    
+    # seaborn plot
+    ax = sns.distplot(recX[recMask], fit=norm, kde=False)
+    
+    (mu, sigma) = norm.fit(recX[recMask])
+    print("mu={0}, sigma={1}".format(mu, sigma) )
+
+    plt.show()
 
     #print('min and max val: ', np.min(recX[recMask]), np.max(recX[recMask]) )
     #print('mu, sigma:', mu-ip[0], sigma-ipSTD[0])
@@ -106,6 +116,8 @@ def test():
         
     #print(largeArray)
     print(np.mean(largeArray, axis=0))
+    # this is actually wrong! https://math.stackexchange.com/questions/95909/why-is-an-average-of-an-average-usually-incorrect
+    # do this again!
 
 if __name__ == "__main__":
     print('greetings, human.')
