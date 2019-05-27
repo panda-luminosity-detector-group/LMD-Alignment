@@ -24,7 +24,7 @@ class table:
         pass
 
 def test():
-    print('hi there!')
+    print('hi thar!')
 
 if __name__ == "__main__":
     test()
