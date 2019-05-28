@@ -72,8 +72,8 @@ if __name__ == "__main__":
     # ]
 
 
-    path3 = "*/*_uncut/bunches_*/binning_*/merge_data/reco_ip.json"
-    path4 = "*/*_xy_m_cut_real/bunches_*/binning_*/merge_data/lumi-values.json"
+    path3 = "*/*_uncut*/bunches_*/binning_*/merge_data/reco_ip.json"
+    path4 = "*/*_xy_m_cut_real*/bunches_*/binning_*/merge_data/lumi-values.json"
 
     print('iterating over dirs...')
     dirs=0
@@ -94,6 +94,7 @@ if __name__ == "__main__":
 
             # prep filename1
             filename = path0 + mom + path2 + misalign + path3
+
 
             for match in glob.glob(filename):
                 check1 += 1
