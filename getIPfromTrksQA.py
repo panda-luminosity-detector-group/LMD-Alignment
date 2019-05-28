@@ -4,25 +4,20 @@
 get interaction point position from TrksQA.root 
 
 Steps:
-- filter by trkrecstatus (which value?)
+- filter by trkrecstatus (must be 0)
 look for 'X Y Z ip something'
 
 """
 
 import numpy as np                  # for arrays
 import matplotlib.pyplot as plt     # for plots
-from scipy.stats import norm       # for normal distribution
-import seaborn as sns               # for combined hist and gaus fit plot
+from scipy.stats import norm        # for normal distribution
+import seaborn as sns               # for combined hist and gauss fit plot
 import uproot
-
-def readFile(fileName):
-    pass
-
-def findFiles(path):
-    pass
+from collections import defaultdict # to concatenate dictionaries
 
 def fitValues(array):
-    # okay, so arrays is a multi dimentional array, or jagged array. some lines don't have any values,
+    # okay, so arrays is a multi dimensional array, or jagged array. some lines don't have any values,
     # while some lines have multiple entries. a single line is an event, which is why the array is exactly
     # 100k lines long. a line can have none, one or multiple entries, so first we need to filter out empty events: 
 
@@ -31,7 +26,7 @@ def fitValues(array):
     nonZeroEvents = (recStatusJagged.counts > 0)
 
     # flatten all arrays for ease of access and apply a mask.
-    # this is numpy notation to select some entries according to a criterium and works very fast:
+    # this is numpy notation to select some entries according to a criterion and works very fast:
     recStatus = recStatusJagged[nonZeroEvents].flatten()
     module = array[b'LMDTrackQ.fModule'][nonZeroEvents].flatten()
     recX = array[b'LMDTrackQ.fXrec'][nonZeroEvents].flatten()
@@ -43,19 +38,22 @@ def fitValues(array):
     #print('length of module with rec status 0:', len(module))     # 789498, apparently there are multiple entries per event (10 tracks/event?)
 
     # create another mask for successful recStatus and remove outliers
-    recMask = (recStatus == 0) & (np.abs(recX) < 5) & (np.abs(recY) < 5)
-    #print(len(module[recMask]))     #only 64384 events were reconstructed successfully
 
-    # create a new array that holds the values for module, x, y and z
-    unnessesaryArray = np.array([module[recMask], recX[recMask], recY[recMask], recZ[recMask]])
+    for mod in range(0,5):
 
-    #print(unnessesaryArray.shape)
+        recMask = (recStatus == 0) & (np.abs(recX) < 5) & (np.abs(recY) < 5) & (module == mod) 
+        #print(len(module[recMask]))     #only 64384 events were reconstructed successfully
 
-    # now, loop over all 10 corridors and get the average values of x, y (and z), and compare with average of all
-    # this is the position of the interaction point!
+        # create a new array that holds the values for module, x, y and z
+        # unnessesaryArray = np.array([module[recMask], recX[recMask], recY[recMask], recZ[recMask]])
+
+        #print(unnessesaryArray.shape)
+
+        # now, loop over all 10 corridors and get the average values of x, y (and z), and compare with average of all
+        # this is the position of the interaction point!
     
-    ip = [np.average(recX[recMask]), np.average(recY[recMask])]
-    print('interaction point is at: ', ip)      # 
+        ip = [np.average(recX[recMask]), np.average(recY[recMask])]
+        print('interaction point is at: {0}, module {1}, {2} tracks'.format(ip, np.average(module[recMask]), len(module[recMask])))      # 
 
     ''' 
     this is: (-0.275, 0.00286), is this realistic?
@@ -67,7 +65,7 @@ def fitValues(array):
         "ip_z": "0"
     }
 
-    hm, thats not right... maybe we need to do the gaus fit? let's look at the standard deviation values.
+    hm, thats not right... maybe we need to do the gauss fit? let's look at the standard deviation values.
     '''
     #ipSTD = np.std(recX[recMask]), np.std(recY[recMask])
     #print('standard deviation: ', ipSTD)
@@ -82,12 +80,8 @@ def fitValues(array):
     
     
     # seaborn plot
-    ax = sns.distplot(recX[recMask], fit=norm, kde=False)
-    
-    (mu, sigma) = norm.fit(recX[recMask])
-    print("mu={0}, sigma={1}".format(mu, sigma) )
-
-    plt.show()
+    #ax = sns.distplot(recX[recMask], fit=norm, kde=False)
+    #plt.show()
 
     #print('min and max val: ', np.min(recX[recMask]), np.max(recX[recMask]) )
     #print('mu, sigma:', mu-ip[0], sigma-ipSTD[0])
@@ -100,24 +94,28 @@ def test():
     # so there is no misalignment!
     filename = 'input/TrksQA/Lumi_TrksQA_*.root'
 
-    largeArray = np.empty((0,2), float)
+    # uproot.iterate will produce a dict with JaggedArrays, so we can create an empty dict and append each iteration
+    resultDict = defaultdict(list)
 
     try:
         # open the root trees in a TChain-like manner
         print('reading files...')
-        for arrays in uproot.iterate(filename, 'pndsim', [b'LMDTrackQ.fTrkRecStatus', b'LMDTrackQ.fModule', b'LMDTrackQ.fXrec', b'LMDTrackQ.fYrec', b'LMDTrackQ.fZrec']):
-            #print('processing file...')
-            largeArray = np.append(largeArray, [fitValues(arrays)], axis=0)     # don't leave the axis=0! this is important!
+        for arrays in uproot.iterate(filename, 'pndsim', [b'LMDTrackQ.fTrkRecStatus', b'LMDTrackQ.fModule', b'LMDTrackQ.fXrec', b'LMDTrackQ.fYrec', b'LMDTrackQ.fZrec'], entrysteps=1000000 ):
+            # append new array (which is a dict) to result
             #fitValues(arrays)
+            print(type(arrays))
+            print(arrays)
+            print('------------------------')
+            resultDict.update(arrays)       # hm, this doesn't work as intended yet
 
     except Exception as e:
         print('error occured:')
         print(e)
         
-    #print(largeArray)
-    print(np.mean(largeArray, axis=0))
-    # this is actually wrong! https://math.stackexchange.com/questions/95909/why-is-an-average-of-an-average-usually-incorrect
-    # do this again!
+    print('========================')
+    #print(resultDict)
+    fitValues(resultDict)
+    
 
 if __name__ == "__main__":
     print('greetings, human.')
