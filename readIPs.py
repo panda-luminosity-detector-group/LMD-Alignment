@@ -24,7 +24,7 @@ class table:
         pass
 
 def test():
-    print('hi!')
+    print('hi thar!')
 
 if __name__ == "__main__":
     test()
@@ -36,10 +36,10 @@ if __name__ == "__main__":
         print('Error: environment variable "LMDFIT_DATA_DIR" not set!')
         sys.exit()
 
-    path1 = [   "plab_1.5GeV/", "plab_4.06GeV/", "plab_15.0GeV/"   ]
+    path1 = [   "plab_1.5GeV/", "plab_4.06GeV/", "plab_8.9GeV/", "plab_15.0GeV/"   ]
     path2 = "dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/"
 
-    # iterate over dirs
+    # iterate over misalign dirs
     misalignDirs = [    "no_geo_misalignment/",
                         "geo_misalignmentmisMat-box-0.25/",
                         "geo_misalignmentmisMat-box-0.50/",
@@ -52,7 +52,6 @@ if __name__ == "__main__":
                         "geo_misalignmentmisMat-modules-0.05/",
                         "geo_misalignmentmisMat-modules-0.10/",
                         "geo_misalignmentmisMat-modules-0.15/",
-                        "geo_misalignmentmisMat-modules-0.25/",
                         "geo_misalignmentmisMat-modules-0.25/",
                         "geo_misalignmentmisMat-modules-0.50/",
                         "geo_misalignmentmisMat-modules-0.75/",
@@ -67,9 +66,15 @@ if __name__ == "__main__":
                         "geo_misalignmentmisalignMatrices-SensorsOnly-200/",
                         "geo_misalignmentmisalignMatrices-SensorsOnly-250/"
     ]
+    # misalignDirs = [    "no_geo_misalignment/",
+    #                     "geo_misalignmentmisMat-box-*/",
+    #                     "geo_misalignmentmisMat-modules-*/",
+    #                     "geo_misalignmentmisalignMatrices-SensorsOnly-*/"
+    # ]
 
-    path3 = "*/*_uncut/bunches_*/binning_*/merge_data/reco_ip.json"
-    path4 = "*/*_xy_m_cut_real/bunches_*/binning_*/merge_data/lumi-values.json"
+
+    path3 = "*/*_uncut*/bunches_*/binning_*/merge_data/reco_ip.json"
+    path4 = "*/*_xy_m_cut_real*/bunches_*/binning_*/merge_data/lumi-values.json"
 
     print('iterating over dirs...')
     dirs=0
@@ -90,6 +95,7 @@ if __name__ == "__main__":
 
             # prep filename1
             filename = path0 + mom + path2 + misalign + path3
+
 
             for match in glob.glob(filename):
                 check1 += 1

@@ -1,6 +1,7 @@
 # Ignore large data directories
 2018*
 lustre/
+TrksQA/
 
 # But never these files...
 !.gitignore
