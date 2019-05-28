@@ -1,5 +1,6 @@
 # Ignore large data directories
 2018*
+lustre/
 
 # But never these files...
 !.gitignore
