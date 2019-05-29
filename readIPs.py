@@ -78,7 +78,7 @@ if __name__ == "__main__":
     print('iterating over dirs...')
     dirs=0
 
-    resultTable = 'Momentum & Misalign & $IP_x$ [mm] & $IP_y$ [mm] & $IP_z$ [mm] & Lumi Deviation [\\%] & Lumi Deviation Error [\\%] \\\\ \\hline \n'
+    resultTable = 'Momentum & Misalign & $IP_x$ [mm] & $IP_y$ [mm] & $IP_z$ [mm] & Lumi Dev. [\\%] & Lumi Dev. Err. [\\%] \\\\ \\hline \n'
     x, y, z = ('no data', 'no data', 'no data')
     LumiError = 'no data' 
     LumiErrorError = 'no data'
