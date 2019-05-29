@@ -24,11 +24,7 @@ class table:
         pass
 
 def test():
-    print('hi thar!')
-
-if __name__ == "__main__":
-    test()
-
+    
     try:
         os.environ["LMDFIT_DATA_DIR"]
         path0 = os.environ["LMDFIT_DATA_DIR"] + '/'
@@ -41,6 +37,7 @@ if __name__ == "__main__":
 
     # iterate over misalign dirs
     misalignDirs = [    "no_geo_misalignment/",
+                        "geo_misalignmentmisMat-box-0.25/",
                         "geo_misalignmentmisMat-box-0.50/",
                         "geo_misalignmentmisMat-box-1.00/",
                         "geo_misalignmentmisMat-box-2.00/",
@@ -78,7 +75,7 @@ if __name__ == "__main__":
     print('iterating over dirs...')
     dirs=0
 
-    resultTable = 'Momentum & Misalign & $IP_x$ [mm] & $IP_y$ [mm] & $IP_z$ [mm] & Lumi Dev. [\\%] & Lumi Dev. Err. [\\%] \\\\ \\hline \n'
+    resultTable = 'Momentum & Misalign & $IP_x$ [mm] & $IP_y$ [mm] & $IP_z$ [mm] & Lumi Dev. [\\%] & Lumi Dev. Err [\\%] \\\\ \\hline \n'
     x, y, z = ('no data', 'no data', 'no data')
     LumiError = 'no data' 
     LumiErrorError = 'no data'
@@ -137,3 +134,11 @@ if __name__ == "__main__":
         print(resultTable)
 
     # put to LaTeX table
+
+
+if __name__ == "__main__":
+    
+    print('hi there!')
+    test()
+    print('all done.')
+    
