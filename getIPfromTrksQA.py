@@ -1,21 +1,11 @@
 #!/usr/bin/env python3
 
-"""
-get interaction point position from TrksQA.root 
-
-Steps:
-- filter by trkrecstatus (must be 0)
-look for 'X Y Z ip something'
-
-"""
-
 import numpy as np                  # for arrays
 import matplotlib.pyplot as plt     # for plots
 from scipy.stats import norm        # for normal distribution
 import seaborn as sns               # for combined hist and gauss fit plot
 import uproot
 from collections import defaultdict  # to concatenate dictionaries
-
 
 def cleanArray(array):
 
@@ -30,20 +20,18 @@ def cleanArray(array):
     # flatten all arrays for ease of access and apply a mask.
     # this is numpy notation to select some entries according to a criterion and works very fast:
     recStatus = recStatusJagged[nonZeroEvents].flatten()
-    # FIXME: check if this is correct!
-    #half = array[b'LMDTrackQ.fHalf'][nonZeroEvents].flatten()
+    half = array[b'LMDTrackQ.fHalf'][nonZeroEvents].flatten()
     module = array[b'LMDTrackQ.fModule'][nonZeroEvents].flatten()
     recX = array[b'LMDTrackQ.fXrec'][nonZeroEvents].flatten()
     recY = array[b'LMDTrackQ.fYrec'][nonZeroEvents].flatten()
     recZ = array[b'LMDTrackQ.fZrec'][nonZeroEvents].flatten()
 
     # return a dict
-    # return {'half': half, 'mod': module, 'x': recX, 'y': recY, 'z': recZ}
-    return {'mod': module, 'x': recX, 'y': recY, 'z': recZ}
-
+    return {'half': half, 'mod': module, 'x': recX, 'y': recY, 'z': recZ}
 
 def fitValues(cleanArray):
 
+    half = cleanArray['half']
     module = cleanArray['mod']
     recX = cleanArray['x']
     recY = cleanArray['y']
@@ -53,30 +41,17 @@ def fitValues(cleanArray):
     # print('length of mask:', len(nonZeroEvents))     # 100k, for 100k events
     # print('length of module with rec status 0:', len(module))     # 789498, apparently there are multiple entries per event (10 tracks/event?)
 
-    # create another mask for successful recStatus and remove outliers
-
     for mod in range(0, 5):
 
-        # apply a mask to remove outliers and filter by module
-        recMask = (np.abs(recX) < 15) & (np.abs(recY) < 15) & (module == mod)
+        for fHalf in range(0, 2):
+            # apply a mask to remove outliers and filter by module
+            recMask = (np.abs(recX) < 15) & (np.abs(recY) < 15) & (module == mod) & (half == fHalf)
 
-        # this is the position of the interaction point!
-        ip = [np.average(recX[recMask]), np.average(recY[recMask])]
-        print('interaction point is at: {0}, module {1}, {2} tracks'.format(
-            ip, np.average(module[recMask]), len(module[recMask])))
+            # this is the position of the interaction point!
+            ip = [np.average(recX[recMask]), np.average(recY[recMask])]
+            print('interaction point is at: {0}, half {3}, module {1}, {2} tracks'.format(
+                ip, np.average(module[recMask]), len(module[recMask]), fHalf))
 
-    ''' 
-    this is: (-0.275, 0.00286), is this realistic?
-        
-    compare with reco ip:
-    {
-        "ip_x": "-0.0050814828195684669",
-        "ip_y": "0.0015572209906917918",
-        "ip_z": "0"
-    }
-
-    hm, thats not right... maybe we need to do the gauss fit? let's look at the standard deviation values.
-    '''
     #ipSTD = np.std(recX[recMask]), np.std(recY[recMask])
     #print('standard deviation: ', ipSTD)
 
@@ -112,7 +87,7 @@ def test():
     try:
         # open the root trees in a TChain-like manner
         print('reading files...')
-        for array in uproot.iterate(filename, 'pndsim', [b'LMDTrackQ.fTrkRecStatus', b'LMDTrackQ.fModule', b'LMDTrackQ.fXrec', b'LMDTrackQ.fYrec', b'LMDTrackQ.fZrec'], entrysteps=1000000):
+        for array in uproot.iterate(filename, 'pndsim', [b'LMDTrackQ.fTrkRecStatus', b'LMDTrackQ.fHalf', b'LMDTrackQ.fModule', b'LMDTrackQ.fXrec', b'LMDTrackQ.fYrec', b'LMDTrackQ.fZrec'], entrysteps=1000000):
             # print(type(arrays))
             # print(arrays)
             # print('------------------------')
@@ -134,14 +109,16 @@ def test():
         print(e)
 
     print('========================')
-    print(resultDict)
+    # print(resultDict)
 
     print(f'sum of lengths is {lenSum}')
-    print(f'len of result dict:')
+    
     for key in resultDict:
         print(f'len of key {key}: {len(resultDict[key])}')
 
     # great, at this point I now have a dictionary with the keys mod, x, y, z and numpy arrays for the values. perfect!
+    print('========================')
+
     fitValues(resultDict)
 
 
