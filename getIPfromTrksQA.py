@@ -132,6 +132,7 @@ def readIPs(align):
     except Exception as e:
         print('error occured:')
         print(e)
+        sys.exit(0)
 
     # great, at this point I now have a dictionary with the keys mod, x, y, z and numpy arrays for the values. perfect!
     print('========================')
@@ -142,10 +143,13 @@ def readIPs(align):
 if __name__ == "__main__":
     print('greetings, human.')
     
-    readIPs('aligned/')
-    readIPs('box-0.50/')
-    readIPs('box-1.00/')
-    readIPs('box-2.00/')
-    readIPs('box-5.00/')
+    # readIPs('aligned/')
+    # readIPs('box-0.50/')
+    # readIPs('box-1.00/')
+    # readIPs('box-2.00/')
+    # readIPs('box-5.00/')
+    readIPs('modules-0.50/')
+    readIPs('modules-1.00/')
+    readIPs('modules-2.00/')
     
     print('done')
