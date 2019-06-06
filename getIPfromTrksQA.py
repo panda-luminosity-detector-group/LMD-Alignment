@@ -79,7 +79,8 @@ def histValues(cleanArray, align):
     recY = cleanArray['y']
     #recZ = cleanArray['z']
 
-    outPath = 'output/recoIP/' + align + 'cut2/'
+    # outPath = 'output/recoIP/' + align + 'cut2/'
+    outPath = 'output/recoIP/' + align
     if not os.path.exists(outPath):
         os.makedirs(outPath)
 
@@ -95,10 +96,10 @@ def histValues(cleanArray, align):
                 ip, np.average(module[recMask]), len(module[recMask]), fHalf))
 
             # fixed range 5m
-            # plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
+            plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
             
             # fixed range 10cm
-            plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
+            # plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
             plt.colorbar()
             
             legend = f'µx={round(ip[0] * 10, 2)}, σx={round(ip[1] * 10, 2)}, µy={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
@@ -139,7 +140,7 @@ def readIPs(align):
     # great, at this point I now have a dictionary with the keys mod, x, y, z and numpy arrays for the values. perfect!
     print('========================')
 
-    resultDict = percentileCut(resultDict)
+    # resultDict = percentileCut(resultDict)
     histValues(resultDict, align)
 
 if __name__ == "__main__":
