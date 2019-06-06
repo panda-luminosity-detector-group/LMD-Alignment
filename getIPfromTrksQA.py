@@ -42,10 +42,9 @@ def fitValues(cleanArray):
     # print('length of module with rec status 0:', len(module))     # 789498, apparently there are multiple entries per event (10 tracks/event?)
 
     for mod in range(0, 5):
-
         for fHalf in range(0, 2):
             # apply a mask to remove outliers and filter by module
-            recMask = (np.abs(recX) < 15) & (np.abs(recY) < 15) & (module == mod) & (half == fHalf)
+            recMask = (np.abs(recX) < 5) & (np.abs(recY) < 5) & (module == mod) & (half == fHalf)
 
             # this is the position of the interaction point!
             ip = [np.average(recX[recMask]), np.average(recY[recMask])]
@@ -59,13 +58,11 @@ def fitValues(cleanArray):
     #plt.hist(recX[recMask], bins=100, range={-5,5})
     # plt.show()
 
-    # try a gaus fit
-    # best fit of data
-    #(mu, sigma) = norm.fit(recX[recMask])
-
     # seaborn plot
-    #ax = sns.distplot(recX[recMask], fit=norm, kde=False)
-    # plt.show()
+    axx = sns.distplot(recX[recMask], fit=norm, kde=False)
+    axy = sns.distplot(recY[recMask], fit=norm, kde=False)
+    axm = sns.distplot(module[recMask], fit=norm, kde=False)
+    plt.show()
 
     #print('min and max val: ', np.min(recX[recMask]), np.max(recX[recMask]) )
     #print('mu, sigma:', mu-ip[0], sigma-ipSTD[0])
@@ -101,8 +98,7 @@ def test():
                 # resultDict[key].append(clean[key])
 
                 # append individual arrays
-                resultDict[key] = np.append(
-                    resultDict[key], clean[key], axis=0)
+                resultDict[key] = np.append(resultDict[key], clean[key], axis=0)
 
     except Exception as e:
         print('error occured:')
