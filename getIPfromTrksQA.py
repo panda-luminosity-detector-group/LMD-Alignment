@@ -7,6 +7,7 @@ import seaborn as sns               # for combined hist and gauss fit plot
 import uproot, os, sys
 from collections import defaultdict  # to concatenate dictionaries
 from matplotlib.colors import LogNorm   # for LogNorm
+
 import matplotlib
 matplotlib.use('Agg')   # so matplotlib works over ssh
 
