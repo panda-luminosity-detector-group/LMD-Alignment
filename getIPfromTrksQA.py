@@ -103,7 +103,7 @@ def histValues(cleanArray, align):
             # plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
             plt.colorbar()
             
-            legend = f'µx={round(ip[0] * 10, 2)}, σx={round(ip[1] * 10, 2)}, µy={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
+            legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
             
             plt.title(f'Reco IP for half {fHalf}, module {mod}\n' + legend)
             plt.xlabel('x position [mm]')
