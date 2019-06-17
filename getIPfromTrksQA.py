@@ -33,7 +33,7 @@ def cleanArray(arrayDict):
     # return a dictl 
     return {'half': half, 'mod': module, 'x': recX, 'y': recY, 'z': recZ}
 
-def percentileCut(arrayDict):
+def percentileCut(arrayDict, cut):
 
     # first, remove outliers that are just too large, use a mask
     # TODO: find reasonable value!
@@ -48,7 +48,7 @@ def percentileCut(arrayDict):
     tempArray = np.array((arrayDict['x'], arrayDict['y'], arrayDict['z'], arrayDict['mod'], arrayDict['half'])).T
 
     # calculate cut length, we're cutting 2%
-    cut = int(len(tempArray) * 0.02)
+    cut = int(len(tempArray) * (cut / 100))
     
     # calculate approximate c.o.m. and shift
     # don't use average, some values are far too large, median is a better estimation
@@ -72,7 +72,7 @@ def percentileCut(arrayDict):
 
     return arrayDict
 
-def histValues(cleanArray, align):
+def histValues(cleanArray, align, cut):
 
     half = cleanArray['half']
     module = cleanArray['mod']
@@ -80,8 +80,11 @@ def histValues(cleanArray, align):
     recY = cleanArray['y']
     #recZ = cleanArray['z']
 
-    outPath = 'output/recoIP/' + align + 'cut2/'
-    # outPath = 'output/recoIP/' + align
+    if cut > 0.01:
+        outPath = 'output/recoIP/' + align + 'cut2/'
+    else:
+        outPath = 'output/recoIP/' + align
+
     if not os.path.exists(outPath):
         os.makedirs(outPath)
 
@@ -95,12 +98,15 @@ def histValues(cleanArray, align):
 
             print('interaction point is at: {0}, half {3}, module {1}, {2} tracks'.format(
                 ip, np.average(module[recMask]), len(module[recMask]), fHalf))
-
-            # fixed range 5m
-            # plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
+           
+            if cut > 0.01:
+                # fixed range 10cm
+                plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
             
-            # fixed range 10cm
-            plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
+            else:
+                 # fixed range 5m
+                plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
+            
             plt.colorbar()
             
             legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
@@ -115,7 +121,7 @@ def histValues(cleanArray, align):
 
     return ip
 
-def readIPs(align):
+def readIPs(align, cut=0.0):
     # this file is from
     # /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/no_geo_misalignment/100000/1-500_uncut
     # so there is no misalignment!
@@ -141,24 +147,29 @@ def readIPs(align):
     # great, at this point I now have a dictionary with the keys mod, x, y, z and numpy arrays for the values. perfect!
     print('========================')
 
-    resultDict = percentileCut(resultDict)
-    histValues(resultDict, align)
+    if cut > 0.01:
+        resultDict = percentileCut(resultDict, cut)
+
+    histValues(resultDict, align, cut)
 
 if __name__ == "__main__":
     print('greetings, human.')
     
     # TODO: include cut bool
 
+    # cut in percent
+    cut = 2.0
+
     readIPs('aligned/')
-    # readIPs('box-0.50/')
-    # readIPs('box-1.00/')
-    # readIPs('box-2.00/')
-    # readIPs('box-5.00/')
-    # readIPs('modules-0.01/')
-    # readIPs('modules-0.10/')
-    readIPs('modules-0.15/')
-    # readIPs('modules-0.50/')
-    # readIPs('modules-1.00/')
-    # readIPs('modules-2.00/')
+    # readIPs('box-0.50/', cut)
+    # readIPs('box-1.00/', cut)
+    # readIPs('box-2.00/', cut)
+    # readIPs('box-5.00/', cut)
+    # readIPs('modules-0.01/', cut)
+    # readIPs('modules-0.10/', cut)
+    readIPs('modules-0.15/', cut)
+    # readIPs('modules-0.50/', cut)
+    # readIPs('modules-1.00/', cut)
+    # readIPs('modules-2.00/', cut)
     
     print('done')
