@@ -30,7 +30,7 @@ def cleanArray(arrayDict):
     recY = arrayDict[b'LMDTrackQ.fYrec'][nonZeroEvents].flatten()
     recZ = arrayDict[b'LMDTrackQ.fZrec'][nonZeroEvents].flatten()
 
-    # return a dict
+    # return a dictl
     return {'half': half, 'mod': module, 'x': recX, 'y': recY, 'z': recZ}
 
 def percentileCut(arrayDict):
