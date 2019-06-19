@@ -121,6 +121,60 @@ def histValues(cleanArray, align, cut):
 
     return ip
 
+def plotIPsxy(cleanArray, align, cut):
+    half = cleanArray['half']
+    module = cleanArray['mod']
+    recX = cleanArray['x']
+    recY = cleanArray['y']
+    #recZ = cleanArray['z']
+
+    ips = []
+
+    if cut > 0.01:
+        outPath = 'output/recoIP/' + align + 'cut2/'
+    else:
+        outPath = 'output/recoIP/' + align
+
+    if not os.path.exists(outPath):
+        os.makedirs(outPath)
+
+    for mod in range(0, 5):
+        for fHalf in range(0, 2):
+            # apply a mask to remove outliers and filter by module
+            recMask = (np.abs(recX) < 5000) & (np.abs(recY) < 5000) & (module == mod) & (half == fHalf)
+
+            # this is the position of the interaction point!
+            ip = [np.average(recX[recMask]), np.average(recY[recMask])]
+            ips.append(ip)
+            #print(f'appended: {ip}')
+    
+    #print(f'that is x: {ips[:,0]} and y: {ips[:,1]}')
+
+    #for i in ips:
+    #    print(i)
+
+    nips = np.array(ips)
+
+    # print(type(nips))
+    # print(nips)
+
+    # auto range
+    plt.hist2d(nips[:,0] * 1e1, nips[:, 1] * 1e1, bins=50, norm=LogNorm())
+    plt.colorbar()
+    
+    plt.axes().set_aspect(aspect='equal', adjustable='datalim')
+    
+    #legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
+    plt.title(f'Reco IPs for {align}\n')
+    plt.xlabel('x position [mm]')
+    plt.ylabel('y position [mm]')
+    
+    plt.tight_layout()
+    plt.savefig(outPath + f'rec-ips.png', dpi=300)
+    plt.close()
+
+    return ip
+
 def readIPs(align, cut=0.0):
     # this file is from
     # /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/no_geo_misalignment/100000/1-500_uncut
@@ -150,24 +204,23 @@ def readIPs(align, cut=0.0):
     if cut > 0.01:
         resultDict = percentileCut(resultDict, cut)
 
-    histValues(resultDict, align, cut)
+    #histValues(resultDict, align, cut)
+    plotIPsxy(resultDict, align, cut)
 
 if __name__ == "__main__":
     print('greetings, human.')
     
-    # TODO: include cut bool
-
     # cut in percent
     cut = 2.0
 
-    readIPs('aligned/')
-    # readIPs('box-0.50/', cut)
+    # readIPs('aligned/', cut)
+    readIPs('box-0.50/', cut)
     # readIPs('box-1.00/', cut)
     # readIPs('box-2.00/', cut)
     # readIPs('box-5.00/', cut)
     # readIPs('modules-0.01/', cut)
     # readIPs('modules-0.10/', cut)
-    readIPs('modules-0.15/', cut)
+    # readIPs('modules-0.15/', cut)
     # readIPs('modules-0.50/', cut)
     # readIPs('modules-1.00/', cut)
     # readIPs('modules-2.00/', cut)
