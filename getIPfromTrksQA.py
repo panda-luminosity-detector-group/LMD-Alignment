@@ -88,36 +88,66 @@ def histValues(cleanArray, align, cut):
     if not os.path.exists(outPath):
         os.makedirs(outPath)
 
-    for mod in range(0, 5):
-        for fHalf in range(0, 2):
-            # apply a mask to remove outliers and filter by module
-            recMask = (np.abs(recX) < 5000) & (np.abs(recY) < 5000) & (module == mod) & (half == fHalf)
+    byModule = False
 
-            # this is the position of the interaction point!
-            ip = [np.average(recX[recMask]), np.average(recY[recMask]), np.std(recX[recMask]), np.std(recY[recMask])]
+    if byModule:
+        for mod in range(0, 5):
+            for fHalf in range(0, 2):
+                # apply a mask to remove outliers and filter by module
+                recMask = (np.abs(recX) < 5000) & (np.abs(recY) < 5000) & (module == mod) & (half == fHalf)
 
-            print('interaction point is at: {0}, half {3}, module {1}, {2} tracks'.format(
-                ip, np.average(module[recMask]), len(module[recMask]), fHalf))
-           
-            if cut > 0.01:
-                # fixed range 10cm
-                plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
+                # this is the position of the interaction point!
+                ip = [np.average(recX[recMask]), np.average(recY[recMask]), np.std(recX[recMask]), np.std(recY[recMask])]
+
+                print('interaction point is at: {0}, half {3}, module {1}, {2} tracks'.format(
+                    ip, np.average(module[recMask]), len(module[recMask]), fHalf))
             
-            else:
-                 # fixed range 5m
-                plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
+                if cut > 0.01:
+                    # fixed range 10cm
+                    plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
+                
+                else:
+                    # fixed range 5m
+                    plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
+                
+                plt.colorbar()
+                
+                legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
+                
+                plt.title(f'Reco IP for half {fHalf}, module {mod}\n' + legend)
+                plt.xlabel('x position [mm]')
+                plt.ylabel('y position [mm]')
+                
+                plt.tight_layout()
+                plt.savefig(outPath + f'rec-ip-h{fHalf}m{mod}.png', dpi=300)
+                plt.close()
+
+    else:
+        recMask = (np.abs(recX) < 5000) & (np.abs(recY) < 5000)
+        # this is the position of the interaction point!
+        ip = [np.average(recX[recMask]), np.average(recY[recMask]), np.std(recX[recMask]), np.std(recY[recMask])]
+
+        print('interaction point is at: {0}'.format(ip))
+
+        if cut > 0.01:
+            # fixed range 10cm
+            plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
             
-            plt.colorbar()
-            
-            legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
-            
-            plt.title(f'Reco IP for half {fHalf}, module {mod}\n' + legend)
-            plt.xlabel('x position [mm]')
-            plt.ylabel('y position [mm]')
-            
-            plt.tight_layout()
-            plt.savefig(outPath + f'rec-ip-h{fHalf}m{mod}.png', dpi=300)
-            plt.close()
+        else:
+            # fixed range 5m
+            plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
+        
+        plt.colorbar()
+        
+        legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
+        
+        plt.title(f'Reco IP\n' + legend)
+        plt.xlabel('x position [mm]')
+        plt.ylabel('y position [mm]')
+        
+        plt.tight_layout()
+        plt.savefig(outPath + f'rec-ip-allModules.png', dpi=300)
+        plt.close()
 
     return ip
 
@@ -160,7 +190,7 @@ def plotIPsxy(cleanArray, align, cut):
 
     # auto range
     plt.hist2d(nips[:,0] * 1e1, nips[:, 1] * 1e1, bins=50, norm=LogNorm())
-    plt.colorbar()
+    # plt.colorbar()
     
     plt.axes().set_aspect(aspect='equal', adjustable='datalim')
     
@@ -204,25 +234,29 @@ def readIPs(align, cut=0.0):
     if cut > 0.01:
         resultDict = percentileCut(resultDict, cut)
 
-    #histValues(resultDict, align, cut)
-    plotIPsxy(resultDict, align, cut)
+    histValues(resultDict, align, cut)
+    #plotIPsxy(resultDict, align, cut)
 
 if __name__ == "__main__":
     print('greetings, human.')
     
     # cut in percent
-    cut = 2.0
+    cuts = (0.0, 2.0)
 
-    # readIPs('aligned/', cut)
-    readIPs('box-0.50/', cut)
-    # readIPs('box-1.00/', cut)
-    # readIPs('box-2.00/', cut)
-    # readIPs('box-5.00/', cut)
-    # readIPs('modules-0.01/', cut)
-    # readIPs('modules-0.10/', cut)
-    # readIPs('modules-0.15/', cut)
-    # readIPs('modules-0.50/', cut)
-    # readIPs('modules-1.00/', cut)
-    # readIPs('modules-2.00/', cut)
-    
+    for cut in cuts:
+        readIPs('aligned/', cut)
+        # readIPs('box-0.50/', cut)
+        # readIPs('box-1.00/', cut)
+        # readIPs('box-2.00/', cut)
+        # readIPs('box-5.00/', cut)
+        # readIPs('modules-0.01/', cut)
+        # readIPs('modules-0.10/', cut)
+        # readIPs('modules-0.15/', cut)
+        # readIPs('modules-0.50/', cut)
+        # readIPs('modules-1.00/', cut)
+        # readIPs('modules-2.00/', cut)
+        readIPs('combi-0.50/', cut)
+        readIPs('combi-1.00/', cut)
+        readIPs('combi-2.00/', cut)
+
     print('done')
