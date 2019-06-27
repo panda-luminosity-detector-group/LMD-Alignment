@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
 
+#!/usr/bin/env python3
 import json, os, sys, glob
 
 """
@@ -32,8 +32,9 @@ def test():
         os.environ["LMDFIT_DATA_DIR"]
         path0 = os.environ["LMDFIT_DATA_DIR"] + '/'
     except:
-        print('Error: environment variable "LMDFIT_DATA_DIR" not set!')
-        sys.exit()
+        print('Error: environment variable "LMDFIT_DATA_DIR" not set! Assuming test environment.')
+        path0 = 'lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/'
+        #sys.exit()
 
     path1 = [   "plab_1.5GeV/" ]#, "plab_4.06GeV/", "plab_8.9GeV/", "plab_15.0GeV/"   ]
     path2 = "dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/"
@@ -70,7 +71,10 @@ def test():
                         # "geo_misalignmentmisalignMatrices-SensorsOnly-250/"
     ]
 
+    # this comes in aligned and non-aligned
     path3 = "*/*_uncut*/bunches_*/binning_*/merge_data/reco_ip.json"
+    
+    # this comes in aligned and non-aligned
     path4 = "*/*_xy_m_cut_real*/bunches_*/binning_*/merge_data/lumi-values.json"
 
     print('iterating over dirs...')
@@ -88,52 +92,100 @@ def test():
     # read reco_ip.json
     for mom in path1:
         for misalign in misalignDirs:
+            
+            #! ------------ new part
+            # construct align path
+            alignPath = path0 + mom + path2 + misalign
 
-            # reset check counter
-            check1, check2 = 0, 0
+            # match all reco ips
+            for matchReco in glob.glob(alignPath + path3):
+                
+                # is this an aligned case?
+                aligned = '_aligned/' in matchReco
 
-            # prep filename1
-            filename = path0 + mom + path2 + misalign + path3
-            print(f'file path: {filename}')
+                # extract values
+                with open(matchReco) as json_file:  
+                    dataReco = json.load(json_file)
+                    x, y, z = (str(round(float(dataReco['ip_x']) * 1e1, 2)), str(round(float(dataReco['ip_y']) * 1e1, 2)), str(round(float(dataReco['ip_z']) * 1e1, 2)))
 
-            for match in glob.glob(filename):
-                check1 += 1
-                with open(match) as json_file:  
-                    data = json.load(json_file)
-                    x, y, z = (str(round(float(data['ip_x']) * 1e1, 2)), str(round(float(data['ip_y']) * 1e1, 2)), str(round(float(data['ip_z']) * 1e1, 2)))
+
+                # then, match all lumi values but filter by aligned or not
+                for matchLumi in glob.glob(alignPath + path4):
+
+                    #filter by current aligned-flag
+                    if '_aligned/' in matchLumi is aligned:
+
+                        # extract values
+                        with open(matchLumi) as json_file2:  
+                            dataLumi = json.load(json_file2)
+                            LumiError = str(round(float(dataLumi['relative_deviation_in_percent']),3))
+                            LumiErrorError = str(round(float(dataLumi['relative_deviation_error_in_percent']),3))
+
+                        # clean and store data. if something fails, the combination is simply skipped
+                        # TODO: put in separate function
+                        dirs += 1
+                        mom2 = mom.replace('plab_', '')
+                        mom2 = mom2.replace('_', '\_')
+                        mom2 = mom2.replace('GeV/', ' GeV')
+                        misalign2 = misalign.replace('geo_misalignment', '')
+                        misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
+                        misalign2 = misalign2.replace('no_', 'aligned')
+                        misalign2 = misalign2.replace('_', '\_')
+                        resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError  + ' & ' + LumiErrorError + ' \\\\ \n'
+
+                    # wrong aligned / non-aligned combination
+                    else:
+                        print('no match')
+
+
+
+            #! ------------ old part
+            
+            # # reset check counter
+            # check1, check2 = 0, 0
+
+            # # prep filename1
+            # filename = path0 + mom + path2 + misalign + path3
+            # print(f'file path: {filename}')
+
+            # for match in glob.glob(filename):
+            #     check1 += 1
+            #     with open(match) as json_file:  
+            #         data = json.load(json_file)
+            #         x, y, z = (str(round(float(data['ip_x']) * 1e1, 2)), str(round(float(data['ip_y']) * 1e1, 2)), str(round(float(data['ip_z']) * 1e1, 2)))
         
-            # prep filename1
-            filename2 = path0 + mom + path2 + misalign + path4
-            for match2 in glob.glob(filename2):
-                check2 += 1
-                with open(match2) as json_file2:  
-                    data2 = json.load(json_file2)
-                    LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
-                    LumiErrorError = str(round(float(data2['relative_deviation_error_in_percent']),3))
+            # # prep filename1
+            # filename2 = path0 + mom + path2 + misalign + path4
+            # for match2 in glob.glob(filename2):
+            #     check2 += 1
+            #     with open(match2) as json_file2:  
+            #         data2 = json.load(json_file2)
+            #         LumiError = str(round(float(data2['relative_deviation_in_percent']),3))
+            #         LumiErrorError = str(round(float(data2['relative_deviation_error_in_percent']),3))
 
-            if check1 == 1:
-                if check2 < 1:
-                    LumiError = 'no data'
-                    LumiErrorError = 'no data'
-                elif check2 > 1:
-                    print('second path is ambigous.')
-                    continue
+            # if check1 == 1:
+            #     if check2 < 1:
+            #         LumiError = 'no data'
+            #         LumiErrorError = 'no data'
+            #     elif check2 > 1:
+            #         print('second path is ambigous.')
+            #         continue
 
-                dirs += 1
-                mom2 = mom.replace('plab_', '')
-                mom2 = mom2.replace('_', '\_')
-                mom2 = mom2.replace('GeV/', ' GeV')
-                misalign2 = misalign.replace('geo_misalignment', '')
-                misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
-                misalign2 = misalign2.replace('no_', 'aligned')
-                misalign2 = misalign2.replace('_', '\_')
-                resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError  + ' & ' + LumiErrorError + ' \\\\ \n'
-            elif check1 > 1:
-              print('first path is ambigous!')
+            #     dirs += 1
+            #     mom2 = mom.replace('plab_', '')
+            #     mom2 = mom2.replace('_', '\_')
+            #     mom2 = mom2.replace('GeV/', ' GeV')
+            #     misalign2 = misalign.replace('geo_misalignment', '')
+            #     misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
+            #     misalign2 = misalign2.replace('no_', 'aligned')
+            #     misalign2 = misalign2.replace('_', '\_')
+            #     resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError  + ' & ' + LumiErrorError + ' \\\\ \n'
+            # elif check1 > 1:
+            #   print('first path is ambigous!')
 
-            else:
-                print('wait wat')
-                continue
+            # else:
+            #     print('wait wat')
+            #     continue
 
     if dirs < 1:
         print('no valid files found!')
