@@ -29,10 +29,11 @@ def test():
     
     try:
         os.environ["LMDFIT_DATA_DIR"]
+        # should be /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit
         path0 = os.environ["LMDFIT_DATA_DIR"] + '/'
     except:
-        print('Error: environment variable "LMDFIT_DATA_DIR" not set! Assuming test environment.')
-        path0 = 'lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/'
+        print('INFO: environment variable "LMDFIT_DATA_DIR" not set! Assuming test environment.')
+        path0 = os.getcwd() + '/input/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/'
         #sys.exit()
 
     path1 = [   "plab_1.5GeV/" ]#, "plab_4.06GeV/", "plab_8.9GeV/", "plab_15.0GeV/"   ]
@@ -96,11 +97,15 @@ def test():
             # construct align path
             alignPath = path0 + mom + path2 + misalign
 
+            print(alignPath)
+
             # match all reco ips
             for matchReco in glob.glob(alignPath + path3):
                 
                 # is this an aligned case?
                 aligned = '_aligned/' in matchReco
+
+                print(f'match 1: {matchReco}')
 
                 # extract values
                 with open(matchReco) as json_file:  
@@ -111,8 +116,10 @@ def test():
                 # then, match all lumi values but filter by aligned or not
                 for matchLumi in glob.glob(alignPath + path4):
 
+                    print(f'match 2: {matchLumi}')
+
                     #filter by current aligned-flag
-                    if '_aligned/' in matchLumi is aligned:
+                    if '_aligned/' in matchLumi == aligned:
 
                         # extract values
                         with open(matchLumi) as json_file2:  
