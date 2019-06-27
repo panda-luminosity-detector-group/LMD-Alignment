@@ -37,40 +37,35 @@ def test():
 
     # iterate over misalign dirs
     misalignDirs = [    "no_geo_misalignment/",
-                        "geo_misalignmentmisMat-box-0.25/",
-                        "geo_misalignmentmisMat-box-0.50/",
-                        "geo_misalignmentmisMat-box-1.00/",
-                        "geo_misalignmentmisMat-box-2.00/",
-                        "geo_misalignmentmisMat-box-3.00/",
-                        "geo_misalignmentmisMat-box-5.00/",
-                        "geo_misalignmentmisMat-box-10.00/",
-                        "geo_misalignmentmisMat-combi-0.50/",
-                        "geo_misalignmentmisMat-combi-1.00/",
-                        "geo_misalignmentmisMat-combi-2.00/",
-                        "geo_misalignmentmisMat-modules-0.01/",
-                        "geo_misalignmentmisMat-modules-0.05/",
-                        "geo_misalignmentmisMat-modules-0.10/",
-                        "geo_misalignmentmisMat-modules-0.15/",
-                        "geo_misalignmentmisMat-modules-0.25/",
-                        "geo_misalignmentmisMat-modules-0.50/",
-                        "geo_misalignmentmisMat-modules-0.75/",
-                        "geo_misalignmentmisMat-modules-1.00/",
-                        "geo_misalignmentmisMat-modules-1.50/",
-                        "geo_misalignmentmisMat-modules-2.00/",
-                        "geo_misalignmentmisMat-modules-3.00/",
-                        "geo_misalignmentmisalignMatrices-SensorsOnly-10/",
-                        "geo_misalignmentmisalignMatrices-SensorsOnly-50/",
-                        "geo_misalignmentmisalignMatrices-SensorsOnly-100/",
-                        "geo_misalignmentmisalignMatrices-SensorsOnly-150/",
-                        "geo_misalignmentmisalignMatrices-SensorsOnly-200/",
-                        "geo_misalignmentmisalignMatrices-SensorsOnly-250/"
+                        # "geo_misalignmentmisMat-box-0.25/",
+                        # "geo_misalignmentmisMat-box-0.50/",
+                        # "geo_misalignmentmisMat-box-1.00/",
+                        # "geo_misalignmentmisMat-box-2.00/",
+                        # "geo_misalignmentmisMat-box-3.00/",
+                        # "geo_misalignmentmisMat-box-5.00/",
+                        # "geo_misalignmentmisMat-box-10.00/",
+                        # "geo_misalignmentmisMat-combi-0.50/",
+                        # "geo_misalignmentmisMat-combi-1.00/",
+                        # "geo_misalignmentmisMat-combi-2.00/",
+                        "geo_misalignmentmisMat-identity-1.00/"
+                        # "geo_misalignmentmisMat-modules-0.01/",
+                        # "geo_misalignmentmisMat-modules-0.05/",
+                        # "geo_misalignmentmisMat-modules-0.10/",
+                        # "geo_misalignmentmisMat-modules-0.15/",
+                        # "geo_misalignmentmisMat-modules-0.25/",
+                        # "geo_misalignmentmisMat-modules-0.50/",
+                        # "geo_misalignmentmisMat-modules-0.75/",
+                        # "geo_misalignmentmisMat-modules-1.00/",
+                        # "geo_misalignmentmisMat-modules-1.50/",
+                        # "geo_misalignmentmisMat-modules-2.00/",
+                        # "geo_misalignmentmisMat-modules-3.00/",
+                        # "geo_misalignmentmisalignMatrices-SensorsOnly-10/",
+                        # "geo_misalignmentmisalignMatrices-SensorsOnly-50/",
+                        # "geo_misalignmentmisalignMatrices-SensorsOnly-100/",
+                        # "geo_misalignmentmisalignMatrices-SensorsOnly-150/",
+                        # "geo_misalignmentmisalignMatrices-SensorsOnly-200/",
+                        # "geo_misalignmentmisalignMatrices-SensorsOnly-250/"
     ]
-    # misalignDirs = [    "no_geo_misalignment/",
-    #                     "geo_misalignmentmisMat-box-*/",
-    #                     "geo_misalignmentmisMat-modules-*/",
-    #                     "geo_misalignmentmisalignMatrices-SensorsOnly-*/"
-    # ]
-
 
     path3 = "*/*_uncut*/bunches_*/binning_*/merge_data/reco_ip.json"
     path4 = "*/*_xy_m_cut_real*/bunches_*/binning_*/merge_data/lumi-values.json"
