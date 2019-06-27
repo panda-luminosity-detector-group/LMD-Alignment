@@ -8,6 +8,9 @@ This script iterates over lumi fit paths, collects IP poisitions and prints them
 example path:
 plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-modules-1.00/100000/1-500_uncut/bunches_10/binning_300/merge_data/reco_ip.json 
 
+new example:
+plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-identity-1.00/100000/1-100_xy_m_cut_real/bunches_10/binning_300/merge_data
+
 env:
 $LMDFIT_DATA_DIR
 
@@ -32,7 +35,7 @@ def test():
         print('Error: environment variable "LMDFIT_DATA_DIR" not set!')
         sys.exit()
 
-    path1 = [   "plab_1.5GeV/", "plab_4.06GeV/", "plab_8.9GeV/", "plab_15.0GeV/"   ]
+    path1 = [   "plab_1.5GeV/" ]#, "plab_4.06GeV/", "plab_8.9GeV/", "plab_15.0GeV/"   ]
     path2 = "dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/"
 
     # iterate over misalign dirs
@@ -80,6 +83,8 @@ def test():
 
     check1, check2 = 0, 0
 
+    # TODO: reorder nested for loops, loop over align path first, then grab and loop over all aligned/nonaligned paths, then grab reco_ip and lumi_values
+
     # read reco_ip.json
     for mom in path1:
         for misalign in misalignDirs:
@@ -89,7 +94,7 @@ def test():
 
             # prep filename1
             filename = path0 + mom + path2 + misalign + path3
-
+            print(f'file path: {filename}')
 
             for match in glob.glob(filename):
                 check1 += 1
@@ -111,6 +116,7 @@ def test():
                     LumiError = 'no data'
                     LumiErrorError = 'no data'
                 elif check2 > 1:
+                    print('second path is ambigous.')
                     continue
 
                 dirs += 1
@@ -122,7 +128,11 @@ def test():
                 misalign2 = misalign2.replace('no_', 'aligned')
                 misalign2 = misalign2.replace('_', '\_')
                 resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError  + ' & ' + LumiErrorError + ' \\\\ \n'
+            elif check1 > 1:
+              print('first path is ambigous!')
+
             else:
+                print('wait wat')
                 continue
 
     if dirs < 1:
