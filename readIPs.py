@@ -97,7 +97,7 @@ def test():
             # construct align path
             alignPath = path0 + mom + path2 + misalign
 
-            print(alignPath)
+            # print(alignPath)
 
             # match all reco ips
             for matchReco in glob.glob(alignPath + path3):
@@ -105,7 +105,7 @@ def test():
                 # is this an aligned case?
                 aligned = '_aligned/' in matchReco
 
-                print(f'match 1: {matchReco}')
+                # print(f'match 1: {matchReco}')
 
                 # extract values
                 with open(matchReco) as json_file:  
@@ -116,10 +116,10 @@ def test():
                 # then, match all lumi values but filter by aligned or not
                 for matchLumi in glob.glob(alignPath + path4):
 
-                    print(f'match 2: {matchLumi}')
-
                     #filter by current aligned-flag
-                    if '_aligned/' in matchLumi == aligned:
+                    if ('_aligned/' in matchLumi) == aligned:
+                        
+                        # print(f'match 2: {matchLumi}')
 
                         # extract values
                         with open(matchLumi) as json_file2:  
@@ -134,16 +134,20 @@ def test():
                         mom2 = mom2.replace('_', '\_')
                         mom2 = mom2.replace('GeV/', ' GeV')
                         misalign2 = misalign.replace('geo_misalignment', '')
-                        misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
+                        misalign2 = misalign2.replace('/', '')
+                        # misalign2 = misalign2.replace('misalignMatrices-SensorsOnly', 'misMat-sensors')
                         misalign2 = misalign2.replace('no_', 'aligned')
+                        if aligned:
+                            misalign2 += ', corrected'
                         misalign2 = misalign2.replace('_', '\_')
                         resultTable += mom2 + ' & ' + misalign2 + ' & ' + x + ' & ' + y + ' & ' + z + ' & ' + LumiError  + ' & ' + LumiErrorError + ' \\\\ \n'
 
                     # wrong aligned / non-aligned combination
-                    else:
-                        print('no match')
+                    # else:
+                    #     print('no match')
 
-
+    print('here comes the table:\n\n')
+    print(resultTable)
 
             #! ------------ old part
             
@@ -193,11 +197,11 @@ def test():
             #     print('wait wat')
             #     continue
 
-    if dirs < 1:
-        print('no valid files found!')
-    else:
-        print('here comes the table:\n\n')
-        print(resultTable)
+    # if dirs < 1:
+    #     print('no valid files found!')
+    # else:
+    #     print('here comes the table:\n\n')
+    #     print(resultTable)
 
     # put to LaTeX table
 
