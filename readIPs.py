@@ -41,6 +41,7 @@ def test():
 
     # iterate over misalign dirs
     misalignDirs = [    "no_geo_misalignment/",
+                        "geo_misalignmentmisMat-identity-1.00/",
                         "geo_misalignmentmisMat-box-0.25/",
                         "geo_misalignmentmisMat-box-0.50/",
                         "geo_misalignmentmisMat-box-1.00/",
@@ -50,8 +51,7 @@ def test():
                         "geo_misalignmentmisMat-box-10.00/",
                         "geo_misalignmentmisMat-combi-0.50/",
                         "geo_misalignmentmisMat-combi-1.00/",
-                        "geo_misalignmentmisMat-combi-2.00/",
-                        "geo_misalignmentmisMat-identity-1.00/"
+                        "geo_misalignmentmisMat-combi-2.00/"                    
                         # "geo_misalignmentmisMat-modules-0.01/",
                         # "geo_misalignmentmisMat-modules-0.05/",
                         # "geo_misalignmentmisMat-modules-0.10/",
