@@ -61,14 +61,13 @@ def icpRot(A, B):
     if m != 2 and m != 3:
         print('error! must be either 2D or 3D!')
 
+    # this is covered by Wikipedia!
+    # https://de.wikipedia.org/wiki/Drehmatrix
+
     # rotation matrix, see ICP
     H = np.dot(A.T, B)
     U, _, Vt = np.linalg.svd(H)
-    #R = np.dot(Vt.T, U.T)
     R = Vt.T@U.T
-
-    # this is covered by Wikipedia!
-    # https://de.wikipedia.org/wiki/Drehmatrix
 
     # special reflection case
     if np.linalg.det(R) < 0:
@@ -88,7 +87,7 @@ def testTwo():
     print(f'blimey R1:\n{R1}')
     print(f'angle: {np.arcsin(R1[0][1]) * 180 / np.pi}')
 
-    # test ICP varian
+    #! ======== test ICP variant
 
     fromVec = np.array(fromVec)[np.newaxis]
     toVec = np.array(toVec)[np.newaxis]
