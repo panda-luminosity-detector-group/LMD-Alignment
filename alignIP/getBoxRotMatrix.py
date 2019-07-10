@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from numpy import array, mat, sin, cos, dot, eye
-from numpy.linalg import norm
 import uproot
 
 """
@@ -73,61 +71,37 @@ def icpRot(A, B):
     # https://de.wikipedia.org/wiki/Drehmatrix
 
     # special reflection case
-    # we can probably omit this
-    # if np.linalg.det(R) < 0:
-    #     print(f'is reflected!')
-    #     Vt[m-1, :] *= -1
-    #     R = np.dot(Vt.T, U.T)
+    if np.linalg.det(R) < 0:
+        Vt[m-1, :] *= -1
+        R = Vt.T@U.T
 
     return R
-
-
-def getBoxRotationMatrix(interactionPointFromLumi, interactionPointFromPanda, lumiPosition):
-
-    # TODO: maybe don't hard code Lumi Position and read it from some config file instead
-    # TODO: to account for survey!
-
-    # all values are in centimeters, (x, y, z)
-    # lumiPosition = (10.0, 0.0, 1100.0)      # TODO: get actual values!
-    # lumiPosition = (0.0, 0.0, 100.0)      # TODO: remove after testing
-
-    LMDpos = np.array(lumiPosition, ndmin=2)
-    IPwrong = np.array(interactionPointFromLumi, ndmin=2)
-    IPactual = np.array(interactionPointFromPanda, ndmin=2)
-
-    # shift IPs so that LMD is at (0,0,0)
-    IPwrong -= LMDpos
-    IPactual -= LMDpos
-
-    print(f'IP wrong: {IPwrong}')
-    print(f'IP actual: {IPactual}')
-
-    # then ICP that shizzle
-    R = icpRot(IPwrong, IPactual)
-    # T, R, t = best_fit_transform(IPa, IPb)
-
-    print(f'R is:\n{R}')
-    print(f'R inv is:\n{np.linalg.inv(R)}')
-
-    # and see if matrix actually works
-    result = R.T@IPwrong.T - IPactual.T
-    print(f'R@IPwrong - IPactual =\n{result}')
-    print(f'angle: {np.arccos(R[0][0]) * 180 / np.pi}')
 
 def testTwo():
 
     # np vectors must be 2d
-    fromVec = np.array([1.0, 1.0, 0.0])
-    toVec = np.array([0.0, 1.0, 0.0])
+    fromVec = np.array([1.0, 0.0, 0.0])
+    toVec = np.array([1.0, 1.0, 0.0])
 
-    R = getRot(fromVec, toVec)
+    R1 = getRot(fromVec, toVec)
 
-    print(f'blimey R:\n{R}')
-    print(f'angle: {np.arcsin(R[0][1]) * 180 / np.pi}')
+    print(f'blimey R1:\n{R1}')
+    print(f'angle: {np.arcsin(R1[0][1]) * 180 / np.pi}')
+
+    # test ICP varian
+
+    fromVec = np.array(fromVec)[np.newaxis]
+    toVec = np.array(toVec)[np.newaxis]
+
+    R2 = icpRot(fromVec, toVec)
+
+    print(f'blimey R2:\n{R2}')
+    print(f'angle: {np.arcsin(R2[0][1]) * 180 / np.pi}')
+
+    print(f'bloody difference:\n{R2-R1}')
 
 
 if __name__ == "__main__":
     print('greetings, human.')
-    #getBoxRotationMatrix((1.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 10.0))
     testTwo()
     print('all done!')
