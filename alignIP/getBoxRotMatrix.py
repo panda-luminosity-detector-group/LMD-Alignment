@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from numpy import array,mat,sin,cos,dot,eye
+from numpy import array, mat, sin, cos, dot, eye
 from numpy.linalg import norm
 import uproot
 
@@ -17,20 +17,34 @@ save matrix to json file
 rerun Reco and Lumi steps
 """
 
-
+#! this is the simplest I could find, seems to work just fine
 def getRot(A, B):
 
+    #! see https://math.stackexchange.com/a/476311
+
+    # assert shapes
+    assert A.shape == B.shape
+
+    # normalize vectors
+    A = A / np.linalg.norm(A)
+    B = B / np.linalg.norm(B)
+
     # calc rot axis by cross product
-    rotAx = np.cross(A, B)
+    v = np.cross(A, B)
 
     # calc rot angle by dot product
-    angle = np.dot(A, B.T)
+    c = np.dot(A, B.T)  # cosine
 
-    # rotate around arbitrary axis
+    # TODO: maybe there is a function in np for this
+    # compute skew symmetric cross product
+    v_x = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
 
-    pass
+    # compute rotation matrix
+    R = np.identity(3) + v_x + np.dot(v_x, v_x) * (1/(1+c)) 
 
+    return R
 
+# TODO: cleanup, fix or remove!
 def icpRot(A, B):
     '''
     Gets Rotation from A to B, light version of ICP, without translation
@@ -67,6 +81,7 @@ def icpRot(A, B):
 
     return R
 
+
 def getBoxRotationMatrix(interactionPointFromLumi, interactionPointFromPanda, lumiPosition):
 
     # TODO: maybe don't hard code Lumi Position and read it from some config file instead
@@ -99,37 +114,20 @@ def getBoxRotationMatrix(interactionPointFromLumi, interactionPointFromPanda, lu
     print(f'R@IPwrong - IPactual =\n{result}')
     print(f'angle: {np.arccos(R[0][0]) * 180 / np.pi}')
 
-def icpRotNew(fromVec, toVec):
-
-    # v = a x b
-
-    # c = a dot b
-
-    # R = I + v_x + v_x^2 * (1/(1+c))
-
-    a = fromVec.T
-    b = toVec.T
-
-    n = 2 * np.matmul((a+b),(a+b).T )
-    d = np.dot( (a+b).T, (a+b) )
-
-    print(f'n:{n}\nd:{d}')
-
-    R = (n/d) - np.identity(3)
-
-    return R
-
-def fuckMe():
+def testTwo():
 
     # np vectors must be 2d
-    fromVec = np.array([1.0, 0.0, 0.0])[np.newaxis]
-    toVec = np.array([0.0, 1.0, 0.0])[np.newaxis]
+    fromVec = np.array([1.0, 1.0, 0.0])
+    toVec = np.array([0.0, 1.0, 0.0])
 
-    R = icpRotNew(fromVec, toVec)
-    print(f'fukken R:\n{R}')
+    R = getRot(fromVec, toVec)
+
+    print(f'blimey R:\n{R}')
+    print(f'angle: {np.arcsin(R[0][1]) * 180 / np.pi}')
+
 
 if __name__ == "__main__":
     print('greetings, human.')
     #getBoxRotationMatrix((1.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 10.0))
-    fuckMe()
+    testTwo()
     print('all done!')
