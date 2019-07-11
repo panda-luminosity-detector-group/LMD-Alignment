@@ -14,6 +14,9 @@ def getMatrixFromJSON(jsonFile, path):
     matrix = np.reshape(matrix, (4,4))
     return matrix
 
+def saveMatrixToJSON(matrix):
+    pass
+
 def makeHomogenous(matrix):
     shape = np.shape(matrix)
     if shape == (3,3):
