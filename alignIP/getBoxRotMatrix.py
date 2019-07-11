@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import uproot
+import uproot, os, sys
 from trksQA import getIPfromTrksQA
 from matrices import getMatrixFromJSON, makeHomogenous
 
@@ -16,15 +16,18 @@ save matrix to json file
 rerun Reco and Lumi steps
 """
 
+def getLumiPosition():
+    lumiPos = np.array([0.0, 0.0, 0.0, 1.0])[np.newaxis].T
+    lumiMat = getMatrixFromJSON('../input/rootMisalignMatrices/json/detectorMatrices.json', '/cave_1/lmd_root_0')
+    newLumiPos = (lumiMat@lumiPos).T[0][:3]
+    return newLumiPos
+
 
 def getEulerAnglesFromRotationMatrix(R):
     rx = np.arctan2(R[2][1], R[2][2])
     ry = np.arctan2(-R[2][0], np.sqrt(R[2][1]*R[2][1] + R[2][2] * R[2][2]))
     rz = np.arctan2(R[1][0], R[0][0])
     return (rx, ry, rz)
-
-# see https://math.stackexchange.com/a/476311
-# https://en.wikipedia.org/wiki/Cross_product#Conversion_to_matrix_multiplication
 
 
 def printMatrixDetails(M1, M2=None):
@@ -47,6 +50,13 @@ def printMatrixDetails(M1, M2=None):
     print(f'angle z: {rz * 1e3} mrad')
     print('\n')
 
+
+# see https://math.stackexchange.com/a/476311
+# https://en.wikipedia.org/wiki/Cross_product#Conversion_to_matrix_multiplication
+"""
+computes rotation from A to B when rotated through origin.
+shift A and B before, if rotation did not already occur through origin!
+"""
 def getRot(A, B):
     # error handling
     if np.linalg.norm(A) == 0 or np.linalg.norm(B) == 0:
@@ -79,8 +89,7 @@ def getRot(A, B):
 def testTwo():
 
     # TODO: read from config or PANDA db/survey
-    # FIXME: at least provide the actual values here first!
-    lumiPos = np.array([10.0, 0.0, 1100.0])
+    lumiPos = getLumiPosition()
 
     #ipApparent = np.array([1.0, 0.0, 0.0])
     ipApparent = getIPfromTrksQA('../input/TrksQA/box-1.00/Lumi_TrksQA_100000.root')

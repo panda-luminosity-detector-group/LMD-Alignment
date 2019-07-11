@@ -16,11 +16,16 @@ def getMatrixFromJSON(jsonFile, path):
 
 def makeHomogenous(matrix):
     shape = np.shape(matrix)
-    if shape != (3,3):
-        print('ERROR! can only cast 3x3 matrices to homogenous form')
-    result = np.identity(4)
-    result[:3,:3] = matrix
-    return result
+    if shape == (3,3):
+        result = np.identity(4)
+        result[:3,:3] = matrix
+        return result
+    elif shape == (3,1):
+        return np.array(matrix, 1)
+    elif shape == (1,3):
+        return np.array(matrix, 1)
+    else:
+        print('ERROR! can only cast 3x3 matrices or 3x1 vectors to homogenous form')
 
 if __name__ == "__main__":
     print('this module is not intended to be run independently.')
