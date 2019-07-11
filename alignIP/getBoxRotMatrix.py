@@ -28,6 +28,10 @@ def getEulerAnglesFromRotationMatrix(R):
 #! see https://math.stackexchange.com/a/476311
 def getRot(A, B):
 
+    if np.linalg.norm(A) == 0 or np.linalg.norm(B) == 0:
+        print("ERROR. can't create rotation with null vector")
+        return
+
     # assert shapes
     assert A.shape == B.shape
 
