@@ -90,6 +90,7 @@ def testTwo():
 
     # TODO: read from config or PANDA db/survey
     lumiPos = getLumiPosition()
+    print(f'Lumi Position is:\n{lumiPos}')
 
     #ipApparent = np.array([1.0, 0.0, 0.0])
     ipApparent = getIPfromTrksQA('../input/TrksQA/box-1.00/Lumi_TrksQA_100000.root')
