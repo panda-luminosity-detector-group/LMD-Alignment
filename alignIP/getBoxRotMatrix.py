@@ -25,10 +25,8 @@ def getEulerAnglesFromRotationMatrix(R):
     rz = np.arctan2(R[1][0], R[0][0])
     return (rx, ry, rz)
 
-#! this is the simplest I could find, seems to work just fine
+#! see https://math.stackexchange.com/a/476311
 def getRot(A, B):
-
-    #! see https://math.stackexchange.com/a/476311
 
     # assert shapes
     assert A.shape == B.shape
@@ -37,19 +35,10 @@ def getRot(A, B):
     A = A / np.linalg.norm(A)
     B = B / np.linalg.norm(B)
 
-    # calc rot axis by cross product
-    # v = np.cross(A, B)
-
     # calc rot angle by dot product
     cosine = np.dot(A, B)  # cosine
 
-    
-    # v_x = np.array( [   [0, -v[2], v[1]],
-    #                     [v[2], 0, -v[0]], 
-    #                     [-v[1], v[0], 0]   ])
-
-    # https://en.wikipedia.org/wiki/Cross_product#Conversion_to_matrix_multiplication
-    # a = c x d 
+    #! https://en.wikipedia.org/wiki/Cross_product#Conversion_to_matrix_multiplication
 
     # make 2D vectors so that transposing works
     cw = A[np.newaxis].T
@@ -57,10 +46,6 @@ def getRot(A, B):
 
     # compute skew symmetric cross product matrix
     a_x = np.matmul(dw, cw.T) - np.matmul(cw, dw.T)
-
-    # print('==========================')
-    # print(f'a_x:\n{a_x}\nv_x:\n{v_x}')
-    # print('==========================')
 
     # compute rotation matrix
     R = np.identity(3) + a_x + np.dot(a_x, a_x) * (1/(1+cosine)) 
