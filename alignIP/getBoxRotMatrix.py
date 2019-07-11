@@ -13,7 +13,17 @@ compare with actual IP position from PANDA upstream
 create matrix that accounts for box rotations
 save matrix to json file
 rerun Reco and Lumi steps
+
+TODO: mmaybe use scipy and/or quaternion implementations
+
+
 """
+
+def getEulerAnglesFromRotationMatrix(R):
+    rx = np.arctan2(R[2][1], R[2][2])
+    ry = np.arctan2(-R[2][0], np.sqrt(R[2][1]*R[2][1] + R[2][2] * R[2][2] ))
+    rz = np.arctan2(R[1][0], R[0][0])
+    return (rx, ry, rz)
 
 #! this is the simplest I could find, seems to work just fine
 def getRot(A, B):
@@ -28,78 +38,59 @@ def getRot(A, B):
     B = B / np.linalg.norm(B)
 
     # calc rot axis by cross product
-    v = np.cross(A, B)
+    # v = np.cross(A, B)
 
     # calc rot angle by dot product
-    c = np.dot(A, B.T)  # cosine
+    cosine = np.dot(A, B)  # cosine
 
-    # TODO: maybe there is a function in np for this
-    # compute skew symmetric cross product
-    v_x = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+    
+    # v_x = np.array( [   [0, -v[2], v[1]],
+    #                     [v[2], 0, -v[0]], 
+    #                     [-v[1], v[0], 0]   ])
+
+    # https://en.wikipedia.org/wiki/Cross_product#Conversion_to_matrix_multiplication
+    # a = c x d 
+
+    # make 2D vectors so that transposing works
+    cw = A[np.newaxis].T
+    dw = B[np.newaxis].T
+
+    # compute skew symmetric cross product matrix
+    a_x = np.matmul(dw, cw.T) - np.matmul(cw, dw.T)
+
+    # print('==========================')
+    # print(f'a_x:\n{a_x}\nv_x:\n{v_x}')
+    # print('==========================')
 
     # compute rotation matrix
-    R = np.identity(3) + v_x + np.dot(v_x, v_x) * (1/(1+c)) 
-
-    return R
-
-# TODO: cleanup, fix or remove!
-def icpRot(A, B):
-    '''
-    Gets Rotation from A to B, light version of ICP, without translation
-    Might not strictly be correct
-    Input:  TODO: update this
-      A: Nxm numpy array of corresponding points
-      B: Nxm numpy array of corresponding points
-    Returns:
-      R: mxm rotation matrix
-    '''
-
-    assert A.shape == B.shape
-
-    # get number of dimensions
-    m = A.shape[1]
-    if m != 2 and m != 3:
-        print('error! must be either 2D or 3D!')
-
-    # this is covered by Wikipedia!
-    # https://de.wikipedia.org/wiki/Drehmatrix
-
-    # rotation matrix, see ICP
-    H = np.dot(A.T, B)
-    U, _, Vt = np.linalg.svd(H)
-    R = Vt.T@U.T
-
-    # special reflection case
-    if np.linalg.det(R) < 0:
-        Vt[m-1, :] *= -1
-        R = Vt.T@U.T
+    R = np.identity(3) + a_x + np.dot(a_x, a_x) * (1/(1+cosine)) 
 
     return R
 
 def testTwo():
 
+    lumiPos = np.array([0.0, 0.0, 10.0])
+
     # np vectors must be 2d
-    fromVec = np.array([1.0, 0.0, 0.0])
-    toVec = np.array([1.0, 1.0, 0.0])
+    ipApparent = np.array([1.0, 0.0, 0.0])
+    ipActual = np.array([0.0, 0.0, 0.0])
 
-    R1 = getRot(fromVec, toVec)
-
-    print(f'blimey R1:\n{R1}')
-    print(f'angle: {np.arcsin(R1[0][1]) * 180 / np.pi}')
-
-    #! ======== test ICP variant
-
-    fromVec = np.array(fromVec)[np.newaxis]
-    toVec = np.array(toVec)[np.newaxis]
-
-    R2 = icpRot(fromVec, toVec)
-
-    print(f'blimey R2:\n{R2}')
-    print(f'angle: {np.arcsin(R2[0][1]) * 180 / np.pi}')
-
-    print(f'bloody difference:\n{R2-R1}')
+    ipApparent -= lumiPos
+    ipActual -= lumiPos
 
 
+    #! ======== test calssical variant
+    R1 = getRot(ipActual, ipApparent)
+
+    print(f'classic R1:\n{R1}')
+
+    rx1, ry1, rz1 = getEulerAnglesFromRotationMatrix(R1)
+
+    print(f'angle x1: {rx1 * 1e3} mrad')
+    print(f'angle y1: {ry1 * 1e3} mrad')
+    print(f'angle z1: {rz1 * 1e3} mrad')
+
+    
 if __name__ == "__main__":
     print('greetings, human.')
     testTwo()
