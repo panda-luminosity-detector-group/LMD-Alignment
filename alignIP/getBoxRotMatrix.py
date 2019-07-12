@@ -14,6 +14,8 @@ compare with actual IP position from PANDA upstream
 
 save matrix to json file
 rerun Reco and Lumi steps
+
+FIXME: unify vector handling. most vectors are still row-major and not homogenous!
 """
 
 def getLumiPosition():
@@ -26,7 +28,7 @@ def getLumiPosition():
     else:
         return np.array((25.37812835, 0.0, 1109.13))
 
-
+# https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
 def getEulerAnglesFromRotationMatrix(R):
     rx = np.arctan2(R[2][1], R[2][2])
     ry = np.arctan2(-R[2][0], np.sqrt(R[2][1]*R[2][1] + R[2][2] * R[2][2]))
@@ -57,6 +59,7 @@ def printMatrixDetails(M1, M2=None):
 
 # see https://math.stackexchange.com/a/476311
 # https://en.wikipedia.org/wiki/Cross_product#Conversion_to_matrix_multiplication
+# https://en.wikipedia.org/wiki/Cross_product#Alternative
 """
 computes rotation from A to B when rotated through origin.
 shift A and B before, if rotation did not already occur through origin!
@@ -89,7 +92,8 @@ def getRot(apparent, actual):
 
     return R
 
-
+# FIXME: homogenize points FIRST, then vectorize points (w becomes 0!), then do all calculations
+# see https://community.khronos.org/t/adding-homogeneous-coordinates-is-too-easy/49573
 def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
 
     # TODO: read from config or PANDA db/survey
@@ -97,28 +101,28 @@ def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
     print(f'Lumi Position is:\n{lumiPos}')
 
     #ipApparent = np.array([1.0, 0.0, 0.0])
-    ipApparent = getIPfromTrksQA(trksQApath+'Lumi_TrksQA_*.root')
+    ipApparent = getIPfromTrksQA(trksQApath+'Lumi_TrksQA_100000.root')
     # TODO: read from config or PANDA db/survey
     ipActual = np.array([0.0, 0.0, 0.0])
 
     print(f'IP apparent:\n{ipApparent}')
 
-    ipApparent -= lumiPos
-    ipActual -= lumiPos
+    ipApparentLMD = ipApparent - lumiPos
+    ipActualLMD = ipActual - lumiPos
 
     #! order is (IP_from_LMD, IP_actual) (i.e. from PANDA)
-    R1 = getRot(ipApparent, ipActual)
-    R1 = makeHomogenous(R1)
+    R = getRot(ipApparentLMD, ipActualLMD)
+    R1 = makeHomogenous(R)
 
     print('matrix is:')
     printMatrixDetails(R1)
 
     # read json file here and compare
-    mat = getMatrixFromJSON('../input/rootMisalignMatrices/json/misMat-box-2.00.root.json', '/cave_1/lmd_root_0')
+    mat1 = getMatrixFromJSON('../input/rootMisalignMatrices/json/misMat-box-2.00.root.json', '/cave_1/lmd_root_0')
     print('matrix should be:')
-    printMatrixDetails(mat)
+    printMatrixDetails(mat1)
 
-    printMatrixDetails(R1, mat)
+    printMatrixDetails(R1, mat1)
 
     resultJson = {"/cave_1/lmd_root_0" : np.ndarray.tolist(np.ndarray.flatten(R1))}
     
@@ -127,6 +131,22 @@ def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
         json.dump(resultJson, outfile, indent=2)
 
     print(resultJson)
+
+    ipA1 = makeHomogenous(ipActualLMD).T
+    print(f'ip A1: \n{ipA1}')
+    print(f'with this matrix, the IP would be at:\n{(np.linalg.inv(R1)@ipA1).T[0] + makeHomogenous(lumiPos)}')
+
+# implement anew using strictly homogenous, column-major vectors!
+# points have w=1, vectors have w=0. de-homogenize with x/w, y/w, z/w
+# vectors CAN NOT be de-homogenized, but the points they point to can be.
+# so, construct a point by origin + v = point_v_points_to
+# this way, v gets its w=1 back
+# see https://math.stackexchange.com/questions/645672/what-is-the-difference-between-a-point-and-a-vector
+def getBoxMatrixHomogenous():
+
+    origin = np.array([0,0,0,1])[np.newaxis].T
+
+    pass
 
 if __name__ == "__main__":
     print('greetings, human.')

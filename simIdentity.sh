@@ -22,17 +22,17 @@ run_sims() {
     echo ./doSimulationReconstruction.py 100000 500 1.5 dpm_elastic --misalignment_matrices_path ${misalign} --alignment_matrices_path ${align}
 }
 
-align=${combi050}
+align=${box100}
 misalign=${align}
 
 run_sims
 
-align=${combi100}
-misalign=${align}
+# align=${combi100}
+# misalign=${align}
 
-run_sims
+# run_sims
 
-align=${combi200}
-misalign=${align}
+# align=${combi200}
+# misalign=${align}
 
-run_sims
+# run_sims
