@@ -21,11 +21,13 @@ FIXME: unify vector handling. most vectors are still row-major and not homogenou
 def getLumiPosition():
 
     if False:
+        # get values from survey!
         lumiPos = np.array([0.0, 0.0, 0.0, 1.0])[np.newaxis].T
         lumiMat = getMatrixFromJSON('../input/rootMisalignMatrices/json/detectorMatrices.json', '/cave_1/lmd_root_0')
         newLumiPos = (lumiMat@lumiPos).T[0][:3]
         return newLumiPos
     else:
+        # values are pre-calculated for ideal lumi position
         return np.array((25.37812835, 0.0, 1109.13))
 
 # https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
@@ -58,8 +60,7 @@ def printMatrixDetails(M1, M2=None):
 
 
 # see https://math.stackexchange.com/a/476311
-# https://en.wikipedia.org/wiki/Cross_product#Conversion_to_matrix_multiplication
-# https://en.wikipedia.org/wiki/Cross_product#Alternative
+# https://en.wikipedia.org/wiki/Cross_product
 """
 computes rotation from A to B when rotated through origin.
 shift A and B before, if rotation did not already occur through origin!
@@ -92,6 +93,51 @@ def getRot(apparent, actual):
 
     return R
 
+def getRotWiki(apparent, actual):
+
+    # error handling
+    if np.linalg.norm(apparent) == 0 or np.linalg.norm(actual) == 0:
+        print("ERROR. can't create rotation with null vector")
+        return
+
+    # assert shapes
+    assert apparent.shape == actual.shape
+
+    # calc rot axis
+    axis = np.cross(apparent, actual)
+    axisnorm = np.linalg.norm(axis)
+    axisN = axis / axisnorm
+
+    # normalize vectors
+    apparentnorm = np.linalg.norm(apparent)
+    actualnorm = np.linalg.norm(actual)
+
+    # calc rot angle by dot product
+    cos = np.dot(apparent, actual) / (apparentnorm * actualnorm)  # cosine
+    sin = axisnorm / (apparentnorm * actualnorm)
+
+    ux = axisN[0]
+    uy = axisN[1]
+    uz = axisN[2]
+
+    R1 = [[
+        cos+ux*ux*(1-cos),      ux*uy*(1-cos)-uz*sin,   ux*uz*(1-cos)+uy*sin    ],[
+        uy*ux*(1-cos)+uz*sin,   cos+uy*uy*(1-cos),      uy*uz*(1-cos)-ux*sin    ],[
+        uz*ux*(1-cos)-uy*sin,   uz*uy*(1-cos)+ux*sin,   cos+uz*uz*(1-cos)
+    ]]
+    return R1
+
+    # # alternate way
+    # u = axisN[np.newaxis]
+    # v = np.array([[
+    #     0, -uz, uy],[
+    #     uz, 0, -ux],[
+    #     -uy, ux, 0
+    # ]])
+
+    # R2 = cos*np.identity(3) + sin*v + (1-cos)*(u.T@u)
+    # return R2
+
 # FIXME: homogenize points FIRST, then vectorize points (w becomes 0!), then do all calculations
 # see https://community.khronos.org/t/adding-homogeneous-coordinates-is-too-easy/49573
 def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
@@ -111,8 +157,8 @@ def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
     ipActualLMD = ipActual - lumiPos
 
     #! order is (IP_from_LMD, IP_actual) (i.e. from PANDA)
-    R = getRot(ipApparentLMD, ipActualLMD)
-    R1 = makeHomogenous(R)
+    Ra = getRot(ipApparentLMD, ipActualLMD)
+    R1 = makeHomogenous(Ra)
 
     print('matrix is:')
     printMatrixDetails(R1)
@@ -143,9 +189,7 @@ def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
 # this way, v gets its w=1 back
 # see https://math.stackexchange.com/questions/645672/what-is-the-difference-between-a-point-and-a-vector
 def getBoxMatrixHomogenous():
-
     origin = np.array([0,0,0,1])[np.newaxis].T
-
     pass
 
 if __name__ == "__main__":
