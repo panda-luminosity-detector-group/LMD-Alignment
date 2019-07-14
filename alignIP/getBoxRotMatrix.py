@@ -15,7 +15,9 @@ compare with actual IP position from PANDA upstream
 save matrix to json file
 rerun Reco and Lumi steps
 
-FIXME: unify vector handling. most vectors are still row-major and not homogenous!
+- FIXME: unify vector handling. most vectors are still row-major and not homogenous!
+
+- TODO: sacn multiple directories for TrksQA, parse align factor, compute box rotation matrices and store to pandaroot dir! 
 """
 
 def getLumiPosition():
