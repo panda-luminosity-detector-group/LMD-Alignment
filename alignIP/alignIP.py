@@ -2,6 +2,7 @@
 
 import numpy as np
 import uproot, os, sys, argparse, json
+from pathlib import Path
 from trksQA import getIPfromTrksQA
 from matrices import getMatrixFromJSON, makeHomogenous
 
@@ -16,6 +17,7 @@ save matrix to json file
 rerun Reco and Lumi steps
 
 - FIXME: unify vector handling. most vectors are still row-major and not homogenous!
+- FIXME: all path arguments should be os.path objects!
 
 - TODO: sacn multiple directories for TrksQA, parse align factor, compute box rotation matrices and store to pandaroot dir! 
 """
@@ -23,7 +25,7 @@ rerun Reco and Lumi steps
 def getLumiPosition():
 
     if False:
-        # get values from survey!
+        # get values from survey / database!
         lumiPos = np.array([0.0, 0.0, 0.0, 1.0])[np.newaxis].T
         lumiMat = getMatrixFromJSON('../input/rootMisalignMatrices/json/detectorMatrices.json', '/cave_1/lmd_root_0')
         newLumiPos = (lumiMat@lumiPos).T[0][:3]
@@ -95,6 +97,7 @@ def getRot(apparent, actual):
 
     return R
 
+# different method, just to be sure
 def getRotWiki(apparent, actual):
 
     # error handling
@@ -142,14 +145,15 @@ def getRotWiki(apparent, actual):
 
 # FIXME: homogenize points FIRST, then vectorize points (w becomes 0!), then do all calculations
 # see https://community.khronos.org/t/adding-homogeneous-coordinates-is-too-easy/49573
-def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
+def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/', compareWith=''):
 
     # TODO: read from config or PANDA db/survey
     lumiPos = getLumiPosition()
     print(f'Lumi Position is:\n{lumiPos}')
 
     #ipApparent = np.array([1.0, 0.0, 0.0])
-    ipApparent = getIPfromTrksQA(trksQApath+'Lumi_TrksQA_100000.root')
+    trksQAfile = Path('Lumi_TrksQA_400000.root')
+    ipApparent = getIPfromTrksQA(trksQApath.joinpath(trksQAfile))
     # TODO: read from config or PANDA db/survey
     ipActual = np.array([0.0, 0.0, 0.0])
 
@@ -165,12 +169,17 @@ def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
     print('matrix is:')
     printMatrixDetails(R1)
 
-    # read json file here and compare
-    mat1 = getMatrixFromJSON('../input/rootMisalignMatrices/json/misMat-box-2.00.root.json', '/cave_1/lmd_root_0')
-    print('matrix should be:')
-    printMatrixDetails(mat1)
+    if compareWith != '':
+        print(f'comparing with design matrix:')
+        # read json file here and compare
+        try:
+            mat1 = getMatrixFromJSON('../input/rootMisalignMatrices/json/misMat-box-2.00.root.json', '/cave_1/lmd_root_0')
+            print('matrix should be:')
+            printMatrixDetails(mat1)
+            printMatrixDetails(R1, mat1)
+        except:
+            print(f"can't open matrix file: {compareWith}")
 
-    printMatrixDetails(R1, mat1)
 
     resultJson = {"/cave_1/lmd_root_0" : np.ndarray.tolist(np.ndarray.flatten(R1))}
     
@@ -190,21 +199,29 @@ def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/'):
 # so, construct a point by origin + v = point_v_points_to
 # this way, v gets its w=1 back
 # see https://math.stackexchange.com/questions/645672/what-is-the-difference-between-a-point-and-a-vector
-def getBoxMatrixHomogenous():
-    origin = np.array([0,0,0,1])[np.newaxis].T
-    pass
+# def getBoxMatrixHomogenous():
+#     origin = np.array([0,0,0,1])[np.newaxis].T
+#     pass
 
 if __name__ == "__main__":
     print('greetings, human.')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', type=str, dest='path', help='TrksQA_100000.root path')
-    args = parser.parse_args()
+    parser.add_argument('-p', type=str, dest='path', help='TrksQA_*.root path', required=True)
+    parser.add_argument('-m', type=str, dest='alignName', help='Name for the alignment matrix', required=True)
 
-    print(f'searching in {args.path}')
+    try:
+        args = parser.parse_args()
+    except:
+        parser.print_help()
+        parser.exit(1)
 
-    if args.path is not None:
-        getBoxMatrix(args.path)
-    else:
-        getBoxMatrix()
+    path = Path(args.path)  # man that looks weird
+    alignName = args.alignName
+
+    if not path.exists():
+        print('path invalid!')
+        #path.mkdir()
+    
+    getBoxMatrix(path, alignName)
     print('all done!')

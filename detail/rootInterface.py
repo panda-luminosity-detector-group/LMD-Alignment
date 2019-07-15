@@ -3,9 +3,6 @@
 import json
 import numpy as np
 
-if __name__ == "main":
-    print("Sorry, this module can't be run directly")
-
 def readJSON(filename):
   with open(filename, 'r') as f:
     return json.load(f)
@@ -46,3 +43,6 @@ def getModule(overlap):
 
 def getSmallOverlap(overlap):
   return getDigit(overlap, 0)
+
+if __name__ == "main":
+    print("Sorry, this module can't be run directly")
