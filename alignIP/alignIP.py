@@ -220,7 +220,7 @@ if __name__ == "__main__":
     alignName = args.alignName
 
     if args.path is not None:
-        getBoxMatrix(path, alignName)
+        getBoxMatrix(args.path, alignName)
         path = Path(args.path)  # man that looks weird
 
     else:
