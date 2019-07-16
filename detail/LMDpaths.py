@@ -11,15 +11,25 @@ uses pathlib internally and stores some additional values as well:
 - misalignment matrix used
 - alignment factor
 - beam momentum
+- bunches / binning numbers for Lumi Fit
 
 handles these things implicitly:
 - uses json matrices by default
 - converts root matrices to json matrices (using ROOT)
+
+most importantly, can also create paths given these parameters:
+- beam momentum
+- align matrices
+- misalign matrices
+- reco_ip.json location (for use with ./extractLuminosity)
+- lumi_vals.json location (for use with ./extractLuminosity)
 """
 
 
 
 class LMDpath:
+
+    # no static variables! define object-local variables in __init__ functions
 
     def __init__(self, path):
         self._path = Path(path)
