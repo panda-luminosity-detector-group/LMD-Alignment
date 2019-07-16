@@ -15,9 +15,6 @@ it:
 - converts JSON to ROOT matrices and vice-versa (with ROOT macros)
 """
 
-class pathFinder():
-    pass
-
 def wrapSimulation():
     pass
 

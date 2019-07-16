@@ -145,15 +145,16 @@ def getRotWiki(apparent, actual):
 
 # FIXME: homogenize points FIRST, then vectorize points (w becomes 0!), then do all calculations
 # see https://community.khronos.org/t/adding-homogeneous-coordinates-is-too-easy/49573
-def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/', compareWith=''):
+def getBoxMatrix(trksQApath=Path('../input/TrksQA/box-2.00/'), alignName=''):
 
     # TODO: read from config or PANDA db/survey
     lumiPos = getLumiPosition()
     print(f'Lumi Position is:\n{lumiPos}')
 
     #ipApparent = np.array([1.0, 0.0, 0.0])
-    trksQAfile = Path('Lumi_TrksQA_400000.root')
-    ipApparent = getIPfromTrksQA(trksQApath.joinpath(trksQAfile))
+    trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
+
+    ipApparent = getIPfromTrksQA(str(trksQAfile))
     # TODO: read from config or PANDA db/survey
     ipActual = np.array([0.0, 0.0, 0.0])
 
@@ -169,7 +170,7 @@ def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/', compareWith=''):
     print('matrix is:')
     printMatrixDetails(R1)
 
-    if compareWith != '':
+    if alignName != '':
         print(f'comparing with design matrix:')
         # read json file here and compare
         try:
@@ -178,13 +179,13 @@ def getBoxMatrix(trksQApath='../input/TrksQA/box-2.00/', compareWith=''):
             printMatrixDetails(mat1)
             printMatrixDetails(R1, mat1)
         except:
-            print(f"can't open matrix file: {compareWith}")
-
+            print(f"can't open matrix file: {alignName}")
 
     resultJson = {"/cave_1/lmd_root_0" : np.ndarray.tolist(np.ndarray.flatten(R1))}
     
     # TODO: generalize the output name, maybe use some command line argument
-    with open('../output/alMat-box-2.00.json', 'w') as outfile:  
+    outFileName = Path.cwd().parent / Path('output') / Path(alignName).with_suffix('.json')        #(alignName)
+    with open(outFileName, 'w') as outfile:  
         json.dump(resultJson, outfile, indent=2)
 
     print(resultJson)
@@ -207,7 +208,7 @@ if __name__ == "__main__":
     print('greetings, human.')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', type=str, dest='path', help='TrksQA_*.root path', required=True)
+    parser.add_argument('-p', type=str, dest='path', help='TrksQA_*.root path')#, required=True)
     parser.add_argument('-m', type=str, dest='alignName', help='Name for the alignment matrix', required=True)
 
     try:
@@ -216,12 +217,13 @@ if __name__ == "__main__":
         parser.print_help()
         parser.exit(1)
 
-    path = Path(args.path)  # man that looks weird
     alignName = args.alignName
 
-    if not path.exists():
-        print('path invalid!')
-        #path.mkdir()
+    if args.path is not None:
+        getBoxMatrix(path, alignName)
+        path = Path(args.path)  # man that looks weird
+
+    else:
+        getBoxMatrix(alignName=alignName)
     
-    getBoxMatrix(path, alignName)
     print('all done!')
