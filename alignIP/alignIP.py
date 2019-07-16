@@ -20,6 +20,7 @@ rerun Reco and Lumi steps
 - FIXME: all path arguments should be os.path objects!
 
 - TODO: sacn multiple directories for TrksQA, parse align factor, compute box rotation matrices and store to pandaroot dir! 
+- TODO: use a class constructor that accepts a LMDpath object in the future. this one can also be called with command line arguments
 """
 
 def getLumiPosition():
