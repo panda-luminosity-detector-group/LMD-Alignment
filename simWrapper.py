@@ -13,6 +13,32 @@ it:
 - compares lumi values before and after alignment
 - compares found alignment matrices with actual alignment matrices
 - converts JSON to ROOT matrices and vice-versa (with ROOT macros)
+
+TODO:
+- remember to delete everything after mc genereation for new run
+
+---------- steps in ideal geometry sim ----------
+
+- run ./doSimulationReconstruction wit correct parameters
+- run ./determineLuminosity
+- run ./extractLuminosity
+
+---------- steps in misaligned geometry sim ----------
+
+- run ./doSimulationReconstruction wit correct parameters
+- run ./determineLuminosity
+- run ./extractLuminosity
+
+---------- steps in misaligned geometry with correction ----------
+- run ./doSimulationReconstruction with correct parameters
+- run ./determineLuminosity
+- run ./extractLuminosity
+- run my aligners
+- rerun ./doSimulationReconstruction with correct parameters
+- rerun ./determineLuminosity
+- rerun ./extractLuminosity
+
+
 """
 
 def wrapSimulation():
