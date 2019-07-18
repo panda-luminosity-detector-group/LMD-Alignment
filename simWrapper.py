@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import os
-import sys
+import os, sys, subprocess
 from pathlib import Path
 from detail.LMDRunConfig import LMDRunConfig
 
@@ -63,6 +62,10 @@ class simWrapper():
             print(f"please set {lmdFitEnv} and {simDirEnv}!")
             sys.exit(1)
 
+    @classmethod
+    def fromRunConfig(cls, LMDRunConfig) -> 'simWrapper':
+        print('I wanna go home (T⌓T) ')
+
     def dump(self):
         print(f'\n\nDEBUG OUTPUT for SimWrapper:\n')
         print(f'LumiFit is in: {self._lumiFitPath}')
@@ -74,9 +77,12 @@ class simWrapper():
         absPath = LMDRunConfig._path
         print(f'path: {absPath}')
 
-        command = './determineLuminosity.py'
+        scriptsPath = self._lumiFitPath / Path('scripts')
+        command = scriptsPath / Path('determineLuminosity.py')
         argP = '--base_output_data_dir'
-        argPval = 'some path here'
+        argPval = absPath
+
+        subprocess.call(command, argP, argPval)
 
         pass
 
