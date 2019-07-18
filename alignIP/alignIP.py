@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import uproot, os, sys, argparse, json
+import uproot
+import os
+import sys
+import argparse
+import json
 from pathlib import Path
 from trksQA import getIPfromTrksQA
 from matrices import getMatrixFromJSON, makeHomogenous
@@ -23,6 +27,7 @@ rerun Reco and Lumi steps
 - TODO: use a class constructor that accepts a LMDpath object in the future. this one can also be called with command line arguments
 """
 
+
 def getLumiPosition():
 
     if False:
@@ -36,6 +41,8 @@ def getLumiPosition():
         return np.array((25.37812835, 0.0, 1109.13))
 
 # https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
+
+
 def getEulerAnglesFromRotationMatrix(R):
     rx = np.arctan2(R[2][1], R[2][2])
     ry = np.arctan2(-R[2][0], np.sqrt(R[2][1]*R[2][1] + R[2][2] * R[2][2]))
@@ -70,6 +77,8 @@ def printMatrixDetails(M1, M2=None):
 computes rotation from A to B when rotated through origin.
 shift A and B before, if rotation did not already occur through origin!
 """
+
+
 def getRot(apparent, actual):
     # error handling
     if np.linalg.norm(apparent) == 0 or np.linalg.norm(actual) == 0:
@@ -99,6 +108,8 @@ def getRot(apparent, actual):
     return R
 
 # different method, just to be sure
+
+
 def getRotWiki(apparent, actual):
 
     # error handling
@@ -127,8 +138,8 @@ def getRotWiki(apparent, actual):
     uz = axisN[2]
 
     R1 = [[
-        cos+ux*ux*(1-cos),      ux*uy*(1-cos)-uz*sin,   ux*uz*(1-cos)+uy*sin    ],[
-        uy*ux*(1-cos)+uz*sin,   cos+uy*uy*(1-cos),      uy*uz*(1-cos)-ux*sin    ],[
+        cos+ux*ux*(1-cos),      ux*uy*(1-cos)-uz*sin,   ux*uz*(1-cos)+uy*sin], [
+        uy*ux*(1-cos)+uz*sin,   cos+uy*uy*(1-cos),      uy*uz*(1-cos)-ux*sin], [
         uz*ux*(1-cos)-uy*sin,   uz*uy*(1-cos)+ux*sin,   cos+uz*uz*(1-cos)
     ]]
     return R1
@@ -146,6 +157,8 @@ def getRotWiki(apparent, actual):
 
 # FIXME: homogenize points FIRST, then vectorize points (w becomes 0!), then do all calculations
 # see https://community.khronos.org/t/adding-homogeneous-coordinates-is-too-easy/49573
+
+
 def getBoxMatrix(trksQApath=Path('../input/TrksQA/box-2.00/'), alignName=''):
 
     # TODO: read from config or PANDA db/survey
@@ -182,11 +195,11 @@ def getBoxMatrix(trksQApath=Path('../input/TrksQA/box-2.00/'), alignName=''):
         except:
             print(f"can't open matrix file: {alignName}")
 
-    resultJson = {"/cave_1/lmd_root_0" : np.ndarray.tolist(np.ndarray.flatten(R1))}
-    
+    resultJson = {"/cave_1/lmd_root_0": np.ndarray.tolist(np.ndarray.flatten(R1))}
+
     # TODO: generalize the output name, maybe use some command line argument
-    outFileName = Path.cwd().parent / Path('output') / Path(alignName).with_suffix('.json')        #(alignName)
-    with open(outFileName, 'w') as outfile:  
+    outFileName = Path.cwd().parent / Path('output') / Path(alignName).with_suffix('.json')  # (alignName)
+    with open(outFileName, 'w') as outfile:
         json.dump(resultJson, outfile, indent=2)
 
     print(resultJson)
@@ -205,11 +218,12 @@ def getBoxMatrix(trksQApath=Path('../input/TrksQA/box-2.00/'), alignName=''):
 #     origin = np.array([0,0,0,1])[np.newaxis].T
 #     pass
 
+
 if __name__ == "__main__":
     print('greetings, human.')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', type=str, dest='path', help='TrksQA_*.root path')#, required=True)
+    parser.add_argument('-p', type=str, dest='path', help='TrksQA_*.root path')  # , required=True)
     parser.add_argument('-m', type=str, dest='alignName', help='Name for the alignment matrix', required=True)
 
     try:
@@ -226,5 +240,5 @@ if __name__ == "__main__":
 
     else:
         getBoxMatrix(alignName=alignName)
-    
+
     print('all done!')
