@@ -43,8 +43,8 @@ jobs and aligned: 1-500_uncut_aligned   #TODO: change this in LuminosityFit! ali
 
 
 class LMDRunConfig:
-
     # no static variables! define object-local variables in __init__ functions
+
     def __init__(self):
         # find env variabled
         # paths must be stored as strings internally so they can be serialized to JSON!
@@ -57,8 +57,8 @@ class LMDRunConfig:
             self.__simDataPath = os.environ[simDirEnv]
             self.__pandaRootDir = os.environ[pndRootDir]
         except:
-            print("can't find LuminosityFit installation or Data_Dir!")
-            print(f"please set {lmdFitEnv} and {simDirEnv}!")
+            print("can't find LuminosityFit installation, PandaRoot installation or Data_Dir!")
+            print(f"please set {lmdFitEnv}, {pndRootDir} and {simDirEnv}!")
             sys.exit(1)
 
         self.__fromPath = None
@@ -81,6 +81,7 @@ class LMDRunConfig:
 
     def parse(self):
         pathParts = Path(self.__fromPath).parts
+        print(f'parsing...')
 
         # parsing always must go as follows:
         # find momentum
@@ -89,7 +90,7 @@ class LMDRunConfig:
         # then number of tracks (irrelevant?)
         # then 1-500 uncut or 1-100 cut
         # optionally aligned
-
+        # TODO: implement!
         pass
 
     @classmethod
@@ -132,9 +133,16 @@ class LMDRunConfig:
 
     # generates all config objects (all momenta, misaligns etc) as a generator
     def genConfigs(self):
+        # TODO: implement!
         pass
 
     #! --------------------- these define the path structure! ---------------------
+    def __checkIfNone__(self):
+        for val in self.__dict__.values():
+            if val is None:
+                print(f'ERROR in LMDRunConfig: some values are not set!')
+                sys.exit(1)
+
     def __pathMom__(self):
         return Path(f'plab_{self.__momentum}GeV')
 
@@ -169,20 +177,20 @@ class LMDRunConfig:
 
     def pathAlMatrix(self):
         # TODO: check if json or root file, convert if needed!
-        # TODO: check if all values are not None!
+        self.__checkIfNone__()
         return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__misalignType}-{self.__alignFactor}.json')
 
     def pathMisMatrix(self):
         # TODO: check if json or root file, convert if needed!
-        # TODO: check if all values are not None!
+        self.__checkIfNone__()
         return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__alignFactor}.root')
 
     def pathRecoIP(self):
-        # TODO: check if all values are not None!
+        self.__checkIfNone__()
         return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__() / self.__uncut__() / self.__bunches__() / self.__recoIP__()
 
     def pathLumiVals(self):
-        # TODO: check if all values are not None!
+        self.__checkIfNone__()
         return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__() / self.__cut__() / self.__bunches__() / self.__lumiVals__()
 
     def dump(self):

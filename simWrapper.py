@@ -96,12 +96,12 @@ def run():
 
 
 def testRunConfigs():
-    # path = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-3.00/100000/1-500_uncut_aligned'
-    # config = LMDRunConfig.fromPath(path)
-    # config.dump()
-    # config.toJSON('2.json')
+    path = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-3.00/100000/1-500_uncut_aligned'
+    config = LMDRunConfig.fromPath(path)
+    config.dump()
+    config.toJSON('1.json')
 
-    config = LMDRunConfig.fromJSON('2.json')
+    #config = LMDRunConfig.fromJSON('2.json')
 
     print(f'{str(config.pathRecoIP())}')
     print(f'{str(config.pathLumiVals())}')
