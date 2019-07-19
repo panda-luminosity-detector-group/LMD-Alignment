@@ -21,7 +21,7 @@ it:
 - converts JSON to ROOT matrices and vice-versa (with ROOT macros)
 
 TODO:
-- remember to delete everything after mc genereation for new run
+- remember to delete everything after mc generation for new run
 
 ---------- steps in ideal geometry sim ----------
 
@@ -53,6 +53,18 @@ class simWrapper():
     # empty constructor
     def __init__(self):
         self.__cwd = Path.cwd()
+        lmdFitEnv = 'LMDFIT_BUILD_PATH'
+        simDirEnv = 'LMDFIT_DATA_DIR'
+        pndRootDir = 'VMCWORKDIR'
+        self.__cwd = str(Path.cwd())
+        try:
+            self.__lumiFitPath = str(Path(os.environ[lmdFitEnv]).parent)
+            self.__simDataPath = os.environ[simDirEnv]
+            self.__pandaRootDir = os.environ[pndRootDir]
+        except:
+            print("can't find LuminosityFit installation, PandaRoot installation or Data_Dir!")
+            print(f"please set {lmdFitEnv}, {pndRootDir} and {simDirEnv}!")
+            sys.exit(1)
 
     @classmethod
     def fromRunConfig(cls, LMDRunConfig) -> 'simWrapper':
@@ -68,6 +80,26 @@ class simWrapper():
 
     def setRunConfig(self, LMDRunConfig):
         self.__config = LMDRunConfig
+
+    def runSimulations(self):
+        if self.__config is None:
+            print(f'please set run config first!')
+
+        scriptsPath = self.__lumiFitPath / Path('scripts')
+        command = scriptsPath / Path('doSimulationReconstruction.py')   # non-blocking!
+        nTrks = self.__config.trksNum
+        nJobs = self.__config.jobsNum
+        mom = self.__config.momentum
+        dpm = 'dpm_elastic'
+
+        almatp = '--alignment_matrices_path'
+        almatv = str(self.__config.pathAlMatrix())
+
+        mismatp = '--misalignment_matrices_path'
+        mismatv = str(self.__config.pathMisMatrix())
+
+        # TODO: add cases for misalignment, alignment corrections:
+        subprocess.Popen((command, nTrks, nJobs, mom, dpm), close_fds=True)
 
     # the lumi fit scripts are blocking!
     def detLumi(self):
@@ -110,7 +142,7 @@ def testMiniRun():
     config.misalignFactor = '1.00'
     config.momentum = '1.5'
     config.generateMatrixNames()
-
+    config.toJSON('runConfigs/box3.json')
     config.dump()
 
 

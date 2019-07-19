@@ -41,17 +41,15 @@ class LMDRunConfig:
     def __init__(self):
         # find env variabled
         # paths must be stored as strings internally so they can be serialized to JSON!
-        lmdFitEnv = 'LMDFIT_BUILD_PATH'
         simDirEnv = 'LMDFIT_DATA_DIR'
         pndRootDir = 'VMCWORKDIR'
         self.__cwd = str(Path.cwd())
         try:
-            self.__lumiFitPath = str(Path(os.environ[lmdFitEnv]).parent)
             self.__simDataPath = os.environ[simDirEnv]
             self.__pandaRootDir = os.environ[pndRootDir]
         except:
             print("can't find LuminosityFit installation, PandaRoot installation or Data_Dir!")
-            print(f"please set {lmdFitEnv}, {pndRootDir} and {simDirEnv}!")
+            print(f"please set {pndRootDir} and {simDirEnv}!")
             sys.exit(1)
 
         self.__fromPath = None
@@ -65,6 +63,7 @@ class LMDRunConfig:
         self.__tracksNum = "100000"
         self.__jobsNum = "500"
         self.__smallBatch = True
+        self.__misalignment = True
         self.__alignmentCorrection = True
 
     #! --------------------- setters without getters
@@ -80,6 +79,19 @@ class LMDRunConfig:
         self.__momentum = value
     momentum = property(None, __setBeamMom)
 
+    def __getTrksNum(self):
+        return self.__tracksNum
+
+    def __setTrksNum(self, value):
+        self.__tracksNum = value
+    trksNum = property(__getTrksNum, __setTrksNum)
+
+    def __getJobsNum(self):
+        return self.__jobsNum
+
+    def __setJobsNum(self, value):
+        self.__jobsNum = value
+    jobsNum = property(__getJobsNum, __setJobsNum)
 
     #! --------------------- constructor "overloading"
     @classmethod
@@ -115,6 +127,7 @@ class LMDRunConfig:
         if pathParts[2] == 'no_geo_misalignment':
             self.__misalignType = 'aligned'
             self.__misalignFactor = '1.00'
+            self.__misalignment = False
 
         else:
             match = re.search("geo_misalignmentmisMat-(.*)-(.*)", pathParts[2])
@@ -122,6 +135,7 @@ class LMDRunConfig:
                 if len(match.groups()) > 1:
                     self.__misalignType = match.groups()[0]
                     self.__misalignFactor = match.groups()[1]
+                    self.__misalignment = True
             else:
                 print(f'can\'t parse info from {pathParts[2]}!')
 
@@ -143,7 +157,7 @@ class LMDRunConfig:
     def generateMatrixNames(self):
         if self.__misalignType is None or self.__misalignFactor is None or self.__momentum is None:
             print(f'ERROR! not enough parameters set!')
-        
+
         self.__misalignMatFile = str(self.pathMisMatrix())
         self.__alignMatFile = str(self.pathAlMatrix())
 
@@ -226,7 +240,7 @@ class LMDRunConfig:
         return Path('*')
 
     def __jobBaseDir__(self):
-        return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()      
+        return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()
 
     def __uncut__(self):
         return Path('1-*_uncut')
@@ -282,8 +296,8 @@ class LMDRunConfig:
         else:
             return self.__jobBaseDir__() / self.__uncut__()
 
-
     #! --------------------- verbose output
+
     def dump(self):
         print(f'\n\n')
         print(f'------------------------------')
