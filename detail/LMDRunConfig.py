@@ -52,6 +52,23 @@ class LMDRunConfig:
     # def __init__(self):
     #     print('no path specified')
 
+    # generators for factors, alignments, beam momenta
+
+    def genBeamMomenta(self):
+        momenta = ['1.5', '4.06', '8.9', '11.91', '15.0',]
+        for mom in momenta:
+            yield mom
+
+    def genFactors(self):
+        factors = ['0.01', '0.05', '0.10', '0.15', '0.2', '0.25', '0.5', '1.00', '2.00', '3.00', '5.00', '10.00']
+        for f in factors:
+            yield f
+
+    def genMisalignments(self):
+        misalignments = ['sensors', 'box', 'combi', 'modules', 'identity', 'all']
+        for mis in misalignments:
+            yield mis
+
 
 if __name__ == "__main__":
     print("Sorry, this module can't be run directly")
