@@ -64,7 +64,7 @@ class simWrapper():
 
     @classmethod
     def fromRunConfig(cls, LMDRunConfig) -> 'simWrapper':
-        print('I wanna go home (T⌓T) ')
+        print('I wanna go home (;-;) ')
 
     def dump(self):
         print(f'\n\nDEBUG OUTPUT for SimWrapper:\n')
@@ -82,13 +82,7 @@ class simWrapper():
         argP = '--base_output_data_dir'
         argPval = absPath
 
-        subprocess.call(command, argP, argPval)
-
-        pass
-
-
-def wrapSimulation():
-    pass
+        subprocess.call((command, argP, argPval))
 
 
 if __name__ == "__main__":
@@ -98,6 +92,4 @@ if __name__ == "__main__":
     config = LMDRunConfig(path)
 
     wrapper = simWrapper()
-    wrapper.dump()
-
-    pass
+    wrapper.detLumi(config)
