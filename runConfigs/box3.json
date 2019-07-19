@@ -4,12 +4,15 @@
   "_LMDRunConfig__simDataPath": "/media/DataEnc2TBRaid1/Arbeit/LMDscripts/input",
   "_LMDRunConfig__pandaRootDir": "/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot",
   "_LMDRunConfig__fromPath": "/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-3.00/100000/1-500_uncut_aligned",
-  "_LMDRunConfig__alignMat": null,
+  "_LMDRunConfig__alignMatPath": null,
+  "_LMDRunConfig__misalignMatPath": null,
+  "_LMDRunConfig__alignMatFile": null,
+  "_LMDRunConfig__misalignMatFile": "/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-box-3.00.root",
   "_LMDRunConfig__misalignType": "box",
-  "_LMDRunConfig__misalignMat": "/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-box-3.00.root",
-  "_LMDRunConfig__alignFactor": "3.00",
+  "_LMDRunConfig__misalignFactor": "3.00",
   "_LMDRunConfig__momentum": "1.5",
   "_LMDRunConfig__tracksNum": "100000",
   "_LMDRunConfig__jobsNum": null,
-  "_LMDRunConfig__smallBatch": true
+  "_LMDRunConfig__smallBatch": true,
+  "_LMDRunConfig__alignmentCorrection": false
 }

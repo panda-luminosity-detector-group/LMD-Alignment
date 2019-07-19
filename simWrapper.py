@@ -104,6 +104,16 @@ def testRunConfigs():
     #config = LMDRunConfig.fromJSON('2.json')
     config.dump()
 
+def testMiniRun():
+    config = LMDRunConfig()
+    config.misalignType = 'box'
+    config.misalignFactor = '1.00'
+    config.momentum = '1.5'
+    config.generateMatrixNames()
+
+    config.dump()
+
+
 if __name__ == "__main__":
     print('greetings, human')
-    testRunConfigs()
+    testMiniRun()

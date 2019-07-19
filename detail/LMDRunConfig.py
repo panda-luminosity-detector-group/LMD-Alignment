@@ -29,21 +29,14 @@ most importantly, can also create paths given these parameters:
 - reco_ip.json location (for use with ./extractLuminosity)
 - lumi_vals.json location (for use with ./extractLuminosity)
 
-example path:
-
-/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-0.25/100000/1-500_uncut_aligned
-
-LMD_DATA_DIR: /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit
-momentum: plab_1.5GeV
-dpm: dpm_elastic_theta_2.7-13.0mrad_recoil_corrected
-misalignment: geo_misalignmentmisMat-box-0.25
-tracks: 100000
 jobs and aligned: 1-500_uncut_aligned   #TODO: change this in LuminosityFit! aligned should be a sub directory
 """
 
 
 class LMDRunConfig:
     # no static variables! define object-local variables in __init__ functions
+
+    # TODO: add getters/setters
 
     def __init__(self):
         # find env variabled
@@ -62,24 +55,41 @@ class LMDRunConfig:
             sys.exit(1)
 
         self.__fromPath = None
-        self.__alignMat = None
+        self.__alignMatPath = None
+        self.__misalignMatPath = None
+        self.__alignMatFile = None
+        self.__misalignMatFile = None
         self.__misalignType = None
-        self.__misalignMat = None
-        self.__alignFactor = None
+        self.__misalignFactor = None
         self.__momentum = None
-        self.__tracksNum = None
-        self.__jobsNum = None
+        self.__tracksNum = "100000"
+        self.__jobsNum = "500"
         self.__smallBatch = True
+        self.__alignmentCorrection = True
 
-    # constructor "overloading"
+    #! --------------------- setters without getters
+    def __setMisalignFactor(self, value):
+        self.__misalignFactor = value
+    misalignFactor = property(None, __setMisalignFactor)
+
+    def __setMisalignType(self, value):
+        self.__misalignType = value
+    misalignType = property(None, __setMisalignType)
+
+    def __setBeamMom(self, value):
+        self.__momentum = value
+    momentum = property(None, __setBeamMom)
+
+
+    #! --------------------- constructor "overloading"
     @classmethod
     def fromPath(cls, path) -> 'LMDRunConfig':
         temp = cls()
         temp.__fromPath = path
-        temp.parse()
+        temp.parseFromString()
         return temp
 
-    def parse(self):
+    def parseFromString(self):
         pathParts = Path(self.__fromPath).parts
 
         # search for plab, our dir tree begins here
@@ -94,7 +104,7 @@ class LMDRunConfig:
         # from here, we know the directory structure, no more guess work!
         pathParts = pathParts[index:]
 
-        # we need at least the mialignment sub directory
+        # we need at least the misalignment sub directory
         # 0: plab
         # 1: dpm
         # 2: aligned or misalignment!
@@ -104,34 +114,40 @@ class LMDRunConfig:
 
         if pathParts[2] == 'no_geo_misalignment':
             self.__misalignType = 'aligned'
-            self.__alignFactor = '1.00'
+            self.__misalignFactor = '1.00'
 
         else:
             match = re.search("geo_misalignmentmisMat-(.*)-(.*)", pathParts[2])
             if match:
                 if len(match.groups()) > 1:
                     self.__misalignType = match.groups()[0]
-                    self.__alignFactor = match.groups()[1]
+                    self.__misalignFactor = match.groups()[1]
             else:
                 print(f'can\'t parse info from {pathParts[2]}!')
 
         # set misalign matrices from values!
-        self.__misalignMat = str(self.pathMisMatrix())
+        self.__misalignMatFile = str(self.pathMisMatrix())
 
-        #? optional parser arguments
+        # ? optional parser arguments
         if len(pathParts) > 3:
             self.__tracksNum = pathParts[3]
 
         # TODO: implement correctly, alignment will be in sub directory somewhere!!
-        if len(pathParts) > 4:
+        if len(pathParts) > 5:
             # set align matrices from values!
             # TODO: parse with regex here!
-            #self.__alignMat = str(self.pathAlMatrix())
+            #self.__alignMatFile = str(self.pathAlMatrix())
             pass
 
-        else:
-            print(f'Info: path too short for alignment info!')
+    #! --------------------- generate matrix name after minimal initialization
+    def generateMatrixNames(self):
+        if self.__misalignType is None or self.__misalignFactor is None or self.__momentum is None:
+            print(f'ERROR! not enough parameters set!')
+        
+        self.__misalignMatFile = str(self.pathMisMatrix())
+        self.__alignMatFile = str(self.pathAlMatrix())
 
+    #! --------------------- serialization, deserialization
     @classmethod
     def fromJSON(cls, filename):
         if not Path(filename).exists():
@@ -144,12 +160,12 @@ class LMDRunConfig:
 
     # serialize to JSON
     def toJSON(self, filename):
-        #self.__checkIfNoneAreNone__()
+        # self.__checkIfNoneAreNone__()
         with open(filename, 'w') as outfile:
             json.dump(self.__dict__, outfile, indent=2)
         pass
 
-    # generators for factors, alignments, beam momenta
+    #! --------------------- generators for factors, alignments, beam momenta
     def genBeamMomenta(self):
         if self.__smallBatch:
             momenta = ['1.5', '15.0']
@@ -178,11 +194,14 @@ class LMDRunConfig:
 
     #! --------------------- these define the path structure! ---------------------
     def __checkMinimum__(self):
-        if self.__alignFactor is None:
+        if self.__misalignFactor is None:
             print('ERROR! Align factor not set!')
             sys.exit(1)
         if self.__misalignType is None:
             print('ERROR! Align type not set!')
+            sys.exit(1)
+        if self.__momentum is None:
+            print('ERROR! Beam Momentum not set!')
             sys.exit(1)
 
     def __checkIfNoneAreNone__(self):
@@ -201,10 +220,13 @@ class LMDRunConfig:
         if self.__misalignType == 'aligned':
             return Path('no_geo_misalignment')
         else:
-            return Path(f'geo_misalignmentmisMat-{self.__misalignType}-{self.__alignFactor}')
+            return Path(f'geo_misalignmentmisMat-{self.__misalignType}-{self.__misalignFactor}')
 
     def __pathTracksNum__(self):
         return Path('*')
+
+    def __jobBaseDir__(self):
+        return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()      
 
     def __uncut__(self):
         return Path('1-*_uncut')
@@ -221,26 +243,47 @@ class LMDRunConfig:
     def __recoIP__(self):
         return Path('reco_ip.json')
 
-    #! --------------------- end of path structure definition! ---------------------
-
+    #! --------------------- create paths to matrices, json results
     def pathAlMatrix(self):
         # TODO: check if json or root file, convert if needed!
         self.__checkMinimum__()
-        return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__misalignType}-{self.__alignFactor}.json')
+        return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__misalignType}-{self.__misalignFactor}.json')
 
     def pathMisMatrix(self):
         # TODO: check if json or root file, convert if needed!
         self.__checkMinimum__()
-        return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__alignFactor}.root')
+        return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__misalignFactor}.root')
 
     def pathRecoIP(self):
         self.__checkMinimum__()
-        return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__() / self.__uncut__() / self.__bunches__() / self.__recoIP__()
+
+        # TODO: if alignment correction is applied, the path changes!
+        if self.__alignmentCorrection:
+            pass
+        else:
+            return self.__jobBaseDir__() / self.__uncut__() / self.__bunches__() / self.__recoIP__()
 
     def pathLumiVals(self):
         self.__checkMinimum__()
-        return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__() / self.__cut__() / self.__bunches__() / self.__lumiVals__()
 
+        # TODO: if alignment correction is applied, the path changes!
+        if self.__alignmentCorrection:
+            pass
+        else:
+            return self.__jobBaseDir__() / self.__cut__() / self.__bunches__() / self.__lumiVals__()
+
+    # for AlignIP et al. methods
+    def pathTrksQA(self):
+        self.__checkMinimum__()
+
+        # TODO: if alignment correction is applied, the path changes!
+        if self.__alignmentCorrection:
+            pass
+        else:
+            return self.__jobBaseDir__() / self.__uncut__()
+
+
+    #! --------------------- verbose output
     def dump(self):
         print(f'\n\n')
         print(f'------------------------------')
@@ -248,9 +291,9 @@ class LMDRunConfig:
         print(f'Path: {self.__fromPath}')
         print(f'Momentum: {self.__momentum}')
         print(f'Misalign Type: {self.__misalignType}')
-        print(f'AlignMatrices: {self.__alignMat}')
-        print(f'MisalignMatrices: {self.__misalignMat}')
-        print(f'Align Factor: {self.__alignFactor}')
+        print(f'AlignMatrices: {self.__alignMatFile}')
+        print(f'MisalignMatrices: {self.__misalignMatFile}')
+        print(f'Align Factor: {self.__misalignFactor}')
         print(f'------------------------------')
         print(f'\n\n')
 
