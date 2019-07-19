@@ -81,17 +81,56 @@ class LMDRunConfig:
 
     def parse(self):
         pathParts = Path(self.__fromPath).parts
-        print(f'parsing...')
 
-        # parsing always must go as follows:
-        # find momentum
-        # then comes dpm_something
-        # then the misalignment with factor
-        # then number of tracks (irrelevant?)
-        # then 1-500 uncut or 1-100 cut
-        # optionally aligned
-        # TODO: implement!
-        pass
+        # search for plab, our dir tree begins here
+        index = 0
+        for part in pathParts:
+            match = re.search("plab_(.*)GeV", part)
+            if match:
+                self.__momentum = match.groups()[0]
+                break
+            index += 1
+
+        # from here, we know the directory structure, no more guess work!
+        pathParts = pathParts[index:]
+
+        # we need at least the mialignment sub directory
+        # 0: plab
+        # 1: dpm
+        # 2: aligned or misalignment!
+        if len(pathParts) < 3:
+            print(f'ERROR! path doesn\'t go deep enough, can not extract all information!')
+            sys.exit(1)
+
+        if pathParts[2] == 'no_geo_misalignment':
+            self.__misalignType = 'aligned'
+            self.__alignFactor = '1.00'
+
+        else:
+            match = re.search("geo_misalignmentmisMat-(.*)-(.*)", pathParts[2])
+            if match:
+                if len(match.groups()) > 1:
+                    self.__misalignType = match.groups()[0]
+                    self.__alignFactor = match.groups()[1]
+            else:
+                print(f'can\'t parse info from {pathParts[2]}!')
+
+        # set misalign matrices from values!
+        self.__misalignMat = str(self.pathMisMatrix())
+
+        #? optional parser arguments
+        if len(pathParts) > 3:
+            self.__tracksNum = pathParts[3]
+
+        # TODO: implement correctly, alignment will be in sub directory somewhere!!
+        if len(pathParts) > 4:
+            # set align matrices from values!
+            # TODO: parse with regex here!
+            #self.__alignMat = str(self.pathAlMatrix())
+            pass
+
+        else:
+            print(f'Info: path too short for alignment info!')
 
     @classmethod
     def fromJSON(cls, filename):
@@ -105,6 +144,7 @@ class LMDRunConfig:
 
     # serialize to JSON
     def toJSON(self, filename):
+        #self.__checkIfNoneAreNone__()
         with open(filename, 'w') as outfile:
             json.dump(self.__dict__, outfile, indent=2)
         pass
@@ -137,7 +177,15 @@ class LMDRunConfig:
         pass
 
     #! --------------------- these define the path structure! ---------------------
-    def __checkIfNone__(self):
+    def __checkMinimum__(self):
+        if self.__alignFactor is None:
+            print('ERROR! Align factor not set!')
+            sys.exit(1)
+        if self.__misalignType is None:
+            print('ERROR! Align type not set!')
+            sys.exit(1)
+
+    def __checkIfNoneAreNone__(self):
         for val in self.__dict__.values():
             if val is None:
                 print(f'ERROR in LMDRunConfig: some values are not set!')
@@ -177,20 +225,20 @@ class LMDRunConfig:
 
     def pathAlMatrix(self):
         # TODO: check if json or root file, convert if needed!
-        self.__checkIfNone__()
+        self.__checkMinimum__()
         return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__misalignType}-{self.__alignFactor}.json')
 
     def pathMisMatrix(self):
         # TODO: check if json or root file, convert if needed!
-        self.__checkIfNone__()
+        self.__checkMinimum__()
         return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__alignFactor}.root')
 
     def pathRecoIP(self):
-        self.__checkIfNone__()
+        self.__checkMinimum__()
         return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__() / self.__uncut__() / self.__bunches__() / self.__recoIP__()
 
     def pathLumiVals(self):
-        self.__checkIfNone__()
+        self.__checkMinimum__()
         return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__() / self.__cut__() / self.__bunches__() / self.__lumiVals__()
 
     def dump(self):
