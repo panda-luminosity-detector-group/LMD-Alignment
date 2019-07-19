@@ -52,67 +52,57 @@ class simWrapper():
 
     # empty constructor
     def __init__(self):
-        # find env variabled
-        lmdFitEnv = 'LMDFIT_BUILD_PATH'
-        simDirEnv = 'LMDFIT_DATA_DIR'
-        self._cwd = Path.cwd()
-        try:
-            self._lumiFitPath = Path(os.environ[lmdFitEnv]).parent
-            self._simDataPath = Path(os.environ[simDirEnv])
-        except:
-            print("can't find LuminosityFit installation or Data_Dir!")
-            print(f"please set {lmdFitEnv} and {simDirEnv}!")
-            sys.exit(1)
+        self.__cwd = Path.cwd()
 
     @classmethod
     def fromRunConfig(cls, LMDRunConfig) -> 'simWrapper':
         print('I wanna go home (;-;) ')
 
     def dump(self):
-        print(f'\n\nDEBUG OUTPUT for SimWrapper:\n')
-        print(f'LumiFit is in: {self._lumiFitPath}')
-        print(f'Sim Data is in: {self._simDataPath}')
-        print(f'CWD: {self._cwd}')
+        print(f'\n\n')
+        print(f'------------------------------')
+        print(f'DEBUG OUTPUT for SimWrapper:\n')
+        print(f'CWD: {self.__cwd}')
+        print(f'------------------------------')
         print(f'\n\n')
 
     def setRunConfig(self, LMDRunConfig):
-        self._config = LMDRunConfig
+        self.__config = LMDRunConfig
 
+    # the lumi fit scripts are blocking!
     def detLumi(self):
-        if self._config is None:
+        if self.__config is None:
             print(f'please set run config first!')
 
-        absPath = self._config._path
+        absPath = self.__config.__path
         print(f'path: {absPath}')
 
-        scriptsPath = self._lumiFitPath / Path('scripts')
+        scriptsPath = self.__lumiFitPath / Path('scripts')
         command = scriptsPath / Path('determineLuminosity.py')
         argP = '--base_output_data_dir'
         argPval = absPath
 
         # close file desciptor to run command in different process and return
-        subprocess.Popen((command, argP, argPval), close_fds=True)
+        subprocess.Popen((command, argP, argPval), close_fds=True)  # works!
 
 
 def run():
     path = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-3.00/100000/1-500_uncut_aligned'
-    config = LMDRunConfig(path)
+    config = LMDRunConfig.fromPath(path)
 
     wrapper = simWrapper()
     wrapper.setRunConfig(config)
     wrapper.detLumi()
 
 
-def testGenerators():
-    config = LMDRunConfig('')
-    gen1 = config.genBeamMomenta()
-    gen2 = config.genFactors()
-    gen3 = config.genMisalignments()
+def testRunConfigs():
+    path = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-3.00/100000/1-500_uncut_aligned'
+    config = LMDRunConfig.fromPath(path)
+    config.dump()
 
-    for i in gen3:
-        print(f'i is:{i}')
+    config.toJSON('1.json')
 
 
 if __name__ == "__main__":
     print('greetings, human')
-    run()
+    testRunConfigs()
