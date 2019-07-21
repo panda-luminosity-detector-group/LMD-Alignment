@@ -199,17 +199,28 @@ def testMiniRun():
 if __name__ == "__main__":
     print('greetings, human')
     parser = argparse.ArgumentParser()
-    
-    parser.add_argument('-c', metavar='--config', type=str, dest='configFile', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')  # , required=True)
-    
+
+    parser.add_argument('-c', metavar='--config', type=str, dest='configFile', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
+    # this is the real magic:
+    parser.add_argument('-C', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as job!')
+
     try:
         args = parser.parse_args()
     except:
         parser.exit(1)
 
+    # run single config
     if args.configFile:
         wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
         wrapper.runSimulations()
         sys.exit(0)
+
+    # run multiple configs
+    if args.configPath:
+        configs = []
+        # read all configs from path
+
+        # loop over all configs, create wrapper and run
+        # TODO: implement!
 
     testMiniRun()

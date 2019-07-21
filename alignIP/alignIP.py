@@ -223,21 +223,26 @@ if __name__ == "__main__":
     print('greetings, human.')
 
     parser = argparse.ArgumentParser()
+
+    # TODO: clean up those two, they suck
     parser.add_argument('-p', type=str, dest='path', help='TrksQA_*.root path')  # , required=True)
-    parser.add_argument('-m', type=str, dest='alignName', help='Name for the alignment matrix', required=True)
+    parser.add_argument('-m', type=str, dest='alignName', help='Name for the alignment matrix')
+
+    # this is my favorite way!
+    parser.add_argument('-c', type=str, dest='config', help='LMDRunConfig file, read all values from this config and try to create alignment matrix.')
 
     try:
         args = parser.parse_args()
     except:
         parser.exit(1)
 
-    alignName = args.alignName
-
-    if args.path is not None:
-        getBoxMatrix(args.path, alignName)
+    if args.path and args.alignName:
+        getBoxMatrix(args.path, args.alignName)
         path = Path(args.path)  # man that looks weird
+        sys.exit(1)
 
-    else:
-        getBoxMatrix(alignName=alignName)
+    if args.config:
+        # TODO: implement!
+        pass
 
     print('all done!')
