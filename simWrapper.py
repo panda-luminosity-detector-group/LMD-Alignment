@@ -102,6 +102,10 @@ class simWrapper():
         mismatp = '--misalignment_matrices_path'
         mismatv = str(self.__config.pathMisMatrix())
 
+        # we have to change the directory here since some script paths in LuminosityFit are relative.
+        print(f'DEBUG: chaning cwd to {scriptsPath}')
+        os.chdir(scriptsPath)
+
         # no misalignment nor correction
         if not self.__config.misaligned and not self.__config.alignmentCorrection:
             returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm))
@@ -153,6 +157,11 @@ class simWrapper():
         command = scriptsPath / Path('determineLuminosity.py')
         argP = '--base_output_data_dir'
         argPval = absPath
+
+        # see runSimulations()
+        # we have to change the directory here since some script paths in LuminosityFit are relative.
+        print(f'DEBUG: chaning cwd to {scriptsPath}')
+        os.chdir(scriptsPath)
 
         # close file desciptor to run command in different process and return
         subprocess.Popen((command, argP, argPval), close_fds=True)  # works!
