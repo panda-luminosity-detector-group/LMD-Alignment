@@ -66,6 +66,8 @@ class LMDRunConfig:
         self.__misalignment = True
         self.__alignmentCorrection = True
 
+    #! --------------------- getters without setters
+
     #! --------------------- setters without getters
     def __setMisalignFactor(self, value):
         self.__misalignFactor = value
@@ -75,9 +77,28 @@ class LMDRunConfig:
         self.__misalignType = value
     misalignType = property(None, __setMisalignType)
 
-    def __setBeamMom(self, value):
-        self.__momentum = value
-    momentum = property(None, __setBeamMom)
+    #! --------------------- getters and setters
+
+    def __getMisaligned(self):
+        return self.__misalignment
+
+    def __setMisaligned(self, value):
+        self.__misaligned = value
+    misaligned = property(__getMisaligned, __setMisaligned)
+
+    def __getAlignmentCorrection(self):
+        return self.__alignmentCorrection
+
+    def __setAlignmentCorrection(self, value):
+        self.__alignmentCorrection = value
+    alignmentCorrection = property(__getAlignmentCorrection, __setAlignmentCorrection)
+
+    def __getJobsNum(self):
+        return self.__jobsNum
+
+    def __setJobsNum(self, value):
+        self.__jobsNum = value
+    jobsNum = property(__getJobsNum, __setJobsNum)
 
     def __getTrksNum(self):
         return self.__tracksNum
@@ -86,12 +107,12 @@ class LMDRunConfig:
         self.__tracksNum = value
     trksNum = property(__getTrksNum, __setTrksNum)
 
-    def __getJobsNum(self):
-        return self.__jobsNum
+    def __getMomentum(self):
+        return self.__momentum
 
-    def __setJobsNum(self, value):
-        self.__jobsNum = value
-    jobsNum = property(__getJobsNum, __setJobsNum)
+    def __setMomentum(self, value):
+        self.__momentum = value
+    momentum = property(__getMomentum, __setMomentum)
 
     #! --------------------- constructor "overloading"
     @classmethod

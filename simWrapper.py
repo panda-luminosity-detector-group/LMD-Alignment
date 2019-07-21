@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import argparse
+import re
 import os
 import sys
 import subprocess
@@ -68,7 +70,9 @@ class simWrapper():
 
     @classmethod
     def fromRunConfig(cls, LMDRunConfig) -> 'simWrapper':
-        print('I wanna go home (;-;) ')
+        wrapper = cls()
+        wrapper.setRunConfig(LMDRunConfig)
+        return wrapper
 
     def dump(self):
         print(f'\n\n')
@@ -98,8 +102,44 @@ class simWrapper():
         mismatp = '--misalignment_matrices_path'
         mismatv = str(self.__config.pathMisMatrix())
 
-        # TODO: add cases for misalignment, alignment corrections:
-        subprocess.Popen((command, nTrks, nJobs, mom, dpm), close_fds=True)
+        # no misalignment nor correction
+        if not self.__config.misaligned and not self.__config.alignmentCorrection:
+            returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm))
+
+        # run only misaligned, no correction
+        if self.__config.misaligned and not self.__config.alignmentCorrection:
+            returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, mismatp, mismatv))
+
+        # run only correction
+        if not self.__config.misaligned and self.__config.alignmentCorrection:
+            returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, almatp, almatv))
+
+        # both misalignment and correction:
+        if self.__config.misaligned and self.__config.alignmentCorrection:
+            returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, mismatp, mismatv, almatp, almatv))
+
+        returnVal = returnVal.decode(sys.stdout.encoding)
+
+        print(f'RETURNED:\n{returnVal}')
+
+        match = re.search('Submitted batch job (\d+)', returnVal)
+        if match:
+            jobID = match.groups()[0]
+            print(f'FOUND JOB ID: {jobID}')
+            return jobID
+        else:
+            print('can\'t parse job ID from output!')
+
+        # TODO: check squeue output for running jobs:
+        # use ${currentUser} logically
+        """
+        squeue -u roklasen
+        JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+        4998523_1 himster2_ lmd_simr roklasen  R       1:07      1 x2308
+        4998523_2 himster2_ lmd_simr roklasen  R       1:07      1 x2308
+        4998523_3 himster2_ lmd_simr roklasen  R       1:07      1 x2308
+        [...]
+        """
 
     # the lumi fit scripts are blocking!
     def detLumi(self):
@@ -136,16 +176,31 @@ def testRunConfigs():
     #config = LMDRunConfig.fromJSON('2.json')
     config.dump()
 
+
 def testMiniRun():
     config = LMDRunConfig()
     config.misalignType = 'box'
-    config.misalignFactor = '1.00'
+    config.misalignFactor = '10.00'
     config.momentum = '1.5'
     config.generateMatrixNames()
-    config.toJSON('runConfigs/box3.json')
+    config.toJSON('runConfigs/box10.json')
     config.dump()
 
 
 if __name__ == "__main__":
     print('greetings, human')
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('-c', metavar='--config', type=str, dest='configFile', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')  # , required=True)
+    
+    try:
+        args = parser.parse_args()
+    except:
+        parser.exit(1)
+
+    if args.configFile:
+        wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
+        wrapper.runSimulations()
+        sys.exit(0)
+
     testMiniRun()

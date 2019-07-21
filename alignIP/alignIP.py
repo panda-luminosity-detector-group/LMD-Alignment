@@ -229,7 +229,6 @@ if __name__ == "__main__":
     try:
         args = parser.parse_args()
     except:
-        parser.print_help()
         parser.exit(1)
 
     alignName = args.alignName
