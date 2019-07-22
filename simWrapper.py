@@ -223,6 +223,7 @@ def runAllConfigs(args):
         wrapper.runSimulations()
         wrapper.waitForJobCompletion()
         wrapper.detLumi()
+        wrapper.extractLumi()
         
 
 
