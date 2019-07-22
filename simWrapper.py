@@ -174,7 +174,7 @@ class simWrapper():
         binPath = self.__lumiFitPath / Path('build') / Path('bin')
         command = binPath / Path('extractLuminosity')
         dataPath = self.__config.pathTrksQA()
-        
+
         if dataPath:
             subprocess.check_output((command, dataPath))
 
@@ -224,7 +224,8 @@ def runAllConfigs(args):
         wrapper.waitForJobCompletion()
         wrapper.detLumi()
         wrapper.extractLumi()
-        
+
+        # TODO: add alignment here and rerun simulations! use the runSteps values from the runConfig
 
 
 def testRunConfigParse():
@@ -277,7 +278,7 @@ if __name__ == "__main__":
     if args.test:
         wrapper = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
         wrapper.currentJobID = 4998523
-        #wrapper.waitForJobCompletion()
+        # wrapper.waitForJobCompletion()
         testMiniRun()
 
         wrapper.extractLumi()
@@ -291,5 +292,3 @@ if __name__ == "__main__":
         dest = Path('runConfigs/identity-1.00.json')
         print(f'saving default config to {dest}')
         LMDRunConfig.minimalDefault().toJSON(dest)
-
-    

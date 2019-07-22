@@ -319,7 +319,7 @@ class LMDRunConfig:
     def __recoIP__(self):
         return Path('reco_ip.json')
 
-    # this is a fuck ugly hack, but pathlib fails whenever dots are in a path or file name 
+    # this is a fuck ugly hack, but pathlib fails whenever dots are in a path or file name
     def __resolveActual__(self, globbedPath):
         result = glob.glob(str(globbedPath))
         if len(result) > 0:
