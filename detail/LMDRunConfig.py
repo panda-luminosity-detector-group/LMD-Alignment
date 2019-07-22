@@ -52,8 +52,6 @@ class LMDRunConfig:
 
         self.__runSteps = []
         self.__fromPath = None
-        self.__alignMatPath = None
-        self.__misalignMatPath = None
         self.__alignMatFile = None
         self.__misalignMatFile = None
         self.__misalignType = None
@@ -306,6 +304,9 @@ class LMDRunConfig:
     def __cut__(self):
         return Path('1-*_xy_m_cut_real')
 
+    def __aligned__(self):
+        return Path('aligned*')
+
     def __bunches__(self):
         return Path('bunches*') / Path('binning*') / Path('merge_data')
 
@@ -315,44 +316,42 @@ class LMDRunConfig:
     def __recoIP__(self):
         return Path('reco_ip.json')
 
+    # TODO: get actual path/file if found on system, otherwise... idk, fail?
+    def __resolveActual__(self, globbedPath):
+        return globbedPath
+
     #! --------------------- create paths to matrices, json results
     def pathAlMatrix(self):
         # TODO: check if json or root file, convert if needed!
         self.__checkMinimum__()
-        return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json')
+        return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json'))
 
     def pathMisMatrix(self):
         # TODO: check if json or root file, convert if needed!
         self.__checkMinimum__()
-        return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__misalignFactor}.root')
+        return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__misalignFactor}.root'))
 
     def pathRecoIP(self):
         self.__checkMinimum__()
-
-        # TODO: if alignment correction is applied, the path changes!
         if self.__alignmentCorrection:
-            pass
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__aligned__() / self.__bunches__() / self.__recoIP__())
         else:
-            return self.__jobBaseDir__() / self.__uncut__() / self.__bunches__() / self.__recoIP__()
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__bunches__() / self.__recoIP__())
 
     def pathLumiVals(self):
         self.__checkMinimum__()
-
-        # TODO: if alignment correction is applied, the path changes!
         if self.__alignmentCorrection:
-            pass
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__aligned__() / self.__bunches__() / self.__lumiVals__())
         else:
-            return self.__jobBaseDir__() / self.__cut__() / self.__bunches__() / self.__lumiVals__()
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__bunches__() / self.__lumiVals__())
 
     # for AlignIP et al. methods
     def pathTrksQA(self):
         self.__checkMinimum__()
-
-        # TODO: if alignment correction is applied, the path changes!
         if self.__alignmentCorrection:
-            pass
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__aligned__())
         else:
-            return self.__jobBaseDir__() / self.__uncut__()
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__())
 
     #! --------------------- verbose output
 
@@ -368,6 +367,7 @@ class LMDRunConfig:
         print(f'Align Factor: {self.__alignFactor}')
         print(f'AlignMatrices: {self.__alignMatFile}')
         print(f'MisalignMatrices: {self.__misalignMatFile}')
+        print(f'TracksQA path: {self.pathTrksQA}')
         print(f'Num Tracks: {self.__tracksNum}')
         print(f'Num Jobs: {self.__jobsNum}')
         print(f'------------------------------')

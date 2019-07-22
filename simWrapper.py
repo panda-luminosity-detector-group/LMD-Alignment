@@ -138,6 +138,9 @@ class simWrapper():
             print('can\'t parse job ID from output!')
 
     def waitForJobCompletion(self):
+        if self.__config is None:
+            print(f'please set run config first!')
+
         while True:
             # see https://stackoverflow.com/a/2899055
             user = pwd.getpwuid(os.getuid())[0]
@@ -147,7 +150,7 @@ class simWrapper():
             outputLines = squeueOutput.splitlines()
             foundJobs = 0
             for line in outputLines:
-                match = re.search('^(\d+)', line)
+                match = re.search('^\s+(\d+)', line)
                 if match:
                     found = match.groups()[0]
                     if found == str(self.currentJobID):
@@ -160,6 +163,24 @@ class simWrapper():
 
             print(f'{foundJobs} jobs  running...')
             time.sleep(60)
+
+    def extractLumi(self):
+        if self.__config is None:
+            print(f'please set run config first!')
+
+        #absPath = self.__config.__path
+        #print(f'path: {absPath}')
+        print(f'Running ./extractLuminosity...')
+        binPath = self.__lumiFitPath / Path('build') / Path('bin')
+        command = binPath / Path('extractLuminosity')
+        dataPath = self.__config.pathTrksQA()
+        
+        if dataPath:
+            print(f'{command}\n{dataPath}')
+            subprocess.check_output((command, dataPath))
+
+        else:
+            print(f'can\'t determine path!')
 
     # the lumi fit scripts are blocking!
     def detLumi(self):
@@ -181,6 +202,29 @@ class simWrapper():
 
         # close file desciptor to run command in different process and return
         subprocess.Popen((command, argP, argPval), close_fds=True)  # works!
+
+
+def runAllConfigs(args):
+    configs = []
+    # read all configs from path
+    searchDir = Path(args.configPath)
+    configs = list(searchDir.glob('*.json'))
+    simWrappers = []
+
+    # loop over all configs, create wrapper and run
+    for configFile in configs:
+        runConfig = LMDRunConfig.fromJSON(configFile)
+        simWrappers.append(simWrapper.fromRunConfig(runConfig))
+
+    # TODO: thread pool for wrappers so they can:
+    # run concurrently. they mostly wait for compute nodes anyway.
+
+    # for now, use single thread:
+    for wrapper in simWrappers:
+        wrapper.runSimulations()
+        wrapper.waitForJobCompletion()
+        wrapper.detLumi()
+        
 
 
 def testRunConfigParse():
@@ -226,29 +270,15 @@ if __name__ == "__main__":
 
     # run multiple configs
     if args.configPath:
-        configs = []
-        # read all configs from path
-        searchDir = Path(args.configPath)
-        configs = list(searchDir.glob('*.json'))
-        simWrappers = []
-
-        # loop over all configs, create wrapper and run
-        for configFile in configs:
-            runConfig = LMDRunConfig.fromJSON(configFile)
-            simWrappers.append(simWrapper.fromRunConfig(runConfig))
-
-        # TODO: thread pool for wrappers so they can:
-        # run concurrently. they mostly wait for compute nodes anyway.
-
-        print(f'wrappers:{simWrappers}')
-
+        runAllConfigs(args)
         sys.exit(0)
 
     if args.test:
-        wrapper = simWrapper()
+        wrapper = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
         wrapper.currentJobID = 4998523
-        wrapper.waitForJobCompletion()
+        #wrapper.waitForJobCompletion()
 
+        wrapper.extractLumi()
         sys.exit(0)
 
         testRunConfigParse()
