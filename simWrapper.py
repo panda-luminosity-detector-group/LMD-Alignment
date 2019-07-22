@@ -129,7 +129,7 @@ class simWrapper():
 
         print(f'RETURNED:\n{returnVal}')
 
-        match = re.search('Submitted batch job (\d+)', returnVal)
+        match = re.search(r'Submitted batch job (\d+)', returnVal)
         if match:
             jobID = match.groups()[0]
             print(f'FOUND JOB ID: {jobID}')
@@ -146,11 +146,11 @@ class simWrapper():
             user = pwd.getpwuid(os.getuid())[0]
             print(f'you are {user}, waiting on job {self.currentJobID}')
 
-            squeueOutput = subprocess.check_output(('squeue', '-u', user))
+            squeueOutput = subprocess.check_output(('squeue', '-u', user)).decode(sys.stdout.encoding)
             outputLines = squeueOutput.splitlines()
             foundJobs = 0
             for line in outputLines:
-                match = re.search('^\s+(\d+)', line)
+                match = re.search(r'^\s+(\d+)', line)
                 if match:
                     found = match.groups()[0]
                     if found == str(self.currentJobID):
