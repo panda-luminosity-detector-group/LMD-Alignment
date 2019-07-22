@@ -28,8 +28,6 @@ most importantly, can also create paths given these parameters:
 - misalign matrices
 - reco_ip.json location (for use with ./extractLuminosity)
 - lumi_vals.json location (for use with ./extractLuminosity)
-
-jobs and aligned: 1-500_uncut_aligned   #TODO: change this in LuminosityFit! aligned should be a sub directory
 """
 
 
@@ -58,13 +56,15 @@ class LMDRunConfig:
         self.__alignMatFile = None
         self.__misalignMatFile = None
         self.__misalignType = None
+        self.__alignType = None
         self.__misalignFactor = None
+        self.__alignFactor = None
         self.__momentum = None
-        self.__tracksNum = "100000"
-        self.__jobsNum = "500"
+        self.__tracksNum = None
+        self.__jobsNum = None
         self.__smallBatch = True
-        self.__misalignment = True
-        self.__alignmentCorrection = True
+        self.__misalignment = False
+        self.__alignmentCorrection = False
 
     #! --------------------- getters without setters
 
@@ -122,6 +122,20 @@ class LMDRunConfig:
         temp.parseFromString()
         return temp
 
+    #! --------------------- minimal default constructor
+    @classmethod
+    def minimalDefault(cls, mom='1.5', misalignType='combi', factor='1.00'):
+        temp = cls()
+        temp.__tracksNum = '100000'
+        temp.__jobsNum = '500'
+        temp.__momentum = mom
+        temp.__alignFactor=factor
+        temp.__misalignFactor=factor
+        temp.__alignType=misalignType
+        temp.__misalignType=misalignType
+        temp.generateMatrixNames()
+        return temp
+
     def parseFromString(self):
         pathParts = Path(self.__fromPath).parts
 
@@ -141,6 +155,10 @@ class LMDRunConfig:
         # 0: plab
         # 1: dpm
         # 2: aligned or misalignment!
+        # 3: 1-500_uncut or 1-100_cut
+        # 4: Num Tracks
+        # 5: aligned or something else
+
         if len(pathParts) < 3:
             print(f'ERROR! path doesn\'t go deep enough, can not extract all information!')
             sys.exit(1)
@@ -151,7 +169,7 @@ class LMDRunConfig:
             self.__misalignment = False
 
         else:
-            match = re.search("geo_misalignmentmisMat-(.*)-(.*)", pathParts[2])
+            match = re.search("geo_misalignmentmisMat-(\w+)-(\d+\.\d+)", pathParts[2])
             if match:
                 if len(match.groups()) > 1:
                     self.__misalignType = match.groups()[0]
@@ -167,12 +185,26 @@ class LMDRunConfig:
         if len(pathParts) > 3:
             self.__tracksNum = pathParts[3]
 
-        # TODO: implement correctly, alignment will be in sub directory somewhere!!
+        if len(pathParts) > 4:
+            match = re.search('1-(\d+)_uncut', pathParts[4])
+            if match:
+                self.__jobsNum = match.groups()[0]
+
+        # alignment matrix
         if len(pathParts) > 5:
-            # set align matrices from values!
-            # TODO: parse with regex here!
-            #self.__alignMatFile = str(self.pathAlMatrix())
-            pass
+            match = re.search('aligned-alMat-(\w+)-(\d+\.\d+)', pathParts[5])
+            if match:
+                self.__alignType = match.groups()[0]
+                self.__alignFactor = match.groups()[1]
+                self.__alignmentCorrection = True
+
+                if self.__alignType != self.__misalignType:
+                    print(f'WARNING. Align type is not the same as misalign type. Is this correct?')
+                
+                if self.__alignFactor != self.__misalignFactor:
+                    print(f'WARNING. Align factor is not the same as misalign type. Is this correct?')
+
+                self.__alignMatFile = str(self.pathAlMatrix())
 
     #! --------------------- generate matrix name after minimal initialization
     def generateMatrixNames(self):
@@ -282,7 +314,7 @@ class LMDRunConfig:
     def pathAlMatrix(self):
         # TODO: check if json or root file, convert if needed!
         self.__checkMinimum__()
-        return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__misalignType}-{self.__misalignFactor}.json')
+        return Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json')
 
     def pathMisMatrix(self):
         # TODO: check if json or root file, convert if needed!
@@ -326,9 +358,13 @@ class LMDRunConfig:
         print(f'Path: {self.__fromPath}')
         print(f'Momentum: {self.__momentum}')
         print(f'Misalign Type: {self.__misalignType}')
+        print(f'Misalign Factor: {self.__misalignFactor}')
+        print(f'Align Type: {self.__alignType}')
+        print(f'Align Factor: {self.__alignFactor}')
         print(f'AlignMatrices: {self.__alignMatFile}')
         print(f'MisalignMatrices: {self.__misalignMatFile}')
-        print(f'Align Factor: {self.__misalignFactor}')
+        print(f'Num Tracks: {self.__tracksNum}')
+        print(f'Num Jobs: {self.__jobsNum}')
         print(f'------------------------------')
         print(f'\n\n')
 
