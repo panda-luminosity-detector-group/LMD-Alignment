@@ -254,6 +254,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--test', action='store_true', help='internal test function')
     parser.add_argument('-c', metavar='--config', type=str, dest='configFile', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
+    parser.add_argument('-D', action='store_true', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     # this is the real magic:
     parser.add_argument('-C', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as job!')
 
@@ -277,6 +278,7 @@ if __name__ == "__main__":
         wrapper = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
         wrapper.currentJobID = 4998523
         #wrapper.waitForJobCompletion()
+        testMiniRun()
 
         wrapper.extractLumi()
         sys.exit(0)
@@ -285,4 +287,9 @@ if __name__ == "__main__":
         LMDRunConfig.minimalDefault().dump()
         sys.exit(0)
 
-    testMiniRun()
+    if args.D:
+        dest = Path('runConfigs/identity-1.00.json')
+        print(f'saving default config to {dest}')
+        LMDRunConfig.minimalDefault().toJSON(dest)
+
+    

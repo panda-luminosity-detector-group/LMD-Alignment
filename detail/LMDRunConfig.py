@@ -84,7 +84,7 @@ class LMDRunConfig:
         return self.__misalignment
 
     def __setMisaligned(self, value):
-        self.__misaligned = value
+        self.__misalignment = value
     misaligned = property(__getMisaligned, __setMisaligned)
 
     def __getAlignmentCorrection(self):
@@ -135,6 +135,8 @@ class LMDRunConfig:
         temp.__misalignFactor = factor
         temp.__alignType = misalignType
         temp.__misalignType = misalignType
+        temp.__misalignment = True
+        temp.__alignmentCorrection = True
         temp.generateMatrixNames()
         return temp
 
