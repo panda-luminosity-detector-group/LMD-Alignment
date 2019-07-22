@@ -176,7 +176,6 @@ class simWrapper():
         dataPath = self.__config.pathTrksQA()
         
         if dataPath:
-            print(f'{command}\n{dataPath}')
             subprocess.check_output((command, dataPath))
 
         else:

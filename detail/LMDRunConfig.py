@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import glob
 import re
 import sys
 import os
@@ -316,9 +317,13 @@ class LMDRunConfig:
     def __recoIP__(self):
         return Path('reco_ip.json')
 
-    # TODO: get actual path/file if found on system, otherwise... idk, fail?
+    # this is a fuck ugly hack, but pathlib fails whenever dots are in a path or file name 
     def __resolveActual__(self, globbedPath):
-        return globbedPath
+        result = glob.glob(str(globbedPath))
+        if len(result) > 0:
+            return Path(result[0])
+        else:
+            return globbedPath
 
     #! --------------------- create paths to matrices, json results
     def pathAlMatrix(self):
