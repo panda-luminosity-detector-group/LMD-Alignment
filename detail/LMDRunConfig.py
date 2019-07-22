@@ -50,6 +50,7 @@ class LMDRunConfig:
             print(f"please set {pndRootDir} and {simDirEnv}!")
             sys.exit(1)
 
+        self.__runSteps = []
         self.__fromPath = None
         self.__alignMatPath = None
         self.__misalignMatPath = None
@@ -69,6 +70,7 @@ class LMDRunConfig:
     #! --------------------- getters without setters
 
     #! --------------------- setters without getters
+
     def __setMisalignFactor(self, value):
         self.__misalignFactor = value
     misalignFactor = property(None, __setMisalignFactor)
@@ -124,15 +126,16 @@ class LMDRunConfig:
 
     #! --------------------- minimal default constructor
     @classmethod
-    def minimalDefault(cls, mom='1.5', misalignType='combi', factor='1.00'):
+    def minimalDefault(cls, mom='1.5', misalignType='identity', factor='1.00'):
         temp = cls()
         temp.__tracksNum = '100000'
         temp.__jobsNum = '500'
+        temp.__runSteps = [1, 2, 3, 4]
         temp.__momentum = mom
-        temp.__alignFactor=factor
-        temp.__misalignFactor=factor
-        temp.__alignType=misalignType
-        temp.__misalignType=misalignType
+        temp.__alignFactor = factor
+        temp.__misalignFactor = factor
+        temp.__alignType = misalignType
+        temp.__misalignType = misalignType
         temp.generateMatrixNames()
         return temp
 
@@ -162,6 +165,8 @@ class LMDRunConfig:
         if len(pathParts) < 3:
             print(f'ERROR! path doesn\'t go deep enough, can not extract all information!')
             sys.exit(1)
+
+        self.__runSteps = [1, 2, 3, 4]
 
         if pathParts[2] == 'no_geo_misalignment':
             self.__misalignType = 'aligned'
@@ -200,7 +205,7 @@ class LMDRunConfig:
 
                 if self.__alignType != self.__misalignType:
                     print(f'WARNING. Align type is not the same as misalign type. Is this correct?')
-                
+
                 if self.__alignFactor != self.__misalignFactor:
                     print(f'WARNING. Align factor is not the same as misalign type. Is this correct?')
 

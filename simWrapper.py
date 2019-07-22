@@ -3,7 +3,9 @@
 import argparse
 import re
 import os
+import pwd  # to get current user
 import sys
+import time
 import subprocess
 from pathlib import Path
 from detail.LMDRunConfig import LMDRunConfig
@@ -54,11 +56,12 @@ class simWrapper():
 
     # empty constructor
     def __init__(self):
-        self.__cwd = Path.cwd()
+        self.cwd = Path.cwd()
         lmdFitEnv = 'LMDFIT_BUILD_PATH'
         simDirEnv = 'LMDFIT_DATA_DIR'
         pndRootDir = 'VMCWORKDIR'
-        self.__cwd = str(Path.cwd())
+        self.cwd = str(Path.cwd())
+        self.currentJobID = None
         try:
             self.__lumiFitPath = str(Path(os.environ[lmdFitEnv]).parent)
             self.__simDataPath = os.environ[simDirEnv]
@@ -78,7 +81,7 @@ class simWrapper():
         print(f'\n\n')
         print(f'------------------------------')
         print(f'DEBUG OUTPUT for SimWrapper:\n')
-        print(f'CWD: {self.__cwd}')
+        print(f'CWD: {self.cwd}')
         print(f'------------------------------')
         print(f'\n\n')
 
@@ -130,20 +133,33 @@ class simWrapper():
         if match:
             jobID = match.groups()[0]
             print(f'FOUND JOB ID: {jobID}')
-            return jobID
+            self.currentJobID = jobID
         else:
             print('can\'t parse job ID from output!')
 
-        # TODO: check squeue output for running jobs:
-        # use ${currentUser} logically
-        """
-        squeue -u roklasen
-        JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
-        4998523_1 himster2_ lmd_simr roklasen  R       1:07      1 x2308
-        4998523_2 himster2_ lmd_simr roklasen  R       1:07      1 x2308
-        4998523_3 himster2_ lmd_simr roklasen  R       1:07      1 x2308
-        [...]
-        """
+    def waitForJobCompletion(self):
+        while True:
+            # see https://stackoverflow.com/a/2899055
+            user = pwd.getpwuid(os.getuid())[0]
+            print(f'you are {user}, waiting on job {self.currentJobID}')
+
+            squeueOutput = subprocess.check_output(('squeue', '-u', user))
+            outputLines = squeueOutput.splitlines()
+            foundJobs = 0
+            for line in outputLines:
+                match = re.search('^(\d+)', line)
+                if match:
+                    found = match.groups()[0]
+                    if found == str(self.currentJobID):
+                        foundJobs += 1
+
+            # no jobs found? then we can exit
+            if foundJobs == 0:
+                print(f'no jobs running, continueing...')
+                return
+
+            print(f'{foundJobs} jobs  running...')
+            time.sleep(60)
 
     # the lumi fit scripts are blocking!
     def detLumi(self):
@@ -167,21 +183,12 @@ class simWrapper():
         subprocess.Popen((command, argP, argPval), close_fds=True)  # works!
 
 
-def run():
-    path = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-3.00/100000/1-500_uncut_aligned'
-    config = LMDRunConfig.fromPath(path)
-
-    wrapper = simWrapper()
-    wrapper.setRunConfig(config)
-    wrapper.detLumi()
-
-
 def testRunConfigParse():
     print(f'testing parser!')
     path = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-10.00/100000/1-500_uncut/aligned-alMat-box-10.00'
     config = LMDRunConfig.fromPath(path)
     # config.dump()
-    #config.toJSON('runConfigs/box3.json')
+    # config.toJSON('runConfigs/box3.json')
 
     #config = LMDRunConfig.fromJSON('2.json')
     config.dump()
@@ -193,7 +200,7 @@ def testMiniRun():
     config.misalignFactor = '5.00'
     config.momentum = '1.5'
     config.generateMatrixNames()
-    #config.toJSON('runConfigs/box10.json')
+    # config.toJSON('runConfigs/box10.json')
     config.dump()
 
 
@@ -221,16 +228,31 @@ if __name__ == "__main__":
     if args.configPath:
         configs = []
         # read all configs from path
+        searchDir = Path(args.configPath)
+        configs = list(searchDir.glob('*.json'))
+        simWrappers = []
 
         # loop over all configs, create wrapper and run
-        # TODO: implement!
+        for configFile in configs:
+            runConfig = LMDRunConfig.fromJSON(configFile)
+            simWrappers.append(simWrapper.fromRunConfig(runConfig))
+
+        # TODO: thread pool for wrappers so they can:
+        # run concurrently. they mostly wait for compute nodes anyway.
+
+        print(f'wrappers:{simWrappers}')
+
+        sys.exit(0)
 
     if args.test:
+        wrapper = simWrapper()
+        wrapper.currentJobID = 4998523
+        wrapper.waitForJobCompletion()
+
+        sys.exit(0)
+
         testRunConfigParse()
-
-        print(f'==========================')
         LMDRunConfig.minimalDefault().dump()
-
         sys.exit(0)
 
     testMiniRun()
