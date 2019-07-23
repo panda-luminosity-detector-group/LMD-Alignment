@@ -159,6 +159,7 @@ class simWrapper():
             # no jobs found? then we can exit
             if foundJobs == 0:
                 print(f'no jobs running, continuing...')
+                self.currentJobID = None
                 return
 
             print(f'{foundJobs} jobs  running...')
@@ -187,7 +188,7 @@ class simWrapper():
             print(f'please set run config first!')
 
         absPath = self.__config.pathTrksQA()
-        print(f'path: {absPath}')
+        print(f'DEBUG: determining Luminosity of the data set found here:\n{absPath}')
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
         command = scriptsPath / Path('determineLuminosity.py')
@@ -199,8 +200,19 @@ class simWrapper():
         print(f'DEBUG: chaning cwd to {scriptsPath}')
         os.chdir(scriptsPath)
 
-        # close file desciptor to run command in different process and return
-        subprocess.Popen((command, argP, argPval))
+        # don't close file desciptor, this call will block until lumi is determined!
+        subprocess.check_output((command, argP, argPval))
+
+        # returnVal = returnVal.decode(sys.stdout.encoding)
+
+        # print(f'RETURNED:\n{returnVal}')
+        # match = re.search(r'Submitted batch job (\d+)', returnVal)
+        # if match:
+        #     jobID = match.groups()[0]
+        #     print(f'FOUND JOB ID: {jobID}')
+        #     self.currentJobID = jobID
+        # else:
+        #     print('can\'t parse job ID from output!')
 
 
 def runAllConfigs(args):
@@ -223,6 +235,7 @@ def runAllConfigs(args):
         wrapper.runSimulations()
         wrapper.waitForJobCompletion()
         wrapper.detLumi()
+        wrapper.waitForJobCompletion()
         wrapper.extractLumi()
 
         # TODO: add alignment here and rerun simulations! use the runSteps values from the runConfig
