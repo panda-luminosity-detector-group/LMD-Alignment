@@ -64,9 +64,9 @@ def runAllConfigs(args):
         simWrappers.append(simWrapper.fromRunConfig(runConfig))
 
     # run concurrently in 64 threads. they mostly wait for compute nodes anyway.
-    # we use a thread pool for this
+    # we use a process pool instead of a thread pool because the individual interpreters are working on different cwd's.
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=64) as executor:
         # Start the load operations and mark each future with its URL
         for wrapper in simWrappers:
             executor.submit(wrapper.runAll)
