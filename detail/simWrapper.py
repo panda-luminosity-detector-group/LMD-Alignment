@@ -1,56 +1,23 @@
 #!/usr/bin/env python3
 
-import argparse
-import re
+"""
+LMD Simulation Wrapper
+
+Depends on:
+- FairRoot
+- PandaRoot
+- LuminosityFitFramework
+"""
+
 import os
+import re
 import pwd  # to get current user
 import sys
 import time
 import subprocess
+
 from pathlib import Path
 from detail.LMDRunConfig import LMDRunConfig
-
-"""
-this script handles all simulation related abstractions.
-
-it:
-- browses paths for TrksQA, reco_ip and lumi_vals
-- runs simulations (aligned, misaligned)
-- runs aligner scripts (alignIP, alignSensors, alignCorridors)
-- re-runs simulations with align matrices
-- runs ./determineLuminosity
-- runs ./extractLuminosity
-- compares lumi values before and after alignment
-- compares found alignment matrices with actual alignment matrices
-- converts JSON to ROOT matrices and vice-versa (with ROOT macros)
-
-TODO:
-- remember to delete everything after mc generation for new run
-
----------- steps in ideal geometry sim ----------
-
-- run ./doSimulationReconstruction wit correct parameters (doesn't block)
-- run ./determineLuminosity (blocks!)
-- run ./extractLuminosity   (blocks!)
-
----------- steps in misaligned geometry sim ----------
-
-- run ./doSimulationReconstruction wit correct parameters
-- run ./determineLuminosity
-- run ./extractLuminosity
-
----------- steps in misaligned geometry with correction ----------
-- run ./doSimulationReconstruction with correct parameters
-- run ./determineLuminosity
-- run ./extractLuminosity
-- run my aligners
-- rerun ./doSimulationReconstruction with correct parameters
-- rerun ./determineLuminosity
-- rerun ./extractLuminosity
-
-
-"""
-
 
 class simWrapper():
 
@@ -141,6 +108,10 @@ class simWrapper():
         if self.__config is None:
             print(f'please set run config first!')
 
+        if not self.currentJobID:
+            print(f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!')
+            return
+
         while True:
             # see https://stackoverflow.com/a/2899055
             user = pwd.getpwuid(os.getuid())[0]
@@ -178,6 +149,7 @@ class simWrapper():
 
         if dataPath:
             subprocess.check_output((command, dataPath))
+            print(f'Luminosity extracted!')
 
         else:
             print(f'can\'t determine path!')
@@ -199,109 +171,22 @@ class simWrapper():
         # we have to change the directory here since some script paths in LuminosityFit are relative.
         print(f'DEBUG: chaning cwd to {scriptsPath}')
         os.chdir(scriptsPath)
-
+        print(f'Running ./determineLuminosity . This might take a while.')
         # don't close file desciptor, this call will block until lumi is determined!
         subprocess.check_output((command, argP, argPval))
+        print(f'done!')
+        
+    def runAll(self):
+        if self.__config is None:
+            print(f'please set run config first!')
 
-        # returnVal = returnVal.decode(sys.stdout.encoding)
+        self.runSimulations()           # non blocking, so we have to wait
+        self.waitForJobCompletion()     # blocking
+        self.detLumi()                  # blocking
+        self.extractLumi()              # blocking
 
-        # print(f'RETURNED:\n{returnVal}')
-        # match = re.search(r'Submitted batch job (\d+)', returnVal)
-        # if match:
-        #     jobID = match.groups()[0]
-        #     print(f'FOUND JOB ID: {jobID}')
-        #     self.currentJobID = jobID
-        # else:
-        #     print('can\'t parse job ID from output!')
-
-
-def runAllConfigs(args):
-    configs = []
-    # read all configs from path
-    searchDir = Path(args.configPath)
-    configs = list(searchDir.glob('*.json'))
-    simWrappers = []
-
-    # loop over all configs, create wrapper and run
-    for configFile in configs:
-        runConfig = LMDRunConfig.fromJSON(configFile)
-        simWrappers.append(simWrapper.fromRunConfig(runConfig))
-
-    # TODO: thread pool for wrappers so they can:
-    # run concurrently. they mostly wait for compute nodes anyway.
-
-    # for now, use single thread:
-    for wrapper in simWrappers:
-        wrapper.runSimulations()
-        wrapper.waitForJobCompletion()
-        wrapper.detLumi()
-        wrapper.waitForJobCompletion()
-        wrapper.extractLumi()
-
-        # TODO: add alignment here and rerun simulations! use the runSteps values from the runConfig
-
-
-def testRunConfigParse():
-    print(f'testing parser!')
-    path = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-10.00/100000/1-500_uncut/aligned-alMat-box-10.00'
-    config = LMDRunConfig.fromPath(path)
-    # config.dump()
-    # config.toJSON('runConfigs/box3.json')
-
-    #config = LMDRunConfig.fromJSON('2.json')
-    config.dump()
-
-
-def testMiniRun():
-    config = LMDRunConfig()
-    config.misalignType = 'box'
-    config.misalignFactor = '5.00'
-    config.momentum = '1.5'
-    config.generateMatrixNames()
-    # config.toJSON('runConfigs/box10.json')
-    config.dump()
-
-
-if __name__ == "__main__":
-    print('greetings, human')
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--test', action='store_true', help='internal test function')
-    parser.add_argument('-c', metavar='--config', type=str, dest='configFile', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
-    parser.add_argument('-D', action='store_true', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
-    # this is the real magic:
-    parser.add_argument('-C', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as job!')
-
-    try:
-        args = parser.parse_args()
-    except:
-        parser.exit(1)
-
-    # run single config
-    if args.configFile:
-        wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
-        wrapper.runSimulations()
-        sys.exit(0)
-
-    # run multiple configs
-    if args.configPath:
-        runAllConfigs(args)
-        sys.exit(0)
-
-    if args.test:
-        wrapper = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
-        wrapper.currentJobID = 4998523
-        # wrapper.waitForJobCompletion()
-        testMiniRun()
-
-        wrapper.extractLumi()
-        sys.exit(0)
-
-        testRunConfigParse()
-        LMDRunConfig.minimalDefault().dump()
-        sys.exit(0)
-
-    if args.D:
-        dest = Path('runConfigs/identity-1.00.json')
-        print(f'saving default config to {dest}')
-        LMDRunConfig.minimalDefault().toJSON(dest)
+    # test function
+    def idle(self, seconds=3):
+        print(f'this thread will idle {seconds} seconds.')
+        time.sleep(seconds)
+        print(f'done sleeping!')
