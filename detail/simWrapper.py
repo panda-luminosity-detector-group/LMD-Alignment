@@ -179,6 +179,7 @@ class simWrapper():
     def runAll(self):
         if self.__config is None:
             print(f'please set run config first!')
+            return
 
         self.runSimulations()           # non blocking, so we have to wait
         self.waitForJobCompletion()     # blocking

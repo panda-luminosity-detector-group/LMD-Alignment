@@ -55,6 +55,8 @@ def runAllConfigs(args):
     configs = []
     # read all configs from path
     searchDir = Path(args.configPath)
+    
+    # TODO: make recursive
     configs = list(searchDir.glob('*.json'))
     simWrappers = []
 
