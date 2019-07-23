@@ -55,7 +55,7 @@ def runAllConfigs(args):
     configs = []
     # read all configs from path
     searchDir = Path(args.configPath)
-    
+
     # TODO: make recursive
     configs = list(searchDir.glob('*.json'))
     simWrappers = []
@@ -65,10 +65,11 @@ def runAllConfigs(args):
         runConfig = LMDRunConfig.fromJSON(configFile)
         simWrappers.append(simWrapper.fromRunConfig(runConfig))
 
-    # run concurrently in 64 threads. they mostly wait for compute nodes anyway.
+    maxThreads = min(len(simWrappers), 64)
+    # run concurrently in maximum 64 threads. they mostly wait for compute nodes anyway.
     # we use a process pool instead of a thread pool because the individual interpreters are working on different cwd's.
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=64) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=maxThreads) as executor:
         # Start the load operations and mark each future with its URL
         for wrapper in simWrappers:
             executor.submit(wrapper.runAll)
