@@ -112,11 +112,10 @@ class simWrapper():
             print(f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!')
             return
 
+        # see https://stackoverflow.com/a/2899055
+        user = pwd.getpwuid(os.getuid())[0]
+        print(f'you are {user}, waiting on job {self.currentJobID}')
         while True:
-            # see https://stackoverflow.com/a/2899055
-            user = pwd.getpwuid(os.getuid())[0]
-            print(f'you are {user}, waiting on job {self.currentJobID}')
-
             squeueOutput = subprocess.check_output(('squeue', '-u', user)).decode(sys.stdout.encoding)
             outputLines = squeueOutput.splitlines()
             foundJobs = 0
