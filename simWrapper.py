@@ -220,8 +220,8 @@ def runAllConfigs(args):
 
     # for now, use single thread:
     for wrapper in simWrappers:
-        #wrapper.runSimulations()
-        #wrapper.waitForJobCompletion()
+        wrapper.runSimulations()
+        wrapper.waitForJobCompletion()
         wrapper.detLumi()
         wrapper.extractLumi()
 
