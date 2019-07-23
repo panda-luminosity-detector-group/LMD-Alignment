@@ -158,7 +158,7 @@ class simWrapper():
 
             # no jobs found? then we can exit
             if foundJobs == 0:
-                print(f'no jobs running, continueing...')
+                print(f'no jobs running, continuing...')
                 return
 
             print(f'{foundJobs} jobs  running...')
@@ -186,7 +186,7 @@ class simWrapper():
         if self.__config is None:
             print(f'please set run config first!')
 
-        absPath = self.__config.__path
+        absPath = self.__config.pathTrksQA()
         print(f'path: {absPath}')
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
@@ -220,8 +220,8 @@ def runAllConfigs(args):
 
     # for now, use single thread:
     for wrapper in simWrappers:
-        wrapper.runSimulations()
-        wrapper.waitForJobCompletion()
+        #wrapper.runSimulations()
+        #wrapper.waitForJobCompletion()
         wrapper.detLumi()
         wrapper.extractLumi()
 
