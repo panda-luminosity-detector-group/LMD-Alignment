@@ -200,7 +200,7 @@ class simWrapper():
         os.chdir(scriptsPath)
 
         # close file desciptor to run command in different process and return
-        subprocess.Popen((command, argP, argPval), close_fds=True)  # works!
+        subprocess.Popen((command, argP, argPval))
 
 
 def runAllConfigs(args):
