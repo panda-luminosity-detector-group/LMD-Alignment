@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 
-import numpy as np
-import uproot
-import os
-import sys
+from detail.LMDRunConfig import LMDRunConfig
+from detail.matrices import getMatrixFromJSON, makeHomogenous
+from detail.trksQA import getIPfromTrksQA
+
+from pathlib import Path
+
 import argparse
 import json
-from pathlib import Path
-from trksQA import getIPfromTrksQA
-from matrices import getMatrixFromJSON, makeHomogenous
+import numpy as np
+import os
+import sys
+import uproot
 
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de

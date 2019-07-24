@@ -4,12 +4,15 @@ import numpy as np                  # for arrays
 import matplotlib.pyplot as plt     # for plots
 from scipy.stats import norm        # for normal distribution
 import seaborn as sns               # for combined hist and gauss fit plot
-import uproot, os, sys
+import uproot
+import os
+import sys
 from collections import defaultdict  # to concatenate dictionaries
 from matplotlib.colors import LogNorm   # for LogNorm
 
 import matplotlib
 matplotlib.use('Agg')   # so matplotlib works over ssh
+
 
 def cleanArray(arrayDict):
 
@@ -30,16 +33,17 @@ def cleanArray(arrayDict):
     recY = arrayDict[b'LMDTrackQ.fYrec'][nonZeroEvents].flatten()
     recZ = arrayDict[b'LMDTrackQ.fZrec'][nonZeroEvents].flatten()
 
-    # return a dictl 
+    # return a dictl
     return {'half': half, 'mod': module, 'x': recX, 'y': recY, 'z': recZ}
+
 
 def percentileCut(arrayDict, cut):
 
     # first, remove outliers that are just too large, use a mask
     # TODO: find reasonable value!
     outMaskLimit = 50
-    outMask = (np.abs(arrayDict['x']) < outMaskLimit) & (np.abs(arrayDict['y']) < outMaskLimit) & (np.abs(arrayDict['z']) < outMaskLimit) 
-    
+    outMask = (np.abs(arrayDict['x']) < outMaskLimit) & (np.abs(arrayDict['y']) < outMaskLimit) & (np.abs(arrayDict['z']) < outMaskLimit)
+
     # cut outliers, this creates a copy (performance?)
     for key in arrayDict:
         arrayDict[key] = arrayDict[key][outMask]
@@ -49,28 +53,29 @@ def percentileCut(arrayDict, cut):
 
     # calculate cut length, we're cutting 2%
     cut = int(len(tempArray) * (cut / 100))
-    
+
     # calculate approximate c.o.m. and shift
     # don't use average, some values are far too large, median is a better estimation
     comMed = np.median(tempArray, axis=0)
     tempArray -= comMed
 
     # sort by distance and cut largest
-    distSq = np.power( tempArray[:,0] , 2 ) + np.power( tempArray[:,1] , 2 ) + np.power( tempArray[:,2] , 2)
+    distSq = np.power(tempArray[:, 0], 2) + np.power(tempArray[:, 1], 2) + np.power(tempArray[:, 2], 2)
     tempArray = tempArray[distSq.argsort()]
     tempArray = tempArray[:-cut]
-    
+
     # shift back
     tempArray += comMed
-    
+
     # re-save to array for return
-    arrayDict['x'] = tempArray[:,0]
-    arrayDict['y'] = tempArray[:,1]
-    arrayDict['z'] = tempArray[:,2]
-    arrayDict['mod'] = tempArray[:,3]
-    arrayDict['half'] = tempArray[:,4]
+    arrayDict['x'] = tempArray[:, 0]
+    arrayDict['y'] = tempArray[:, 1]
+    arrayDict['z'] = tempArray[:, 2]
+    arrayDict['mod'] = tempArray[:, 3]
+    arrayDict['half'] = tempArray[:, 4]
 
     return arrayDict
+
 
 def histValues(cleanArray, align, cut):
 
@@ -101,23 +106,23 @@ def histValues(cleanArray, align, cut):
 
                 print('interaction point is at: {0}, half {3}, module {1}, {2} tracks'.format(
                     ip, np.average(module[recMask]), len(module[recMask]), fHalf))
-            
+
                 if cut > 0.01:
                     # fixed range 10cm
-                    plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
-                
+                    plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100, 100], [-100, 100]])
+
                 else:
                     # fixed range 5m
                     plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
-                
+
                 plt.colorbar()
-                
+
                 legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
-                
+
                 plt.title(f'Reco IP for half {fHalf}, module {mod}\n' + legend)
                 plt.xlabel('x position [mm]')
                 plt.ylabel('y position [mm]')
-                
+
                 plt.tight_layout()
                 plt.savefig(outPath + f'rec-ip-h{fHalf}m{mod}.png', dpi=300)
                 plt.close()
@@ -131,25 +136,26 @@ def histValues(cleanArray, align, cut):
 
         if cut > 0.01:
             # fixed range 10cm
-            plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100,100],[-100,100]])
-            
+            plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-100, 100], [-100, 100]])
+
         else:
             # fixed range 5m
             plt.hist2d(recX[recMask] * 1e1, recY[recMask] * 1e1, bins=50, norm=LogNorm(), range=[[-500 * 1e1, 500 * 1e1], [-500 * 1e1, 500 * 1e1]])
-        
+
         plt.colorbar()
-        
+
         legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
-        
+
         plt.title(f'Reco IP\n' + legend)
         plt.xlabel('x position [mm]')
         plt.ylabel('y position [mm]')
-        
+
         plt.tight_layout()
         plt.savefig(outPath + f'rec-ip-allModules.png', dpi=300)
         plt.close()
 
     return ip
+
 
 def plotIPsxy(cleanArray, align, cut):
     half = cleanArray['half']
@@ -177,10 +183,10 @@ def plotIPsxy(cleanArray, align, cut):
             ip = [np.average(recX[recMask]), np.average(recY[recMask])]
             ips.append(ip)
             #print(f'appended: {ip}')
-    
+
     #print(f'that is x: {ips[:,0]} and y: {ips[:,1]}')
 
-    #for i in ips:
+    # for i in ips:
     #    print(i)
 
     nips = np.array(ips)
@@ -189,21 +195,22 @@ def plotIPsxy(cleanArray, align, cut):
     # print(nips)
 
     # auto range
-    plt.hist2d(nips[:,0] * 1e1, nips[:, 1] * 1e1, bins=50, norm=LogNorm())
+    plt.hist2d(nips[:, 0] * 1e1, nips[:, 1] * 1e1, bins=50, norm=LogNorm())
     # plt.colorbar()
-    
+
     plt.axes().set_aspect(aspect='equal', adjustable='datalim')
-    
+
     #legend = f'µx={round(ip[0] * 10, 2)}, µy={round(ip[1] * 10, 2)}, σx={round(ip[2] * 10, 2)}, σy={round(ip[3] * 10, 2)} mm'
     plt.title(f'Reco IPs for {align}\n')
     plt.xlabel('x position [mm]')
     plt.ylabel('y position [mm]')
-    
+
     plt.tight_layout()
     plt.savefig(outPath + f'rec-ips.png', dpi=300)
     plt.close()
 
     return ip
+
 
 def readIPs(align, cut=0.0):
     # this file is from
@@ -237,9 +244,10 @@ def readIPs(align, cut=0.0):
     histValues(resultDict, align, cut)
     #plotIPsxy(resultDict, align, cut)
 
+
 if __name__ == "__main__":
     print('greetings, human.')
-    
+
     # cut in percent
     cuts = (0.0, 2.0)
 

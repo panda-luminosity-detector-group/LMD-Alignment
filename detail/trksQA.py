@@ -1,8 +1,10 @@
 #!usr/bin/env python3
 
-import numpy as np
-import uproot, sys
 from collections import defaultdict  # to concatenate dictionaries
+
+import numpy as np
+import uproot
+import sys
 
 """
 reads TrksQA.root files (supports wildcards like Lumi_TrksQA_*.root through uproot!) and returns the most probable IP position
@@ -10,8 +12,10 @@ reads TrksQA.root files (supports wildcards like Lumi_TrksQA_*.root through upro
 uses 98% cut by default
 set module=i to filter by module i, same for half
 """
+
+
 def getIPfromTrksQA(filename, cut=2.0, sensor=-1, module=-1, plane=-1, half=-1):
-    
+
     # uproot.iterate will produce a dict with JaggedArrays, so we can create an empty dict and append each iteration
     resultDict = defaultdict(list)
 
@@ -36,7 +40,8 @@ def getIPfromTrksQA(filename, cut=2.0, sensor=-1, module=-1, plane=-1, half=-1):
     ip = extractIP(resultDict, module, half)
 
     return ip
-    
+
+
 def extractIP(cleanArray, module, half):
 
     thalf = cleanArray['half']
@@ -57,13 +62,14 @@ def extractIP(cleanArray, module, half):
     ip = [np.average(recX[recMask]), np.average(recY[recMask]), np.average(recZ[recMask])]
     return ip
 
+
 def percentileCut(arrayDict, cut):
 
     # first, remove outliers that are just too large, use a mask
     # TODO: find reasonable value!
     outMaskLimit = 50
-    outMask = (np.abs(arrayDict['x']) < outMaskLimit) & (np.abs(arrayDict['y']) < outMaskLimit) & (np.abs(arrayDict['z']) < outMaskLimit) 
-    
+    outMask = (np.abs(arrayDict['x']) < outMaskLimit) & (np.abs(arrayDict['y']) < outMaskLimit) & (np.abs(arrayDict['z']) < outMaskLimit)
+
     # cut outliers, this creates a copy (performance?)
     for key in arrayDict:
         arrayDict[key] = arrayDict[key][outMask]
@@ -73,28 +79,29 @@ def percentileCut(arrayDict, cut):
 
     # calculate cut length, we're cutting 2%
     cut = int(len(tempArray) * (cut / 100))
-    
+
     # calculate approximate c.o.m. and shift
     # don't use average, some values are far too large, median is a better estimation
     comMed = np.median(tempArray, axis=0)
     tempArray -= comMed
 
     # sort by distance and cut largest
-    distSq = np.power( tempArray[:,0] , 2 ) + np.power( tempArray[:,1] , 2 ) + np.power( tempArray[:,2] , 2)
+    distSq = np.power(tempArray[:, 0], 2) + np.power(tempArray[:, 1], 2) + np.power(tempArray[:, 2], 2)
     tempArray = tempArray[distSq.argsort()]
     tempArray = tempArray[:-cut]
-    
+
     # shift back
     tempArray += comMed
-    
+
     # re-save to array for return
-    arrayDict['x'] = tempArray[:,0]
-    arrayDict['y'] = tempArray[:,1]
-    arrayDict['z'] = tempArray[:,2]
-    arrayDict['mod'] = tempArray[:,3]
-    arrayDict['half'] = tempArray[:,4]
+    arrayDict['x'] = tempArray[:, 0]
+    arrayDict['y'] = tempArray[:, 1]
+    arrayDict['z'] = tempArray[:, 2]
+    arrayDict['mod'] = tempArray[:, 3]
+    arrayDict['half'] = tempArray[:, 4]
 
     return arrayDict
+
 
 def cleanArray(arrayDict):
 
@@ -114,8 +121,9 @@ def cleanArray(arrayDict):
     recY = arrayDict[b'LMDTrackQ.fYrec'][nonZeroEvents].flatten()
     recZ = arrayDict[b'LMDTrackQ.fZrec'][nonZeroEvents].flatten()
 
-    # return a dictl 
+    # return a dictl
     return {'half': half, 'mod': module, 'x': recX, 'y': recY, 'z': recZ}
+
 
 if __name__ == "__main__":
     print('this module is not intended to be run independently.')

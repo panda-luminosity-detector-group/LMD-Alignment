@@ -4,20 +4,19 @@ import json
 import numpy as np
 
 
-def readJSON(filename):
-    with open(filename, 'r') as f:
-        return json.load(f)
-
-
 def getMatrixFromJSON(jsonFile, path):
-    json = readJSON(jsonFile)
-    data = json[path]
-    matrix = np.array(data)
-    matrix = np.reshape(matrix, (4, 4))
-    return matrix
+
+    with open(jsonFile, 'r') as f:
+        jsonData = json.load(f)
+        data = jsonData[path]
+        matrix = np.array(data)
+        matrix = np.reshape(matrix, (4, 4))
+        return matrix
 
 
-def saveMatrixToJSON(matrix):
+def saveMatrixToJSON(matrix, filename):
+    # with open(filename, 'w') as f:
+    #     matrix = matrix.flatten()
     pass
 
 # TODO: express homogenization and de-homogenization with 4x4 matrices! it's pretty easy!

@@ -176,7 +176,7 @@ class simWrapper():
         os.chdir(scriptsPath)
         print(f'Running ./determineLuminosity . This might take a while.')
         # don't close file desciptor, this call will block until lumi is determined!
-        subprocess.check_output((command, argP, argPval))
+        subprocess.Popen((command, argP, argPval))
         print(f'done!')
         
     def runAll(self):
