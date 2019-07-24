@@ -151,7 +151,7 @@ class simWrapper():
         dataPath = self.__config.pathTrksQA()
 
         if dataPath:
-            subprocess.check_output((command, dataPath))
+            subprocess.Popen((command, dataPath))
             print(f'Luminosity extracted!')
 
         else:

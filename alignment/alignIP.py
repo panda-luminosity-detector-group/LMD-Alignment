@@ -23,6 +23,8 @@ compare with actual IP position from PANDA upstream
 save matrix to json file
 rerun Reco and Lumi steps
 
+- TOP TODO: use LMDRunConfig object!
+
 - FIXME: unify vector handling. most vectors are still row-major and not homogenous!
 - FIXME: all path arguments should be os.path objects!
 
