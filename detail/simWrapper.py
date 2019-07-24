@@ -95,7 +95,7 @@ class simWrapper():
 
         returnVal = returnVal.decode(sys.stdout.encoding)
 
-        print(f'RETURNED:\n{returnVal}')
+        print(f'============ RETURNED:\n{returnVal}\n============ END OF RETURN')
 
         match = re.search(r'Submitted batch job (\d+)', returnVal)
         if match:
