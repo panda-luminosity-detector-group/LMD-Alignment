@@ -133,7 +133,11 @@ class simWrapper():
                 return
 
             print(f'{foundJobs} jobs  running...')
-            time.sleep(60)
+
+            # TODO: check for stuck jobs here, sometimes a single job will get stuck and timeout.
+
+            # wait until next iteration
+            time.sleep(10*60)
 
     def extractLumi(self):
         if self.__config is None:
