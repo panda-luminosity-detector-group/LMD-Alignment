@@ -19,6 +19,7 @@ import subprocess
 from pathlib import Path
 from detail.LMDRunConfig import LMDRunConfig
 
+
 class simWrapper():
 
     # empty constructor
@@ -139,24 +140,6 @@ class simWrapper():
             # wait until next iteration
             time.sleep(10*60)
 
-    def extractLumi(self):
-        if self.__config is None:
-            print(f'please set run config first!')
-
-        #absPath = self.__config.__path
-        #print(f'path: {absPath}')
-        print(f'Running ./extractLuminosity...')
-        binPath = self.__lumiFitPath / Path('build') / Path('bin')
-        command = binPath / Path('extractLuminosity')
-        dataPath = self.__config.pathTrksQA()
-
-        if dataPath:
-            subprocess.Popen((command, dataPath))
-            print(f'Luminosity extracted!')
-
-        else:
-            print(f'can\'t determine path!')
-
     # the lumi fit scripts are blocking!
     def detLumi(self):
         if self.__config is None:
@@ -176,9 +159,27 @@ class simWrapper():
         os.chdir(scriptsPath)
         print(f'Running ./determineLuminosity . This might take a while.')
         # don't close file desciptor, this call will block until lumi is determined!
-        subprocess.Popen((command, argP, argPval))
+        subprocess.call((command, argP, argPval))
         print(f'done!')
-        
+
+    def extractLumi(self):
+        if self.__config is None:
+            print(f'please set run config first!')
+
+        #absPath = self.__config.__path
+        #print(f'path: {absPath}')
+        print(f'Running ./extractLuminosity...')
+        binPath = self.__lumiFitPath / Path('build') / Path('bin')
+        command = binPath / Path('extractLuminosity')
+        dataPath = self.__config.pathTrksQA()
+
+        if dataPath:
+            subprocess.call((command, dataPath))
+            print(f'Luminosity extracted!')
+
+        else:
+            print(f'can\'t determine path!')
+
     def runAll(self):
         if self.__config is None:
             print(f'please set run config first!')
