@@ -66,6 +66,11 @@ def runAllConfigs(args):
         simWrappers.append(simWrapper.fromRunConfig(runConfig))
 
     maxThreads = min(len(simWrappers), 64)
+
+    if args.debug:
+        maxThreads = 1
+        print(f'DEBUG: running in {maxThreads} threads!')
+
     # run concurrently in maximum 64 threads. they mostly wait for compute nodes anyway.
     # we use a process pool instead of a thread pool because the individual interpreters are working on different cwd's.
 
@@ -105,6 +110,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--test', action='store_true', help='internal test function')
     parser.add_argument('-c', metavar='--config', type=str, dest='configFile', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
+    parser.add_argument('--debug', action='store_true', help='run single threaded, more verbose output')
     parser.add_argument('-D', action='store_true', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     parser.add_argument('-C', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as job!')
 
