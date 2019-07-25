@@ -35,8 +35,6 @@ most importantly, can also create paths given these parameters:
 class LMDRunConfig:
     # no static variables! define object-local variables in __init__ functions
 
-    # TODO: add getters/setters
-
     def __init__(self):
         # find env variabled
         # paths must be stored as strings internally so they can be serialized to JSON!
@@ -262,6 +260,9 @@ class LMDRunConfig:
 
     # generates all config objects (all momenta, misaligns etc) as a generator
     def genConfigs(self):
+        for mom in genBeamMomenta():
+
+        
         # TODO: implement!
         pass
 

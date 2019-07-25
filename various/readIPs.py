@@ -16,9 +16,8 @@ $LMDFIT_DATA_DIR
 """
 
 """
-TODO: 
-- cleanup functions
-- better latex table generation
+TODO: cleanup functions
+TODO: better latex table generation
 """
 
 class table:

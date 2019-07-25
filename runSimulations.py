@@ -14,8 +14,7 @@ it:
 - compares found alignment matrices with actual alignment matrices
 - converts JSON to ROOT matrices and vice-versa (with ROOT macros)
 
-TODO:
-- remember to delete everything after mc generation for new run
+TODO: remember to delete everything after mc generation for new run
 
 ---------- steps in ideal geometry sim ----------
 
