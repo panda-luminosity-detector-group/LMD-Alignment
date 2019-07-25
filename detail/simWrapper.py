@@ -19,6 +19,9 @@ import subprocess
 from pathlib import Path
 from detail.LMDRunConfig import LMDRunConfig
 
+"""
+Simulation Wrapper. This one handles simulations on Hinster2, interfaces with LuminosityFit Framework etc.
+"""
 
 class simWrapper():
 

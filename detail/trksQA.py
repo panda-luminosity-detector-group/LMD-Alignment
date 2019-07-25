@@ -11,6 +11,9 @@ reads TrksQA.root files (supports wildcards like Lumi_TrksQA_*.root through upro
 
 uses 98% cut by default
 set module=i to filter by module i, same for half
+
+# TODO: clean up this module, what is it supposed to do? how is it different from getIPfromTrksQA?
+
 """
 
 

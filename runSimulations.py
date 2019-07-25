@@ -14,8 +14,6 @@ it:
 - compares found alignment matrices with actual alignment matrices
 - converts JSON to ROOT matrices and vice-versa (with ROOT macros)
 
-TODO: remember to delete everything after mc generation for new run
-
 ---------- steps in ideal geometry sim ----------
 
 - run ./doSimulationReconstruction wit correct parameters (doesn't block)
@@ -32,6 +30,7 @@ TODO: remember to delete everything after mc generation for new run
 - run ./doSimulationReconstruction with correct parameters
 - run ./determineLuminosity
 - run ./extractLuminosity
+TODO: these steps!
 - run my aligners
 - rerun ./doSimulationReconstruction with correct parameters
 - rerun ./determineLuminosity
@@ -45,6 +44,7 @@ import concurrent
 
 from pathlib import Path
 
+from alignment.alignerIP import alignerIP
 from concurrent.futures import ThreadPoolExecutor
 from detail.LMDRunConfig import LMDRunConfig
 from detail.simWrapper import simWrapper
@@ -120,9 +120,17 @@ if __name__ == "__main__":
 
     # run single config
     if args.configFile:
-        wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
-        wrapper.runSimulations()
-        parser.exit(0)
+
+        # TODO: further cases selection, do we want to run simulations, determine Luminosity or find Alignment?
+        # TODO: add another flag for these options
+        if False:
+            wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
+            wrapper.runSimulations()
+            parser.exit(0)
+        else:
+            aligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
+            aligner.computeAlignmentMatrix()
+            parser.exit(0)
 
     # run multiple configs
     if args.configPath:

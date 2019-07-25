@@ -13,6 +13,8 @@ from matplotlib.colors import LogNorm   # for LogNorm
 import matplotlib
 matplotlib.use('Agg')   # so matplotlib works over ssh
 
+# TODO: separate functionality, this module should ONLY read interaction points!
+# TODO: also, maybe use an OOP approach here.
 
 def cleanArray(arrayDict):
 

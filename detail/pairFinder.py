@@ -4,6 +4,7 @@ import numpy as np
 import functions.rootInterface as ri
 from functions import icp
 
+# TODO: OOP this class, it will be important for Sensor Alignment!
 
 def dynamicCut(fileUsable, cutPercent=2, use2D=True):
 

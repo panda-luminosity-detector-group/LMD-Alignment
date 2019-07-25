@@ -3,6 +3,10 @@
 import json
 import numpy as np
 
+"""
+Static methods to access Root Files.
+"""
+
 def readJSON(filename):
   with open(filename, 'r') as f:
     return json.load(f)

@@ -66,6 +66,14 @@ class LMDRunConfig:
 
     #! --------------------- getters without setters
 
+    def __getAlMatFile(self):
+        return self.__alignMatFile
+
+    def __getMisMatFile(self):
+        return self.__misalignMatFile
+    alMatFile = property(__getAlMatFile, None)
+    misMatFile = property(__getMisMatFile, None)
+
     #! --------------------- setters without getters
 
     def __setMisalignFactor(self, value):
@@ -258,9 +266,9 @@ class LMDRunConfig:
         for mis in misalignments:
             yield mis
 
-    # generates all config objects (all momenta, misaligns etc) as a generator
+    # generates all config objects (all beam momenta, misaligns etc) as a generator
     def genConfigs(self):
-        for mom in genBeamMomenta():
+        for mom in self.genBeamMomenta():
             pass
         
         # TODO: implement!
@@ -326,6 +334,7 @@ class LMDRunConfig:
         if len(result) > 0:
             return Path(result[0])
         else:
+            print(f'DEBUG: can\'t find resolve path on file system, returning globbed path!')
             return globbedPath
 
     #! --------------------- create paths to matrices, json results
