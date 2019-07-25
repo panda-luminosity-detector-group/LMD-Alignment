@@ -261,7 +261,7 @@ class LMDRunConfig:
     # generates all config objects (all momenta, misaligns etc) as a generator
     def genConfigs(self):
         for mom in genBeamMomenta():
-
+            pass
         
         # TODO: implement!
         pass
