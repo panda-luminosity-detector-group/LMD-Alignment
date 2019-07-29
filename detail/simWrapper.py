@@ -77,7 +77,7 @@ class simWrapper():
         mismatv = str(self.__config.pathMisMatrix())
 
         # we have to change the directory here since some script paths in LuminosityFit are relative.
-        print(f'DEBUG: chaning cwd to {scriptsPath}')
+        print(f'DEBUG: changing cwd to {scriptsPath}')
         os.chdir(scriptsPath)
 
         # no misalignment nor correction
@@ -158,7 +158,7 @@ class simWrapper():
 
         # see runSimulations()
         # we have to change the directory here since some script paths in LuminosityFit are relative.
-        print(f'DEBUG: chaning cwd to {scriptsPath}')
+        print(f'DEBUG: changing cwd to {scriptsPath}')
         os.chdir(scriptsPath)
         print(f'Running ./determineLuminosity . This might take a while.')
         # don't close file desciptor, this call will block until lumi is determined!
