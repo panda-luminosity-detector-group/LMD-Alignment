@@ -33,6 +33,7 @@ class simWrapper():
         pndRootDir = 'VMCWORKDIR'
         self.cwd = str(Path.cwd())
         self.currentJobID = None
+        self.__debug = True
         try:
             self.__lumiFitPath = str(Path(os.environ[lmdFitEnv]).parent)
             self.__simDataPath = os.environ[simDirEnv]
@@ -80,6 +81,10 @@ class simWrapper():
         print(f'DEBUG: changing cwd to {scriptsPath}')
         os.chdir(scriptsPath)
 
+        if self.__debug:
+            print(f'DEBUG: dumping current runConfig!\n')
+            self.__config.dump()
+
         # no misalignment nor correction
         if not self.__config.misaligned and not self.__config.alignmentCorrection:
             returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm))
@@ -98,7 +103,7 @@ class simWrapper():
 
         returnVal = returnVal.decode(sys.stdout.encoding)
 
-        print(f'============ RETURNED:\n{returnVal}\n============ END OF RETURN')
+        print(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n\n')
 
         match = re.search(r'Submitted batch job (\d+)', returnVal)
         if match:
