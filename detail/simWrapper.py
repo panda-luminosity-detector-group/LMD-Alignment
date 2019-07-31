@@ -60,6 +60,7 @@ class simWrapper():
             self.__log += f'please set run config first!\n'
 
         self.__log += f'\n\n========= Running ./doSimulationReconstruction.\n\n'
+        print(f'\n\n========= Running ./doSimulationReconstruction, please wait.\n\n')
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
         command = scriptsPath / Path('doSimulationReconstruction.py')   # non-blocking!
@@ -102,6 +103,7 @@ class simWrapper():
 
         self.__log += f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n\n'
         self.__log += f'\n\n========= Done!.\n\n'
+        print(f'\n\n========= Jobs submitted, waiting for them to finish...\n\n')
 
 
         match = re.search(r'Submitted batch job (\d+)', returnVal)
@@ -121,6 +123,7 @@ class simWrapper():
             return
 
         self.__log += f'\n\n========= Waiting for jobs...\n\n'
+        print(f'\n\n========= Waiting for jobs...\n\n')
 
         # see https://stackoverflow.com/a/2899055
         user = pwd.getpwuid(os.getuid())[0]
@@ -151,6 +154,8 @@ class simWrapper():
 
             # wait until next iteration
             time.sleep(10*60)
+        print(f'========= Simulation and Reconstruction done, all Jobs finished.')
+        self.__log += f'========= Simulation and Reconstruction done, all Jobs finished.\n'
 
     # the lumi fit scripts are blocking!
     def detLumi(self):

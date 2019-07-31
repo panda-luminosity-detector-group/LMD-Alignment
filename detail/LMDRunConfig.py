@@ -385,7 +385,7 @@ class LMDRunConfig:
         result += (f'Align Factor: {self.__alignFactor}\n')
         result += (f'AlignMatrices: {self.__alignMatFile}\n')
         result += (f'MisalignMatrices: {self.__misalignMatFile}\n')
-        result += (f'TracksQA path: {self.pathTrksQA}\n')
+        result += (f'TracksQA path: {str(self.pathTrksQA)}\n')
         result += (f'Num Tracks: {self.__tracksNum}\n')
         result += (f'Num Jobs: {self.__jobsNum}\n')
         result += (f'------------------------------\n')

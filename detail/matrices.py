@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+This is an handler class for matrix related things.
+"""
+
 import json
 import numpy as np
 
