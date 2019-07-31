@@ -24,6 +24,7 @@ from detail.LMDRunConfig import LMDRunConfig
 Simulation Wrapper. This one handles simulations on Hinster2, interfaces with LuminosityFit Framework etc.
 """
 
+
 class simWrapper():
 
     # empty constructor
@@ -105,7 +106,6 @@ class simWrapper():
         self.__log += f'\n\n========= Done!.\n\n'
         print(f'\n\n========= Jobs submitted, waiting for them to finish...\n\n')
 
-
         match = re.search(r'Submitted batch job (\d+)', returnVal)
         if match:
             jobID = match.groups()[0]
@@ -130,30 +130,45 @@ class simWrapper():
         self.__log += f'you are {user}, waiting on job {self.currentJobID}\n'
         print(f'you are {user}, waiting on job {self.currentJobID}\n')
 
+        # actual wait loop
         while True:
-            squeueOutput = subprocess.check_output(('squeue', '-u', user)).decode(sys.stdout.encoding)
+
+            foundJobsPD = 0
+            foundJobsR = 0
+
+            # -r: expand job arrays, -h:skip header, -O arrayjobid: show only job array ID
+            # find waiting jobs
+            squeueOutput = subprocess.check_output(('squeue', '-u', user, '--state=PD', '-r', '-h', '-O', 'arrayjobid')).decode(sys.stdout.encoding)
             outputLines = squeueOutput.splitlines()
-            foundJobs = 0
             for line in outputLines:
-                match = re.search(r'^\s+(\d+)', line)
+                match = re.search(r'^(\d+)', line)
                 if match:
                     found = match.groups()[0]
                     if found == str(self.currentJobID):
-                        foundJobs += 1
+                        foundJobsPD += 1
+
+            # find running jobs
+            squeueOutput = subprocess.check_output(('squeue', '-u', user, '--state=R', '-h', '-O', 'arrayjobid')).decode(sys.stdout.encoding)
+            outputLines = squeueOutput.splitlines()
+            for line in outputLines:
+                match = re.search(r'^(\d+)', line)
+                if match:
+                    found = match.groups()[0]
+                    if found == str(self.currentJobID):
+                        foundJobsR += 1
 
             # no jobs found? then we can exit
-            if foundJobs == 0:
+            if foundJobsPD == 0 and foundJobsR == 0:
                 print(f'no jobs running, continuing...')
                 self.__log += 'all jobs completed!\n'
                 self.currentJobID = None
                 return
 
-            print(f'{foundJobs} jobs  running...')
+            print(f'{foundJobsPD} jobs pending, {foundJobsR} running...')
 
-            # TODO: check for stuck jobs here, sometimes a single job will get stuck and timeout.
-
-            # wait until next iteration
+            # wait for 10 minutes
             time.sleep(10*60)
+
         print(f'========= Simulation and Reconstruction done, all Jobs finished.')
         self.__log += f'========= Simulation and Reconstruction done, all Jobs finished.\n'
 
@@ -177,7 +192,7 @@ class simWrapper():
         self.__log += f'\n\n========= Running ./determineLuminosity.\n\n'
         print(f'Running ./determineLuminosity. This might take a while.\n')
 
-        # don't close file desciptor, this call will block until lumi is determined!
+        # don't close file descriptor, this call will block until lumi is determined!
         returnOutput = subprocess.check_output((command, argP, argPval))
         self.__log += '\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n'
         print(f'========= Done!')
@@ -225,7 +240,7 @@ class simWrapper():
         jobname = str(self.threadNumber)
         filename = self.cwd / Path('runLogs') / Path(f'{timename}-{jobname}.log')
 
-        # make dir if not present        
+        # make dir if not present
         filename.parent.mkdir(exist_ok=True)
         print(f'DEBUG: saving log to {filename}')
 
@@ -234,8 +249,8 @@ class simWrapper():
         with open(filename, 'w') as file:
             file.write(self.__log)
 
-
     # test function
+
     def idle(self, seconds=3):
         print(f'this thread will idle {seconds} seconds.')
         time.sleep(seconds)
