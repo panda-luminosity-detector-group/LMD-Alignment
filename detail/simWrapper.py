@@ -22,6 +22,8 @@ from detail.LMDRunConfig import LMDRunConfig
 
 """
 Simulation Wrapper. This one handles simulations on Hinster2, interfaces with LuminosityFit Framework etc.
+
+FIXME:  apparently the lumi fit framework sometimes failes when re-determining the lumi of an already fully processed directory
 """
 
 
