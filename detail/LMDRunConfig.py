@@ -373,22 +373,25 @@ class LMDRunConfig:
     #! --------------------- verbose output
 
     def dump(self):
-        print(f'\n\n')
-        print(f'------------------------------')
-        print(f'DEBUG OUTPUT for LMDRunConfig:\n')
-        print(f'Path: {self.__fromPath}')
-        print(f'Momentum: {self.__momentum}')
-        print(f'Misalign Type: {self.__misalignType}')
-        print(f'Misalign Factor: {self.__misalignFactor}')
-        print(f'Align Type: {self.__alignType}')
-        print(f'Align Factor: {self.__alignFactor}')
-        print(f'AlignMatrices: {self.__alignMatFile}')
-        print(f'MisalignMatrices: {self.__misalignMatFile}')
-        print(f'TracksQA path: {self.pathTrksQA}')
-        print(f'Num Tracks: {self.__tracksNum}')
-        print(f'Num Jobs: {self.__jobsNum}')
-        print(f'------------------------------')
-        print(f'\n\n')
+        result = ''
+        result += (f'\n\n')
+        result += (f'------------------------------\n')
+        result += (f'DEBUG OUTPUT for LMDRunConfig:\n\n')
+        result += (f'Path: {self.__fromPath}\n')
+        result += (f'Momentum: {self.__momentum}\n')
+        result += (f'Misalign Type: {self.__misalignType}\n')
+        result += (f'Misalign Factor: {self.__misalignFactor}\n')
+        result += (f'Align Type: {self.__alignType}\n')
+        result += (f'Align Factor: {self.__alignFactor}\n')
+        result += (f'AlignMatrices: {self.__alignMatFile}\n')
+        result += (f'MisalignMatrices: {self.__misalignMatFile}\n')
+        result += (f'TracksQA path: {self.pathTrksQA}\n')
+        result += (f'Num Tracks: {self.__tracksNum}\n')
+        result += (f'Num Jobs: {self.__jobsNum}\n')
+        result += (f'------------------------------\n')
+        result += (f'\n\n')
+        #print(result)
+        return result
 
 
 if __name__ == "__main__":

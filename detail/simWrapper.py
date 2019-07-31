@@ -9,6 +9,7 @@ Depends on:
 - LuminosityFitFramework
 """
 
+import datetime
 import os
 import re
 import pwd  # to get current user
@@ -33,14 +34,16 @@ class simWrapper():
         pndRootDir = 'VMCWORKDIR'
         self.cwd = str(Path.cwd())
         self.currentJobID = None
+        self.threadNumber = None
+        self.__log = ''
         self.__debug = True
         try:
             self.__lumiFitPath = str(Path(os.environ[lmdFitEnv]).parent)
             self.__simDataPath = os.environ[simDirEnv]
             self.__pandaRootDir = os.environ[pndRootDir]
         except:
-            print("can't find LuminosityFit installation, PandaRoot installation or Data_Dir!")
-            print(f"please set {lmdFitEnv}, {pndRootDir} and {simDirEnv}!")
+            self.__log += "can't find LuminosityFit installation, PandaRoot installation or Data_Dir!\n"
+            self.__log += f"please set {lmdFitEnv}, {pndRootDir} and {simDirEnv}!\n"
             sys.exit(1)
 
     @classmethod
@@ -49,20 +52,14 @@ class simWrapper():
         wrapper.setRunConfig(LMDRunConfig)
         return wrapper
 
-    def dump(self):
-        print(f'\n\n')
-        print(f'------------------------------')
-        print(f'DEBUG OUTPUT for SimWrapper:\n')
-        print(f'CWD: {self.cwd}')
-        print(f'------------------------------')
-        print(f'\n\n')
-
     def setRunConfig(self, LMDRunConfig):
         self.__config = LMDRunConfig
 
     def runSimulations(self):
         if self.__config is None:
-            print(f'please set run config first!')
+            self.__log += f'please set run config first!\n'
+
+        self.__log += f'\n\n========= Running ./doSimulationReconstruction.\n\n'
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
         command = scriptsPath / Path('doSimulationReconstruction.py')   # non-blocking!
@@ -78,12 +75,12 @@ class simWrapper():
         mismatv = str(self.__config.pathMisMatrix())
 
         # we have to change the directory here since some script paths in LuminosityFit are relative.
-        print(f'DEBUG: changing cwd to {scriptsPath}')
+        self.__log += f'DEBUG: changing cwd to {scriptsPath}\n'
         os.chdir(scriptsPath)
 
         if self.__debug:
-            print(f'DEBUG: dumping current runConfig!\n')
-            self.__config.dump()
+            self.__log += f'DEBUG: dumping current runConfig!\n'
+            self.__log += self.__config.dump() + '\n'
 
         # no misalignment nor correction
         if not self.__config.misaligned and not self.__config.alignmentCorrection:
@@ -103,27 +100,33 @@ class simWrapper():
 
         returnVal = returnVal.decode(sys.stdout.encoding)
 
-        print(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n\n')
+        self.__log += f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n\n'
+        self.__log += f'\n\n========= Done!.\n\n'
+
 
         match = re.search(r'Submitted batch job (\d+)', returnVal)
         if match:
             jobID = match.groups()[0]
-            print(f'FOUND JOB ID: {jobID}')
+            self.__log += f'FOUND JOB ID: {jobID}\n'
             self.currentJobID = jobID
         else:
-            print('can\'t parse job ID from output!')
+            self.__log += 'can\'t parse job ID from output!\n'
 
     def waitForJobCompletion(self):
         if self.__config is None:
-            print(f'please set run config first!')
+            self.__log += f'please set run config first!\n'
 
         if not self.currentJobID:
-            print(f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!')
+            self.__log += f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!\n'
             return
+
+        self.__log += f'\n\n========= Waiting for jobs...\n\n'
 
         # see https://stackoverflow.com/a/2899055
         user = pwd.getpwuid(os.getuid())[0]
-        print(f'you are {user}, waiting on job {self.currentJobID}')
+        self.__log += f'you are {user}, waiting on job {self.currentJobID}\n'
+        print(f'you are {user}, waiting on job {self.currentJobID}\n')
+
         while True:
             squeueOutput = subprocess.check_output(('squeue', '-u', user)).decode(sys.stdout.encoding)
             outputLines = squeueOutput.splitlines()
@@ -138,6 +141,7 @@ class simWrapper():
             # no jobs found? then we can exit
             if foundJobs == 0:
                 print(f'no jobs running, continuing...')
+                self.__log += 'all jobs completed!\n'
                 self.currentJobID = None
                 return
 
@@ -151,10 +155,10 @@ class simWrapper():
     # the lumi fit scripts are blocking!
     def detLumi(self):
         if self.__config is None:
-            print(f'please set run config first!')
+            self.__log += f'please set run config first!\n'
 
         absPath = self.__config.pathTrksQA()
-        print(f'DEBUG: determining Luminosity of the data set found here:\n{absPath}')
+        self.__log += f'DEBUG: determining Luminosity of the data set found here:\n{absPath}\n'
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
         command = scriptsPath / Path('determineLuminosity.py')
@@ -163,40 +167,68 @@ class simWrapper():
 
         # see runSimulations()
         # we have to change the directory here since some script paths in LuminosityFit are relative.
-        print(f'DEBUG: changing cwd to {scriptsPath}')
+        self.__log += f'DEBUG: changing cwd to {scriptsPath}\n'
         os.chdir(scriptsPath)
-        print(f'Running ./determineLuminosity . This might take a while.')
+        self.__log += f'\n\n========= Running ./determineLuminosity.\n\n'
+        print(f'Running ./determineLuminosity. This might take a while.\n')
+
         # don't close file desciptor, this call will block until lumi is determined!
-        subprocess.call((command, argP, argPval))
-        print(f'done!')
+        returnOutput = subprocess.check_output((command, argP, argPval))
+        self.__log += '\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n'
+        print(f'========= Done!')
+        self.__log += f'========= Done!\n'
 
     def extractLumi(self):
         if self.__config is None:
-            print(f'please set run config first!')
+            self.__log += f'please set run config first!\n'
 
-        #absPath = self.__config.__path
-        #print(f'path: {absPath}')
-        print(f'Running ./extractLuminosity...')
+        print(f'========= Running ./extractLuminosity...')
+        self.__log += f'\n\n========= Running ./extractLuminosity...\n\n'
+
         binPath = self.__lumiFitPath / Path('build') / Path('bin')
         command = binPath / Path('extractLuminosity')
         dataPath = self.__config.pathTrksQA()
 
         if dataPath:
-            subprocess.call((command, dataPath))
-            print(f'Luminosity extracted!')
+            returnOutput = subprocess.check_output((command, dataPath))
+            self.__log += '\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n'
+            print(f'========= Luminosity extracted!')
+            self.__log += f'========= Luminosity extracted!\n'
 
         else:
             print(f'can\'t determine path!')
 
     def runAll(self):
         if self.__config is None:
-            print(f'please set run config first!')
+            self.__log += f'please set run config first!\n'
             return
 
         self.runSimulations()           # non blocking, so we have to wait
         self.waitForJobCompletion()     # blocking
         self.detLumi()                  # blocking
         self.extractLumi()              # blocking
+        self.saveLog()                  # this is needed if multiple threads are running concurrently
+
+    def saveLog(self):
+
+        # should include date
+        if self.threadNumber is not None:
+            timename = datetime.datetime.now().replace(second=0, microsecond=0).isoformat()
+        else:
+            timename = datetime.datetime.now().isoformat()
+
+        jobname = str(self.threadNumber)
+        filename = self.cwd / Path('runLogs') / Path(f'{timename}-{jobname}.log')
+
+        # make dir if not present        
+        filename.parent.mkdir(exist_ok=True)
+        print(f'DEBUG: saving log to {filename}')
+
+        self.__log = f'This is simWrapper {self.threadNumber}:\n\n' + self.__log
+
+        with open(filename, 'w') as file:
+            file.write(self.__log)
+
 
     # test function
     def idle(self, seconds=3):
