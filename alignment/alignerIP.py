@@ -20,20 +20,16 @@ compare with actual IP position from PANDA upstream
 save matrix to json file
 rerun Reco and Lumi steps
 
-- TOP TODO: use LMDRunConfig object!
-
 - FIXME: unify vector handling. most vectors are still row-major and not homogenous!
 - FIXME: all path arguments should be Pathlib objects!
 
 - TODO: scan multiple directories for TrksQA, parse align factor, compute box rotation matrices and store to pandaroot dir! 
-- TODO: use a class constructor that accepts a LMDpath object in the future. this one can also be called with command line arguments
 """
 
 
 class alignerIP:
 
     def __init__(self):
-        # TODO: do we even need an empty constructor?
         pass
 
     @classmethod
@@ -55,11 +51,12 @@ class alignerIP:
             # values are pre-calculated for ideal lumi position
             return np.array((25.37812835, 0.0, 1109.13))
 
-    # see https://math.stackexchange.com/a/476311
-    # https://en.wikipedia.org/wiki/Cross_product
     """
     computes rotation from A to B when rotated through origin.
     shift A and B before, if rotation did not already occur through origin!
+    
+    see https://math.stackexchange.com/a/476311
+    or https://en.wikipedia.org/wiki/Cross_product
     """
 
     def getRot(self, apparent, actual):
@@ -138,8 +135,8 @@ class alignerIP:
 
     def computeAlignmentMatrix(self):
         if not self.config:
-            print(f'Error! Config not set!')
-        print(f'feckin A, eh')
+            print(f'ERROR! Config not set!')
+            return
 
         trksQApath = self.config.pathTrksQA()
         print(f'I\'m looking for the IP here: {trksQApath}')
@@ -174,70 +171,69 @@ class alignerIP:
         if not self.config.alMatFile:
             self.config.generateMatrixNames()
 
-        # TODO: change for Himster
-        #outFileName = self.config.alMatFile
-        outFileName = Path('/tmp/tempMat.json')
+        outFileName = self.config.alMatFile
 
         with open(outFileName, 'w') as outfile:
             json.dump(resultJson, outfile, indent=2)
 
         print(f'interaction point alignment done!')
 
-    def getBoxMatrix(self, trksQApath=Path('../input/TrksQA/box-2.00/'), alignName=''):
 
-        # TODO: read from config or PANDA db/survey
-        lumiPos = self.getLumiPosition()
-        print(f'Lumi Position is:\n{lumiPos}')
+if __name__ == "__main__":
+    print(f'Error! Can not be run individually!')
 
-        #ipApparent = np.array([1.0, 0.0, 0.0])
-        trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
+    # def getBoxMatrix(self, trksQApath=Path('../input/TrksQA/box-2.00/'), alignName=''):
 
-        ipApparent = getIPfromTrksQA(str(trksQAfile))
-        # TODO: read from config or PANDA db/survey
-        ipActual = np.array([0.0, 0.0, 0.0])
+    #     lumiPos = self.getLumiPosition()
+    #     print(f'Lumi Position is:\n{lumiPos}')
 
-        print(f'IP apparent:\n{ipApparent}')
+    #     #ipApparent = np.array([1.0, 0.0, 0.0])
+    #     trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
 
-        ipApparentLMD = ipApparent - lumiPos
-        ipActualLMD = ipActual - lumiPos
+    #     ipApparent = getIPfromTrksQA(str(trksQAfile))
+    #     ipActual = np.array([0.0, 0.0, 0.0])
 
-        #! order is (IP_from_LMD, IP_actual) (i.e. from PANDA)
-        Ra = self.getRot(ipApparentLMD, ipActualLMD)
-        R1 = makeHomogenous(Ra)
+    #     print(f'IP apparent:\n{ipApparent}')
 
-        print('matrix is:')
-        self.printMatrixDetails(R1)
+    #     ipApparentLMD = ipApparent - lumiPos
+    #     ipActualLMD = ipActual - lumiPos
 
-        if alignName != '':
-            print(f'comparing with design matrix:')
-            # read json file here and compare
-            try:
-                mat1 = getMatrixFromJSON('../input/rootMisalignMatrices/json/misMat-box-2.00.root.json', '/cave_1/lmd_root_0')
-                print('matrix should be:')
-                printMatrixDetails(mat1)
-                printMatrixDetails(R1, mat1)
-            except:
-                print(f"can't open matrix file: {alignName}")
+    #     #! order is (IP_from_LMD, IP_actual) (i.e. from PANDA)
+    #     Ra = self.getRot(ipApparentLMD, ipActualLMD)
+    #     R1 = makeHomogenous(Ra)
 
-        resultJson = {"/cave_1/lmd_root_0": np.ndarray.tolist(np.ndarray.flatten(R1))}
+    #     print('matrix is:')
+    #     self.printMatrixDetails(R1)
 
-        # TODO: generalize the output name, maybe use some command line argument
-        outFileName = Path.cwd().parent / Path('output') / Path(alignName).with_suffix('.json')  # (alignName)
-        with open(outFileName, 'w') as outfile:
-            json.dump(resultJson, outfile, indent=2)
+    #     if alignName != '':
+    #         print(f'comparing with design matrix:')
+    #         # read json file here and compare
+    #         try:
+    #             mat1 = getMatrixFromJSON('../input/rootMisalignMatrices/json/misMat-box-2.00.root.json', '/cave_1/lmd_root_0')
+    #             print('matrix should be:')
+    #             printMatrixDetails(mat1)
+    #             printMatrixDetails(R1, mat1)
+    #         except:
+    #             print(f"can't open matrix file: {alignName}")
 
-        print(resultJson)
+    #     resultJson = {"/cave_1/lmd_root_0": np.ndarray.tolist(np.ndarray.flatten(R1))}
 
-        ipA1 = makeHomogenous(ipActualLMD).T
-        print(f'ip A1: \n{ipA1}')
-        print(f'with this matrix, the IP would be at:\n{(np.linalg.inv(R1)@ipA1).T[0] + makeHomogenous(lumiPos)}')
+    #     outFileName = Path.cwd().parent / Path('output') / Path(alignName).with_suffix('.json')  # (alignName)
+    #     with open(outFileName, 'w') as outfile:
+    #         json.dump(resultJson, outfile, indent=2)
 
-        # implement anew using strictly homogenous, column-major vectors!
-        # points have w=1, vectors have w=0. de-homogenize with x/w, y/w, z/w
-        # vectors CAN NOT be de-homogenized, but the points they point to can be.
-        # so, construct a point by origin + v = point_v_points_to
-        # this way, v gets its w=1 back
-        # see https://math.stackexchange.com/questions/645672/what-is-the-difference-between-a-point-and-a-vector
-        # def getBoxMatrixHomogenous():
-        #     origin = np.array([0,0,0,1])[np.newaxis].T
-        #     pass
+    #     print(resultJson)
+
+    #     ipA1 = makeHomogenous(ipActualLMD).T
+    #     print(f'ip A1: \n{ipA1}')
+    #     print(f'with this matrix, the IP would be at:\n{(np.linalg.inv(R1)@ipA1).T[0] + makeHomogenous(lumiPos)}')
+
+    # implement anew using strictly homogenous, column-major vectors!
+    # points have w=1, vectors have w=0. de-homogenize with x/w, y/w, z/w
+    # vectors CAN NOT be de-homogenized, but the points they point to can be.
+    # so, construct a point by origin + v = point_v_points_to
+    # this way, v gets its w=1 back
+    # see https://math.stackexchange.com/questions/645672/what-is-the-difference-between-a-point-and-a-vector
+    # def getBoxMatrixHomogenous():
+    #     origin = np.array([0,0,0,1])[np.newaxis].T
+    #     pass

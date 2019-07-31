@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 """
-FIXME: Test
+
+TODO: Implement corridor alignment
+
 """
 
 if __name__ == "__main__":
