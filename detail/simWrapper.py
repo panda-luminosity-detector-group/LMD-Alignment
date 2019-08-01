@@ -132,6 +132,9 @@ class simWrapper():
         self.__log += f'you are {user}, waiting on job {self.currentJobID}\n'
         print(f'you are {user}, waiting on job {self.currentJobID}\n')
 
+        waitIntervals = 0
+        waitIntervalTime = 10 * 60
+
         # actual wait loop
         while True:
 
@@ -162,14 +165,15 @@ class simWrapper():
             # no jobs found? then we can exit
             if foundJobsPD == 0 and foundJobsR == 0:
                 print(f'no jobs running, continuing...')
-                self.__log += 'all jobs completed!\n'
+                self.__log += f'all jobs completed after {waitIntervals * waitIntervalTime} minutes!\n'
                 self.currentJobID = None
                 return
 
             print(f'Thread {self.threadNumber}: {foundJobsPD} jobs pending, {foundJobsR} running...')
 
             # wait for 10 minutes
-            time.sleep(10*60)
+            waitIntervals += 1
+            time.sleep(waitIntervalTime)
 
         print(f'========= Simulation and Reconstruction done, all Jobs finished.')
         self.__log += f'========= Simulation and Reconstruction done, all Jobs finished.\n'
@@ -203,6 +207,8 @@ class simWrapper():
     def extractLumi(self):
         if self.__config is None:
             self.__log += f'please set run config first!\n'
+
+        # TODO: the binary only finds files in [...]/geo_misalignmentmisMat-box-1.00/100000/, NOT the subfolder [...]/1-500_uncut/aligned-alMat-box-1.00 !!!
 
         print(f'========= Running ./extractLuminosity...')
         self.__log += f'\n\n========= Running ./extractLuminosity...\n\n'
