@@ -319,6 +319,9 @@ class LMDRunConfig:
     def __aligned__(self):
         return Path('aligned*')
 
+    def __noAlignCorrection__(self):
+        return Path('no_alignment_correction')
+
     def __bunches__(self):
         return Path('bunches*') / Path('binning*') / Path('merge_data')
 
@@ -353,14 +356,21 @@ class LMDRunConfig:
         if self.__alignmentCorrection:
             return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__aligned__() / self.__bunches__() / self.__recoIP__())
         else:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__bunches__() / self.__recoIP__())
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__noAlignCorrection__() / self.__bunches__() / self.__recoIP__())
 
     def pathLumiVals(self):
         self.__checkMinimum__()
         if self.__alignmentCorrection:
             return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__aligned__() / self.__bunches__() / self.__lumiVals__())
         else:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__bunches__() / self.__lumiVals__())
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__noAlignCorrection__() / self.__bunches__() / self.__lumiVals__())
+
+    def pathDataBaseDir(self):
+        self.__checkMinimum__()
+        if self.__alignmentCorrection:
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__aligned__())
+        else:
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__noAlignCorrection__())
 
     # for AlignIP et al. methods
     def pathTrksQA(self):
@@ -368,7 +378,7 @@ class LMDRunConfig:
         if self.__alignmentCorrection:
             return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__aligned__())
         else:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__())
+            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__noAlignCorrection__())
 
     #! --------------------- verbose output
 

@@ -215,7 +215,7 @@ class simWrapper():
 
         binPath = self.__lumiFitPath / Path('build') / Path('bin')
         command = binPath / Path('extractLuminosity')
-        dataPath = self.__config.pathTrksQA()
+        dataPath = self.__config.pathDataBaseDir()
 
         if dataPath:
             returnOutput = subprocess.check_output((command, dataPath))
