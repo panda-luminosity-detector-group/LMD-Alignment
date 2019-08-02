@@ -342,12 +342,10 @@ class LMDRunConfig:
 
     #! --------------------- create paths to matrices, json results
     def pathAlMatrix(self):
-        # TODO: check if json or root file, convert if needed!
         self.__checkMinimum__()
         return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json'))
 
     def pathMisMatrix(self):
-        # TODO: check if json or root file, convert if needed!
         self.__checkMinimum__()
         return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__misalignFactor}.root'))
 

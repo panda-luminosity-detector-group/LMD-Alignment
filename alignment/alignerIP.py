@@ -137,7 +137,7 @@ class alignerIP:
         trksQApath = self.config.pathTrksQA()
         print(f'I\'m looking for the IP here: {trksQApath}')
 
-        # TODO: read from config or PANDA db/survey
+        # FIXME later: read from config or PANDA db/survey
         lumiPos = self.getLumiPosition()
         print(f'Lumi Position is:\n{lumiPos}')
 
@@ -145,7 +145,7 @@ class alignerIP:
         trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
         ipApparent = getIPfromTrksQA(str(trksQAfile))
 
-        # TODO: add debug flag or something
+        # add debug flag or something
         if False:
             ipApparent = np.array([1.0, 0.0, 0.0])
 

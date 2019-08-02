@@ -14,10 +14,9 @@ Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
 This aligner needs a LMDRunConfig object. It will then:
 
-- read TrksQA.root files
-- find apparent IP position
-- compare with actual IP position from PANDA upstream and compute rotation matrix
-- save matrix to json file
+- read Lumi_Pairs_*.root files
+- finds overlap matrices
+- saves them as deviation matrices to json
 
 Info: all positional vectors are row-major!
 """
