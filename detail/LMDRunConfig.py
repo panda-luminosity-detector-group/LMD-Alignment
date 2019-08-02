@@ -368,6 +368,9 @@ class LMDRunConfig:
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__alignCorrectionSubDir__())
 
+    def pathJobBase(self):
+        return self.__resolveActual__(self.__jobBaseDir__())
+
     #! --------------------- verbose output
 
     def dump(self):

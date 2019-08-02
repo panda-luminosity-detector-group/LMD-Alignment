@@ -10,6 +10,7 @@ Depends on:
 """
 
 import datetime
+import json
 import os
 import re
 import pwd  # to get current user
@@ -213,13 +214,19 @@ class simWrapper():
 
         binPath = self.__lumiFitPath / Path('build') / Path('bin')
         command = binPath / Path('extractLuminosity')
-        dataPath = self.__config.pathDataBaseDir()
+        dataPath = self.__config.pathJobBase()
 
         if dataPath:
             returnOutput = subprocess.check_output((command, dataPath))
             self.__log += '\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n'
             print(f'========= Luminosity extracted!')
-            self.__log += f'========= Luminosity extracted!\n'
+            
+            with open(self.__config.pathLumiVals()) as file:
+                lumiJson = json.load(file)
+
+            print(lumiJson)
+
+            self.__log += f'========= Luminosity extracted!\nLumi values: {lumiJson}'
 
         else:
             print(f'can\'t determine path!')
