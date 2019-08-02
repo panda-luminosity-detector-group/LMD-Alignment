@@ -119,9 +119,10 @@ if __name__ == "__main__":
 
     
     parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='try to find all alignment matrices (IP, corridor, sensors) for a single runConfig without running the simulations/fits')
-    parser.add_argument('-D', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
+    parser.add_argument('-A', metavar='--alignPath', type=str, dest='alignPath', help='path to multiple LMDRunConfig files. ALL runConfig files in this path will be read and their alignment matrices determined!')
+    parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     parser.add_argument('-r', metavar='--runConfig', type=str, dest='runConfig', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
-    parser.add_argument('-R', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as job!')
+    parser.add_argument('-R', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as COMPLETE job, mc data, lumi and alignment!')
     
     parser.add_argument('--debug', action='store_true', help='run single threaded, more verbose output')
     parser.add_argument('--test', action='store_true', help='internal test function')

@@ -156,7 +156,7 @@ class alignerIP:
         if False:
             ipApparent = np.array([1.0, 0.0, 0.0])
 
-        # TODO: read from config or PANDA db/survey
+        # FIXME later: read from config or PANDA db/survey
         ipActual = np.array([0.0, 0.0, 0.0])
 
         print(f'IP apparent:\n{ipApparent}')
@@ -164,7 +164,7 @@ class alignerIP:
         ipApparentLMD = ipApparent - lumiPos
         ipActualLMD = ipActual - lumiPos
 
-        #! order is (IP_from_LMD, IP_actual) (i.e. from PANDA)
+        #! order is (IP_from_LMD, IP_actual, i.e. from PANDA)
         Ra = self.getRot(ipApparentLMD, ipActualLMD)
         R1 = makeHomogenous(Ra)
 
@@ -173,8 +173,12 @@ class alignerIP:
         if not self.config.alMatFile:
             self.config.generateMatrixNames()
 
+        # FIXME later: save alignment Matrix to DATA path, not PandaRoot path!
         outFileName = self.config.alMatFile
-        outFileName = '/tmp/ULTRATESTMATRIX'
+
+        if Path(outFileName).exists():
+            print(f'WARNING. Replacing file: {outFileName}')
+            Path(outFileName).unlink()
 
         with open(outFileName, 'w') as outfile:
             json.dump(resultJson, outfile, indent=2)
