@@ -165,7 +165,7 @@ class simWrapper():
             # no jobs found? then we can exit
             if foundJobsPD == 0 and foundJobsR == 0:
                 print(f'Thread {self.threadNumber}: No more jobs running, continuing...')
-                self.__log += f'all jobs completed after {waitIntervals * waitIntervalTime} minutes!\n'
+                self.__log += f'all jobs completed after {waitIntervals * waitIntervalTime / 3600} hours!\n'
                 self.currentJobID = None
                 return
 
