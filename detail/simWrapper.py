@@ -164,7 +164,7 @@ class simWrapper():
 
             # no jobs found? then we can exit
             if foundJobsPD == 0 and foundJobsR == 0:
-                print(f'no jobs running, continuing...')
+                print(f'Thread {self.threadNumber}: No more jobs running, continuing...')
                 self.__log += f'all jobs completed after {waitIntervals * waitIntervalTime} minutes!\n'
                 self.currentJobID = None
                 return
@@ -207,8 +207,6 @@ class simWrapper():
     def extractLumi(self):
         if self.__config is None:
             self.__log += f'please set run config first!\n'
-
-        # TODO: the binary only finds files in [...]/geo_misalignmentmisMat-box-1.00/100000/, NOT the subfolder [...]/1-500_uncut/aligned-alMat-box-1.00 !!!
 
         print(f'========= Running ./extractLuminosity...')
         self.__log += f'\n\n========= Running ./extractLuminosity...\n\n'
