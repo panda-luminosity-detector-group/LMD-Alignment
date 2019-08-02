@@ -6,24 +6,20 @@ from detail.trksQA import getIPfromTrksQA
 
 from pathlib import Path
 
-# TODO: this class shouldn't import json, handle this some other way
 import json
 import numpy as np
 
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
-read TrksQA.root files
-find apparent IP position
-compare with actual IP position from PANDA upstream
+This aligner needs a LMDRunConfig object. It will then:
 
-save matrix to json file
-rerun Reco and Lumi steps
+- read TrksQA.root files
+- find apparent IP position
+- compare with actual IP position from PANDA upstream and compute rotation matrix
+- save matrix to json file
 
-- FIXME: unify vector handling. most vectors are still row-major and not homogenous!
-- FIXME: all path arguments should be Pathlib objects!
-
-- TODO: scan multiple directories for TrksQA, parse align factor, compute box rotation matrices and store to pandaroot dir! 
+Info: all positional vectors are row-major!
 """
 
 
@@ -145,13 +141,10 @@ class alignerIP:
         lumiPos = self.getLumiPosition()
         print(f'Lumi Position is:\n{lumiPos}')
 
-        # TODO: change for Himster
-        # TODO: create list with about 10 TrksQA files by searching through the directory, no more hard coded values!
+        # TODO: create list with about 3 TrksQA files by searching through the directory, no more hard coded values!
         trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
-
-        # TODO: change for Himster
         ipApparent = getIPfromTrksQA(str(trksQAfile))
-        
+
         # TODO: add debug flag or something
         if False:
             ipApparent = np.array([1.0, 0.0, 0.0])
@@ -160,6 +153,7 @@ class alignerIP:
         ipActual = np.array([0.0, 0.0, 0.0])
 
         print(f'IP apparent:\n{ipApparent}')
+        print(f'IP actual:\n{ipActual}')
 
         ipApparentLMD = ipApparent - lumiPos
         ipActualLMD = ipActual - lumiPos
@@ -188,59 +182,3 @@ class alignerIP:
 
 if __name__ == "__main__":
     print(f'Error! Can not be run individually!')
-
-    # def getBoxMatrix(self, trksQApath=Path('../input/TrksQA/box-2.00/'), alignName=''):
-
-    #     lumiPos = self.getLumiPosition()
-    #     print(f'Lumi Position is:\n{lumiPos}')
-
-    #     #ipApparent = np.array([1.0, 0.0, 0.0])
-    #     trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
-
-    #     ipApparent = getIPfromTrksQA(str(trksQAfile))
-    #     ipActual = np.array([0.0, 0.0, 0.0])
-
-    #     print(f'IP apparent:\n{ipApparent}')
-
-    #     ipApparentLMD = ipApparent - lumiPos
-    #     ipActualLMD = ipActual - lumiPos
-
-    #     #! order is (IP_from_LMD, IP_actual) (i.e. from PANDA)
-    #     Ra = self.getRot(ipApparentLMD, ipActualLMD)
-    #     R1 = makeHomogenous(Ra)
-
-    #     print('matrix is:')
-    #     self.printMatrixDetails(R1)
-
-    #     if alignName != '':
-    #         print(f'comparing with design matrix:')
-    #         # read json file here and compare
-    #         try:
-    #             mat1 = getMatrixFromJSON('../input/rootMisalignMatrices/json/misMat-box-2.00.root.json', '/cave_1/lmd_root_0')
-    #             print('matrix should be:')
-    #             printMatrixDetails(mat1)
-    #             printMatrixDetails(R1, mat1)
-    #         except:
-    #             print(f"can't open matrix file: {alignName}")
-
-    #     resultJson = {"/cave_1/lmd_root_0": np.ndarray.tolist(np.ndarray.flatten(R1))}
-
-    #     outFileName = Path.cwd().parent / Path('output') / Path(alignName).with_suffix('.json')  # (alignName)
-    #     with open(outFileName, 'w') as outfile:
-    #         json.dump(resultJson, outfile, indent=2)
-
-    #     print(resultJson)
-
-    #     ipA1 = makeHomogenous(ipActualLMD).T
-    #     print(f'ip A1: \n{ipA1}')
-    #     print(f'with this matrix, the IP would be at:\n{(np.linalg.inv(R1)@ipA1).T[0] + makeHomogenous(lumiPos)}')
-
-    # implement anew using strictly homogenous, column-major vectors!
-    # points have w=1, vectors have w=0. de-homogenize with x/w, y/w, z/w
-    # vectors CAN NOT be de-homogenized, but the points they point to can be.
-    # so, construct a point by origin + v = point_v_points_to
-    # this way, v gets its w=1 back
-    # see https://math.stackexchange.com/questions/645672/what-is-the-difference-between-a-point-and-a-vector
-    # def getBoxMatrixHomogenous():
-    #     origin = np.array([0,0,0,1])[np.newaxis].T
-    #     pass

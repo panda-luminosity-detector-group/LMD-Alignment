@@ -20,11 +20,6 @@ def getMatrixFromJSON(jsonFile, path):
         return matrix
 
 
-def saveMatrixToJSON(matrix, filename):
-    # with open(filename, 'w') as f:
-    #     matrix = matrix.flatten()
-    pass
-
 # TODO: express homogenization and de-homogenization with 4x4 matrices! it's pretty easy!
 
 
@@ -58,7 +53,7 @@ def makeHomogenous(matrix):
 # https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
 
 def getEulerAnglesFromRotationMatrix(R):
-    if R.shape != (3,3):
+    if R.shape != (3, 3):
         print(f'can not determine matrix shape correctly')
         return
     rx = np.arctan2(R[2][1], R[2][2])
