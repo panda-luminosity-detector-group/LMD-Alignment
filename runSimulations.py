@@ -47,6 +47,7 @@ from pathlib import Path
 from alignment.alignerIP import alignerIP
 from concurrent.futures import ThreadPoolExecutor
 from detail.LMDRunConfig import LMDRunConfig
+from detail.logger import LMDrunLogger
 from detail.simWrapper import simWrapper
 
 
@@ -92,27 +93,6 @@ def runAligners(args):
     # create alignerSensors, run
     pass
 
-def testRunConfigParse():
-    print(f'testing parser!')
-    path = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box-10.00/100000/1-500_uncut/aligned-alMat-box-10.00'
-    config = LMDRunConfig.fromPath(path)
-    # config.dump()
-    # config.toJSON('runConfigs/box3.json')
-
-    #config = LMDRunConfig.fromJSON('2.json')
-    config.dump()
-
-
-def testMiniRun():
-    config = LMDRunConfig()
-    config.misalignType = 'box'
-    config.misalignFactor = '5.00'
-    config.momentum = '1.5'
-    config.generateMatrixNames()
-    # config.toJSON('runConfigs/box10.json')
-    config.dump()
-
-
 if __name__ == "__main__":
     print('greetings, human')
     parser = argparse.ArgumentParser()
@@ -121,6 +101,10 @@ if __name__ == "__main__":
     parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='try to find all alignment matrices (IP, corridor, sensors) for a single runConfig without running the simulations/fits')
     parser.add_argument('-A', metavar='--alignPath', type=str, dest='alignPath', help='path to multiple LMDRunConfig files. ALL runConfig files in this path will be read and their alignment matrices determined!')
     parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
+    
+    parser.add_argument('-f', metavar='--fullRunConfig', type=str, dest='fullRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
+    #parser.add_argument('-F', metavar='--fullConfigPath', type=str, dest='fullConfigPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as COMPLETE job, mc data, lumi and alignment!')
+    
     parser.add_argument('-r', metavar='--runConfig', type=str, dest='runConfig', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
     parser.add_argument('-R', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as COMPLETE job, mc data, lumi and alignment!')
     
@@ -133,13 +117,14 @@ if __name__ == "__main__":
     except:
         parser.exit(1)
 
+    #? =========== run align jobs (on frontend) 
     if args.alignConfig:
         print('running all aligners')
         runAligners(args)
         print('all done')
         parser.exit(0)
 
-    # run single config
+    #? =========== run single config
     if args.runConfig:
 
         # TODO: further cases selection, do we want to run simulations, determine Luminosity or find Alignment?
@@ -153,11 +138,18 @@ if __name__ == "__main__":
             aligner.computeAlignmentMatrix()
             parser.exit(0)
 
-    # run multiple configs
+    #? =========== run multiple configs
     if args.configPath:
         runAllConfigs(args)
         parser.exit(0)
 
+    #? =========== run full chain, simulate mc data, find alignment, determine Luminosity
+    if args.fullRunConfig:
+        # TODO: implement
+        parser.exit(0)
+
+
+    #? =========== helper functions
     if args.makeDefault:
         dest = Path('runConfigs/identity-1.00.json')
         print(f'saving default config to {dest}')
@@ -184,13 +176,5 @@ if __name__ == "__main__":
         wrapper = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
         wrapper.currentJobID = 4998523
         # wrapper.waitForJobCompletion()
-        testMiniRun()
-
-        wrapper.extractLumi()
-        parser.exit(0)
-
-        testRunConfigParse()
-        LMDRunConfig.minimalDefault().dump()
-        parser.exit(0)
 
     parser.print_help()

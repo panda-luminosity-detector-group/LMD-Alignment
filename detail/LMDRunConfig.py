@@ -33,7 +33,6 @@ most importantly, can also create paths given these parameters:
 
 
 class LMDRunConfig:
-    # no static variables! define object-local variables in __init__ functions
 
     def __init__(self):
         # find env variabled

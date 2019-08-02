@@ -24,11 +24,11 @@ from detail.LMDRunConfig import LMDRunConfig
 """
 Simulation Wrapper. This one handles simulations on Hinster2, interfaces with LuminosityFit Framework etc.
 
-FIXME:  apparently the lumi fit framework sometimes failes when re-determining the lumi of an already fully processed directory
+FIXME:  apparently the lumi fit framework sometimes fails when re-determining the lumi of an already fully processed directory
 """
 
 
-class simWrapper():
+class simWrapper:
 
     # empty constructor
     def __init__(self):
@@ -231,17 +231,6 @@ class simWrapper():
         else:
             print(f'can\'t determine path!')
 
-    def runAll(self):
-        if self.__config is None:
-            self.__log += f'please set run config first!\n'
-            return
-
-        self.runSimulations()           # non blocking, so we have to wait
-        self.waitForJobCompletion()     # blocking
-        self.detLumi()                  # blocking
-        self.extractLumi()              # blocking
-        self.saveLog()                  # this is needed if multiple threads are running concurrently
-
     def saveLog(self):
 
         # should include date
@@ -261,6 +250,18 @@ class simWrapper():
 
         with open(filename, 'w') as file:
             file.write(self.__log)
+
+    # TODO: this is not it's job, the runSimulation script should take care of this!
+    def runAll(self):
+        if self.__config is None:
+            self.__log += f'please set run config first!\n'
+            return
+
+        self.runSimulations()           # non blocking, so we have to wait
+        self.waitForJobCompletion()     # blocking
+        self.detLumi()                  # blocking
+        self.extractLumi()              # blocking
+        self.saveLog()                  # this is needed if multiple threads are running concurrently
 
     # test function
 

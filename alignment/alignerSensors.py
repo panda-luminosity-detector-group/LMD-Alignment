@@ -15,10 +15,15 @@ Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 This aligner needs a LMDRunConfig object. It will then:
 
 - read Lumi_Pairs_*.root files
-- finds overlap matrices
-- saves them as deviation matrices to json
+- find overlap matrices
+- save them as deviation matrices to json
 
-Info: all positional vectors are row-major!
+Info: all positional vectors are row-major! This aligner also need info about the geometry:
+
+- detector_matrices.json | containing all design matrices of the Luminosity detector 
+
+
+
 """
 
 
