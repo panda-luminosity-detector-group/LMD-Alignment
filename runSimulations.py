@@ -84,6 +84,9 @@ def runAllConfigs(args):
 def runAligners(args):
     # create alignerIP, run
 
+    IPaligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(args.alignConfig))
+    IPaligner.computeAlignmentMatrix()
+    
     # create alignerCorrdiros, run
 
     # create alignerSensors, run
@@ -115,12 +118,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     
-    parser.add_argument('-a', metavar='--align', type=str, dest='align', help='try to find all alignment matrices (IP, corridor, sensors) for a single runConfig without running the simulations/fits')
-    # TODO: rename this next one, because it will RUN a job, not just ... config
-    parser.add_argument('-c', metavar='--config', type=str, dest='configFile', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
-    parser.add_argument('-C', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as job!')
-    parser.add_argument('--debug', action='store_true', help='run single threaded, more verbose output')
+    parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='try to find all alignment matrices (IP, corridor, sensors) for a single runConfig without running the simulations/fits')
     parser.add_argument('-D', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
+    parser.add_argument('-r', metavar='--runConfig', type=str, dest='runConfig', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
+    parser.add_argument('-R', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as job!')
+    
+    parser.add_argument('--debug', action='store_true', help='run single threaded, more verbose output')
     parser.add_argument('--test', action='store_true', help='internal test function')
 
     try:
@@ -128,14 +131,14 @@ if __name__ == "__main__":
     except:
         parser.exit(1)
 
-    if args.align:
+    if args.alignConfig:
         print('running all aligners')
         runAligners(args)
         print('all done')
         parser.exit(0)
 
     # run single config
-    if args.configFile:
+    if args.runConfig:
 
         # TODO: further cases selection, do we want to run simulations, determine Luminosity or find Alignment?
         # TODO: add another flag for these options

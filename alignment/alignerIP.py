@@ -147,12 +147,14 @@ class alignerIP:
 
         # TODO: change for Himster
         # TODO: create list with about 10 TrksQA files by searching through the directory, no more hard coded values!
-        #ipApparent = np.array([1.0, 0.0, 0.0])
         trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
 
         # TODO: change for Himster
-        #ipApparent = getIPfromTrksQA(str(trksQAfile))
-        ipApparent = np.array([1.0, 0.0, 0.0])
+        ipApparent = getIPfromTrksQA(str(trksQAfile))
+        
+        # TODO: add debug flag or something
+        if False:
+            ipApparent = np.array([1.0, 0.0, 0.0])
 
         # TODO: read from config or PANDA db/survey
         ipActual = np.array([0.0, 0.0, 0.0])
@@ -172,6 +174,7 @@ class alignerIP:
             self.config.generateMatrixNames()
 
         outFileName = self.config.alMatFile
+        outFileName = '/tmp/ULTRATESTMATRIX'
 
         with open(outFileName, 'w') as outfile:
             json.dump(resultJson, outfile, indent=2)
