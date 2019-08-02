@@ -125,7 +125,8 @@ if __name__ == "__main__":
     parser.add_argument('-R', metavar='--configPath', type=str, dest='configPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as COMPLETE job, mc data, lumi and alignment!')
     
     parser.add_argument('--debug', action='store_true', help='run single threaded, more verbose output')
-    parser.add_argument('--test', action='store_true', help='internal test function')
+    parser.add_argument('--regenerateMatrixPaths', dest='reGenMatPath', help='read all configs in ./runConfig, recreate the matrix file paths and store them!')
+    parser.add_argument('--test', action='store_true', dest='test', help='internal test function')
 
     try:
         args = parser.parse_args()
@@ -163,7 +164,23 @@ if __name__ == "__main__":
         LMDRunConfig.minimalDefault().toJSON(dest)
         parser.exit(0)
 
+    if args.reGenMatPath:
+
+        print(f'reading all files from {args.reGenMatPath} and recreating matrix file paths...')
+
+        targetDir = Path('runConfigs')
+        configs = [x for x in targetDir.iterdir() if x.is_file()]
+
+        for fileName in configs:
+            conf = LMDRunConfig.fromJSON(fileName)
+            conf.generateMatrixNames()
+            conf.toJSON(fileName)
+        
+        print('all done!')
+        parser.exit(0)
+
     if args.test:
+
         wrapper = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
         wrapper.currentJobID = 4998523
         # wrapper.waitForJobCompletion()

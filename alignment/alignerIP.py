@@ -174,6 +174,9 @@ class alignerIP:
             print(f'WARNING. Replacing file: {outFileName}')
             Path(outFileName).unlink()
 
+        if not Path(outFileName).parent.exists():
+            Path(outFileName).parent.mkdir()
+
         with open(outFileName, 'w') as outfile:
             json.dump(resultJson, outfile, indent=2)
 

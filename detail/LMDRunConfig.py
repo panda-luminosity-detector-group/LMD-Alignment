@@ -232,6 +232,7 @@ class LMDRunConfig:
         if not Path(filename).exists():
             print(f'ERROR! File {filename} can\'t be read!')
             sys.exit(1)
+        print(f'reading file: {filename}')
         temp = cls()
         with open(filename, 'r') as inFile:
             temp.__dict__ = json.load(inFile)
@@ -239,7 +240,6 @@ class LMDRunConfig:
 
     # serialize to JSON
     def toJSON(self, filename):
-        # self.__checkIfNoneAreNone__()
         with open(filename, 'w') as outfile:
             json.dump(self.__dict__, outfile, indent=2)
         pass
@@ -270,7 +270,7 @@ class LMDRunConfig:
     def genConfigs(self):
         for mom in self.genBeamMomenta():
             pass
-        
+
         # TODO: implement!
         pass
 
@@ -305,7 +305,7 @@ class LMDRunConfig:
             return Path(f'geo_misalignmentmisMat-{self.__misalignType}-{self.__misalignFactor}')
 
     def __pathTracksNum__(self):
-        return Path('*')
+        return Path(self.__tracksNum)
 
     def __jobBaseDir__(self):
         return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()
@@ -316,11 +316,11 @@ class LMDRunConfig:
     def __cut__(self):
         return Path('1-*_xy_m_cut_real')
 
-    def __aligned__(self):
-        return Path('aligned*')
-
-    def __noAlignCorrection__(self):
-        return Path('no_alignment_correction')
+    def __alignCorrectionSubDir__(self):
+        if self.__alignmentCorrection:
+            return Path('aligned*')
+        else:
+            return Path('no_alignment_correction')
 
     def __bunches__(self):
         return Path('bunches*') / Path('binning*') / Path('merge_data')
@@ -341,9 +341,11 @@ class LMDRunConfig:
             return globbedPath
 
     #! --------------------- create paths to matrices, json results
+    # alignment matrices are stored in the data directory from which they were found!
     def pathAlMatrix(self):
         self.__checkMinimum__()
-        return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json'))
+        # return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json'))
+        return self.__resolveActual__(self.__jobBaseDir__() / Path('alignmentMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json'))
 
     def pathMisMatrix(self):
         self.__checkMinimum__()
@@ -351,32 +353,20 @@ class LMDRunConfig:
 
     def pathRecoIP(self):
         self.__checkMinimum__()
-        if self.__alignmentCorrection:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__aligned__() / self.__bunches__() / self.__recoIP__())
-        else:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__noAlignCorrection__() / self.__bunches__() / self.__recoIP__())
+        return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__alignCorrectionSubDir__() / self.__bunches__() / self.__recoIP__())
 
     def pathLumiVals(self):
         self.__checkMinimum__()
-        if self.__alignmentCorrection:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__aligned__() / self.__bunches__() / self.__lumiVals__())
-        else:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__noAlignCorrection__() / self.__bunches__() / self.__lumiVals__())
+        return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__alignCorrectionSubDir__() / self.__bunches__() / self.__lumiVals__())
 
     def pathDataBaseDir(self):
         self.__checkMinimum__()
-        if self.__alignmentCorrection:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__aligned__())
-        else:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__noAlignCorrection__())
+        return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__alignCorrectionSubDir__())
 
     # for AlignIP et al. methods
     def pathTrksQA(self):
         self.__checkMinimum__()
-        if self.__alignmentCorrection:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__aligned__())
-        else:
-            return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__noAlignCorrection__())
+        return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__alignCorrectionSubDir__())
 
     #! --------------------- verbose output
 
@@ -393,12 +383,12 @@ class LMDRunConfig:
         result += (f'Align Factor: {self.__alignFactor}\n')
         result += (f'AlignMatrices: {self.__alignMatFile}\n')
         result += (f'MisalignMatrices: {self.__misalignMatFile}\n')
-        result += (f'TracksQA path: {str(self.pathTrksQA)}\n')
+        result += (f'TracksQA path: {self.pathTrksQA()}\n')
         result += (f'Num Tracks: {self.__tracksNum}\n')
         result += (f'Num Jobs: {self.__jobsNum}\n')
         result += (f'------------------------------\n')
         result += (f'\n\n')
-        #print(result)
+        # print(result)
         return result
 
 

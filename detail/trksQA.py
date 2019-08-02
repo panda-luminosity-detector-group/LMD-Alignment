@@ -11,9 +11,6 @@ reads TrksQA.root files (supports wildcards like Lumi_TrksQA_*.root through upro
 
 uses 98% cut by default
 set module=i to filter by module i, same for half
-
-# TODO: clean up this module, what is it supposed to do? how is it different from getIPfromTrksQA?
-
 """
 
 
@@ -53,7 +50,7 @@ def extractIP(cleanArray, module, half):
     recY = cleanArray['y']
     recZ = cleanArray['z']
 
-    # apply a mask to remove outliers and filter by sensor, module, plane, half
+    # apply a mask to remove outliers
     recMask = (np.abs(recX) < 5000) & (np.abs(recY) < 5000)
 
     if module > 0:
@@ -124,7 +121,7 @@ def cleanArray(arrayDict):
     recY = arrayDict[b'LMDTrackQ.fYrec'][nonZeroEvents].flatten()
     recZ = arrayDict[b'LMDTrackQ.fZrec'][nonZeroEvents].flatten()
 
-    # return a dictl
+    # return a dict
     return {'half': half, 'mod': module, 'x': recX, 'y': recY, 'z': recZ}
 
 
