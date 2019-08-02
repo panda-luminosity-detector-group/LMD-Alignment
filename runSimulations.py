@@ -169,7 +169,7 @@ if __name__ == "__main__":
         print(f'reading all files from {args.reGenMatPath} and recreating matrix file paths...')
 
         targetDir = Path('runConfigs')
-        configs = [x for x in targetDir.iterdir() if x.is_file()]
+        configs = [x for x in targetDir.glob('**/*') if x.is_file()]
 
         for fileName in configs:
             conf = LMDRunConfig.fromJSON(fileName)
