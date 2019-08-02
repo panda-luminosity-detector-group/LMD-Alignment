@@ -220,7 +220,7 @@ class simWrapper:
             returnOutput = subprocess.check_output((command, dataPath))
             self.__log += '\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n'
             print(f'========= Luminosity extracted!')
-            
+
             with open(self.__config.pathLumiVals()) as file:
                 lumiJson = json.load(file)
 
@@ -231,6 +231,7 @@ class simWrapper:
         else:
             print(f'can\'t determine path!')
 
+    # TODO: externalize log to separate object so multiple simWrappers (and runConfigs?) can use the same log (logfile)
     def saveLog(self):
 
         # should include date
@@ -266,6 +267,12 @@ class simWrapper:
     # test function
 
     def idle(self, seconds=3):
-        print(f'this thread will idle {seconds} seconds.')
-        time.sleep(seconds)
+
+        if self.threadNumber > 0:
+            sleeptime = seconds * (self.threadNumber+1)
+        else:
+            sleeptime = seconds
+        print(f'this thread will idle {sleeptime} seconds.')
+        time.sleep(sleeptime)
+
         print(f'done sleeping!')

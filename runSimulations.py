@@ -50,6 +50,33 @@ from detail.LMDRunConfig import LMDRunConfig
 from detail.logger import LMDrunLogger
 from detail.simWrapper import simWrapper
 
+def runMultipleTasks(wrapper, time):
+
+    # start with a config, not a wrapper
+    # config knows all paramters, but set align correction to false
+    # then run aligner(s)
+    # then, set align correction in config true
+    # re run reco steps and Lumi fit
+
+    wrapper.idle(time)
+    print('again!')
+    wrapper.idle(time)
+
+
+def idleTwoByTwo():
+    # TODO: create two simWrappers and have them both idle two times!
+    wrapperOne = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
+    wrapperTwo = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
+    wrapperThree = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
+
+    simWrappers = [wrapperOne, wrapperTwo, wrapperThree]
+
+    maxThreads = 64
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers=maxThreads) as executor:
+        for index, wrapper in enumerate(simWrappers):
+            wrapper.threadNumber = index
+            executor.submit(runMultipleTasks, wrapper, 1)
 
 def runAllConfigs(args):
     configs = []
@@ -172,9 +199,8 @@ if __name__ == "__main__":
         parser.exit(0)
 
     if args.test:
-
-        wrapper = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
-        wrapper.currentJobID = 4998523
-        # wrapper.waitForJobCompletion()
+        print(f'idlig two by two')
+        idleTwoByTwo()
+        parser.exit(0)
 
     parser.print_help()
