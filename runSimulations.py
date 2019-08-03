@@ -74,6 +74,7 @@ def idleTwoByTwo():
             wrapper.threadNumber = index
             executor.submit(runMultipleTasks, wrapper, 1)
 
+# TODO: add logger here
 def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
     
     print(f'Thread {threadIndex} starting!')
@@ -83,6 +84,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
 
     if runConfig.alignmentCorrection:
         print(f'this runConfig contains a correction, ignoring')
+        print(f'Thread {threadIndex} done!')
         return
 
     # create simWrapper from config
@@ -98,7 +100,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
             
     # then run aligner(s)
 
-    IPaligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(runConfig))
+    IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.computeAlignmentMatrix()
 
     # then, set align correction in config true
