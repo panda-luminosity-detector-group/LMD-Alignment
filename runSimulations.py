@@ -89,6 +89,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
 
     # create simWrapper from config
     wrapper = simWrapper.fromRunConfig(runConfig)
+    wrapper.threadNumber = threadIndex
 
     # run all
 
