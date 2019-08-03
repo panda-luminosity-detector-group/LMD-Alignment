@@ -52,11 +52,7 @@ from detail.simWrapper import simWrapper
 
 def runMultipleTasks(wrapper, time):
 
-    # start with a config, not a wrapper
-    # config knows all paramters, but set align correction to false
-    # then run aligner(s)
-    # then, set align correction in config true
-    # re run reco steps and Lumi fit
+    
 
     wrapper.idle(time)
     print('again!')
@@ -78,6 +74,53 @@ def idleTwoByTwo():
             wrapper.threadNumber = index
             executor.submit(runMultipleTasks, wrapper, 1)
 
+def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
+    # start with a config, not a wrapper
+
+    # add a filter, if the config assumes alignment correction, discard
+
+    # config knows all paramters, but set align correction to false
+    # then run aligner(s)
+    # then, set align correction in config true
+    # re run reco steps and Lumi fit
+
+    if runConfig.alignmentCorrection:
+        print(f'this runConfig contains a correction, ignoring')
+        return
+
+
+def runAllConfigsNewMT(args):
+
+    configs = []
+    # read all configs from path
+    searchDir = Path(args.configPath)
+
+    # TODO: maybe add a recursive flag
+    configs = list(searchDir.glob('**/*.json'))
+    simConfigs = []
+
+    # loop over all configs, create wrapper and run
+    for configFile in configs:
+        runConfig = LMDRunConfig.fromJSON(configFile)
+        simConfigs.append(runConfig)
+
+    maxThreads = min(len(simConfigs), 64)
+
+    if args.debug:
+        maxThreads = 1
+        print(f'DEBUG: running in {maxThreads} threads!')
+
+    # run concurrently in maximum 64 threads. they mostly wait for compute nodes anyway.
+    # we use a process pool instead of a thread pool because the individual interpreters are working on different cwd's.
+    with concurrent.futures.ProcessPoolExecutor(max_workers=maxThreads) as executor:
+        # Start the load operations and mark each future with its URL
+        for index, config in enumerate(simConfigs):
+            executor.submit(runSimRecoLumiAlignRecoLumi, config, index)
+
+    print(f'all jobs for config files completed!')
+    return
+
+# TODO: rewrite
 def runAllConfigs(args):
     configs = []
     # read all configs from path
@@ -167,7 +210,7 @@ if __name__ == "__main__":
 
     #? =========== run multiple configs
     if args.configPath:
-        runAllConfigs(args)
+        runAllConfigsNewMT(args)
         parser.exit(0)
 
     #? =========== run full chain, simulate mc data, find alignment, determine Luminosity
