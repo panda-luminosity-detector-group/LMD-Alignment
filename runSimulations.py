@@ -75,18 +75,43 @@ def idleTwoByTwo():
             executor.submit(runMultipleTasks, wrapper, 1)
 
 def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
+    
+    print(f'Thread {threadIndex} starting!')
+
     # start with a config, not a wrapper
-
     # add a filter, if the config assumes alignment correction, discard
-
-    # config knows all paramters, but set align correction to false
-    # then run aligner(s)
-    # then, set align correction in config true
-    # re run reco steps and Lumi fit
 
     if runConfig.alignmentCorrection:
         print(f'this runConfig contains a correction, ignoring')
         return
+
+    # create simWrapper from config
+    wrapper = simWrapper.fromRunConfig(runConfig)
+
+    # run all
+
+    wrapper.runSimulations()           # non blocking, so we have to wait
+    wrapper.waitForJobCompletion()     # blocking
+    wrapper.detLumi()                  # blocking
+    wrapper.extractLumi()              # blocking
+    wrapper.saveLog() 
+            
+    # then run aligner(s)
+
+    IPaligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(runConfig))
+    IPaligner.computeAlignmentMatrix()
+
+    # then, set align correction in config true
+    runConfig.alignmentCorrection=True
+
+    # re run reco steps and Lumi fit
+    wrapper.runSimulations()           # non blocking, so we have to wait
+    wrapper.waitForJobCompletion()     # blocking
+    wrapper.detLumi()                  # blocking
+    wrapper.extractLumi()              # blocking
+    wrapper.saveLog()
+
+    print(f'Thread {threadIndex} done!')
 
 
 def runAllConfigsNewMT(args):
@@ -196,17 +221,17 @@ if __name__ == "__main__":
 
     #? =========== run single config
     if args.runConfig:
+        config = LMDRunConfig.fromJSON(args.runConfig)
+        runSimRecoLumiAlignRecoLumi(config, 99)
 
-        # TODO: further cases selection, do we want to run simulations, determine Luminosity or find Alignment?
-        # TODO: add another flag for these options
-        if False:
-            wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
-            wrapper.runSimulations()
-            parser.exit(0)
-        else:
-            aligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
-            aligner.computeAlignmentMatrix()
-            parser.exit(0)
+        # if False:
+        #     wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
+        #     wrapper.runSimulations()
+        #     parser.exit(0)
+        # else:
+        #     aligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
+        #     aligner.computeAlignmentMatrix()
+        #     parser.exit(0)
 
     #? =========== run multiple configs
     if args.configPath:
