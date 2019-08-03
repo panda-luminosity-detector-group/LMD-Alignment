@@ -83,8 +83,8 @@ def runAllConfigs(args):
     # read all configs from path
     searchDir = Path(args.configPath)
 
-    # TODO: make recursive
-    configs = list(searchDir.glob('*.json'))
+    # TODO: maybe add a recursive flag
+    configs = list(searchDir.glob('**/*.json'))
     simWrappers = []
 
     # loop over all configs, create wrapper and run
