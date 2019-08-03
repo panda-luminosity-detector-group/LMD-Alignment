@@ -223,7 +223,7 @@ if __name__ == "__main__":
     if args.runConfig:
         config = LMDRunConfig.fromJSON(args.runConfig)
         runSimRecoLumiAlignRecoLumi(config, 99)
-
+        parser.exit(0)
         # if False:
         #     wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
         #     wrapper.runSimulations()
