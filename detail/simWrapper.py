@@ -39,15 +39,15 @@ class simWrapper:
         self.cwd = str(Path.cwd())
         self.currentJobID = None
         self.threadNumber = None
-        self.__log = ''
+        self.logger = None
         self.__debug = True
         try:
             self.__lumiFitPath = str(Path(os.environ[lmdFitEnv]).parent)
             self.__simDataPath = os.environ[simDirEnv]
             self.__pandaRootDir = os.environ[pndRootDir]
         except:
-            self.__log += "can't find LuminosityFit installation, PandaRoot installation or Data_Dir!\n"
-            self.__log += f"please set {lmdFitEnv}, {pndRootDir} and {simDirEnv}!\n"
+            self.logger.add("can't find LuminosityFit installation, PandaRoot installation or Data_Dir!\n")
+            self.logger.add(f"please set {lmdFitEnv}, {pndRootDir} and {simDirEnv}!\n")
             sys.exit(1)
 
     @classmethod
@@ -61,9 +61,9 @@ class simWrapper:
 
     def runSimulations(self):
         if self.__config is None:
-            self.__log += f'please set run config first!\n'
+            self.logger.add(f'please set run config first!\n')
 
-        self.__log += f'\n\n========= Running ./doSimulationReconstruction.\n\n'
+        self.logger.add(f'\n\n========= Running ./doSimulationReconstruction.\n\n')
         print(f'\n\n========= Running ./doSimulationReconstruction, please wait.\n\n')
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
@@ -80,12 +80,12 @@ class simWrapper:
         mismatv = str(self.__config.pathMisMatrix())
 
         # we have to change the directory here since some script paths in LuminosityFit are relative.
-        self.__log += f'DEBUG: changing cwd to {scriptsPath}\n'
+        self.logger.add(f'DEBUG: changing cwd to {scriptsPath}\n')
         os.chdir(scriptsPath)
 
         if self.__debug:
-            self.__log += f'DEBUG: dumping current runConfig!\n'
-            self.__log += self.__config.dump() + '\n'
+            self.logger.add(f'DEBUG: dumping current runConfig!\n')
+            self.logger.add(self.__config.dump() + '\n')
 
         # no misalignment nor correction
         if not self.__config.misaligned and not self.__config.alignmentCorrection:
@@ -105,32 +105,32 @@ class simWrapper:
 
         returnVal = returnVal.decode(sys.stdout.encoding)
 
-        self.__log += f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n\n'
-        self.__log += f'\n\n========= Done!.\n\n'
+        self.logger.add(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n\n')
+        self.logger.add(f'\n\n========= Done!.\n\n')
         print(f'\n\n========= Jobs submitted, waiting for them to finish...\n\n')
 
         match = re.search(r'Submitted batch job (\d+)', returnVal)
         if match:
             jobID = match.groups()[0]
-            self.__log += f'FOUND JOB ID: {jobID}\n'
+            self.logger.add(f'FOUND JOB ID: {jobID}\n')
             self.currentJobID = jobID
         else:
-            self.__log += 'can\'t parse job ID from output!\n'
+            self.logger.add('can\'t parse job ID from output!\n')
 
     def waitForJobCompletion(self):
         if self.__config is None:
-            self.__log += f'please set run config first!\n'
+            self.logger.add(f'please set run config first!\n')
 
         if not self.currentJobID:
-            self.__log += f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!\n'
+            self.logger.add(f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!\n')
             return
 
-        self.__log += f'\n\n========= Waiting for jobs...\n\n'
+        self.logger.add(f'\n\n========= Waiting for jobs...\n\n')
         print(f'\n\n========= Waiting for jobs...\n\n')
 
         # see https://stackoverflow.com/a/2899055
         user = pwd.getpwuid(os.getuid())[0]
-        self.__log += f'you are {user}, waiting on job {self.currentJobID}\n'
+        self.logger.add(f'you are {user}, waiting on job {self.currentJobID}\n')
         print(f'you are {user}, waiting on job {self.currentJobID}\n')
 
         waitIntervals = 0
@@ -166,7 +166,7 @@ class simWrapper:
             # no jobs found? then we can exit
             if foundJobsPD == 0 and foundJobsR == 0:
                 print(f'Thread {self.threadNumber}: No more jobs running, continuing...')
-                self.__log += f'all jobs completed after {waitIntervals * waitIntervalTime / 3600} hours!\n'
+                self.logger.add(f'all jobs completed after {waitIntervals * waitIntervalTime / 3600} hours!\n')
                 self.currentJobID = None
                 return
 
@@ -177,15 +177,15 @@ class simWrapper:
             time.sleep(waitIntervalTime)
 
         print(f'========= Simulation and Reconstruction done, all Jobs finished.')
-        self.__log += f'========= Simulation and Reconstruction done, all Jobs finished.\n'
+        self.logger.add(f'========= Simulation and Reconstruction done, all Jobs finished.\n')
 
     # the lumi fit scripts are blocking!
     def detLumi(self):
         if self.__config is None:
-            self.__log += f'please set run config first!\n'
+            self.logger.add(f'please set run config first!\n')
 
         absPath = self.__config.pathTrksQA()
-        self.__log += f'DEBUG: determining Luminosity of the data set found here:\n{absPath}\n'
+        self.logger.add(f'DEBUG: determining Luminosity of the data set found here:\n{absPath}\n')
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
         command = scriptsPath / Path('determineLuminosity.py')
@@ -194,23 +194,23 @@ class simWrapper:
 
         # see runSimulations()
         # we have to change the directory here since some script paths in LuminosityFit are relative.
-        self.__log += f'DEBUG: changing cwd to {scriptsPath}\n'
+        self.logger.add(f'DEBUG: changing cwd to {scriptsPath}\n')
         os.chdir(scriptsPath)
-        self.__log += f'\n\n========= Running ./determineLuminosity.\n\n'
+        self.logger.add(f'\n\n========= Running ./determineLuminosity.\n\n')
         print(f'Running ./determineLuminosity. This might take a while.\n')
 
         # don't close file descriptor, this call will block until lumi is determined!
         returnOutput = subprocess.check_output((command, argP, argPval))
-        self.__log += '\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n'
+        self.logger.add('\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n')
         print(f'========= Done!')
-        self.__log += f'========= Done!\n'
+        self.logger.add(f'========= Done!\n')
 
     def extractLumi(self):
         if self.__config is None:
-            self.__log += f'please set run config first!\n'
+            self.logger.add(f'please set run config first!\n')
 
         print(f'========= Running ./extractLuminosity...')
-        self.__log += f'\n\n========= Running ./extractLuminosity...\n\n'
+        self.logger.add(f'\n\n========= Running ./extractLuminosity...\n\n')
 
         binPath = self.__lumiFitPath / Path('build') / Path('bin')
         command = binPath / Path('extractLuminosity')
@@ -218,7 +218,7 @@ class simWrapper:
 
         if dataPath:
             returnOutput = subprocess.check_output((command, dataPath))
-            self.__log += '\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n'
+            self.logger.add('\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n\n')
             print(f'========= Luminosity extracted!')
 
             with open(self.__config.pathLumiVals()) as file:
@@ -226,43 +226,10 @@ class simWrapper:
 
             print(lumiJson)
 
-            self.__log += f'========= Luminosity extracted!\nLumi values: {lumiJson}'
+            self.logger.add(f'========= Luminosity extracted!\nLumi values: {lumiJson}')
 
         else:
             print(f'can\'t determine path!')
-
-    # TODO: externalize log to separate object so multiple simWrappers (and runConfigs?) can use the same log (logfile)
-    def saveLog(self):
-
-        # should include date
-        if self.threadNumber is not None:
-            timename = datetime.datetime.now().replace(second=0, microsecond=0).isoformat()
-        else:
-            timename = datetime.datetime.now().isoformat()
-
-        jobname = str(self.threadNumber)
-        filename = self.cwd / Path('runLogs') / Path(f'{timename}-{jobname}.log')
-
-        # make dir if not present
-        filename.parent.mkdir(exist_ok=True)
-        print(f'DEBUG: saving log to {filename}')
-
-        self.__log = f'This is simWrapper {self.threadNumber}:\n\n' + self.__log
-
-        with open(filename, 'w') as file:
-            file.write(self.__log)
-
-    # TODO: this is not it's job, the runSimulation script should take care of this!
-    def runAll(self):
-        if self.__config is None:
-            self.__log += f'please set run config first!\n'
-            return
-
-        self.runSimulations()           # non blocking, so we have to wait
-        self.waitForJobCompletion()     # blocking
-        self.detLumi()                  # blocking
-        self.extractLumi()              # blocking
-        self.saveLog()                  # this is needed if multiple threads are running concurrently
 
     # test function
 

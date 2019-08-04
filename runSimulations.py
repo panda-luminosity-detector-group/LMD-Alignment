@@ -41,6 +41,7 @@ TODO: these steps!
 
 import argparse
 import concurrent
+import datetime
 
 from pathlib import Path
 
@@ -87,32 +88,42 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
         print(f'Thread {threadIndex} done!')
         return
 
+    # create logger
+    logger = LMDrunLogger() 
+
     # create simWrapper from config
     wrapper = simWrapper.fromRunConfig(runConfig)
     wrapper.threadNumber = threadIndex
+    wrapper.logger = logger
 
     # run all
-
     wrapper.runSimulations()           # non blocking, so we have to wait
     wrapper.waitForJobCompletion()     # blocking
     wrapper.detLumi()                  # blocking
     wrapper.extractLumi()              # blocking
-    wrapper.saveLog() 
             
     # then run aligner(s)
 
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.computeAlignmentMatrix()
 
-    # then, set align correction in config true
+    # then, set align correction in config true and recreate simWrapper
     runConfig.alignmentCorrection=True
+    wrapper = simWrapper.fromRunConfig(runConfig)
 
     # re run reco steps and Lumi fit
     wrapper.runSimulations()           # non blocking, so we have to wait
     wrapper.waitForJobCompletion()     # blocking
     wrapper.detLumi()                  # blocking
     wrapper.extractLumi()              # blocking
-    wrapper.saveLog()
+
+    # save log, increment log number if log from that day is already present
+    for i in range(100):
+        filename = Path(f'runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadIndex}.txt')
+        if not filename.exists():
+            break
+
+    logger.save(filename)
 
     print(f'Thread {threadIndex} done!')
 
@@ -145,7 +156,9 @@ def runAllConfigsNewMT(args):
         for index, config in enumerate(simConfigs):
             executor.submit(runSimRecoLumiAlignRecoLumi, config, index)
 
+    print(f'\n\n====================================\n')
     print(f'all jobs for config files completed!')
+    print(f'\n====================================\n\n')
     return
 
 # TODO: rewrite
@@ -186,7 +199,7 @@ def runAligners(args):
     IPaligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(args.alignConfig))
     IPaligner.computeAlignmentMatrix()
     
-    # create alignerCorrdiros, run
+    # create alignerCorridors, run
 
     # create alignerSensors, run
     pass
