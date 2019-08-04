@@ -314,8 +314,8 @@ class LMDRunConfig:
 
     def __jobBaseDir__(self):
         if self.__JobBaseDir is None:
-            self.__JobBaseDir = self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__())
-        return self.__JobBaseDir
+            self.__JobBaseDir = str(self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()))
+        return Path(self.__JobBaseDir)
 
     def __uncut__(self):
         return Path('1-*_uncut')
