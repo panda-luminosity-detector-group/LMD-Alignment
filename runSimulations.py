@@ -78,14 +78,14 @@ def idleTwoByTwo():
 # TODO: add logger here
 def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
     
-    print(f'Thread {threadIndex} starting!')
+    print(f'Thread {threadIndex}: starting!')
 
     # start with a config, not a wrapper
     # add a filter, if the config assumes alignment correction, discard
 
     if runConfig.alignmentCorrection:
-        print(f'this runConfig contains a correction, ignoring')
-        print(f'Thread {threadIndex} done!')
+        print(f'Thread {threadIndex}: this runConfig contains a correction, ignoring')
+        print(f'Thread {threadIndex}: done!')
         return
 
     # create logger
@@ -97,33 +97,34 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
     wrapper.logger = logger
 
     # run all
-    wrapper.runSimulations()           # non blocking, so we have to wait
-    wrapper.waitForJobCompletion()     # blocking
-    wrapper.detLumi()                  # blocking
+    # wrapper.runSimulations()           # non blocking, so we have to wait
+    # wrapper.waitForJobCompletion()     # blocking
+    # wrapper.detLumi()                  # blocking
     wrapper.extractLumi()              # blocking
             
     # then run aligner(s)
 
-    IPaligner = alignerIP.fromRunConfig(runConfig)
-    IPaligner.computeAlignmentMatrix()
+    # IPaligner = alignerIP.fromRunConfig(runConfig)
+    # IPaligner.computeAlignmentMatrix()
 
     # then, set align correction in config true and recreate simWrapper
     runConfig.alignmentCorrection=True
     wrapper = simWrapper.fromRunConfig(runConfig)
 
     # re run reco steps and Lumi fit
-    wrapper.runSimulations()           # non blocking, so we have to wait
-    wrapper.waitForJobCompletion()     # blocking
-    wrapper.detLumi()                  # blocking
-    wrapper.extractLumi()              # blocking
+    # wrapper.runSimulations()           # non blocking, so we have to wait
+    # wrapper.waitForJobCompletion()     # blocking
+    # wrapper.detLumi()                  # blocking
+    # wrapper.extractLumi()              # blocking
 
     # save log, increment log number if log from that day is already present
     for i in range(100):
-        filename = Path(f'runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadIndex}.txt')
-        if not filename.exists():
+        logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadIndex}.txt')
+        if not logfilename.exists():
+            print(f'Thread {threadIndex}: saving log to {logfilename}')
             break
 
-    logger.save(filename)
+    logger.save(logfilename)
 
     print(f'Thread {threadIndex} done!')
 
