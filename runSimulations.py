@@ -59,16 +59,33 @@ def done():
     parser.exit(0)
 
 
-def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
+# ? =========== functions that can be run by runAllConfigsMT
 
-    print(f'Thread {threadIndex}: starting!')
+def runAligners(runConfig, threadID=None):
+
+    # create logger
+    thislogger = LMDrunLogger()
+
+    # create alignerIP, run
+    IPaligner = alignerIP.fromRunConfig(runConfig)
+    IPaligner.logger = thislogger
+    IPaligner.computeAlignmentMatrix()
+
+    # create alignerCorridors, run
+
+    # create alignerSensors, run
+
+
+def runSimRecoLumi(runConfig, threadID=None):
+
+    print(f'Thread {threadID}: starting!')
 
     # start with a config, not a wrapper
     # add a filter, if the config assumes alignment correction, discard
 
     if runConfig.alignmentCorrection:
-        print(f'Thread {threadIndex}: this runConfig contains a correction, ignoring')
-        print(f'Thread {threadIndex}: done!')
+        print(f'Thread {threadID}: this runConfig contains a correction, ignoring')
+        print(f'Thread {threadID}: done!')
         return
 
     # create logger
@@ -76,7 +93,41 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
-    prealignWrapper.threadNumber = threadIndex
+    prealignWrapper.threadID = threadID
+    prealignWrapper.logger = thislogger
+
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+
+    # save log, increment log number if log from that day is already present
+    i = 0
+    while Path(f'./runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadID}.txt').exists():
+        i += 1
+
+    logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-run{i}-thread{threadID}.txt')
+    thislogger.save(logfilename)
+    print(f'Thread {threadID} done!')
+
+
+def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
+
+    print(f'Thread {threadID}: starting!')
+
+    # start with a config, not a wrapper
+    # add a filter, if the config assumes alignment correction, discard
+
+    if runConfig.alignmentCorrection:
+        print(f'Thread {threadID}: this runConfig contains a correction, ignoring')
+        print(f'Thread {threadID}: done!')
+        return
+
+    # create logger
+    thislogger = LMDrunLogger()
+
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadID = threadID
     prealignWrapper.logger = thislogger
 
     # run all
@@ -92,7 +143,9 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
 
     # then, set align correction in config true and recreate simWrapper
     runConfig.alignmentCorrection = True
+
     postalignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadID = threadID
     postalignWrapper.logger = thislogger
 
     # re run reco steps and Lumi fit
@@ -103,15 +156,17 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
 
     # save log, increment log number if log from that day is already present
     i = 0
-    while Path(f'./runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadIndex}.txt').exists():
+    while Path(f'./runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadID}.txt').exists():
         i += 1
 
-    logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-run{i}-thread{threadIndex}.txt')
+    logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-run{i}-thread{threadID}.txt')
     thislogger.save(logfilename)
-    print(f'Thread {threadIndex} done!')
+    print(f'Thread {threadID} done!')
+
+# ? =========== runAllConfigsMT that calls 'function' multithreaded
 
 
-def runAllConfigsNewMT(args):
+def runConfigsMT(args, function):
 
     configs = []
     # read all configs from path
@@ -133,7 +188,7 @@ def runAllConfigsNewMT(args):
         print(f'DEBUG: running in {maxThreads} threads!')
 
         for con in simConfigs:
-            runSimRecoLumiAlignRecoLumi(con, 0)
+            function(con, 0)
 
     else:
         # run concurrently in maximum 64 threads. they mostly wait for compute nodes anyway.
@@ -141,23 +196,13 @@ def runAllConfigsNewMT(args):
         with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
             # Start the load operations and mark each future with its URL
             for index, config in enumerate(simConfigs):
-                executor.submit(runSimRecoLumiAlignRecoLumi, config, index)
+                executor.submit(function, config, index)
 
         print('waiting for all jobs...')
         executor.shutdown(wait=True)
     return
 
-
-def runAligners(args):
-    # create alignerIP, run
-
-    IPaligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(args.alignConfig))
-    IPaligner.computeAlignmentMatrix()
-
-    # create alignerCorridors, run
-
-    # create alignerSensors, run
-    pass
+# ? =========== main user interface
 
 
 if __name__ == "__main__":
@@ -188,7 +233,8 @@ if __name__ == "__main__":
 
     # ? =========== run align jobs (on frontend)
     if args.alignConfig:
-        runAligners(args)
+        config = LMDRunConfig.fromJSON(args.runConfig)
+        runAligners(config, 99)
         done()
 
     # ? =========== run single config
@@ -199,7 +245,7 @@ if __name__ == "__main__":
 
     # ? =========== run multiple configs
     if args.configPath:
-        runAllConfigsNewMT(args)
+        runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
         done()
 
     # ? =========== run full chain, simulate mc data, find alignment, determine Luminosity
@@ -215,16 +261,15 @@ if __name__ == "__main__":
 
     if args.updateRunConfigs:
 
-        print(f'reading all files from {args.updateRunConfigs} and regenerating settings...')
+        targetDir = Path(args.updateRunConfigs).absolute()
+        print(f'reading all files from {targetDir} and regenerating settings...')
 
-        targetDir = Path('runConfigs')
         configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
 
         for fileName in configs:
             conf = LMDRunConfig.fromJSON(fileName)
             conf.generateMatrixNames()
             conf.toJSON(fileName)
-
         done()
 
     if args.test:
