@@ -59,9 +59,13 @@ def done():
     parser.exit(0)
 
 
+# TODO: remove further code duplication in these functions!
+
 # ? =========== functions that can be run by runAllConfigsMT
 
 def runAligners(runConfig, threadID=None):
+
+    print(f'Thread {threadID}: starting!')
 
     # create logger
     thislogger = LMDrunLogger()
@@ -75,18 +79,38 @@ def runAligners(runConfig, threadID=None):
 
     # create alignerSensors, run
 
+    print(f'Thread {threadID} done!')
+
+
+def runLumifit(runConfig, threadID=None):
+
+    print(f'Thread {threadID}: starting!')
+
+    # create logger
+    thislogger = LMDrunLogger()
+
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadID = threadID
+    prealignWrapper.logger = thislogger
+
+    # run
+    prealignWrapper.detLumi()                  # blocking
+    prealignWrapper.extractLumi()              # blocking
+
+    # save log, increment log number if log from that day is already present
+    i = 0
+    while Path(f'./runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadID}.txt').exists():
+        i += 1
+
+    logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-run{i}-thread{threadID}.txt')
+    thislogger.save(logfilename)
+    print(f'Thread {threadID} done!')
+
 
 def runSimRecoLumi(runConfig, threadID=None):
 
     print(f'Thread {threadID}: starting!')
-
-    # start with a config, not a wrapper
-    # add a filter, if the config assumes alignment correction, discard
-
-    if runConfig.alignmentCorrection:
-        print(f'Thread {threadID}: this runConfig contains a correction, ignoring')
-        print(f'Thread {threadID}: done!')
-        return
 
     # create logger
     thislogger = LMDrunLogger()
@@ -172,8 +196,14 @@ def runConfigsMT(args, function):
     # read all configs from path
     searchDir = Path(args.configPath)
 
-    # TODO: maybe add a recursive flag
-    configs = list(searchDir.glob('**/*.json'))
+    if args.recursive:
+        configs = list(searchDir.glob('**/*.json'))
+    else:
+        configs = list(searchDir.glob('*.json'))
+
+    if len(configs) == 0:
+        print(f'No runConfig files found in {searchDir}!')
+
     simConfigs = []
 
     # loop over all configs, create wrapper and run
@@ -209,19 +239,21 @@ if __name__ == "__main__":
     print('greetings, human')
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig',
-                        help='try to find all alignment matrices (IP, corridor, sensors) for a single runConfig without running the simulations/fits')
-    parser.add_argument('-A', metavar='--alignPath', type=str, dest='alignPath',
-                        help='path to multiple LMDRunConfig files. ALL runConfig files in this path will be read and their alignment matrices determined!')
-    parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
+    parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='find all alignment matrices (IP, corridor, sensors) for runConfig')
+    parser.add_argument('-A', metavar='--alignConfigPath', type=str, dest='alignConfigPath', help='same as -a, but for all Configs in specified path')
 
     parser.add_argument('-f', metavar='--fullRunConfig', type=str, dest='fullRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
-    #parser.add_argument('-F', metavar='--fullConfigPath', type=str, dest='fullConfigPath', help='path to multiple LMDRunConfig files. ALL files in this path will be run as COMPLETE job, mc data, lumi and alignment!')
+    parser.add_argument('-F', metavar='--fullRunConfigPath', type=str, dest='fullRunConfigPath', help='same as -f, but for all Configs in specified path')
 
-    parser.add_argument('-r', metavar='--runConfig', type=str, dest='runConfig', help='LMDRunConfig file (e.g. "runConfigs/box10.json")')
-    parser.add_argument('-R', metavar='--configPath', type=str, dest='configPath',
-                        help='path to multiple LMDRunConfig files. ALL files in this path will be run as COMPLETE job, mc data, lumi and alignment!')
+    parser.add_argument('-l', metavar='--lumifitConfig', type=str, dest='lumifitConfig', help='determine Luminosity for runConfig')
+    parser.add_argument('-L', metavar='--lumifitConfigPath', type=str, dest='lumifitConfigPath', help='same as -f, but for all Configs in specified path')
 
+    parser.add_argument('-s', metavar='--simulationConfig', type=str, dest='simulationConfig', help='run simulation and reconstruction for runConfig')
+    parser.add_argument('-S', metavar='--simulationConfigPath', type=str, dest='simulationConfigPath', help='same as -s, but for all Configs in specified path')
+
+    parser.add_argument('-r', action='store_true', dest='recursive', help='use with any config Path option to scan paths recursively')
+
+    parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     parser.add_argument('--debug', action='store_true', help='run single threaded, more verbose output')
     parser.add_argument('--updateRunConfigs', dest='updateRunConfigs', help='read all configs in ./runConfig, recreate the matrix file paths and store them!')
     parser.add_argument('--test', action='store_true', dest='test', help='internal test function')
@@ -231,25 +263,52 @@ if __name__ == "__main__":
     except:
         parser.exit(1)
 
-    # ? =========== run align jobs (on frontend)
+    # ? =========== align, single config
     if args.alignConfig:
-        config = LMDRunConfig.fromJSON(args.runConfig)
+        config = LMDRunConfig.fromJSON(args.alignConfig)
         runAligners(config, 99)
         done()
 
-    # ? =========== run single config
-    if args.runConfig:
-        config = LMDRunConfig.fromJSON(args.runConfig)
+    # ? =========== align, multiple configs
+    if args.alignConfigPath:
+        args.configPath = args.alignConfigPath
+        runConfigsMT(args, runAligners)
+        done()
+
+    # ? =========== lumiFit, single config
+    if args.lumifitConfig:
+        config = LMDRunConfig.fromJSON(args.lumifitConfig)
+        runLumifit(config, 99)
+        done()
+
+    # ? =========== lumiFit, multiple configs
+    if args.lumifitConfigPath:
+        args.configPath = args.lumifitConfigPath
+        runConfigsMT(args, runLumifit)
+        done()
+
+    # ? =========== simReco, single config
+    if args.simulationConfig:
+        config = LMDRunConfig.fromJSON(args.simulationConfig)
+        runSimRecoLumi(config, 99)
+        done()
+
+    # ? =========== simReco, multiple configs
+    if args.simulationConfigPath:
+        args.configPath = args.simulationConfigPath
+        runConfigsMT(args, runSimRecoLumi)
+        done()
+
+    # ? =========== full job, single config
+    if args.fullRunConfig:
+        config = LMDRunConfig.fromJSON(args.fullRunConfig)
         runSimRecoLumiAlignRecoLumi(config, 99)
         done()
 
-    # ? =========== run multiple configs
-    if args.configPath:
+    # ? =========== full job, multiple configs
+    if args.fullRunConfigPath:
+        args.configPath = args.fullRunConfigPath
         runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
-        done()
-
-    # ? =========== run full chain, simulate mc data, find alignment, determine Luminosity
-    if args.fullRunConfig:
         done()
 
     # ? =========== helper functions
