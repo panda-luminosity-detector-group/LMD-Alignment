@@ -26,6 +26,7 @@ Info: all positional vectors are row-major!
 class alignerIP:
 
     def __init__(self):
+        self.logger = None
         pass
 
     @classmethod
@@ -58,7 +59,7 @@ class alignerIP:
     def getRot(self, apparent, actual):
         # error handling
         if np.linalg.norm(apparent) == 0 or np.linalg.norm(actual) == 0:
-            print("ERROR. can't create rotation with null vector")
+            self.logger.log("ERROR. can't create rotation with null vector")
             return
 
         # assert shapes
@@ -88,7 +89,7 @@ class alignerIP:
 
         # error handling
         if np.linalg.norm(apparent) == 0 or np.linalg.norm(actual) == 0:
-            print("ERROR. can't create rotation with null vector")
+            self.logger.log("ERROR. can't create rotation with null vector")
             return
 
         # assert shapes
@@ -131,15 +132,15 @@ class alignerIP:
 
     def computeAlignmentMatrix(self):
         if not self.config:
-            print(f'ERROR! Config not set!')
+            self.logger.log(f'ERROR! Config not set!')
             return
 
         trksQApath = self.config.pathTrksQA()
-        print(f'I\'m looking for the IP here: {trksQApath}')
+        self.logger.log(f'I\'m looking for the IP here: {trksQApath}')
 
         # FIXME later: read from config or PANDA db/survey
         lumiPos = self.getLumiPosition()
-        print(f'Lumi Position is:\n{lumiPos}')
+        self.logger.log(f'Lumi Position is:\n{lumiPos}')
 
         # TODO: create list with about 3 TrksQA files by searching through the directory, no more hard coded values!
         trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
@@ -152,8 +153,8 @@ class alignerIP:
         # FIXME later: read from config or PANDA db/survey
         ipActual = np.array([0.0, 0.0, 0.0])
 
-        print(f'IP apparent:\n{ipApparent}')
-        print(f'IP actual:\n{ipActual}')
+        self.logger.log(f'IP apparent:\n{ipApparent}')
+        self.logger.log(f'IP actual:\n{ipActual}')
 
         ipApparentLMD = ipApparent - lumiPos
         ipActualLMD = ipActual - lumiPos
@@ -171,7 +172,7 @@ class alignerIP:
         outFileName = self.config.alMatFile
 
         if Path(outFileName).exists():
-            print(f'WARNING. Replacing file: {outFileName}')
+            self.logger.log(f'WARNING. Replacing file: {outFileName}')
             Path(outFileName).unlink()
 
         if not Path(outFileName).parent.exists():
@@ -180,7 +181,7 @@ class alignerIP:
         with open(outFileName, 'w') as outfile:
             json.dump(resultJson, outfile, indent=2)
 
-        print(f'interaction point alignment done!')
+        self.logger.log(f'interaction point alignment done!')
 
 
 if __name__ == "__main__":

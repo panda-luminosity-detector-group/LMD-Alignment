@@ -15,6 +15,7 @@ class LMDrunLogger():
         print(self.__contents__)
 
     def save(self, filename):
+        filename.parent.mkdir(exist_ok=True)
         with open(filename, 'w') as file:
             file.write(self.__contents__)
         print(f'Log successfully saved to {filename}!')
