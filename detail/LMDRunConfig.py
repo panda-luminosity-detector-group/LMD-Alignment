@@ -63,7 +63,6 @@ class LMDRunConfig:
         self.__smallBatch = True
         self.__misalignment = False
         self.__alignmentCorrection = False
-        self.generateMatrixNames()
 
     #! --------------------- getters without setters
 
