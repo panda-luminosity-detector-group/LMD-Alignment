@@ -314,11 +314,8 @@ class LMDRunConfig:
 
     def __jobBaseDir__(self):
         if self.__JobBaseDir is None:
-            self.__JobBaseDir, test = self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__())
-        if test:
-            return self.__JobBaseDir
-        else:
-            print(f'ERROR! CAn not de-glob job base dir!')
+            self.__JobBaseDir = self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__())
+        return self.__JobBaseDir
 
     def __uncut__(self):
         return Path('1-*_uncut')
@@ -345,10 +342,10 @@ class LMDRunConfig:
     def __resolveActual__(self, globbedPath):
         result = glob.glob(str(globbedPath))
         if len(result) > 0:
-            return Path(result[0]), True
+            return Path(result[0])
         else:
             print(f'DEBUG: can\'t find resolve path on file system, returning globbed path!')
-            return globbedPath, False
+            return globbedPath
 
     #! --------------------- create paths to matrices, json results
     # alignment matrices are stored in the data directory from which they were found!
@@ -388,6 +385,7 @@ class LMDRunConfig:
         result += (f'\n\n')
         result += (f'------------------------------\n')
         result += (f'DEBUG OUTPUT for LMDRunConfig:\n\n')
+        result += (f'Job Base Dir: {self.__JobBaseDir}\n')
         result += (f'Path: {self.__fromPath}\n')
         result += (f'Momentum: {self.__momentum}\n')
         result += (f'Misalign Type: {self.__misalignType}\n')

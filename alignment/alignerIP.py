@@ -134,7 +134,6 @@ class alignerIP:
         if not self.config:
             self.logger.log(f'ERROR! Config not set!')
             return
-
         trksQApath = self.config.pathTrksQA()
         self.logger.log(f'I\'m looking for the IP here: {trksQApath}')
 
