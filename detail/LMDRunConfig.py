@@ -48,6 +48,7 @@ class LMDRunConfig:
             print(f"please set {pndRootDir} and {simDirEnv}!")
             sys.exit(1)
 
+        self.__JobBaseDir = None
         self.__runSteps = []
         self.__fromPath = None
         self.__alignMatFile = None
@@ -307,7 +308,12 @@ class LMDRunConfig:
         return Path(self.__tracksNum)
 
     def __jobBaseDir__(self):
-        return Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()
+        if self.__JobBaseDir is None:
+            self.__JobBaseDir, test = self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__())
+        if test:
+            return self.__JobBaseDir
+        else:
+            print(f'ERROR! CAn not de-glob job base dir!')
 
     def __uncut__(self):
         return Path('1-*_uncut')
@@ -334,10 +340,10 @@ class LMDRunConfig:
     def __resolveActual__(self, globbedPath):
         result = glob.glob(str(globbedPath))
         if len(result) > 0:
-            return Path(result[0])
+            return Path(result[0]), True
         else:
             print(f'DEBUG: can\'t find resolve path on file system, returning globbed path!')
-            return globbedPath
+            return globbedPath, False
 
     #! --------------------- create paths to matrices, json results
     # alignment matrices are stored in the data directory from which they were found!
