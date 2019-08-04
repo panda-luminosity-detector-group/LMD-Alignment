@@ -235,7 +235,12 @@ class LMDRunConfig:
         print(f'reading file: {filename}')
         temp = cls()
         with open(filename, 'r') as inFile:
-            temp.__dict__ = json.load(inFile)
+            #temp.__dict__ = json.load(inFile)
+            data = json.load(inFile)
+        
+        for key, value in data.items():
+            setattr(temp, key, value)
+        
         return temp
 
     # serialize to JSON
