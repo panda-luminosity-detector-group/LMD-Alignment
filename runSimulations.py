@@ -256,7 +256,7 @@ if __name__ == "__main__":
         print(f'reading all files from {args.updateRunConfigs} and regenerating settings...')
 
         targetDir = Path('runConfigs')
-        configs = [x for x in targetDir.glob('**/*') if x.is_file()]
+        configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
 
         for fileName in configs:
             conf = LMDRunConfig.fromJSON(fileName)
