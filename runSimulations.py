@@ -201,7 +201,7 @@ if __name__ == "__main__":
                         help='path to multiple LMDRunConfig files. ALL files in this path will be run as COMPLETE job, mc data, lumi and alignment!')
 
     parser.add_argument('--debug', action='store_true', help='run single threaded, more verbose output')
-    parser.add_argument('--regenerateMatrixPaths', dest='reGenMatPath', help='read all configs in ./runConfig, recreate the matrix file paths and store them!')
+    parser.add_argument('--updateRunConfigs', dest='updateRunConfigs', help='read all configs in ./runConfig, recreate the matrix file paths and store them!')
     parser.add_argument('--test', action='store_true', dest='test', help='internal test function')
 
     try:
@@ -251,9 +251,9 @@ if __name__ == "__main__":
         LMDRunConfig.minimalDefault().toJSON(dest)
         parser.exit(0)
 
-    if args.reGenMatPath:
+    if args.updateRunConfigs:
 
-        print(f'reading all files from {args.reGenMatPath} and recreating matrix file paths...')
+        print(f'reading all files from {args.reGenMatPath} and regenerating settings...')
 
         targetDir = Path('runConfigs')
         configs = [x for x in targetDir.glob('**/*') if x.is_file()]
