@@ -253,7 +253,7 @@ if __name__ == "__main__":
 
     if args.updateRunConfigs:
 
-        print(f'reading all files from {args.reGenMatPath} and regenerating settings...')
+        print(f'reading all files from {args.updateRunConfigs} and regenerating settings...')
 
         targetDir = Path('runConfigs')
         configs = [x for x in targetDir.glob('**/*') if x.is_file()]
