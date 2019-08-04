@@ -30,7 +30,6 @@ it:
 - run ./doSimulationReconstruction with correct parameters
 - run ./determineLuminosity
 - run ./extractLuminosity
-TODO: these steps!
 - run my aligners
 - rerun ./doSimulationReconstruction with correct parameters
 - rerun ./determineLuminosity
@@ -223,7 +222,8 @@ def runConfigsMT(args, function):
     else:
         # run concurrently in maximum 64 threads. they mostly wait for compute nodes anyway.
         # we use a process pool instead of a thread pool because the individual interpreters are working on different cwd's.
-        with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
+        # although I don't think that's actually needed...
+        with concurrent.futures.ProcessPoolExecutor(max_workers=maxThreads) as executor:
             # Start the load operations and mark each future with its URL
             for index, config in enumerate(simConfigs):
                 executor.submit(function, config, index)

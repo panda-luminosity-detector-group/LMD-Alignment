@@ -237,10 +237,10 @@ class LMDRunConfig:
         with open(filename, 'r') as inFile:
             #temp.__dict__ = json.load(inFile)
             data = json.load(inFile)
-        
+
         for key, value in data.items():
             setattr(temp, key, value)
-        
+
         return temp
 
     # serialize to JSON
@@ -343,7 +343,7 @@ class LMDRunConfig:
         result = glob.glob(str(globbedPath))
         if len(result) > 0:
             return Path(result[0])
-        #TODO: don't return anything on failure!
+        # TODO: don't return anything on failure!
         else:
             print(f'DEBUG: can\'t find resolve path on file system, returning globbed path!')
             return globbedPath
@@ -353,7 +353,7 @@ class LMDRunConfig:
     def pathAlMatrix(self):
         self.__checkMinimum__()
         # return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json'))
-        return self.__resolveActual__(self.__jobBaseDir__() ) / Path('alignmentMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json')
+        return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json')
 
     def pathMisMatrix(self):
         self.__checkMinimum__()

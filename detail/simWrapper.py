@@ -184,6 +184,8 @@ class simWrapper:
         if self.__config is None:
             self.logger.log(f'please set run config first!')
 
+        # FIXME: remove old lumi data directories first, like /bunches/binning/merge_data
+
         absPath = self.__config.pathTrksQA()
         self.logger.log(f'DEBUG: determining Luminosity of the data set found here:\n{absPath}')
 
@@ -225,12 +227,9 @@ class simWrapper:
             if Path(self.__config.pathLumiVals()).exists():
                 with open(self.__config.pathLumiVals()) as file:
                     lumiJson = json.load(file)
-                print(lumiJson)
-                self.logger.log(f'========= Luminosity extracted!\nLumi values: {lumiJson}')
+                self.logger.log(f'========= Luminosity extracted!\nLumi values:\n\n{lumiJson}\n\n')
             else:
-                self.logger.log(f'========= Luminosity extracted, but lumi_vals.json could not be found!')  
-
-            
+                self.logger.log(f'========= Luminosity extracted, but lumi_vals.json could not be found!')
 
         else:
             print(f'can\'t determine path!')
