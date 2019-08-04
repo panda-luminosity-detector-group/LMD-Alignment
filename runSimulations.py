@@ -101,13 +101,13 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
     # prealignWrapper.runSimulations()           # non blocking, so we have to wait
     # prealignWrapper.waitForJobCompletion()     # blocking
     # prealignWrapper.detLumi()                  # blocking
-    prealignWrapper.extractLumi()              # blocking
+    # prealignWrapper.extractLumi()              # blocking
 
     # then run aligner(s)
 
-    # IPaligner = alignerIP.fromRunConfig(runConfig)
-    # IPaligner.logger = thislogger
-    # IPaligner.computeAlignmentMatrix()
+    IPaligner = alignerIP.fromRunConfig(runConfig)
+    IPaligner.logger = thislogger
+    IPaligner.computeAlignmentMatrix()
 
     # then, set align correction in config true and recreate simWrapper
     runConfig.alignmentCorrection = True
@@ -126,10 +126,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
         i += 1
 
     logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-run{i}-thread{threadIndex}.txt')
-    print(f'got to filename: {logfilename}')
-
     thislogger.save(logfilename)
-
     print(f'Thread {threadIndex} done!')
 
 
