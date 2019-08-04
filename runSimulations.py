@@ -52,29 +52,11 @@ from detail.logger import LMDrunLogger
 from detail.simWrapper import simWrapper
 
 
-def runMultipleTasks(wrapper, time):
-
-    wrapper.idle(time)
-    print('again!')
-    wrapper.idle(time)
-
-
-def idleTwoByTwo():
-    # TODO: create two simWrappers and have them both idle two times!
-    wrapperOne = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
-    wrapperTwo = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
-    wrapperThree = simWrapper.fromRunConfig(LMDRunConfig.minimalDefault())
-
-    simWrappers = [wrapperOne, wrapperTwo, wrapperThree]
-
-    maxThreads = 64
-
-    with concurrent.futures.ProcessPoolExecutor(max_workers=maxThreads) as executor:
-        for index, wrapper in enumerate(simWrappers):
-            wrapper.threadNumber = index
-            executor.submit(runMultipleTasks, wrapper, 1)
-
-# TODO: add logger here
+def done():
+    print(f'\n\n====================================\n')
+    print(f'       all tasks completed!           ')
+    print(f'\n====================================\n\n')
+    parser.exit(0)
 
 
 def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
@@ -98,13 +80,12 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
     prealignWrapper.logger = thislogger
 
     # run all
-    # prealignWrapper.runSimulations()           # non blocking, so we have to wait
-    # prealignWrapper.waitForJobCompletion()     # blocking
-    # prealignWrapper.detLumi()                  # blocking
-    # prealignWrapper.extractLumi()              # blocking
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+    prealignWrapper.detLumi()                  # blocking
+    prealignWrapper.extractLumi()              # blocking
 
     # then run aligner(s)
-
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
@@ -115,10 +96,10 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadIndex):
     postalignWrapper.logger = thislogger
 
     # re run reco steps and Lumi fit
-    # postalignWrapper.runSimulations()           # non blocking, so we have to wait
-    # postalignWrapper.waitForJobCompletion()     # blocking
-    # postalignWrapper.detLumi()                  # blocking
-    # postalignWrapper.extractLumi()              # blocking
+    postalignWrapper.runSimulations()           # non blocking, so we have to wait
+    postalignWrapper.waitForJobCompletion()     # blocking
+    postalignWrapper.detLumi()                  # blocking
+    postalignWrapper.extractLumi()              # blocking
 
     # save log, increment log number if log from that day is already present
     i = 0
@@ -164,10 +145,6 @@ def runAllConfigsNewMT(args):
 
         print('waiting for all jobs...')
         executor.shutdown(wait=True)
-
-    print(f'\n\n====================================\n')
-    print(f'all jobs and config files completed!')
-    print(f'\n====================================\n\n')
     return
 
 
@@ -211,45 +188,30 @@ if __name__ == "__main__":
 
     # ? =========== run align jobs (on frontend)
     if args.alignConfig:
-        print('running all aligners')
         runAligners(args)
-        print('all done')
-        parser.exit(0)
+        done()
 
     # ? =========== run single config
     if args.runConfig:
         config = LMDRunConfig.fromJSON(args.runConfig)
         runSimRecoLumiAlignRecoLumi(config, 99)
-        parser.exit(0)
-        # if False:
-        #     wrapper = simWrapper.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
-        #     wrapper.runSimulations()
-        #     parser.exit(0)
-        # else:
-        #     aligner = alignerIP.fromRunConfig(LMDRunConfig.fromJSON(args.configFile))
-        #     aligner.computeAlignmentMatrix()
-        #     parser.exit(0)
+        done()
 
     # ? =========== run multiple configs
     if args.configPath:
-
-        if args.debug:
-            pass
-
         runAllConfigsNewMT(args)
-        parser.exit(0)
+        done()
 
     # ? =========== run full chain, simulate mc data, find alignment, determine Luminosity
     if args.fullRunConfig:
-        # TODO: implement
-        parser.exit(0)
+        done()
 
     # ? =========== helper functions
     if args.makeDefault:
         dest = Path('runConfigs/identity-1.00.json')
         print(f'saving default config to {dest}')
         LMDRunConfig.minimalDefault().toJSON(dest)
-        parser.exit(0)
+        done()
 
     if args.updateRunConfigs:
 
@@ -263,12 +225,10 @@ if __name__ == "__main__":
             conf.generateMatrixNames()
             conf.toJSON(fileName)
 
-        print('all done!')
-        parser.exit(0)
+        done()
 
     if args.test:
         print(f'idlig two by two')
-        idleTwoByTwo()
-        parser.exit(0)
+        done()
 
     parser.print_help()

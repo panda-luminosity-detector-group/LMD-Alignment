@@ -167,7 +167,6 @@ class alignerIP:
         if not self.config.alMatFile:
             self.config.generateMatrixNames()
 
-        # FIXME later: save alignment Matrix to DATA path, not PandaRoot path!
         outFileName = self.config.alMatFile
 
         if Path(outFileName).exists():
@@ -178,6 +177,7 @@ class alignerIP:
             Path(outFileName).parent.mkdir()
 
         with open(outFileName, 'w') as outfile:
+            self.logger.log(f'Saving alignment matrix to file: {outFileName}')
             json.dump(resultJson, outfile, indent=2)
 
         self.logger.log(f'interaction point alignment done!')
