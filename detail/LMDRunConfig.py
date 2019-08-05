@@ -63,6 +63,8 @@ class LMDRunConfig:
         self.__smallBatch = True
         self.__misalignment = False
         self.__alignmentCorrection = False
+        self.__debug = False
+        self.__useDevQueue = False
 
     #! --------------------- getters without setters
 
@@ -85,6 +87,12 @@ class LMDRunConfig:
     misalignType = property(None, __setMisalignType)
 
     #! --------------------- getters and setters
+
+    def __getDebug(self):
+        return self.__debug
+    def __setDebug(self, debug):
+        self.__debug = debug
+    useDebug = property(__getDebug, __setDebug)
 
     def __getMisaligned(self):
         return self.__misalignment
@@ -210,11 +218,11 @@ class LMDRunConfig:
                 self.__alignFactor = match.groups()[1]
                 self.__alignmentCorrection = True
 
-                if self.__alignType != self.__misalignType:
-                    print(f'WARNING. Align type is not the same as misalign type. Is this correct?')
+                if (self.__alignType != self.__misalignType) and self.useDebug:
+                    print(f'DEBUG: Align type is not the same as misalign type. Is this correct?')
 
-                if self.__alignFactor != self.__misalignFactor:
-                    print(f'WARNING. Align factor is not the same as misalign type. Is this correct?')
+                if (self.__alignFactor != self.__misalignFactor) and self.useDebug:
+                    print(f'DEBUG: Align factor is not the same as misalign type. Is this correct?')
 
                 self.__alignMatFile = str(self.pathAlMatrix())
 
@@ -345,7 +353,8 @@ class LMDRunConfig:
             return Path(result[0])
         # TODO: don't return anything on failure!
         else:
-            print(f'DEBUG: can\'t find resolve path on file system, returning globbed path!')
+            if self.useDebug:
+                print(f'DEBUG: can\'t find resolve path on file system, returning globbed path!')
             return globbedPath
 
     #! --------------------- create paths to matrices, json results

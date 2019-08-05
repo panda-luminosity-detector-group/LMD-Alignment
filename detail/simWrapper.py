@@ -40,7 +40,6 @@ class simWrapper:
         self.currentJobID = None
         self.threadNumber = None
         self.logger = None
-        self.__debug = True
         try:
             self.__lumiFitPath = str(Path(os.environ[lmdFitEnv]).parent)
             self.__simDataPath = os.environ[simDirEnv]
@@ -57,10 +56,10 @@ class simWrapper:
         return wrapper
 
     def setRunConfig(self, LMDRunConfig):
-        self.__config = LMDRunConfig
+        self.config = LMDRunConfig
 
     def runSimulations(self):
-        if self.__config is None:
+        if self.config is None:
             self.logger.log(f'please set run config first!')
 
         self.logger.log(f'\n\n========= Running ./doSimulationReconstruction.\n')
@@ -68,40 +67,70 @@ class simWrapper:
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
         command = scriptsPath / Path('doSimulationReconstruction.py')   # non-blocking!
-        nTrks = self.__config.trksNum
-        nJobs = self.__config.jobsNum
-        mom = self.__config.momentum
+        nTrks = self.config.trksNum
+        nJobs = self.config.jobsNum
+        mom = self.config.momentum
         dpm = 'dpm_elastic'
 
         almatp = '--alignment_matrices_path'
-        almatv = str(self.__config.pathAlMatrix())
+        almatv = str(self.config.pathAlMatrix())
 
         mismatp = '--misalignment_matrices_path'
-        mismatv = str(self.__config.pathMisMatrix())
+        mismatv = str(self.config.pathMisMatrix())
+
+        debugArg = '--debug'
+        devQueueArg = '--use_devel_queue'
 
         # we have to change the directory here since some script paths in LuminosityFit are relative.
-        self.logger.log(f'DEBUG: changing cwd to {scriptsPath}')
+        if self.config.useDebug:
+            self.logger.log(f'DEBUG: changing cwd to {scriptsPath}')
         os.chdir(scriptsPath)
 
-        if self.__debug:
+        if self.config.useDebug:
             self.logger.log(f'DEBUG: dumping current runConfig!')
-            self.logger.log(self.__config.dump() + '')
+            self.logger.log(self.config.dump() + '')
 
-        # no misalignment nor correction
-        if not self.__config.misaligned and not self.__config.alignmentCorrection:
-            returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm))
+        # for debug, use --use_devel_queue
 
-        # run only misaligned, no correction
-        if self.__config.misaligned and not self.__config.alignmentCorrection:
-            returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, mismatp, mismatv))
+        # a basic run command ALWAYS has these four argumens
+        subProcessCommandTuple = (command, nTrks, nJobs, mom, dpm)
 
-        # run only correction
-        if not self.__config.misaligned and self.__config.alignmentCorrection:
-            returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, almatp, almatv))
+        if self.config.useDebug:
+            subProcessCommandTuple += (debugArg,)
 
-        # both misalignment and correction:
-        if self.__config.misaligned and self.__config.alignmentCorrection:
-            returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, mismatp, mismatv, almatp, almatv))
+        if self.config.useDevQueue:
+            subProcessCommandTuple += (devQueueArg,)
+
+        # apply misaligned
+        if self.config.misaligned:
+            subProcessCommandTuple += (mismatp, mismatv)
+
+        # apply correction
+        if self.config.alignmentCorrection:
+            subProcessCommandTuple += (almatp, almatv)
+
+        if self.config.useDebug:
+            self.logger.log(f'DEBUG: run command tuple is {subProcessCommandTuple}')
+
+        returnVal = subprocess.check_output(subProcessCommandTuple)
+
+        #! -------------------------------- old
+
+        # # no misalignment nor correction
+        # if not self.config.misaligned and not self.config.alignmentCorrection:
+        #     returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm))
+
+        # # run only misaligned, no correction
+        # if self.config.misaligned and not self.config.alignmentCorrection:
+        #     returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, mismatp, mismatv))
+
+        # # run only correction
+        # if not self.config.misaligned and self.config.alignmentCorrection:
+        #     returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, almatp, almatv))
+
+        # # both misalignment and correction:
+        # if self.config.misaligned and self.config.alignmentCorrection:
+        #     returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, mismatp, mismatv, almatp, almatv))
 
         returnVal = returnVal.decode(sys.stdout.encoding)
 
@@ -118,7 +147,7 @@ class simWrapper:
             self.logger.log('can\'t parse job ID from output!')
 
     def waitForJobCompletion(self):
-        if self.__config is None:
+        if self.config is None:
             self.logger.log(f'please set run config first!')
 
         if not self.currentJobID:
@@ -181,12 +210,12 @@ class simWrapper:
 
     # the lumi fit scripts are blocking!
     def detLumi(self):
-        if self.__config is None:
+        if self.config is None:
             self.logger.log(f'please set run config first!')
 
         # FIXME: remove old lumi data directories first, like /bunches/binning/merge_data
 
-        absPath = self.__config.pathTrksQA()
+        absPath = self.config.pathTrksQA()
         self.logger.log(f'DEBUG: determining Luminosity of the data set found here:\n{absPath}')
 
         scriptsPath = self.__lumiFitPath / Path('scripts')
@@ -196,7 +225,8 @@ class simWrapper:
 
         # see runSimulations()
         # we have to change the directory here since some script paths in LuminosityFit are relative.
-        self.logger.log(f'DEBUG: changing cwd to {scriptsPath}')
+        if self.config.useDebug:
+            self.logger.log(f'DEBUG: changing cwd to {scriptsPath}')
         os.chdir(scriptsPath)
         self.logger.log(f'\n========= Running ./determineLuminosity.')
         print(f'Running ./determineLuminosity. This might take a while.')
@@ -208,7 +238,7 @@ class simWrapper:
         self.logger.log(f'========= Done!')
 
     def extractLumi(self):
-        if self.__config is None:
+        if self.config is None:
             print(f'please set run config first!')
             self.logger.log(f'please set run config first!')
 
@@ -217,15 +247,15 @@ class simWrapper:
 
         binPath = self.__lumiFitPath / Path('build') / Path('bin')
         command = binPath / Path('extractLuminosity')
-        dataPath = self.__config.pathJobBase()
+        dataPath = self.config.pathJobBase()
 
         if dataPath:
             returnOutput = subprocess.check_output((command, dataPath))
             self.logger.log('\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n')
             print(f'========= Luminosity extracted!')
 
-            if Path(self.__config.pathLumiVals()).exists():
-                with open(self.__config.pathLumiVals()) as file:
+            if Path(self.config.pathLumiVals()).exists():
+                with open(self.config.pathLumiVals()) as file:
                     lumiJson = json.load(file)
                 self.logger.log(f'========= Luminosity extracted!\nLumi values:\n\n{lumiJson}\n\n')
             else:

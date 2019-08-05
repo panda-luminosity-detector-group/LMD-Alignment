@@ -217,6 +217,7 @@ def runConfigsMT(args, function):
         print(f'DEBUG: running in {maxThreads} threads!')
 
         for con in simConfigs:
+            con.useDebug = True
             function(con, 0)
 
     else:
@@ -254,7 +255,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', action='store_true', dest='recursive', help='use with any config Path option to scan paths recursively')
 
     parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
-    parser.add_argument('--debug', action='store_true', help='run single threaded, more verbose output')
+    parser.add_argument('--debug', action='store_true', dest='debug', help='run single threaded, more verbose output, submit jobs to devel queue')
     parser.add_argument('--updateRunConfigs', dest='updateRunConfigs', help='read all configs in ./runConfig, recreate the matrix file paths and store them!')
     parser.add_argument('--test', action='store_true', dest='test', help='internal test function')
 
@@ -263,9 +264,14 @@ if __name__ == "__main__":
     except:
         parser.exit(1)
 
+    if args.debug:
+        print(f'\n\n!!! Running in debug mode !!!\n\n')
+
     # ? =========== align, single config
     if args.alignConfig:
         config = LMDRunConfig.fromJSON(args.alignConfig)
+        if args.debug:
+            config.useDebug = True
         runAligners(config, 99)
         done()
 
@@ -278,6 +284,8 @@ if __name__ == "__main__":
     # ? =========== lumiFit, single config
     if args.lumifitConfig:
         config = LMDRunConfig.fromJSON(args.lumifitConfig)
+        if args.debug:
+            config.useDebug = True
         runLumifit(config, 99)
         done()
 
@@ -290,6 +298,8 @@ if __name__ == "__main__":
     # ? =========== simReco, single config
     if args.simulationConfig:
         config = LMDRunConfig.fromJSON(args.simulationConfig)
+        if args.debug:
+            config.useDebug = True
         runSimRecoLumi(config, 99)
         done()
 
@@ -302,6 +312,8 @@ if __name__ == "__main__":
     # ? =========== full job, single config
     if args.fullRunConfig:
         config = LMDRunConfig.fromJSON(args.fullRunConfig)
+        if args.debug:
+            config.useDebug = True
         runSimRecoLumiAlignRecoLumi(config, 99)
         done()
 

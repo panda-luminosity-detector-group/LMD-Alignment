@@ -18,7 +18,7 @@ class LMDrunLogger():
         filename.parent.mkdir(exist_ok=True)
         with open(filename, 'w') as file:
             file.write(self.__contents__)
-        print(f'Log successfully saved to {filename}!')
+        print(f'Log successfully saved to {filename.absolute()}!')
 
 if __name__ == "__main__":
     print("Sorry, this module can't be run directly")
