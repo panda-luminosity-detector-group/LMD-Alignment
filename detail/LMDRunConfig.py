@@ -239,6 +239,7 @@ class LMDRunConfig:
 
         self.__misalignMatFile = str(self.pathMisMatrix())
         self.__alignMatFile = str(self.pathAlMatrix())
+        self.__JobBaseDir = str(self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()))
 
     #! --------------------- serialization, deserialization
     @classmethod

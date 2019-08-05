@@ -142,7 +142,7 @@ class alignerIP:
         self.logger.log(f'Lumi Position is:\n{lumiPos}')
 
         # TODO: create list with about 3 TrksQA files by searching through the directory, no more hard coded values!
-        trksQAfile = trksQApath / Path('Lumi_TrksQA_100000.root')
+        trksQAfile = trksQApath / Path('Lumi_TrksQA_1000*.root')        # this will find 1-4 files, should be okay for now
         ipApparent = getIPfromTrksQA(str(trksQAfile))
 
         # add debug flag or something
