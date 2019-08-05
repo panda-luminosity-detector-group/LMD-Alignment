@@ -1,0 +1,24 @@
+{
+  "_LMDRunConfig__cwd": "/media/DataEnc2TBRaid1/Arbeit/LMDscripts",
+  "_LMDRunConfig__simDataPath": "/media/DataEnc2TBRaid1/Arbeit/LMDscripts/input",
+  "_LMDRunConfig__pandaRootDir": "/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot",
+  "_LMDRunConfig__runSteps": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "_LMDRunConfig__fromPath": null,
+  "_LMDRunConfig__alignMatFile": "/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/alMatrices/alMat-identity-1.00.json",
+  "_LMDRunConfig__misalignMatFile": "/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-identity-1.00.root",
+  "_LMDRunConfig__misalignType": "identity",
+  "_LMDRunConfig__alignType": "identity",
+  "_LMDRunConfig__misalignFactor": "1.00",
+  "_LMDRunConfig__alignFactor": "1.00",
+  "_LMDRunConfig__momentum": "1.5",
+  "_LMDRunConfig__tracksNum": "100000",
+  "_LMDRunConfig__jobsNum": "500",
+  "_LMDRunConfig__smallBatch": true,
+  "_LMDRunConfig__misalignment": true,
+  "_LMDRunConfig__alignmentCorrection": true
+}

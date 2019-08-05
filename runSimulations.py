@@ -253,6 +253,7 @@ if __name__ == "__main__":
     runSimLog = f'runLogs/simulation-{datetime.date.today()}.log'
     runSimLogErr = f'runLogs/simulation-{datetime.date.today()}-stderr.log'
 
+    # redirect stdout/stderr to log files
     print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
     sys.stdout = open(runSimLog, 'a')
     sys.stderr = open(runSimLogErr, 'a')
