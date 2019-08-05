@@ -4,21 +4,16 @@
 Minimum Logger object that can be passed to other objects
 """
 
+import datetime
+from pathlib import Path
+
 class LMDrunLogger():
-    def __init__(self):
-        self.__contents__ = ''
-
+    def __init__(self, fileName=f'runLogs/autoLog-{datetime.date.today()}.log'):
+        Path(fileName).parent.mkdir(exist_ok=True)
+        self.contentlog = open(fileName, 'a')
+    
     def log(self, message):
-        self.__contents__ += message + '\n'
-
-    def print(self):
-        print(self.__contents__)
-
-    def save(self, filename):
-        filename.parent.mkdir(exist_ok=True)
-        with open(filename, 'w') as file:
-            file.write(self.__contents__)
-        print(f'Log successfully saved to {filename.absolute()}!')
+        self.contentlog.write(message)
 
 if __name__ == "__main__":
     print("Sorry, this module can't be run directly")

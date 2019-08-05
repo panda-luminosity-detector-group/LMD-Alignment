@@ -71,7 +71,7 @@ def runAligners(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger()
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
@@ -90,7 +90,7 @@ def runLumifit(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger()
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -101,13 +101,6 @@ def runLumifit(runConfig, threadID=None):
     prealignWrapper.detLumi()                  # blocking
     prealignWrapper.extractLumi()              # blocking
 
-    # save log, increment log number if log from that day is already present
-    i = 0
-    while Path(f'./runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadID}.txt').exists():
-        i += 1
-
-    logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-run{i}-thread{threadID}.txt')
-    thislogger.save(logfilename)
     print(f'Thread {threadID} done!')
 
 
@@ -116,7 +109,7 @@ def runSimRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger()
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -127,13 +120,6 @@ def runSimRecoLumi(runConfig, threadID=None):
     prealignWrapper.runSimulations()           # non blocking, so we have to wait
     prealignWrapper.waitForJobCompletion()     # blocking
 
-    # save log, increment log number if log from that day is already present
-    i = 0
-    while Path(f'./runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadID}.txt').exists():
-        i += 1
-
-    logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-run{i}-thread{threadID}.txt')
-    thislogger.save(logfilename)
     print(f'Thread {threadID} done!')
 
 
@@ -150,7 +136,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
         return
 
     # create logger
-    thislogger = LMDrunLogger()
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -181,13 +167,6 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     postalignWrapper.detLumi()                  # blocking
     postalignWrapper.extractLumi()              # blocking
 
-    # save log, increment log number if log from that day is already present
-    i = 0
-    while Path(f'./runLogs/runLog-{datetime.date.today()}-nr{i}-i{threadID}.txt').exists():
-        i += 1
-
-    logfilename = Path(f'./runLogs/runLog-{datetime.date.today()}-run{i}-thread{threadID}.txt')
-    thislogger.save(logfilename)
     print(f'Thread {threadID} done!')
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
