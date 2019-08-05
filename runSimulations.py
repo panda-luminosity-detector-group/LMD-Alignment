@@ -57,6 +57,7 @@ def done():
     print(f'\n====================================\n\n')
     # cleanup, probably not neccessary
     sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
     #print(f'\nrunSimulations.py is done!\n')
     parser.exit(0)
 
@@ -270,9 +271,12 @@ if __name__ == "__main__":
     except:
         parser.exit(1)
 
+    runSimLog = f'runLogs/simulation-{datetime.date.today()}.log'
+    runSimLogErr = f'runLogs/simulation-{datetime.date.today()}-stderr.log'
 
-    print(f'+++ starting new run and forking to background! this script will produce no further output!\n')
-    sys.stdout = open(f'runLogs/simulation-{datetime.date.today()}.log', 'a')
+    print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
+    sys.stdout = open(runSimLog, 'a')
+    sys.stderr = open(runSimLogErr, 'a')
     print(f'+++ starting new run at {datetime.datetime.now()}:\n')
 
     if args.debug:
@@ -335,6 +339,7 @@ if __name__ == "__main__":
         done()
 
     sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
 
     # ? =========== helper functions
     if args.makeDefault:
