@@ -10,7 +10,7 @@ from pathlib import Path
 class LMDrunLogger():
     def __init__(self, fileName=f'runLogs/autoLog-{datetime.date.today()}.log'):
         Path(fileName).parent.mkdir(exist_ok=True)
-        self.contentlog = open(fileName, 'a')
+        self.contentlog = open(fileName, 'a', buffering=1)
     
     def log(self, message):
         self.contentlog.write(message)
