@@ -35,12 +35,12 @@ it:
 - rerun ./determineLuminosity
 - rerun ./extractLuminosity
 
-
 """
 
 import argparse
 import concurrent
 import datetime
+import os, sys      # to fork
 
 from pathlib import Path
 
@@ -55,6 +55,9 @@ def done():
     print(f'\n\n====================================\n')
     print(f'       all tasks completed!           ')
     print(f'\n====================================\n\n')
+    # cleanup, probably not neccessary
+    sys.stdout = sys.__stdout__
+    #print(f'\nrunSimulations.py is done!\n')
     parser.exit(0)
 
 
@@ -237,7 +240,10 @@ def runConfigsMT(args, function):
 
 
 if __name__ == "__main__":
-    print('greetings, human')
+
+    if os.fork():
+        sys.exit()
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='find all alignment matrices (IP, corridor, sensors) for runConfig')
@@ -263,6 +269,11 @@ if __name__ == "__main__":
         args = parser.parse_args()
     except:
         parser.exit(1)
+
+
+    print(f'+++ starting new run and forking to background! this script will produce no further output!\n')
+    sys.stdout = open(f'runLogs/simulation-{datetime.date.today()}.log', 'a')
+    print(f'+++ starting new run at {datetime.datetime.now()}:\n')
 
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
@@ -322,6 +333,8 @@ if __name__ == "__main__":
         args.configPath = args.fullRunConfigPath
         runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
         done()
+
+    sys.stdout = sys.__stdout__
 
     # ? =========== helper functions
     if args.makeDefault:

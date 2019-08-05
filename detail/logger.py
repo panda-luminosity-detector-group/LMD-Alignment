@@ -8,8 +8,8 @@ class LMDrunLogger():
     def __init__(self):
         self.__contents__ = ''
 
-    def log(self, item):
-        self.__contents__ += item + '\n'
+    def log(self, message):
+        self.__contents__ += message + '\n'
 
     def print(self):
         print(self.__contents__)
