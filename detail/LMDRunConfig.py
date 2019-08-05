@@ -94,6 +94,12 @@ class LMDRunConfig:
         self.__debug = debug
     useDebug = property(__getDebug, __setDebug)
 
+    def __getDebugQueue(self):
+        return self.__useDevQueue
+    def __setDebugQueue(self, debug):
+        self.__useDevQueue = debug
+    useDevQueue = property(__getDebugQueue, __setDebugQueue)
+
     def __getMisaligned(self):
         return self.__misalignment
 
