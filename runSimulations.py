@@ -294,15 +294,7 @@ if __name__ == "__main__":
         done()
 
 
-    runSimLog = f'runLogs/simulation-{datetime.date.today()}.log'
-    runSimLogErr = f'runLogs/simulation-{datetime.date.today()}-stderr.log'
-
-    # redirect stdout/stderr to log files
-    print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
-    Path(runSimLog).parent.mkdir(exist_ok=True)
-    sys.stdout = open(runSimLog, 'a+')
-    sys.stderr = open(runSimLogErr, 'a+')
-    print(f'+++ starting new run at {datetime.datetime.now()}:\n')
+    
 
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
@@ -320,6 +312,17 @@ if __name__ == "__main__":
         args.configPath = args.fitValuesConfigPath
         showLumiFitResults(args, runAligners)
         done()
+
+    # TODO: move back up when showLumi() prints a latex table to *.tex files
+    runSimLog = f'runLogs/simulation-{datetime.date.today()}.log'
+    runSimLogErr = f'runLogs/simulation-{datetime.date.today()}-stderr.log'
+
+    # redirect stdout/stderr to log files
+    print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
+    Path(runSimLog).parent.mkdir(exist_ok=True)
+    sys.stdout = open(runSimLog, 'a+')
+    sys.stderr = open(runSimLogErr, 'a+')
+    print(f'+++ starting new run at {datetime.datetime.now()}:\n')
 
     # ? =========== align, single config
     if args.alignConfig:
