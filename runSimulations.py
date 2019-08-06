@@ -173,11 +173,12 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
 
 
 def showLumiFitResults(runConfig, threadID=None):
-    recoIPfile = runConfig.pathRecoIP()
-    lumiValFile = runConfig.pathLumiVals()
 
-    recoIP = json.load(recoIPfile)
-    lumiVal = json.load(lumiValFile)
+    with open(runConfig.pathRecoIP(), 'r') as recoIPfile:
+        recoIP = json.load(recoIPfile)
+    
+    with open(runConfig.pathLumiVals(), 'r') as lumiValFile:
+        lumiVal = json.load(lumiValFile)
 
     print(f'reco ip: {recoIP}, lumi vals: {lumiVal}')
     pass
