@@ -169,6 +169,10 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
 
     print(f'Thread {threadID} done!')
 
+def showLumiFitResults(runConfig, threadID=None):
+    print(f'reco ip: {}, lumi vals: {}')
+    pass
+
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
 
@@ -238,8 +242,11 @@ if __name__ == "__main__":
     parser.add_argument('-s', metavar='--simulationConfig', type=str, dest='simulationConfig', help='run simulation and reconstruction for runConfig')
     parser.add_argument('-S', metavar='--simulationConfigPath', type=str, dest='simulationConfigPath', help='same as -s, but for all Configs in specified path')
 
+    parser.add_argument('-v', metavar='--fitValuesConfig', type=str, dest='fitValuesConfig', help='display reco_ip and lumi_vals for select runConfig (if found)')
+    parser.add_argument('-V', metavar='--fitValuesConfigPath', type=str, dest='fitValuesConfigPath', help='same as -s, but for all Configs in specified path')
+    
     parser.add_argument('-r', action='store_true', dest='recursive', help='use with any config Path option to scan paths recursively')
-
+    
     parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     parser.add_argument('--debug', action='store_true', dest='debug', help='run single threaded, more verbose output, submit jobs to devel queue')
     parser.add_argument('--updateRunConfigs', dest='updateRunConfigs', help='read all configs in ./runConfig, recreate the matrix file paths and store them!')

@@ -71,10 +71,10 @@ def test():
     ]
 
     # this comes in aligned and non-aligned
-    path3 = "*/*_uncut*/bunches_*/binning_*/merge_data/reco_ip.json"
+    path3 = "*/*_uncut*/*/bunches_*/binning_*/merge_data/reco_ip.json"
     
     # this comes in aligned and non-aligned
-    path4 = "*/*_xy_m_cut_real*/bunches_*/binning_*/merge_data/lumi-values.json"
+    path4 = "*/*_xy_m_cut_real*/*/bunches_*/binning_*/merge_data/lumi-values.json"
 
     print('iterating over dirs...')
     dirs=0
