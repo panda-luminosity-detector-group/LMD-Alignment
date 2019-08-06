@@ -180,7 +180,7 @@ def showLumiFitResults(runConfig, threadID=None):
     with open(runConfig.pathLumiVals(), 'r') as lumiValFile:
         lumiVal = json.load(lumiValFile)
 
-    print(f'reco ip: {recoIP}, lumi vals: {lumiVal}')
+    print(f'reco ip:\n{recoIP}\n\nlumi vals:\n{lumiVal}\n\n')
     pass
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
