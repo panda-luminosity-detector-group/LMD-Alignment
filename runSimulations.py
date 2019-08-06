@@ -40,7 +40,9 @@ it:
 import argparse
 import concurrent
 import datetime
-import os, sys      # to fork
+import json
+import os
+import sys
 
 from pathlib import Path
 
@@ -169,8 +171,15 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
 
     print(f'Thread {threadID} done!')
 
+
 def showLumiFitResults(runConfig, threadID=None):
-    print(f'reco ip: {}, lumi vals: {}')
+    recoIPfile = runConfig.pathRecoIP()
+    lumiValFile = runConfig.pathLumiVals()
+
+    recoIP = json.load(recoIPfile)
+    lumiVal = json.load(lumiValFile)
+
+    print(f'reco ip: {recoIP}, lumi vals: {lumiVal}')
     pass
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
@@ -244,9 +253,9 @@ if __name__ == "__main__":
 
     parser.add_argument('-v', metavar='--fitValuesConfig', type=str, dest='fitValuesConfig', help='display reco_ip and lumi_vals for select runConfig (if found)')
     parser.add_argument('-V', metavar='--fitValuesConfigPath', type=str, dest='fitValuesConfigPath', help='same as -s, but for all Configs in specified path')
-    
+
     parser.add_argument('-r', action='store_true', dest='recursive', help='use with any config Path option to scan paths recursively')
-    
+
     parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     parser.add_argument('--debug', action='store_true', dest='debug', help='run single threaded, more verbose output, submit jobs to devel queue')
     parser.add_argument('--updateRunConfigs', dest='updateRunConfigs', help='read all configs in ./runConfig, recreate the matrix file paths and store them!')
@@ -257,17 +266,60 @@ if __name__ == "__main__":
     except:
         parser.exit(1)
 
+    if len(sys.argv) < 2:
+        parser.print_help()
+
+    # ? =========== helper functions
+    if args.makeDefault:
+        dest = Path('runConfigs/identity-1.00.json')
+        print(f'saving default config to {dest}')
+        LMDRunConfig.minimalDefault().toJSON(dest)
+        done()
+
+    if args.updateRunConfigs:
+
+        targetDir = Path(args.updateRunConfigs).absolute()
+        print(f'reading all files from {targetDir} and regenerating settings...')
+
+        configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
+
+        for fileName in configs:
+            conf = LMDRunConfig.fromJSON(fileName)
+            conf.generateMatrixNames()
+            conf.toJSON(fileName)
+        done()
+
+    if args.test:
+        print(f'idlig two by two')
+        done()
+
+
     runSimLog = f'runLogs/simulation-{datetime.date.today()}.log'
     runSimLogErr = f'runLogs/simulation-{datetime.date.today()}-stderr.log'
 
     # redirect stdout/stderr to log files
     print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
-    sys.stdout = open(runSimLog, 'a')
-    sys.stderr = open(runSimLogErr, 'a')
+    Path(runSimLog).parent.mkdir(exist_ok=True)
+    sys.stdout = open(runSimLog, 'a+')
+    sys.stderr = open(runSimLogErr, 'a+')
     print(f'+++ starting new run at {datetime.datetime.now()}:\n')
 
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
+
+    # ? =========== lumi fit results, single config
+    if args.fitValuesConfig:
+        config = LMDRunConfig.fromJSON(args.fitValuesConfig)
+        if args.debug:
+            config.useDebug = True
+        showLumiFitResults(config, 99)
+        done()
+
+    # ? =========== lumi fit results, multiple configs
+    if args.fitValuesConfigPath:
+        args.configPath = args.fitValuesConfigPath
+        showLumiFitResults(args, runAligners)
+        done()
 
     # ? =========== align, single config
     if args.alignConfig:
@@ -328,28 +380,5 @@ if __name__ == "__main__":
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
 
-    # ? =========== helper functions
-    if args.makeDefault:
-        dest = Path('runConfigs/identity-1.00.json')
-        print(f'saving default config to {dest}')
-        LMDRunConfig.minimalDefault().toJSON(dest)
-        done()
-
-    if args.updateRunConfigs:
-
-        targetDir = Path(args.updateRunConfigs).absolute()
-        print(f'reading all files from {targetDir} and regenerating settings...')
-
-        configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
-
-        for fileName in configs:
-            conf = LMDRunConfig.fromJSON(fileName)
-            conf.generateMatrixNames()
-            conf.toJSON(fileName)
-        done()
-
-    if args.test:
-        print(f'idlig two by two')
-        done()
-
-    parser.print_help()
+    
+    
