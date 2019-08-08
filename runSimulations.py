@@ -85,6 +85,7 @@ def runAligners(runConfig, threadID=None):
 
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
+    thislogger.log(runConfig.dump())
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
@@ -104,6 +105,7 @@ def runLumifit(runConfig, threadID=None):
 
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
+    thislogger.log(runConfig.dump())
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -123,6 +125,7 @@ def runSimRecoLumi(runConfig, threadID=None):
 
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
+    thislogger.log(runConfig.dump())
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -150,6 +153,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
 
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
+    thislogger.log(runConfig.dump())
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
