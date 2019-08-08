@@ -76,26 +76,32 @@ class LMDRunConfig:
     alMatFile = property(__getAlMatFile, None)
     misMatFile = property(__getMisMatFile, None)
 
-    #! --------------------- setters without getters
+    #! --------------------- getters and setters
 
     def __setMisalignFactor(self, value):
         self.__misalignFactor = value
+
+    def __getMisalignFactor(self):
+        return self.__misalignFactor
     misalignFactor = property(None, __setMisalignFactor)
 
     def __setMisalignType(self, value):
         self.__misalignType = value
-    misalignType = property(None, __setMisalignType)
 
-    #! --------------------- getters and setters
+    def __getMisalignType(self):
+        return self.__misalignType
+    misalignType = property(__getMisalignType, __setMisalignType)
 
     def __getDebug(self):
         return self.__debug
+
     def __setDebug(self, debug):
         self.__debug = debug
     useDebug = property(__getDebug, __setDebug)
 
     def __getDebugQueue(self):
         return self.__useDevQueue
+
     def __setDebugQueue(self, debug):
         self.__useDevQueue = debug
     useDevQueue = property(__getDebugQueue, __setDebugQueue)

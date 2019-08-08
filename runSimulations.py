@@ -104,7 +104,7 @@ def runLumifit(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-id{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-LumiFit-{runConfig.misalignType}-{runConfig.misalignFactor}-thread{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
