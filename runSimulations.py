@@ -63,12 +63,13 @@ def startLogToFile(functionName=None):
         runSimLog = f'runLogs/runSim-{datetime.date.today()}-{functionName}.log'
         runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-{functionName}-stderr.log'
 
-     # redirect stdout/stderr to log files
-     print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
-     Path(runSimLog).parent.mkdir(exist_ok=True)
-     sys.stdout = open(runSimLog, 'a+')
-     sys.stderr = open(runSimLogErr, 'a+')
-     print(f'+++ starting new run at {datetime.datetime.now()}:\n')
+    # redirect stdout/stderr to log files
+    print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
+    Path(runSimLog).parent.mkdir(exist_ok=True)
+    sys.stdout = open(runSimLog, 'a+')
+    sys.stderr = open(runSimLogErr, 'a+')
+    print(f'+++ starting new run at {datetime.datetime.now()}:\n')
+
 
 def done():
     print(f'\n\n====================================\n')
@@ -77,7 +78,7 @@ def done():
     # cleanup, probably not neccessary
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
-    #print(f'\nrunSimulations.py is done!\n')
+    # print(f'\nrunSimulations.py is done!\n')
     parser.exit(0)
 
 
