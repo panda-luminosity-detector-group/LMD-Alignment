@@ -91,7 +91,7 @@ def runAligners(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-thread{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create alignerIP, run
@@ -111,7 +111,7 @@ def runLumifit(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-LumiFit-{runConfig.misalignType}-{runConfig.misalignFactor}-thread{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-LumiFit-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
@@ -131,7 +131,7 @@ def runSimRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-SimReco-{runConfig.misalignType}-{runConfig.misalignFactor}-thread{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-SimReco-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
@@ -159,7 +159,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
         return
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-FullRun-{runConfig.misalignType}-{runConfig.misalignFactor}-thread{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-FullRun-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
