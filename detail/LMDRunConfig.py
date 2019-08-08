@@ -78,18 +78,19 @@ class LMDRunConfig:
 
     #! --------------------- getters and setters
 
-    def __setMisalignFactor(self, value):
-        self.__misalignFactor = value
-
     def __getMisalignFactor(self):
         return self.__misalignFactor
-    misalignFactor = property(None, __setMisalignFactor)
+
+    def __setMisalignFactor(self, value):
+        self.__misalignFactor = value
+    misalignFactor = property(__getMisalignFactor, __setMisalignFactor)
+
+    def __getMisalignType(self):
+        return self.__misalignType
 
     def __setMisalignType(self, value):
         self.__misalignType = value
 
-    def __getMisalignType(self):
-        return self.__misalignType
     misalignType = property(__getMisalignType, __setMisalignType)
 
     def __getDebug(self):
