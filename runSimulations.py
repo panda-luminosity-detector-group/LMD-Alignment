@@ -53,6 +53,17 @@ from detail.logger import LMDrunLogger
 from detail.simWrapper import simWrapper
 
 
+def startLogToFile():
+     runSimLog = f'runLogs/runSim-{datetime.date.today()}.log'
+     runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-stderr.log'
+ 
+     # redirect stdout/stderr to log files
+     print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
+     Path(runSimLog).parent.mkdir(exist_ok=True)
+     sys.stdout = open(runSimLog, 'a+')
+     sys.stderr = open(runSimLogErr, 'a+')
+     print(f'+++ starting new run at {datetime.datetime.now()}:\n')
+
 def done():
     print(f'\n\n====================================\n')
     print(f'       all tasks completed!           ')
@@ -176,7 +187,7 @@ def showLumiFitResults(runConfig, threadID=None):
 
     with open(runConfig.pathRecoIP(), 'r') as recoIPfile:
         recoIP = json.load(recoIPfile)
-    
+
     with open(runConfig.pathLumiVals(), 'r') as lumiValFile:
         lumiVal = json.load(lumiValFile)
 
@@ -247,28 +258,30 @@ if __name__ == "__main__":
     parser.add_argument('-F', metavar='--fullRunConfigPath', type=str, dest='fullRunConfigPath', help='same as -f, but for all Configs in specified path')
 
     parser.add_argument('-l', metavar='--lumifitConfig', type=str, dest='lumifitConfig', help='determine Luminosity for runConfig')
-    parser.add_argument('-L', metavar='--lumifitConfigPath', type=str, dest='lumifitConfigPath', help='same as -f, but for all Configs in specified path')
+    parser.add_argument('-L', metavar='--lumifitConfigPath', type=str, dest='lumifitConfigPath', help='same as -l, but for all Configs in specified path')
 
     parser.add_argument('-s', metavar='--simulationConfig', type=str, dest='simulationConfig', help='run simulation and reconstruction for runConfig')
     parser.add_argument('-S', metavar='--simulationConfigPath', type=str, dest='simulationConfigPath', help='same as -s, but for all Configs in specified path')
 
     parser.add_argument('-v', metavar='--fitValuesConfig', type=str, dest='fitValuesConfig', help='display reco_ip and lumi_vals for select runConfig (if found)')
-    parser.add_argument('-V', metavar='--fitValuesConfigPath', type=str, dest='fitValuesConfigPath', help='same as -s, but for all Configs in specified path')
+    parser.add_argument('-V', metavar='--fitValuesConfigPath', type=str, dest='fitValuesConfigPath', help='same as -V, but for all Configs in specified path')
 
     parser.add_argument('-r', action='store_true', dest='recursive', help='use with any config Path option to scan paths recursively')
 
     parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     parser.add_argument('--debug', action='store_true', dest='debug', help='run single threaded, more verbose output, submit jobs to devel queue')
-    parser.add_argument('--updateRunConfigs', dest='updateRunConfigs', help='read all configs in ./runConfig, recreate the matrix file paths and store them!')
+    parser.add_argument('--updateRunConfigs', dest='updateRunConfigs', help='read all configs in ./runConfig, recreate the matrix file paths and store them.')
     parser.add_argument('--test', action='store_true', dest='test', help='internal test function')
 
     try:
         args = parser.parse_args()
     except:
+        parser.print_help()
         parser.exit(1)
 
     if len(sys.argv) < 2:
         parser.print_help()
+        parser.exit(1)
 
     # ? =========== helper functions
     if args.makeDefault:
@@ -294,9 +307,6 @@ if __name__ == "__main__":
         print(f'idlig two by two')
         done()
 
-
-    
-
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
 
@@ -314,19 +324,11 @@ if __name__ == "__main__":
         showLumiFitResults(args, runAligners)
         done()
 
-    # TODO: move back up when showLumi() prints a latex table to *.tex files
-    runSimLog = f'runLogs/simulation-{datetime.date.today()}.log'
-    runSimLogErr = f'runLogs/simulation-{datetime.date.today()}-stderr.log'
-
-    # redirect stdout/stderr to log files
-    print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
-    Path(runSimLog).parent.mkdir(exist_ok=True)
-    sys.stdout = open(runSimLog, 'a+')
-    sys.stderr = open(runSimLogErr, 'a+')
-    print(f'+++ starting new run at {datetime.datetime.now()}:\n')
+    #! ---------------------- logging goes to file
 
     # ? =========== align, single config
     if args.alignConfig:
+        startLogToFile()
         config = LMDRunConfig.fromJSON(args.alignConfig)
         if args.debug:
             config.useDebug = True
@@ -335,12 +337,14 @@ if __name__ == "__main__":
 
     # ? =========== align, multiple configs
     if args.alignConfigPath:
+        startLogToFile()
         args.configPath = args.alignConfigPath
         runConfigsMT(args, runAligners)
         done()
 
     # ? =========== lumiFit, single config
     if args.lumifitConfig:
+        startLogToFile()
         config = LMDRunConfig.fromJSON(args.lumifitConfig)
         if args.debug:
             config.useDebug = True
@@ -349,12 +353,14 @@ if __name__ == "__main__":
 
     # ? =========== lumiFit, multiple configs
     if args.lumifitConfigPath:
+        startLogToFile()
         args.configPath = args.lumifitConfigPath
         runConfigsMT(args, runLumifit)
         done()
 
     # ? =========== simReco, single config
     if args.simulationConfig:
+        startLogToFile()
         config = LMDRunConfig.fromJSON(args.simulationConfig)
         if args.debug:
             config.useDebug = True
@@ -363,12 +369,14 @@ if __name__ == "__main__":
 
     # ? =========== simReco, multiple configs
     if args.simulationConfigPath:
+        startLogToFile()
         args.configPath = args.simulationConfigPath
         runConfigsMT(args, runSimRecoLumi)
         done()
 
     # ? =========== full job, single config
     if args.fullRunConfig:
+        startLogToFile()
         config = LMDRunConfig.fromJSON(args.fullRunConfig)
         if args.debug:
             config.useDebug = True
@@ -377,12 +385,7 @@ if __name__ == "__main__":
 
     # ? =========== full job, multiple configs
     if args.fullRunConfigPath:
+        startLogToFile()
         args.configPath = args.fullRunConfigPath
         runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
         done()
-
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
-
-    
-    

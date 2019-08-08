@@ -73,7 +73,7 @@ def printMatrixDetails(M1, M2=None):
         M = M1 - M2
         print(f'M Difference:\n{M}')
     else:
-        rx, ry, rz = self.getEulerAnglesFromRotationMatrix(M1)
+        rx, ry, rz = getEulerAnglesFromRotationMatrix(M1)
         M = M1
         print(f'M:\n{M}')
 
