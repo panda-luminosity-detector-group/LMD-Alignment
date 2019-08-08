@@ -81,11 +81,6 @@ class simWrapper:
         debugArg = '--debug'
         devQueueArg = '--use_devel_queue'
 
-        # we have to change the directory here since some script paths in LuminosityFit are relative.
-        if self.config.useDebug:
-            self.logger.log(f'DEBUG: changing cwd to {scriptsPath}')
-        os.chdir(scriptsPath)
-
         if self.config.useDebug:
             self.logger.log(f'DEBUG: dumping current runConfig!')
             self.logger.log(self.config.dump() + '')
@@ -112,26 +107,7 @@ class simWrapper:
         if self.config.useDebug:
             self.logger.log(f'DEBUG: run command tuple is {subProcessCommandTuple}')
 
-        returnVal = subprocess.check_output(subProcessCommandTuple)
-
-        #! -------------------------------- old
-
-        # # no misalignment nor correction
-        # if not self.config.misaligned and not self.config.alignmentCorrection:
-        #     returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm))
-
-        # # run only misaligned, no correction
-        # if self.config.misaligned and not self.config.alignmentCorrection:
-        #     returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, mismatp, mismatv))
-
-        # # run only correction
-        # if not self.config.misaligned and self.config.alignmentCorrection:
-        #     returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, almatp, almatv))
-
-        # # both misalignment and correction:
-        # if self.config.misaligned and self.config.alignmentCorrection:
-        #     returnVal = subprocess.check_output((command, nTrks, nJobs, mom, dpm, mismatp, mismatv, almatp, almatv))
-
+        returnVal = subprocess.check_output(subProcessCommandTuple, cwd=scriptsPath)
         returnVal = returnVal.decode(sys.stdout.encoding)
 
         self.logger.log(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n')
@@ -224,15 +200,11 @@ class simWrapper:
         argPval = absPath
 
         # see runSimulations()
-        # we have to change the directory here since some script paths in LuminosityFit are relative.
-        if self.config.useDebug:
-            self.logger.log(f'DEBUG: changing cwd to {scriptsPath}')
-        os.chdir(scriptsPath)
         self.logger.log(f'\n========= Running ./determineLuminosity.')
         print(f'Running ./determineLuminosity. This might take a while.')
 
         # don't close file descriptor, this call will block until lumi is determined!
-        returnOutput = subprocess.check_output((command, argP, argPval))
+        returnOutput = subprocess.check_output((command, argP, argPval), cwd=scriptsPath)
         self.logger.log('\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n')
         print(f'========= Done!')
         self.logger.log(f'========= Done!')
