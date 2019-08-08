@@ -53,10 +53,16 @@ from detail.logger import LMDrunLogger
 from detail.simWrapper import simWrapper
 
 
-def startLogToFile():
-     runSimLog = f'runLogs/runSim-{datetime.date.today()}.log'
-     runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-stderr.log'
- 
+def startLogToFile(functionName=None):
+
+    if functionName is not None:
+        runSimLog = f'runLogs/runSim-{datetime.date.today()}.log'
+        runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-stderr.log'
+
+    else:
+        runSimLog = f'runLogs/runSim-{datetime.date.today()}-{functionName}.log'
+        runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-{functionName}-stderr.log'
+
      # redirect stdout/stderr to log files
      print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
      Path(runSimLog).parent.mkdir(exist_ok=True)
@@ -331,7 +337,7 @@ if __name__ == "__main__":
 
     # ? =========== align, single config
     if args.alignConfig:
-        startLogToFile()
+        startLogToFile('Align')
         config = LMDRunConfig.fromJSON(args.alignConfig)
         if args.debug:
             config.useDebug = True
@@ -340,14 +346,14 @@ if __name__ == "__main__":
 
     # ? =========== align, multiple configs
     if args.alignConfigPath:
-        startLogToFile()
+        startLogToFile('AlignMulti')
         args.configPath = args.alignConfigPath
         runConfigsMT(args, runAligners)
         done()
 
     # ? =========== lumiFit, single config
     if args.lumifitConfig:
-        startLogToFile()
+        startLogToFile('LumiFit')
         config = LMDRunConfig.fromJSON(args.lumifitConfig)
         if args.debug:
             config.useDebug = True
@@ -356,14 +362,14 @@ if __name__ == "__main__":
 
     # ? =========== lumiFit, multiple configs
     if args.lumifitConfigPath:
-        startLogToFile()
+        startLogToFile('LumiFitMulti')
         args.configPath = args.lumifitConfigPath
         runConfigsMT(args, runLumifit)
         done()
 
     # ? =========== simReco, single config
     if args.simulationConfig:
-        startLogToFile()
+        startLogToFile('SimReco')
         config = LMDRunConfig.fromJSON(args.simulationConfig)
         if args.debug:
             config.useDebug = True
@@ -372,14 +378,14 @@ if __name__ == "__main__":
 
     # ? =========== simReco, multiple configs
     if args.simulationConfigPath:
-        startLogToFile()
+        startLogToFile('SimRecoMulti')
         args.configPath = args.simulationConfigPath
         runConfigsMT(args, runSimRecoLumi)
         done()
 
     # ? =========== full job, single config
     if args.fullRunConfig:
-        startLogToFile()
+        startLogToFile('FullRun')
         config = LMDRunConfig.fromJSON(args.fullRunConfig)
         if args.debug:
             config.useDebug = True
@@ -388,7 +394,7 @@ if __name__ == "__main__":
 
     # ? =========== full job, multiple configs
     if args.fullRunConfigPath:
-        startLogToFile()
+        startLogToFile('FullRunMulti')
         args.configPath = args.fullRunConfigPath
         runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
         done()
