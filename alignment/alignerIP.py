@@ -59,7 +59,7 @@ class alignerIP:
     def getRot(self, apparent, actual):
         # error handling
         if np.linalg.norm(apparent) == 0 or np.linalg.norm(actual) == 0:
-            self.logger.log("ERROR. can't create rotation with null vector")
+            self.logger.log("\nERROR. can't create rotation with null vector!\n")
             return
 
         # assert shapes
@@ -89,7 +89,7 @@ class alignerIP:
 
         # error handling
         if np.linalg.norm(apparent) == 0 or np.linalg.norm(actual) == 0:
-            self.logger.log("ERROR. can't create rotation with null vector")
+            self.logger.log("\nERROR. can't create rotation with null vector!\n\n")
             return
 
         # assert shapes
@@ -132,14 +132,14 @@ class alignerIP:
 
     def computeAlignmentMatrix(self):
         if not self.config:
-            self.logger.log(f'ERROR! Config not set!')
+            self.logger.log(f'ERROR! Config not set!\n')
             return
         trksQApath = self.config.pathTrksQA()
         self.logger.log(f'I\'m looking for the IP here: {trksQApath}\n')
 
         # FIXME later: read from config or PANDA db/survey
         lumiPos = self.getLumiPosition()
-        self.logger.log(f'Lumi Position is:\n{lumiPos}')
+        self.logger.log(f'Lumi Position is:\n{lumiPos}\n\n')
 
         # TODO: create list with about 3 TrksQA files by searching through the directory, no more hard coded values!
         trksQAfile = trksQApath / Path('Lumi_TrksQA_1000*.root')        # this will find 1-4 files, should be okay for now
@@ -152,8 +152,8 @@ class alignerIP:
         # FIXME later: read from config or PANDA db/survey
         ipActual = np.array([0.0, 0.0, 0.0])
 
-        self.logger.log(f'IP apparent:\n{ipApparent}')
-        self.logger.log(f'IP actual:\n{ipActual}')
+        self.logger.log(f'IP apparent:\n{ipApparent}\n')
+        self.logger.log(f'IP actual:\n{ipActual}\n')
 
         ipApparentLMD = ipApparent - lumiPos
         ipActualLMD = ipActual - lumiPos
@@ -170,17 +170,17 @@ class alignerIP:
         outFileName = self.config.alMatFile
 
         if Path(outFileName).exists():
-            self.logger.log(f'WARNING. Replacing file: {outFileName}')
+            self.logger.log(f'WARNING. Replacing file: {outFileName}!\n')
             Path(outFileName).unlink()
 
         if not Path(outFileName).parent.exists():
             Path(outFileName).parent.mkdir()
 
         with open(outFileName, 'w') as outfile:
-            self.logger.log(f'Saving alignment matrix to file: {outFileName}')
+            self.logger.log(f'\nSaving alignment matrix to file: {outFileName}\n\n')
             json.dump(resultJson, outfile, indent=2)
 
-        self.logger.log(f'interaction point alignment done!')
+        self.logger.log(f'Interaction point alignment done!\n')
 
 
 if __name__ == "__main__":
