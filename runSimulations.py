@@ -49,6 +49,7 @@ from pathlib import Path
 from alignment.alignerIP import alignerIP
 from concurrent.futures import ThreadPoolExecutor
 from detail.LMDRunConfig import LMDRunConfig
+from detail.LumiValLaTeXTable import LumiValLaTeXTable
 from detail.logger import LMDrunLogger
 from detail.simWrapper import simWrapper
 
@@ -215,6 +216,9 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID} done!')
 
 
+def testFunc(obj):
+    return obj['test']
+
 def showLumiFitResults(runConfigPath, threadID=None):
 
     # read all configs from path
@@ -228,15 +232,10 @@ def showLumiFitResults(runConfigPath, threadID=None):
     if len(configs) == 0:
         print(f'No runConfig files found in {runConfigPath}!')
 
-    for config in configs:
-        try:
-            with open(config.pathRecoIP(), 'r') as recoIPfile:
-                recoIP = json.load(recoIPfile)
-            with open(config.pathLumiVals(), 'r') as lumiValFile:
-                lumiVal = json.load(lumiValFile)
-            print(f'reco ip:\n{recoIP}\n\nlumi vals:\n{lumiVal}\n\n')
-        except:
-            print(f'no files found for config!')
+    table = LumiValLaTeXTable.fromConfigs(configs)
+    # TODO: add a function to evaluate the config here somehow
+    #table.addColumn('Header name', )
+    table.show()
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 

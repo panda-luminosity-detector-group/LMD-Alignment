@@ -222,6 +222,8 @@ class simWrapper:
         self.logger.log(f'\n========= Running ./determineLuminosity.')
         print(f'Running ./determineLuminosity. This might take a while.')
 
+        # TODO: this script doesn't have a debug flag, but it can use the devel queue
+
         returnVal = subprocess.check_output((command, argP, argPval), cwd=scriptsPath).decode(sys.stdout.encoding)
         self.getJobIDfromSubmitOutput(returnVal)
 
