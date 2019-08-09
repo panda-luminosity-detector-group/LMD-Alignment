@@ -192,7 +192,7 @@ class simWrapper:
                 self.currentJobID = None
                 return
 
-            print(f'Thread {self.threadNumber}: {foundJobsPD} jobs pending, {foundJobsR} running for IDs: {}...')
+            print(f'Thread {self.threadNumber}: {foundJobsPD} jobs pending, {foundJobsR} running for IDs: {self.currentJobID}...')
 
             # wait for 10 minutes
             waitIntervals += 1
