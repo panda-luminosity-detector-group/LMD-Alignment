@@ -11,6 +11,7 @@ columns.
 
 import json
 
+
 class LumiValLaTeXTable:
     def __init__(self):
         self.cols = []
@@ -22,11 +23,14 @@ class LumiValLaTeXTable:
         return temp
 
     def show(self):
+
+        self.configs.sort()
+
+        # print(f'{self.configs[0].__dict__}')
+        # print(f'{self.configs[len(self.configs)-1].__dict__}')
+
         for conf in self.configs:
-            print(conf.dump())
+            #with open(conf.pathLumiVals()) as file:
+            #    lumiVals = json.load(file)
 
-            with open(conf.pathLumiVals()) as file:
-                lumiVals = json.load(file)
-
-            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumiVals["relative_deviation_in_percent"]}')
-
+            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} ')# & {lumiVals["relative_deviation_in_percent"]}')

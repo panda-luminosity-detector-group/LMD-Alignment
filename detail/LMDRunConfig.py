@@ -66,6 +66,38 @@ class LMDRunConfig:
         self.__debug = False
         self.__useDevQueue = False
 
+    #! --------------------- for sortability
+    def __lt__(self, other):
+        # result = (
+        #     (float(self.momentum) < float(other.momentum)) or
+        #     (self.misalignType < other.misalignType) or
+        #     (float(self.misalignFactor) < float(other.misalignFactor)) or
+        #     (self.alignmentCorrection < other.alignmentCorrection)
+        # )
+        if float(self.momentum) < float(other.momentum):
+            return True
+        elif self.misaligned < other.misaligned:
+            return True
+        elif self.misalignType < other.misalignType:
+            return True
+        elif float(self.misalignFactor) < float(other.misalignFactor):
+            return True
+        elif self.alignmentCorrection < other.alignmentCorrection:
+            return True
+        # elif self.trksNum < other.trksNum:
+        #     return True
+        # elif self.jobsNum < other.jobsNum:
+        #     return True
+        # elif self.useDebug < other.useDebug:
+        #     return True
+        # elif self.useDevQueue < other.useDevQueue:
+        #     return True
+        else:
+            return False
+
+    def __eq__(self, other):
+        return (not self < other) and (not other < self)
+
     #! --------------------- getters without setters
 
     def __getAlMatFile(self):
@@ -254,7 +286,7 @@ class LMDRunConfig:
         if not Path(filename).exists():
             print(f'ERROR! File {filename} can\'t be read!')
             sys.exit(1)
-        print(f'reading file: {filename}')
+        #print(f'reading file: {filename}')
         temp = cls()
         with open(filename, 'r') as inFile:
             #temp.__dict__ = json.load(inFile)
