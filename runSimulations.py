@@ -217,24 +217,26 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
 
 def showLumiFitResults(runConfigPath, threadID=None):
 
-    configs = []
     # read all configs from path
-    searchDir = Path(args.configPath)
+    runConfigPath = Path(runConfigPath)
+    configFiles = list(runConfigPath.glob('**/*.json'))
 
-    configs = list(searchDir.glob('**/*.json'))
+    configs = []
+    for file in configFiles:
+        configs.append(LMDRunConfig.fromJSON(file))
 
     if len(configs) == 0:
-        print(f'No runConfig files found in {searchDir}!')
+        print(f'No runConfig files found in {runConfigPath}!')
 
     for config in configs:
-
-        with open(config.pathRecoIP(), 'r') as recoIPfile:
-            recoIP = json.load(recoIPfile)
-
-        with open(config.pathLumiVals(), 'r') as lumiValFile:
-            lumiVal = json.load(lumiValFile)
-
-        print(f'reco ip:\n{recoIP}\n\nlumi vals:\n{lumiVal}\n\n')
+        try:
+            with open(config.pathRecoIP(), 'r') as recoIPfile:
+                recoIP = json.load(recoIPfile)
+            with open(config.pathLumiVals(), 'r') as lumiValFile:
+                lumiVal = json.load(lumiValFile)
+            print(f'reco ip:\n{recoIP}\n\nlumi vals:\n{lumiVal}\n\n')
+        except:
+            print(f'no files found for config!')
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
