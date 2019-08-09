@@ -55,7 +55,7 @@ from detail.simWrapper import simWrapper
 
 def startLogToFile(functionName=None):
 
-    if functionName is not None:
+    if functionName is None:
         runSimLog = f'runLogs/runSim-{datetime.date.today()}.log'
         runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-stderr.log'
 
