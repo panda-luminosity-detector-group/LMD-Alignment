@@ -58,9 +58,19 @@ class simWrapper:
     def setRunConfig(self, LMDRunConfig):
         self.config = LMDRunConfig
 
+    # TODO: sometimes, multiple jobs/jobIDs are submitted!
+    def getJobIDfromSubmitOutput(self, output):
+        match = re.search(r'Submitted batch job (\d+)', output)
+        if match:
+            jobID = match.groups()[0]
+            self.logger.log(f'FOUND JOB ID: {jobID}\n')
+            self.currentJobID = jobID
+        else:
+            self.logger.log('can\'t parse job ID from output!\n')
+
     def runSimulations(self):
         if self.config is None:
-            self.logger.log(f'please set run config first!')
+            self.logger.log(f'please set run config first!\n')
 
         self.logger.log(f'\n\n========= Running ./doSimulationReconstruction.\n')
         print(f'\n\n========= Running ./doSimulationReconstruction, please wait.\n')
@@ -107,26 +117,19 @@ class simWrapper:
         if self.config.useDebug:
             self.logger.log(f'DEBUG: run command tuple is {subProcessCommandTuple}')
 
-        returnVal = subprocess.check_output(subProcessCommandTuple, cwd=scriptsPath)
-        returnVal = returnVal.decode(sys.stdout.encoding)
+        returnVal = subprocess.check_output(subProcessCommandTuple, cwd=scriptsPath).decode(sys.stdout.encoding)
 
         self.logger.log(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n')
         self.logger.log(f'\n\n========= Done!.\n')
         print(f'\n\n========= Jobs submitted, waiting for them to finish...\n')
+        self.getJobIDfromSubmitOutput(returnVal)
 
-        match = re.search(r'Submitted batch job (\d+)', returnVal)
-        if match:
-            jobID = match.groups()[0]
-            self.logger.log(f'FOUND JOB ID: {jobID}')
-            self.currentJobID = jobID
-        else:
-            self.logger.log('can\'t parse job ID from output!')
-
+    # TODO: sometimes, multiple jobs/jobIDs are submitted!
     def waitForJobCompletion(self):
         if self.config is None:
             self.logger.log(f'please set run config first!')
 
-        if not self.currentJobID:
+        if self.currentJobID is None:
             self.logger.log(f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!')
             return
 
@@ -184,7 +187,9 @@ class simWrapper:
         print(f'========= Simulation and Reconstruction done, all Jobs finished.')
         self.logger.log(f'========= Simulation and Reconstruction done, all Jobs finished.')
 
-    # the lumi fit scripts are blocking!
+    # the lumi fit scripts are not blocking!
+    # the first ones are and take about an hour, but the latter ones just submit jobs and return.
+    # you have to wait for their jobs to finish!
     def detLumi(self):
         if self.config is None:
             self.logger.log(f'please set run config first!')
@@ -203,11 +208,12 @@ class simWrapper:
         self.logger.log(f'\n========= Running ./determineLuminosity.')
         print(f'Running ./determineLuminosity. This might take a while.')
 
-        # don't close file descriptor, this call will block until lumi is determined!
-        returnOutput = subprocess.check_output((command, argP, argPval), cwd=scriptsPath)
-        self.logger.log('\n\n' + returnOutput.decode(sys.stdout.encoding) + '\n')
-        print(f'========= Done!')
+        returnVal = subprocess.check_output((command, argP, argPval), cwd=scriptsPath).decode(sys.stdout.encoding)
+        self.getJobIDfromSubmitOutput(returnVal)   
+        
+        self.logger.log('\n\n' + returnVal + '\n')
         self.logger.log(f'========= Done!')
+        print(f'========= Done!')
 
     def extractLumi(self):
         if self.config is None:
