@@ -394,14 +394,14 @@ if __name__ == "__main__":
         config = LMDRunConfig.fromJSON(args.extractLumiConfig)
         if args.debug:
             config.useDebug = True
-        runLumifit(config, 99)
+        runExtractLumi(config, 99)
         done()
 
     # ? =========== extract Lumi, multiple configs
     if args.extractLumiConfigPath:
         startLogToFile('ExtractLumi')
         args.configPath = args.extractLumiConfigPath
-        runConfigsMT(args, runLumifit)
+        runConfigsMT(args, runExtractLumi)
         done()
 
     # ? =========== simReco, single config
