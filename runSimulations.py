@@ -215,16 +215,26 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID} done!')
 
 
-def showLumiFitResults(runConfig, threadID=None):
+def showLumiFitResults(runConfigPath, threadID=None):
 
-    with open(runConfig.pathRecoIP(), 'r') as recoIPfile:
-        recoIP = json.load(recoIPfile)
+    configs = []
+    # read all configs from path
+    searchDir = Path(args.configPath)
 
-    with open(runConfig.pathLumiVals(), 'r') as lumiValFile:
-        lumiVal = json.load(lumiValFile)
+    configs = list(searchDir.glob('**/*.json'))
 
-    print(f'reco ip:\n{recoIP}\n\nlumi vals:\n{lumiVal}\n\n')
-    pass
+    if len(configs) == 0:
+        print(f'No runConfig files found in {searchDir}!')
+
+    for config in configs:
+
+        with open(config.pathRecoIP(), 'r') as recoIPfile:
+            recoIP = json.load(recoIPfile)
+
+        with open(config.pathLumiVals(), 'r') as lumiValFile:
+            lumiVal = json.load(lumiValFile)
+
+        print(f'reco ip:\n{recoIP}\n\nlumi vals:\n{lumiVal}\n\n')
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
@@ -298,8 +308,8 @@ if __name__ == "__main__":
     parser.add_argument('-s', metavar='--simulationConfig', type=str, dest='simulationConfig', help='run simulation and reconstruction for runConfig')
     parser.add_argument('-S', metavar='--simulationConfigPath', type=str, dest='simulationConfigPath', help='same as -s, but for all Configs in specified path')
 
-    parser.add_argument('-v', metavar='--fitValuesConfig', type=str, dest='fitValuesConfig', help='display reco_ip and lumi_vals for select runConfig (if found)')
-    parser.add_argument('-V', metavar='--fitValuesConfigPath', type=str, dest='fitValuesConfigPath', help='same as -V, but for all Configs in specified path')
+    #parser.add_argument('-v', metavar='--fitValuesConfig', type=str, dest='fitValuesConfig', help='display reco_ip and lumi_vals for select runConfig (if found)')
+    parser.add_argument('-V', metavar='--fitValuesConfigPath', type=str, dest='fitValuesConfigPath', help='display reco_ip and lumi_vals for all runConfigs in path')
 
     parser.add_argument('-r', action='store_true', dest='recursive', help='use with any config Path option to scan paths recursively')
 
@@ -345,18 +355,18 @@ if __name__ == "__main__":
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
 
-    # ? =========== lumi fit results, single config
-    if args.fitValuesConfig:
-        config = LMDRunConfig.fromJSON(args.fitValuesConfig)
-        if args.debug:
-            config.useDebug = True
-        showLumiFitResults(config, 99)
-        done()
+    # # ? =========== lumi fit results, single config
+    # if args.fitValuesConfig:
+    #     config = LMDRunConfig.fromJSON(args.fitValuesConfig)
+    #     if args.debug:
+    #         config.useDebug = True
+    #     showLumiFitResults(config, 99)
+    #     done()
 
     # ? =========== lumi fit results, multiple configs
     if args.fitValuesConfigPath:
-        args.configPath = args.fitValuesConfigPath
-        showLumiFitResults(args, runAligners)
+        #args.configPath = args.fitValuesConfigPath
+        showLumiFitResults(args.fitValuesConfigPath)
         done()
 
     #! ---------------------- logging goes to file
