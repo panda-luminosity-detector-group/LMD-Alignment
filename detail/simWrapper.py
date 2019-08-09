@@ -231,7 +231,7 @@ class simWrapper:
                     lumiJson = json.load(file)
                 self.logger.log(f'========= Luminosity extracted!\nLumi values:\n\n{lumiJson}\n\n')
             else:
-                self.logger.log(f'========= Luminosity extracted, but lumi_vals.json could not be found!')
+                self.logger.log(f'========= Luminosity extracted, but lumi_vals.json could not be found!\n')
 
         else:
             print(f'can\'t determine path!')

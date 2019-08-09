@@ -105,6 +105,23 @@ def runAligners(runConfig, threadID=None):
 
     print(f'Thread {threadID} done!')
 
+def runExtractLumi(runConfig, threadID=None):
+
+    print(f'Thread {threadID}: starting!')
+
+    # create logger
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-ExtractLumi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger.log(runConfig.dump())
+
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadID = threadID
+    prealignWrapper.logger = thislogger
+
+    # run
+    prealignWrapper.extractLumi()              # blocking
+
+    print(f'Thread {threadID} done!')
 
 def runLumifit(runConfig, threadID=None):
 
@@ -270,6 +287,9 @@ if __name__ == "__main__":
     parser.add_argument('-l', metavar='--lumifitConfig', type=str, dest='lumifitConfig', help='determine Luminosity for runConfig')
     parser.add_argument('-L', metavar='--lumifitConfigPath', type=str, dest='lumifitConfigPath', help='same as -l, but for all Configs in specified path')
 
+    parser.add_argument('-el', metavar='--extractLumiConfig', type=str, dest='extractLumiConfig', help='extract Luminosity for runConfig')
+    parser.add_argument('-EL', metavar='--extractLumiConfigPath', type=str, dest='extractLumiConfigPath', help='same as -el, but for all Configs in specified path')
+
     parser.add_argument('-s', metavar='--simulationConfig', type=str, dest='simulationConfig', help='run simulation and reconstruction for runConfig')
     parser.add_argument('-S', metavar='--simulationConfigPath', type=str, dest='simulationConfigPath', help='same as -s, but for all Configs in specified path')
 
@@ -365,6 +385,22 @@ if __name__ == "__main__":
     if args.lumifitConfigPath:
         startLogToFile('LumiFitMulti')
         args.configPath = args.lumifitConfigPath
+        runConfigsMT(args, runLumifit)
+        done()
+
+    # ? =========== extract Lumi, single config
+    if args.extractLumiConfig:
+        startLogToFile('ExtractLumi')
+        config = LMDRunConfig.fromJSON(args.extractLumiConfig)
+        if args.debug:
+            config.useDebug = True
+        runLumifit(config, 99)
+        done()
+
+    # ? =========== extract Lumi, multiple configs
+    if args.extractLumiConfigPath:
+        startLogToFile('ExtractLumi')
+        args.configPath = args.extractLumiConfigPath
         runConfigsMT(args, runLumifit)
         done()
 
