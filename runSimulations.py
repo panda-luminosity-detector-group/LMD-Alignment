@@ -105,6 +105,7 @@ def runAligners(runConfig, threadID=None):
 
     print(f'Thread {threadID} done!')
 
+
 def runExtractLumi(runConfig, threadID=None):
 
     print(f'Thread {threadID}: starting!')
@@ -123,6 +124,7 @@ def runExtractLumi(runConfig, threadID=None):
 
     print(f'Thread {threadID} done!')
 
+
 def runLumifit(runConfig, threadID=None):
 
     print(f'Thread {threadID}: starting!')
@@ -137,7 +139,8 @@ def runLumifit(runConfig, threadID=None):
     prealignWrapper.logger = thislogger
 
     # run
-    prealignWrapper.detLumi()                  # blocking
+    prealignWrapper.detLumi()                  # not blocking!
+    prealignWrapper.waitForJobCompletion()     # waiting
     prealignWrapper.extractLumi()              # blocking
 
     print(f'Thread {threadID} done!')
@@ -186,7 +189,8 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     # run all
     prealignWrapper.runSimulations()           # non blocking, so we have to wait
     prealignWrapper.waitForJobCompletion()     # blocking
-    prealignWrapper.detLumi()                  # blocking
+    prealignWrapper.detLumi()                  # not blocking
+    prealignWrapper.waitForJobCompletion()     # waiting
     prealignWrapper.extractLumi()              # blocking
 
     # then run aligner(s)
@@ -204,7 +208,8 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     # re run reco steps and Lumi fit
     postalignWrapper.runSimulations()           # non blocking, so we have to wait
     postalignWrapper.waitForJobCompletion()     # blocking
-    postalignWrapper.detLumi()                  # blocking
+    postalignWrapper.detLumi()                  # not blocking
+    postalignWrapper.waitForJobCompletion()     # waiting
     postalignWrapper.extractLumi()              # blocking
 
     print(f'Thread {threadID} done!')

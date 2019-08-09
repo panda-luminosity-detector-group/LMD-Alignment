@@ -58,15 +58,16 @@ class simWrapper:
     def setRunConfig(self, LMDRunConfig):
         self.config = LMDRunConfig
 
-    # TODO: sometimes, multiple jobs/jobIDs are submitted!
     def getJobIDfromSubmitOutput(self, output):
         match = re.search(r'Submitted batch job (\d+)', output)
         if match:
-            jobID = match.groups()[0]
-            self.logger.log(f'FOUND JOB ID: {jobID}\n')
-            self.currentJobID = jobID
+            self.currentJobID = []
+            for jobID in match.groups():
+                self.logger.log(f'FOUND JOB ID: {jobID}\n')
+                self.currentJobID.append(jobID)
         else:
             self.logger.log('can\'t parse job ID from output!\n')
+            self.currentJobID = None
 
     def runSimulations(self):
         if self.config is None:
@@ -124,7 +125,36 @@ class simWrapper:
         print(f'\n\n========= Jobs submitted, waiting for them to finish...\n')
         self.getJobIDfromSubmitOutput(returnVal)
 
-    # TODO: sometimes, multiple jobs/jobIDs are submitted!
+    def GetPendingAndRunning(self, jobID):
+        foundJobsPD = 0
+        foundJobsR = 0
+
+        user = pwd.getpwuid(os.getuid())[0]
+
+        # -r: expand job arrays, -h:skip header, -O arrayjobid: show only job array ID
+        # find waiting jobs
+        squeueOutput = subprocess.check_output(('squeue', '-u', user, '--state=PD', '-r', '-h', '-O', 'arrayjobid')).decode(sys.stdout.encoding)
+        outputLines = squeueOutput.splitlines()
+        for line in outputLines:
+            match = re.search(r'^(\d+)', line)
+            if match:
+                found = match.groups()[0]
+                if found == str(self.currentJobID):
+                    foundJobsPD += 1
+
+        # find running jobs
+        squeueOutput = subprocess.check_output(('squeue', '-u', user, '--state=R', '-h', '-O', 'arrayjobid')).decode(sys.stdout.encoding)
+        outputLines = squeueOutput.splitlines()
+        for line in outputLines:
+            match = re.search(r'^(\d+)', line)
+            if match:
+                found = match.groups()[0]
+                if found == str(self.currentJobID):
+                    foundJobsR += 1
+
+        print(f'Thread {self.threadNumber}, JobID:{jobID}: {foundJobsPD} jobs pending, {foundJobsR} running...')
+        return (foundJobsPD, foundJobsR)
+
     def waitForJobCompletion(self):
         if self.config is None:
             self.logger.log(f'please set run config first!')
@@ -150,26 +180,10 @@ class simWrapper:
             foundJobsPD = 0
             foundJobsR = 0
 
-            # -r: expand job arrays, -h:skip header, -O arrayjobid: show only job array ID
-            # find waiting jobs
-            squeueOutput = subprocess.check_output(('squeue', '-u', user, '--state=PD', '-r', '-h', '-O', 'arrayjobid')).decode(sys.stdout.encoding)
-            outputLines = squeueOutput.splitlines()
-            for line in outputLines:
-                match = re.search(r'^(\d+)', line)
-                if match:
-                    found = match.groups()[0]
-                    if found == str(self.currentJobID):
-                        foundJobsPD += 1
-
-            # find running jobs
-            squeueOutput = subprocess.check_output(('squeue', '-u', user, '--state=R', '-h', '-O', 'arrayjobid')).decode(sys.stdout.encoding)
-            outputLines = squeueOutput.splitlines()
-            for line in outputLines:
-                match = re.search(r'^(\d+)', line)
-                if match:
-                    found = match.groups()[0]
-                    if found == str(self.currentJobID):
-                        foundJobsR += 1
+            for jobID in self.currentJobID:
+                pending, running = self.GetPendingAndRunning(jobID)
+                foundJobsPD += pending
+                foundJobsR += running
 
             # no jobs found? then we can exit
             if foundJobsPD == 0 and foundJobsR == 0:
@@ -178,7 +192,7 @@ class simWrapper:
                 self.currentJobID = None
                 return
 
-            print(f'Thread {self.threadNumber}: {foundJobsPD} jobs pending, {foundJobsR} running...')
+            print(f'Thread {self.threadNumber}: {foundJobsPD} jobs pending, {foundJobsR} running for IDs: {}...')
 
             # wait for 10 minutes
             waitIntervals += 1
@@ -209,8 +223,8 @@ class simWrapper:
         print(f'Running ./determineLuminosity. This might take a while.')
 
         returnVal = subprocess.check_output((command, argP, argPval), cwd=scriptsPath).decode(sys.stdout.encoding)
-        self.getJobIDfromSubmitOutput(returnVal)   
-        
+        self.getJobIDfromSubmitOutput(returnVal)
+
         self.logger.log('\n\n' + returnVal + '\n')
         self.logger.log(f'========= Done!')
         print(f'========= Done!')
