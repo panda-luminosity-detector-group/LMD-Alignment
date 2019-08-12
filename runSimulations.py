@@ -58,12 +58,12 @@ from detail.simWrapper import simWrapper
 def startLogToFile(functionName=None):
 
     if functionName is None:
-        runSimLog = f'runLogs/runSim-{datetime.date.today()}.log'
-        runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-stderr.log'
+        runSimLog = f'runLogs/runSim-{datetime.date.today()}-run{runNumber}.log'
+        runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-run{runNumber}-stderr.log'
 
     else:
-        runSimLog = f'runLogs/runSim-{datetime.date.today()}-{functionName}.log'
-        runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-{functionName}-stderr.log'
+        runSimLog = f'runLogs/runSim-{datetime.date.today()}-run{runNumber}-{functionName}.log'
+        runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-run{runNumber}-{functionName}-stderr.log'
 
     # redirect stdout/stderr to log files
     print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
