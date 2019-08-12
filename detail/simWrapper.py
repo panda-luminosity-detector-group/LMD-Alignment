@@ -130,7 +130,7 @@ class simWrapper:
         foundJobsR = 0
 
         user = pwd.getpwuid(os.getuid())[0]
-
+        self.logger.log(f'you are {user}, waiting on job {jobID}\n')
         # -r: expand job arrays, -h:skip header, -O arrayjobid: show only job array ID
         # find waiting jobs
         squeueOutput = subprocess.check_output(('squeue', '-u', user, '--state=PD', '-r', '-h', '-O', 'arrayjobid')).decode(sys.stdout.encoding)
@@ -152,7 +152,7 @@ class simWrapper:
                 if found == str(self.currentJobID):
                     foundJobsR += 1
 
-        print(f'Thread {self.threadNumber}, JobID:{jobID}: {foundJobsPD} jobs pending, {foundJobsR} running...')
+        self.logger.log(f'Thread {self.threadNumber}, JobID:{jobID}: {foundJobsPD} jobs pending, {foundJobsR} running...\n')
         return (foundJobsPD, foundJobsR)
 
     def waitForJobCompletion(self):
@@ -160,7 +160,7 @@ class simWrapper:
             self.logger.log(f'please set run config first!')
 
         if self.currentJobID is None:
-            self.logger.log(f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!')
+            self.logger.log(f'can\'t wait for jobs, this simWrapper doesn\'t know that jobs to wait for!\n')
             return
 
         self.logger.log(f'\n\n========= Waiting for jobs...\n')
@@ -168,8 +168,8 @@ class simWrapper:
 
         # see https://stackoverflow.com/a/2899055
         user = pwd.getpwuid(os.getuid())[0]
-        self.logger.log(f'you are {user}, waiting on job {self.currentJobID}')
-        print(f'you are {user}, waiting on job {self.currentJobID}')
+        self.logger.log(f'you are {user}, waiting on job {self.currentJobID}\n')
+        print(f'you are {user}, waiting on job {self.currentJobID}...\n')
 
         waitIntervals = 0
         waitIntervalTime = 10 * 60
@@ -181,6 +181,7 @@ class simWrapper:
             foundJobsR = 0
 
             for jobID in self.currentJobID:
+                self.logger.log(f'Testing for JobID {jobID}...\n')
                 pending, running = self.GetPendingAndRunning(jobID)
                 foundJobsPD += pending
                 foundJobsR += running

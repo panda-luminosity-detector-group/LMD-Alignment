@@ -117,7 +117,7 @@ def runExtractLumi(runConfig, threadID=None):
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
-    prealignWrapper.threadID = threadID
+    prealignWrapper.threadNumber = threadID
     prealignWrapper.logger = thislogger
 
     # run
@@ -136,7 +136,7 @@ def runLumifit(runConfig, threadID=None):
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
-    prealignWrapper.threadID = threadID
+    prealignWrapper.threadNumber = threadID
     prealignWrapper.logger = thislogger
 
     # run
@@ -157,7 +157,7 @@ def runSimRecoLumi(runConfig, threadID=None):
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
-    prealignWrapper.threadID = threadID
+    prealignWrapper.threadNumber = threadID
     prealignWrapper.logger = thislogger
 
     # run all
@@ -184,7 +184,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
-    prealignWrapper.threadID = threadID
+    prealignWrapper.threadNumber = threadID
     prealignWrapper.logger = thislogger
 
     # run all
@@ -203,7 +203,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     runConfig.alignmentCorrection = True
 
     postalignWrapper = simWrapper.fromRunConfig(runConfig)
-    prealignWrapper.threadID = threadID
+    prealignWrapper.threadNumber = threadID
     postalignWrapper.logger = thislogger
 
     # re run reco steps and Lumi fit
