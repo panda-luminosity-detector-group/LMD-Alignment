@@ -133,7 +133,6 @@ class simWrapper:
         foundJobsR = 0
 
         user = pwd.getpwuid(os.getuid())[0]
-        self.logger.log(f'you are {user}, waiting on job {jobID}\n')
         # -r: expand job arrays, -h:skip header, -O arrayjobid: show only job array ID
         # find waiting jobs
         squeueOutput = subprocess.check_output(('squeue', '-u', user, '--state=PD', '-r', '-h', '-O', 'arrayjobid')).decode(sys.stdout.encoding)
@@ -184,7 +183,6 @@ class simWrapper:
             foundJobsR = 0
 
             for jobID in self.currentJobID:
-                self.logger.log(f'Testing for JobID {jobID}...\n')
                 pending, running = self.GetPendingAndRunning(jobID)
                 foundJobsPD += pending
                 foundJobsR += running
