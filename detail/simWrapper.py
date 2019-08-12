@@ -122,8 +122,11 @@ class simWrapper:
 
         self.logger.log(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n')
         self.logger.log(f'\n\n========= Done!.\n')
-        print(f'\n\n========= Jobs submitted, waiting for them to finish...\n')
+        self.logger.log(f'\n\n========= Jobs submitted, waiting for them to finish...\n')
         self.getJobIDfromSubmitOutput(returnVal)
+
+        self.logger.log(f'Waiting 30 seconds for jobs tu get submitted...')
+        time.sleep(30)
 
     def GetPendingAndRunning(self, jobID):
         foundJobsPD = 0
@@ -152,7 +155,7 @@ class simWrapper:
                 if found == str(self.currentJobID):
                     foundJobsR += 1
 
-        self.logger.log(f'Thread {self.threadNumber}, JobID:{jobID}: {foundJobsPD} jobs pending, {foundJobsR} running...\n')
+        self.logger.log(f'Thread {self.threadNumber}, JobID: {jobID}: {foundJobsPD} jobs pending, {foundJobsR} running...\n')
         return (foundJobsPD, foundJobsR)
 
     def waitForJobCompletion(self):
