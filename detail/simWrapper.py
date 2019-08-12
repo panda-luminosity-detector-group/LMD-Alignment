@@ -142,7 +142,7 @@ class simWrapper:
             match = re.search(r'^(\d+)', line)
             if match:
                 found = match.groups()[0]
-                if found == str(self.currentJobID):
+                if found == str(jobID):
                     foundJobsPD += 1
 
         # find running jobs
@@ -152,7 +152,7 @@ class simWrapper:
             match = re.search(r'^(\d+)', line)
             if match:
                 found = match.groups()[0]
-                if found == str(self.currentJobID):
+                if found == str(jobID):
                     foundJobsR += 1
 
         self.logger.log(f'Thread {self.threadNumber}, JobID: {jobID}: {foundJobsPD} jobs pending, {foundJobsR} running...\n')
@@ -191,7 +191,7 @@ class simWrapper:
 
             # no jobs found? then we can exit
             if foundJobsPD == 0 and foundJobsR == 0:
-                print(f'Thread {self.threadNumber}: No more jobs running, continuing...')
+                print(f'Thread {self.threadNumber}: No more jobs running, continueing...')
                 self.logger.log(f'all jobs completed after {waitIntervals * waitIntervalTime / 3600} hours!')
                 self.currentJobID = None
                 return
