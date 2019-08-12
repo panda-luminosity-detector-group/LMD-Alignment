@@ -30,7 +30,7 @@ class LumiValLaTeXTable:
         # print(f'{self.configs[len(self.configs)-1].__dict__}')
 
         for conf in self.configs:
-            #with open(conf.pathLumiVals()) as file:
-            #    lumiVals = json.load(file)
+            with open(conf.pathLumiVals()) as file:
+               lumiVals = json.load(file)
 
-            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} ')# & {lumiVals["relative_deviation_in_percent"]}')
+            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumiVals["relative_deviation_in_percent"]}')
