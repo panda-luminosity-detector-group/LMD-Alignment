@@ -42,6 +42,7 @@ import concurrent
 import datetime
 import json
 import os
+import random
 import sys
 
 from pathlib import Path
@@ -92,7 +93,7 @@ def runAligners(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create alignerIP, run
@@ -112,7 +113,7 @@ def runExtractLumi(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-ExtractLumi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-ExtractLumi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
@@ -131,7 +132,7 @@ def runLumifit(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-LumiFit-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-LumiFit-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
@@ -152,7 +153,7 @@ def runSimRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-SimReco-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-SimReco-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
@@ -180,7 +181,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
         return
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-FullRun-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-FullRun-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -252,7 +253,8 @@ def runConfigsMT(args, function):
         configs = list(searchDir.glob('*.json'))
 
     if len(configs) == 0:
-        print(f'No runConfig files found in {searchDir}!')
+        print(f'No runConfig files found in {searchDir}. Exiting!')
+        sys.exit(1)
 
     simConfigs = []
 
@@ -328,6 +330,10 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         parser.print_help()
         parser.exit(1)
+
+    # random number to identify runs
+    global runNumber
+    runNumber = random.randint(0,1000000)
 
     # ? =========== helper functions
     if args.makeDefault:
