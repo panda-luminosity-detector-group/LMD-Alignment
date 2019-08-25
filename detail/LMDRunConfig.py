@@ -310,7 +310,7 @@ class LMDRunConfig:
     #! --------------------- generators for factors, alignments, beam momenta
     def genBeamMomenta(self):
         if self.__smallBatch:
-            momenta = ['1.5', '15.0']
+            momenta = ['1.5', '4.06', '15.0']
         else:
             momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
         for mom in momenta:
@@ -325,7 +325,10 @@ class LMDRunConfig:
             yield f
 
     def genMisalignments(self):
-        misalignments = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
+        if self.__smallBatch:
+            misalignments = ['sensors', 'box', 'combi', 'identity']    
+        else:
+            misalignments = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
         for mis in misalignments:
             yield mis
 
