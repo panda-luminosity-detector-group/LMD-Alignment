@@ -49,6 +49,7 @@ from argparse import RawTextHelpFormatter
 from pathlib import Path
 
 from alignment.alignerIP import alignerIP
+from alignment.alignerSensors import alignerSensors
 from concurrent.futures import ThreadPoolExecutor
 from detail.LMDRunConfig import LMDRunConfig
 from detail.LumiValLaTeXTable import LumiValLaTeXTable
@@ -325,8 +326,8 @@ def createMultipleDefaultConfigs():
 
 if __name__ == "__main__":
 
-    if os.fork():
-        sys.exit()
+    # if os.fork():
+    #     sys.exit()
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
 
@@ -396,11 +397,17 @@ if __name__ == "__main__":
         done()
 
     if args.test:
-        print(f'idlig two by two')
+        print(f'Testing...')
+        sensorAligner = alignerSensors.fromRunConfig(LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json'))
+        sensorAligner.sortPairs()
         done()
 
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
+
+
+    if os.fork():
+        sys.exit()
 
     # # ? =========== lumi fit results, single config
     # if args.fitValuesConfig:
