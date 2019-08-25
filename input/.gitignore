@@ -3,6 +3,7 @@
 lustre/
 TrksQA/
 plab*/
+LumiPairsTest/*
 
 # But never these files...
 !.gitignore

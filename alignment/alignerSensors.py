@@ -46,12 +46,21 @@ class alignerSensors:
     def sortPairs(self):
         print(f'sorting Pairs...')
 
-        #FIXME: use path from LMDRunConfig file
-        sorter = hitPairSorter( (Path('input') / Path('LumiPairsTest')) )
+        pairSourcePath = self.config.pathTrksQA()
+        #sorter = hitPairSorter( (Path('input') / Path('LumiPairsTest')) )
+        sorter = hitPairSorter(Path(pairSourcePath))
+
         sorter.sortAll()
 
+    def findMatrices(self):
+        # go to npy dir
+        # do the following multi threaded (thread pool executor, look into runSimulations)
 
-
+        # read all npys
+        # create matrix finder for each
+        # compute matrix
+        
+        pass
 
 if __name__ == "__main__":
     print(f'Error! Can not be run individually!')

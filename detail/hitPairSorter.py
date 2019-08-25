@@ -71,7 +71,7 @@ class hitPairSorter:
         # open the root trees in a TChain-like manner
         lumiPairs = str( self.inputDir  / Path('Lumi_Pairs*.root') )
         try:
-            for (a, b, arrays) in uproot.iterate(lumiPairs, 'pndsim', [b'PndLmdHitPair._overlapID', b'PndLmdHitPair._hit1', b'PndLmdHitPair._hit2'], entrysteps=1000000, executor=executor, reportentries=True):
+            for (_, _, arrays) in uproot.iterate(lumiPairs, 'pndsim', [b'PndLmdHitPair._overlapID', b'PndLmdHitPair._hit1', b'PndLmdHitPair._hit2'], entrysteps=1000000, executor=executor, reportentries=True):
                 print('.', end='', flush=True)
                 self.sortPairs(arrays, fileContents)
 
