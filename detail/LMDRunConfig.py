@@ -48,8 +48,9 @@ class LMDRunConfig:
             print(f"please set {pndRootDir} and {simDirEnv}!")
             sys.exit(1)
 
+        self.__tracksNum = '100000'
+        self.__jobsNum = '500'
         self.__JobBaseDir = None
-        self.__runSteps = []
         self.__fromPath = None
         self.__alignMatFile = None
         self.__misalignMatFile = None
@@ -58,11 +59,8 @@ class LMDRunConfig:
         self.__misalignFactor = None
         self.__alignFactor = None
         self.__momentum = None
-        self.__tracksNum = None
-        self.__jobsNum = None
-        self.__smallBatch = True
-        self.__misalignment = False
-        self.__alignmentCorrection = False
+        self.__misalignment = True
+        self.__alignmentCorrection = True
         self.__debug = False
         self.__useDevQueue = False
 
@@ -186,15 +184,11 @@ class LMDRunConfig:
     @classmethod
     def minimalDefault(cls, mom='1.5', misalignType='identity', factor='1.00'):
         temp = cls()
-        temp.__tracksNum = '100000'
-        temp.__jobsNum = '500'
         temp.__momentum = mom
         temp.__alignFactor = factor
         temp.__misalignFactor = factor
         temp.__alignType = misalignType
         temp.__misalignType = misalignType
-        temp.__misalignment = True
-        temp.__alignmentCorrection = True
         temp.generateMatrixNames()
         return temp
 
@@ -224,8 +218,6 @@ class LMDRunConfig:
         if len(pathParts) < 3:
             print(f'ERROR! path doesn\'t go deep enough, can not extract all information!')
             sys.exit(1)
-
-        self.__runSteps = [1, 2, 3, 4]
 
         if pathParts[2] == 'no_geo_misalignment':
             self.__misalignType = 'aligned'
@@ -290,10 +282,8 @@ class LMDRunConfig:
         if not Path(filename).exists():
             print(f'ERROR! File {filename} can\'t be read!')
             sys.exit(1)
-        #print(f'reading file: {filename}')
         temp = cls()
         with open(filename, 'r') as inFile:
-            #temp.__dict__ = json.load(inFile)
             data = json.load(inFile)
 
         for key, value in data.items():
@@ -305,39 +295,6 @@ class LMDRunConfig:
     def toJSON(self, filename):
         with open(filename, 'w') as outfile:
             json.dump(self.__dict__, outfile, indent=2)
-        pass
-
-    #! --------------------- generators for factors, alignments, beam momenta
-    def genBeamMomenta(self):
-        if self.__smallBatch:
-            momenta = ['1.5', '4.06', '15.0']
-        else:
-            momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
-        for mom in momenta:
-            yield mom
-
-    def genFactors(self):
-        if self.__smallBatch:
-            factors = ['0.5', '1.00', '2.00']
-        else:
-            factors = ['0.01', '0.05', '0.10', '0.15', '0.2', '0.25', '0.5', '1.00', '2.00', '3.00', '5.00', '10.00']
-        for f in factors:
-            yield f
-
-    def genMisalignments(self):
-        if self.__smallBatch:
-            misalignments = ['sensors', 'box', 'combi', 'identity']    
-        else:
-            misalignments = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
-        for mis in misalignments:
-            yield mis
-
-    # generates all config objects (all beam momenta, misaligns etc) as a generator
-    def genConfigs(self):
-        for mom in self.genBeamMomenta():
-            pass
-
-        # TODO: implement!
         pass
 
     #! --------------------- these define the path structure! ---------------------
