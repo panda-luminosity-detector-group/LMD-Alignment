@@ -6,6 +6,12 @@ from detail import icp
 
 # TODO: OOP this class, it will be important for Sensor Alignment!
 
+"""
+
+How to do it: this will be a class! It gets the overlap ID and the json with the ideal geometry, no other info should be needed
+
+"""
+
 def dynamicCut(fileUsable, cutPercent=2, use2D=True):
 
     if cutPercent == 0:
