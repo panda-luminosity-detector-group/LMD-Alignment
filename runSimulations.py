@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-this script handles all simulation related abstractions.
+This script handles all simulation related abstractions.
 
 it:
 - browses paths for TrksQA, reco_ip and lumi_vals
@@ -45,6 +45,7 @@ import os
 import random
 import sys
 
+from argparse import RawTextHelpFormatter
 from pathlib import Path
 
 from alignment.alignerIP import alignerIP
@@ -294,7 +295,7 @@ if __name__ == "__main__":
     if os.fork():
         sys.exit()
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
 
     parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='find all alignment matrices (IP, corridor, sensors) for runConfig')
     parser.add_argument('-A', metavar='--alignConfigPath', type=str, dest='alignConfigPath', help='same as -a, but for all Configs in specified path')
