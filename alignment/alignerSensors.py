@@ -18,7 +18,8 @@ This aligner needs a LMDRunConfig object. It will then:
 - find overlap matrices
 - save them as deviation matrices to json
 
-Info: all positional vectors are row-major! This aligner also need info about the geometry:
+Info: all positional vectors are row-major! This aligner also need info about the geometry
+to transform sensor-local matrices to PANDA global:
 
 - detector_matrices.json | containing all design matrices of the Luminosity detector 
 

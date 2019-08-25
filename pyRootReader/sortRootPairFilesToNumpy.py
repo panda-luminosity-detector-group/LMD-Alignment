@@ -44,10 +44,10 @@ def sortPairs(arrays, fileContents):
 def saveAllFiles(fileContents):
     for ID in createAllOverlaps():
         #print('saving file {}'.format(ID))
-        fileName = './numpyPairs/pairs-{}.npy'.format(ID)
+        fileName = f'./numpyPairs/pairs-{ID}.npy'
 
         if os.path.exists(fileName):
-            print('file for {} already present, aborting!'.format(ID))
+            print(f'file for {ID} already present, aborting!')
         
         # actually save
         np.save(file=fileName, arr=fileContents[ID], allow_pickle=False)

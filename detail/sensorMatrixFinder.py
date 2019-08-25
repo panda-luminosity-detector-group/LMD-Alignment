@@ -2,7 +2,7 @@
 
 import numpy as np
 import functions.rootInterface as ri
-from functions import icp
+from detail import icp
 
 # TODO: OOP this class, it will be important for Sensor Alignment!
 
@@ -105,7 +105,7 @@ def findMatrix(path, overlap, cut, matrices, use2D=True):
         return T
 
 
-#! attention! both vectors must be in the same system of reference (e.g. the first sensor's)
+#! attention! both vectors must be in the same system of reference (the first sensor's!)
 def findMatrix1to2(cloud1, cloud2):
 
     numPairs = len(cloud1)
