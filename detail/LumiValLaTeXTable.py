@@ -6,7 +6,7 @@ Note: of course this will somehow be line based since every line corresponds to 
 But later I want it column based, so that I can just add or remove a column to a Table, 
 set it's header and specify which values from the runConfig go into the column.
 Then, I want to be able to quickly assemble a complete LaTeX table with arbitrary
-columns.
+columns. But time is critical right now.
 """
 
 import json
