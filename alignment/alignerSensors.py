@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+from detail.hitPairSorter import hitPairSorter
 from detail.LMDRunConfig import LMDRunConfig
 from detail.matrices import getMatrixFromJSON, makeHomogenous
 from detail.trksQA import getIPfromTrksQA
 
 from pathlib import Path
+
 
 import json
 import numpy as np
@@ -15,6 +17,8 @@ Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 This aligner needs a LMDRunConfig object. It will then:
 
 - read Lumi_Pairs_*.root files
+- sort to numpy files
+- read all numpy files
 - find overlap matrices
 - save them as deviation matrices to json
 
@@ -38,6 +42,15 @@ class alignerSensors:
         temp = cls()
         temp.config = runConfig
         return temp
+
+    def sortPairs(self):
+        print(f'sorting Pairs...')
+
+        #FIXME: use path from LMDRunConfig file
+        sorter = hitPairSorter( (Path('input') / Path('LumiPairsTest')) )
+        sorter.sortAll()
+
+
 
 
 if __name__ == "__main__":
