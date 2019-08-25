@@ -185,11 +185,8 @@ class LMDRunConfig:
     def minimalDefault(cls, mom='1.5', misalignType='identity', factor='1.00'):
         temp = cls()
         temp.__momentum = mom
-        temp.__alignFactor = factor
         temp.__misalignFactor = factor
-        temp.__alignType = misalignType
         temp.__misalignType = misalignType
-        temp.generateMatrixNames()
         return temp
 
     def parseFromString(self):
