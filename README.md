@@ -32,4 +32,4 @@ You can also create them by hand, which might be useful if you want to add misal
 }
 ```
 
-After that, you can read them using any simulation type. Note however that some important values will only reside in memory and are not stored to the run config, like paths for (mis)alignment matrices. If you wnt to store them to the run config as well, execute `./runSimulations.py --updateRunConfigs`.
+All other neccessary field *should* get be generaterd automatically, but only at run-time. After that, you can read them using any simulation type. Note however that some important values will only reside in memory and are not stored to the run config, like paths for (mis)alignment matrices. If you wnt to store them to the run config as well, execute `./runSimulations.py --updateRunConfigs`.
