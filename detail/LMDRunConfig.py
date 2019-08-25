@@ -49,7 +49,7 @@ class LMDRunConfig:
             sys.exit(1)
 
         self.__tracksNum = '100000'
-        self.__jobsNum = '500'
+        self.__jobsNum = '100'
         self.__JobBaseDir = None
         self.__fromPath = None
         self.__alignMatFile = None
