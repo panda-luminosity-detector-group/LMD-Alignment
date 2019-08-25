@@ -218,9 +218,6 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID} done!')
 
 
-def testFunc(obj):
-    return obj['test']
-
 def showLumiFitResults(runConfigPath, threadID=None):
 
     # read all configs from path
@@ -287,8 +284,44 @@ def runConfigsMT(args, function):
         executor.shutdown(wait=True)
     return
 
-# ? =========== main user interface
 
+def createMultipleDefaultConfigs():
+    # for now
+    smallBatch = True
+
+    if smallBatch:
+        momenta = ['1.5', '15.0']
+        misFactors = ['0.5', '1.00', '2.00']
+        misTypes = ['sensors', 'box', 'identity']
+    else:
+        momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
+        misFactors = ['0.01', '0.05', '0.10', '0.15', '0.2', '0.25', '0.5', '1.00', '2.00', '3.00', '5.00', '10.00']
+        misTypes = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
+
+    for misType in misTypes:
+        for mom in momenta:
+            for fac in misFactors:
+                dest = Path('runConfigs') / Path(misType) / Path(mom) / Path(f'factor-{fac}.json')
+                dest.parent.mkdir(parents=True, exist_ok=True)
+
+                config = LMDRunConfig.minimalDefault()
+
+                config.misalignFactor = fac
+                config.misalignType = misType
+                config.momentum = mom
+
+                config.toJSON(dest)
+
+    # regenerate missing fields
+    targetDir = Path('runConfigs')
+    configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
+    for fileName in configs:
+        conf = LMDRunConfig.fromJSON(fileName)
+        conf.generateMatrixNames()
+        conf.toJSON(fileName)
+
+
+# ? =========== main user interface
 
 if __name__ == "__main__":
 
@@ -335,7 +368,7 @@ if __name__ == "__main__":
 
     # random number to identify runs
     global runNumber
-    runNumber = random.randint(0,1000000)
+    runNumber = random.randint(0, 1000000)
 
     # ? =========== helper functions
     if args.makeDefault:
@@ -346,39 +379,7 @@ if __name__ == "__main__":
 
     # ? =========== helper functions
     if args.makeMultipleDefaults:
-        # for now
-        smallBatch = True
-
-        if smallBatch:
-            momenta = ['1.5', '15.0']
-            misFactors = ['0.5', '1.00', '2.00']
-            misTypes = ['sensors', 'box', 'identity']    
-        else:
-            momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
-            misFactors = ['0.01', '0.05', '0.10', '0.15', '0.2', '0.25', '0.5', '1.00', '2.00', '3.00', '5.00', '10.00']
-            misTypes = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
-
-        for misType in misTypes:
-            for mom in momenta:
-                for fac in misFactors:
-                    dest = Path('runConfigs') / Path(misType) / Path(mom) / Path(f'factor-{fac}.json')
-                    dest.parent.mkdir(parents=True, exist_ok=True)
-
-                    config = LMDRunConfig.minimalDefault()
-                    
-                    config.misalignFactor = fac
-                    config.misalignType = misType
-                    config.momentum = mom
-                    
-                    config.toJSON(dest)
-        
-        # regenerate missing fields
-        targetDir = Path('runConfigs')
-        configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
-        for fileName in configs:
-            conf = LMDRunConfig.fromJSON(fileName)
-            conf.generateMatrixNames()
-            conf.toJSON(fileName)
+        createMultipleDefaultConfigs()
         done()
 
     if args.updateRunConfigs:
