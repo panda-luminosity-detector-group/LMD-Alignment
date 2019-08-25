@@ -188,7 +188,6 @@ class LMDRunConfig:
         temp = cls()
         temp.__tracksNum = '100000'
         temp.__jobsNum = '500'
-        temp.__runSteps = [1, 2, 3, 4]
         temp.__momentum = mom
         temp.__alignFactor = factor
         temp.__misalignFactor = factor
@@ -275,6 +274,11 @@ class LMDRunConfig:
     def generateMatrixNames(self):
         if self.__misalignType is None or self.__misalignFactor is None or self.__momentum is None:
             print(f'ERROR! not enough parameters set!')
+
+        if self.__alignType is None:
+            self.__alignType = self.__misalignType
+        if self.__alignFactor is None:
+            self.__alignFactor = self.__misalignFactor
 
         self.__misalignMatFile = str(self.pathMisMatrix())
         self.__alignMatFile = str(self.pathAlMatrix())

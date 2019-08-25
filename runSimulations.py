@@ -318,6 +318,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', action='store_true', dest='recursive', help='use with any config Path option to scan paths recursively')
 
     parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
+    parser.add_argument('-D', action='store_true', dest='makeMultipleDefaults', help='make multiple example LMDRunConfigs')
     parser.add_argument('--debug', action='store_true', dest='debug', help='run single threaded, more verbose output, submit jobs to devel queue')
     parser.add_argument('--updateRunConfigs', dest='updateRunConfigs', help='read all configs in ./runConfig, recreate the matrix file paths and store them.')
     parser.add_argument('--test', action='store_true', dest='test', help='internal test function')
@@ -338,6 +339,15 @@ if __name__ == "__main__":
 
     # ? =========== helper functions
     if args.makeDefault:
+        dest = Path('runConfigs/identity-1.00.json')
+        print(f'saving default config to {dest}')
+        LMDRunConfig.minimalDefault().toJSON(dest)
+        done()
+
+    # ? =========== helper functions
+    if args.makeMultipleDefaults:
+
+        # TODO: implement, genereators in RunConfig are available (I think)
         dest = Path('runConfigs/identity-1.00.json')
         print(f'saving default config to {dest}')
         LMDRunConfig.minimalDefault().toJSON(dest)
