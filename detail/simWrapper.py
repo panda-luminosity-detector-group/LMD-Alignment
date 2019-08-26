@@ -125,7 +125,7 @@ class simWrapper:
         self.logger.log(f'\n\n========= Jobs submitted, waiting for them to finish...\n')
         self.getJobIDfromSubmitOutput(returnVal)
 
-        self.logger.log(f'Waiting 30 seconds for jobs tu get submitted...')
+        self.logger.log(f'Waiting 30 seconds for jobs to get submitted...')
         time.sleep(30)
 
     def GetPendingAndRunning(self, jobID):
@@ -189,7 +189,7 @@ class simWrapper:
 
             # no jobs found? then we can exit
             if foundJobsPD == 0 and foundJobsR == 0:
-                print(f'Thread {self.threadNumber}: No more jobs running, continueing...')
+                print(f'Thread {self.threadNumber}: No more jobs running, continuing...')
                 self.logger.log(f'all jobs completed after {waitIntervals * waitIntervalTime / 3600} hours!')
                 self.currentJobID = None
                 return

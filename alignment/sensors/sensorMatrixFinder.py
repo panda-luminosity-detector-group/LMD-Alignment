@@ -22,9 +22,9 @@ class sesorMatrixFinder:
         self.idealMatrices = None
         self.overlapMatrix = None
 
-    def readIdealMatrices(self, fileName):
-        with open(fileName, 'r') as f:
-            self.idealMatrices = json.load(f)
+    # def readIdealMatrices(self, fileName):
+    #     with open(fileName, 'r') as f:
+    #         self.idealMatrices = json.load(f)
 
     def readNumpyFiles(self, path):
 

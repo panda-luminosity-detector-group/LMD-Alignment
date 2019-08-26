@@ -99,7 +99,7 @@ def runAligners(runConfig, threadID=None):
     thislogger.log(runConfig.dump())
 
     # create alignerSensors, run
-    
+
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
@@ -405,7 +405,6 @@ if __name__ == "__main__":
 
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
-
 
     if os.fork():
         sys.exit()

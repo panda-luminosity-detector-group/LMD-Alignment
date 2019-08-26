@@ -46,7 +46,7 @@ class alignerSensors:
         temp.config = runConfig
         return temp
 
-    # TODO: get these somewhere else, maybe even just the ideal detector matrices 
+    # TODO: get these somewhere else, maybe even just the ideal detector matrices
     def createAllOverlaps(self):
         overlapIDs = []
         for half in range(2):
@@ -58,17 +58,21 @@ class alignerSensors:
 
     def sortPairs(self):
         pairSourcePath = Path(self.config.pathTrksQA())
-        numpyPairPath =  pairSourcePath / Path('npPairs')
-        
+        numpyPairPath = pairSourcePath / Path('npPairs')
+
         sorter = hitPairSorter(pairSourcePath, numpyPairPath)
         sorter.availableOverlapIDs = self.availableOverlapIDs
         sorter.sortAll()
 
     def findSingleMatrix(self, overlapID, numpyPath, idealMatricesPath):
-        
+
         matrixFinder = sesorMatrixFinder(overlapID)
-        matrixFinder.readIdealMatrices(idealMatricesPath)
-                
+
+        with open(idealMatricesPath, 'r') as f:
+            idealMatrices = json.load(f)
+
+        matrixFinder.idealMatrices = idealMatrices
+
         matrixFinder.readNumpyFiles(numpyPath)
         matrixFinder.findMatrix()
         matrix = matrixFinder.makeOverlapMatrixToMisalignmentMatrix()
@@ -79,7 +83,7 @@ class alignerSensors:
 
     def findMatricesMT(self):
 
-        # setup paths        
+        # setup paths
         idealMatricesPath = Path('input') / Path('detectorMatricesIdeal.json')
         numpyPath = self.config.pathTrksQA() / Path('npPairs')
 
@@ -92,7 +96,7 @@ class alignerSensors:
             # Start the load operations and mark each future with its URL
             for overlapID in self.availableOverlapIDs:
                 executor.submit(self.findSingleMatrix, overlapID, numpyPath, idealMatricesPath)
-        
+
         executor.shutdown(wait=True)
 
         for i in self.alignmentMatrices:
