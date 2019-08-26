@@ -406,9 +406,6 @@ if __name__ == "__main__":
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
 
-    if os.fork():
-        sys.exit()
-
     # # ? =========== lumi fit results, single config
     # if args.fitValuesConfig:
     #     config = LMDRunConfig.fromJSON(args.fitValuesConfig)
@@ -424,6 +421,9 @@ if __name__ == "__main__":
         done()
 
     #! ---------------------- logging goes to file
+
+    if os.fork():
+        sys.exit()
 
     # ? =========== align, single config
     if args.alignConfig:

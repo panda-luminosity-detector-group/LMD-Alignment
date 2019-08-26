@@ -60,7 +60,7 @@ class LMDRunConfig:
         self.__alignFactor = None
         self.__momentum = None
         self.__misalignment = True
-        self.__alignmentCorrection = True
+        self.__alignmentCorrection = False
         self.__debug = False
         self.__useDevQueue = False
 
