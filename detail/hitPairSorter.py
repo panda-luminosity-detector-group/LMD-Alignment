@@ -55,6 +55,11 @@ class hitPairSorter:
         for ID in self.createAllOverlaps():
             fileName = self.npyOutputDir / Path(f'pairs-{ID}.npy')
 
+            # check if array is empty
+            if len(fileContents[ID][0]) < 1:
+                print(f'array {ID} empty, skipping...')
+                continue
+
             if Path(fileName).exists():
                 print(f'file for {ID} already present, aborting!')
 
@@ -65,9 +70,12 @@ class hitPairSorter:
         # create dict for all fileContents, this is rather non-pythonic
         fileContents = {}
         executor = concurrent.futures.ThreadPoolExecutor(8)   # 8 threads
+        
         for ID in self.createAllOverlaps():
             fileContents[ID] = np.empty((7, 0))
-        print('pair sorter processing files...')
+
+        print('Sorting HitPairs .', end='', flush=True)
+
         # open the root trees in a TChain-like manner
         lumiPairs = str( self.inputDir  / Path('Lumi_Pairs*.root') )
         try:
@@ -78,6 +86,8 @@ class hitPairSorter:
         # Keyboard interrupt
         except (KeyboardInterrupt, Exception) as e:
             print('caught exception:\n{}\nsaving files...'.format(e))
+
+        print(f'. done!')
 
         self.saveAllFiles(fileContents)
         print('\ndone')
