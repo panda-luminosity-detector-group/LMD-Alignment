@@ -6,12 +6,15 @@ import uproot
 import numpy as np
 import concurrent.futures
 
+"""
+Sorts HitPairs from Lumi_Pairs_*.root to numpy arrays
+"""
 
 class hitPairSorter:
 
-    def __init__(self, PairDir):
+    def __init__(self, PairDir, numpyDir):
         self.inputDir = PairDir
-        self.npyOutputDir = PairDir / Path('npPairs')
+        self.npyOutputDir = numpyDir
         self.npyOutputDir.mkdir(parents=True, exist_ok=True)
 
     def createAllOverlaps(self):

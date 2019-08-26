@@ -44,9 +44,10 @@ class alignerSensors:
         return temp
 
     def sortPairs(self):
-        pairSourcePath = self.config.pathTrksQA()
+        pairSourcePath = Path(self.config.pathTrksQA())
+        numpyPairPath =  pairSourcePath / Path('npPairs')
         #sorter = hitPairSorter( (Path('input') / Path('LumiPairsTest')) )
-        sorter = hitPairSorter(Path(pairSourcePath))
+        sorter = hitPairSorter(pairSourcePath, numpyPairPath)
 
         sorter.sortAll()
 
