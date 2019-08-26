@@ -98,14 +98,14 @@ def runAligners(runConfig, threadID=None):
     thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
+    # create alignerSensors, run
+    
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
 
     # create alignerCorridors, run
-
-    # create alignerSensors, run
 
     print(f'Thread {threadID} done!')
 
@@ -399,7 +399,8 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         sensorAligner = alignerSensors.fromRunConfig(LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json'))
-        sensorAligner.sortPairs()
+        #sensorAligner.sortPairs()
+        sensorAligner.findMatricesMT()
         done()
 
     if args.debug:

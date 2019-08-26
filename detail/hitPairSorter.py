@@ -16,15 +16,7 @@ class hitPairSorter:
         self.inputDir = PairDir
         self.npyOutputDir = numpyDir
         self.npyOutputDir.mkdir(parents=True, exist_ok=True)
-
-    def createAllOverlaps(self):
-        overlapIDs = []
-        for half in range(2):
-            for plane in range(4):
-                for module in range(5):
-                    for overlap in range(9):
-                        overlapIDs.append(half*1000 + plane*100 + module*10 + overlap)
-        return overlapIDs
+        self.availableOverlapIDs = None
 
     def sortPairs(self, arrays, fileContents):
         # use just the overlaps for indexes, this tells us how many pairs there are in a given event
@@ -42,7 +34,7 @@ class hitPairSorter:
         flatDistance = (flathit1 - flathit2).mag    # calculate distance vectorized
 
         # sorting and saving
-        for ID in self.createAllOverlaps():
+        for ID in self.availableOverlapIDs:
             # create mask by ID
             IDmask = (flatOverlaps == ID)
             thisContent = np.array([flathit1[IDmask].x, flathit1[IDmask].y, flathit1[IDmask].z, flathit2[IDmask].x, flathit2[IDmask].y, flathit2[IDmask].z, flatDistance[IDmask]])
@@ -55,7 +47,7 @@ class hitPairSorter:
             fileContents[ID] = np.concatenate((oldContent, thisContent), axis=1)
 
     def saveAllFiles(self, fileContents):
-        for ID in self.createAllOverlaps():
+        for ID in self.availableOverlapIDs:
             fileName = self.npyOutputDir / Path(f'pairs-{ID}.npy')
 
             # check if array is empty
@@ -74,7 +66,7 @@ class hitPairSorter:
         fileContents = {}
         executor = concurrent.futures.ThreadPoolExecutor(8)   # 8 threads
         
-        for ID in self.createAllOverlaps():
+        for ID in self.availableOverlapIDs:
             fileContents[ID] = np.empty((7, 0))
 
         print('Sorting HitPairs .', end='', flush=True)

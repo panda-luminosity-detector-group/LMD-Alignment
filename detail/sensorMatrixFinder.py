@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 from detail import icp
+from pathlib import Path
 
 import json
 import numpy as np
-
-# TODO: OOP this class, it will be important for Sensor Alignment!
 
 """
 
@@ -16,30 +15,28 @@ Finds the overlap matrix for two sensors. Requires an overlapID and the set of i
 
 class sesorMatrixFinder:
 
-    def __init__(self):
+    def __init__(self, overlapID):
+        self.overlap = overlapID
         self.use2D = True
         self.PairData = None
         self.idealMatrices = None
+        self.overlapMatrix = None
 
-    def readNumpyFiles(self):
-        fileName = './numpyPairs/pairs-{}.npy'.format(ID)
+    def readIdealMatrices(self, fileName):
+        with open(fileName, 'r') as f:
+            self.idealMatrices = json.load(f)
+
+    def readNumpyFiles(self, path):
+
+        fileName = path / Path(f'pairs-{self.overlap}.npy')
         # read binary pairs
         self.PairData = np.load(fileName)
 
-        # the new python Root Reader stores them slightly differently... although, maybe just change that?
-        # TODO: check!
+        # the new python Root Reader stores them slightly differently...
         self.PairData = np.transpose(self.PairData)
 
         # apply dynamic cut
         self.PairData = self.dynamicCut(self.PairData, 2)
-
-        # testing
-        print(self.PairData.shape)
-
-    def readIdealMatrices(self):
-        # TODO: don't hard-code
-        with open("input/detectorMatricesIdeal.json", 'r') as f:
-            self.idealMatrices = json.load(f)
 
     def dynamicCut(self, fileUsable, cutPercent=2):
 
@@ -67,12 +64,14 @@ class sesorMatrixFinder:
 
         return fileUsable
 
-    # TODO: this next function needs to be updated!
-    # it needs an ID and the set of detector matrices, nothing else
-    def findMatrix(self, path, overlap, cut, matrices):
+    def findMatrix(self):
+
+        if self.idealMatrices is None or self.PairData is None:
+            print(f'Error! Please load ideal detector matrices and numpy pairs!')
+            return
 
         # get lmd to sensor1 matrix1
-        toSen1 = np.array(self.idealMatrices[overlap]['matrix1']).reshape(4, 4)
+        toSen1 = np.array(self.idealMatrices[str(self.overlap)]['matrix1']).reshape(4, 4)
 
         # invert to transform pairs from lmd to sensor
         toSen1Inv = np.linalg.inv(toSen1)
@@ -107,7 +106,15 @@ class sesorMatrixFinder:
             M = np.identity(4)
             M[:2, :2] = T[:2, :2]
             M[:2, 3] = T[:2, 2]
-            return M
+            self.overlapMatrix = M
 
         elif icpDimension == 3:
-            return T
+            self.overlapMatrix = T
+
+    def makeOverlapMatrixToMisalignmentMatrix(self):
+        if self.overlapMatrix is None:
+            print(f'Error! Please compute matrix first!')
+        return self.overlapMatrix
+
+        # TODO: the misalignment matrices are offset matrices that are applied to a sensor position
+        # but we only have overlap matrices here, so we need to compute them first!

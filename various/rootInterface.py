@@ -7,13 +7,6 @@ import numpy as np
 Static methods to access Root Files.
 """
 
-def readJSON(filename):
-  with open(filename, 'r') as f:
-    return json.load(f)
-
-def misalignMatrices():
-    return readJSON('matricesIdeal.json')
-
 def readBinaryPairFile(filename):
   # read file
   f = open(filename, "r")
