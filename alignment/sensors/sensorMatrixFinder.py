@@ -30,7 +30,10 @@ class sesorMatrixFinder:
 
         fileName = path / Path(f'pairs-{self.overlap}.npy')
         # read binary pairs
-        self.PairData = np.load(fileName)
+        try:
+            self.PairData = np.load(fileName)
+        except:
+            print(f'ERROR! Can not read {fileName}!')
 
         # the new python Root Reader stores them slightly differently...
         self.PairData = np.transpose(self.PairData)
