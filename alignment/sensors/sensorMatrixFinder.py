@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from detail import icp
+from alignment.sensors import icp
 from pathlib import Path
 
 import json
@@ -116,5 +116,5 @@ class sesorMatrixFinder:
             print(f'Error! Please compute matrix first!')
         return self.overlapMatrix
 
-        # TODO: the misalignment matrices are offset matrices that are applied to a sensor position
+        # FIXME: the misalignment matrices are offset matrices that are applied to a sensor position
         # but we only have overlap matrices here, so we need to compute them first!

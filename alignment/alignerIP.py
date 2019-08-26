@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+from alignment.IP.trksQA import getIPfromTrksQA
+
 from detail.LMDRunConfig import LMDRunConfig
 from detail.matrices import getMatrixFromJSON, makeHomogenous
-from detail.trksQA import getIPfromTrksQA
 
 from pathlib import Path
 

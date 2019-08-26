@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-from detail.hitPairSorter import hitPairSorter
+from alignment.sensors.hitPairSorter import hitPairSorter
+from alignment.sensors.sensorMatrixFinder import sesorMatrixFinder
+
 from detail.LMDRunConfig import LMDRunConfig
-from detail.matrices import getMatrixFromJSON, makeHomogenous
-from detail.sensorMatrixFinder import sesorMatrixFinder
-from detail.trksQA import getIPfromTrksQA
 
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
