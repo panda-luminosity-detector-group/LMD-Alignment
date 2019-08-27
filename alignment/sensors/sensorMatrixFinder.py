@@ -17,7 +17,7 @@ class sensorMatrixFinder:
         self.overlap = overlapID
         self.use2D = True
         self.PairData = None
-        self.idealMatrices = None
+        self.idealMatrices = {}
         self.overlapMatrix = None
 
     def readNumpyFiles(self, path):

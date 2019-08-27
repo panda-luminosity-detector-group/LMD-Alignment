@@ -14,6 +14,10 @@ These scripts work only with python3. The requirements can be installed with:
 pip3 install -r requirements.txt
 ```
 
+# Files in `input/`
+
+The most important file is `detectorMatricesIdeal.json`. It contains a mapping of `(ID1, ID2, path1, path2, matrix1, matrix2) -> overlapID`. It can be generated with PandaROOT (TODO: include details).
+
 # RunConfigs
 
 These are the main configuration files for a run. You can create a default run config with no misalignment using `./runSimulations.py -d`. You can create multiple default run configs (multiple momenta, misalignment factors, types) with the `-D` flag:

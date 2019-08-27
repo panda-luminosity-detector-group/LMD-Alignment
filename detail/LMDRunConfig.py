@@ -372,12 +372,11 @@ class LMDRunConfig:
     # alignment matrices are stored in the data directory from which they were found!
     def pathAlMatrix(self):
         self.__checkMinimum__()
-        # return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('alMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json'))
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json')
 
     def pathMisMatrix(self):
         self.__checkMinimum__()
-        return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__misalignFactor}.root'))
+        return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__misalignFactor}.json'))
 
     def pathRecoIP(self):
         self.__checkMinimum__()

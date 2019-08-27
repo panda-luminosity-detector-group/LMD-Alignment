@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+from alignment.sensors.alignmentMatrixCombiner import alignmentMatrixCombiner
+from alignment.sensors.compareWithDesignMatrices import idealCompare
 from alignment.sensors.hitPairSorter import hitPairSorter
 from alignment.sensors.sensorMatrixFinder import sensorMatrixFinder
-from alignment.sensors.alignmentMatrixCombiner import alignmentMatrixCombiner
 
 from detail.LMDRunConfig import LMDRunConfig
 
@@ -30,6 +31,8 @@ Info: all positional vectors are row-major! This aligner also need info about th
 to transform sensor-local matrices to PANDA global:
 
 - detectorMatricesIdeal.json | containing all design matrices of the Luminosity detector 
+
+TODO: save overlap matrices to json file!
 """
 
 
@@ -37,7 +40,7 @@ class alignerSensors:
 
     def __init__(self):
         self.availableOverlapIDs = self.createAllOverlaps()
-        self.alignmentMatrices = {}
+        self.overlapMatrices = {}
         self.lock = Lock()
         pass
 
@@ -80,7 +83,7 @@ class alignerSensors:
 
         # python ditionaries might be thread safe, but just in case
         with self.lock:
-            self.alignmentMatrices[overlapID] = matrix
+            self.overlapMatrices[overlapID] = matrix
 
     def findMatrices(self):
         # setup paths
@@ -103,6 +106,14 @@ class alignerSensors:
 
             # wait for all threads, this might not even be needed
             executor.shutdown(wait=True)
+
+    def testAndHistResults(self):
+
+        comparer = idealCompare(self.overlapMatrices)
+        comparer.loadDesignMatrices(self.config.pathMisMatrix())
+        comparer.hist()
+        pass
+
 
     # TODO: implement!
     def combineAlignmentMatrices(self):
