@@ -58,7 +58,7 @@ class alignerSensors:
             for plane in range(4):
                 for module in range(5):
                     for overlap in range(9):
-                        overlapIDs.append(half*1000 + plane*100 + module*10 + overlap)
+                        overlapIDs.append(str(half*1000 + plane*100 + module*10 + overlap))
         return overlapIDs
 
     def sortPairs(self):
@@ -108,9 +108,12 @@ class alignerSensors:
             executor.shutdown(wait=True)
 
     def testAndHistResults(self):
-
+        idealMatricesPath = Path('input') / Path('detectorMatricesIdeal.json')
+        
         comparer = idealCompare(self.overlapMatrices)
-        comparer.loadDesignMatrices(self.config.pathMisMatrix())
+        comparer.loadPerfectDetectorOverlaps(idealMatricesPath)
+        comparer.loadDesignMisalignmentMatrices(self.config.pathMisMatrix())
+        
         comparer.hist()
         pass
 

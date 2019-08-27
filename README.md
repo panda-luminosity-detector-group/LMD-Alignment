@@ -4,7 +4,7 @@ This is my collection of useful python scripts I wrote for the development of th
 
 # Usage
 
-The align scripts are in ´align´. They can be called with command line arguments in interactive fashion, or can be called object-oriented from the `simWrapper` python script.
+The align scripts are in `align`. They can be called with command line arguments in interactive fashion, or can be called object-oriented from the `simWrapper` python script.
 
 # Requirements
 

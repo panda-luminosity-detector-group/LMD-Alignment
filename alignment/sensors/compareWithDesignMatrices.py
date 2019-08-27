@@ -18,8 +18,6 @@ class idealCompare:
     def __init__(self, overlapMatrices):
         self.overlapMatrices = overlapMatrices
 
-    #! ----------------------- delete from here
-
     def histogramICP(self):
 
         misaligns = ['0', '100', '200']
@@ -70,76 +68,64 @@ class idealCompare:
         histA.text(0.05, 0.95, textStr, transform=histA.transAxes, fontsize=12, verticalalignment='top')
         return fig
 
-    def computeAllMatrices(self, cut, misalign, use2D):
-        overlaps = createAllOverlaps()
-        matrices = ri.readJSON("input/overlaps.json")
+    def computeOneICP(self, overlapID):
 
-        # overlaps = overlaps[:20]    # use only first 10 elements for now
-        values = []
-        print('computing ICP values...')
-        for overlap in overlaps:
-            values.append(self.computeOneICP(overlap, cut, misalign, matrices, use2D))
+        ICPmatrix = self.overlapMatrices[overlapID]
 
-        return values
-
-    def computeOneICP(self, overlapID, cut, misalign, matrices, use2D):
-
-        path = 'input/2018-08-himster2-misalign-' + str(misalign) + 'u/'
-        ICPmatrix = finder.findMatrix(path, str(overlapID), cut, matrices, use2D)
-
-        # if misalign is 0, the target misalign matrix is the identity matrix
-        if misalign == '0':
-            return ICPmatrix[0][3]*1e4
-
-        # json paths:
-        jsonPath = 'input/rootMisalignMatrices/json/misalignMatrices-SensorsOnly-' + str(misalign) + '.root.json'
-
-        with open(jsonPath, 'r') as f:
-            misMat = json.load(f)
-
-        path1 = matrices[str(overlapID)]['path1']
-        path2 = matrices[str(overlapID)]['path2']
+        path1 = self.overlaps[overlapID]['path1']
+        path2 = self.overlaps[overlapID]['path2']
 
         # generate overlap matrix from known misalign matrices like those the ICP would find
-        mis1 = np.array(misMat[path1]).reshape(4, 4)                                                            # misalignment to sensor1
-        mis2 = np.array(misMat[path2]).reshape(4, 4)                                                            # misalignment to sensor2
-        toSen1 = np.array(matrices[str(overlapID)]['matrix1']).reshape(4, 4)                                    # total matrix PANDA -> sensor1
-        toSen2 = np.array(matrices[str(overlapID)]['matrix2']).reshape(4, 4)                                    # total matrix PANDA -> sensor2
-        sen1tosen2 = np.linalg.multi_dot([np.linalg.inv(toSen1), toSen2])                                       # matrix from sensor1 to sensor2, needed for base transform!
-        mis2inSen1 = np.linalg.multi_dot([sen1tosen2, mis2, np.linalg.inv(sen1tosen2)])                         # mis2 in the frame of reference of sensor1, this is a base transform
-        mis1to2 = np.linalg.multi_dot([np.linalg.inv(mis1), mis2inSen1])                                        # the final matrix that we want
+        mis1 = np.array(self.designMatrices[path1]).reshape(4, 4)                                                       # misalignment to sensor1
+        mis2 = np.array(self.designMatrices[path2]).reshape(4, 4)                                                       # misalignment to sensor2
 
-        return ((mis1to2 - ICPmatrix)[0][3]*1e4)
+        toSen1 = np.array(self.overlaps[overlapID]['matrix1']).reshape(4, 4)                                            # total matrix PANDA -> sensor1
+        toSen2 = np.array(self.overlaps[overlapID]['matrix2']).reshape(4, 4)                                            # total matrix PANDA -> sensor2
 
-    #! ----------------------- delete until here
+        sen1tosen2 = np.linalg.multi_dot([np.linalg.inv(toSen1), toSen2])                                               # matrix from sensor1 to sensor2, needed for base transform!
+        mis2inSen1 = np.linalg.multi_dot([sen1tosen2, mis2, np.linalg.inv(sen1tosen2)])                                 # mis2 in the frame of reference of sensor1, this is a base transform
+        mis1to2 = np.linalg.multi_dot([np.linalg.inv(mis1), mis2inSen1])                                                # the final matrix that we want
 
-    def loadDesignMatrices(self, fileName):
-        print(f'Will load design matrices from {fileName}.')
+        # return values in µm
+        return ((mis1to2 - ICPmatrix)[0][3]*1e4), ((mis1to2 - ICPmatrix)[1][3]*1e4)
+
+    def loadDesignMisalignmentMatrices(self, fileName):
+        print(f'Will load design misalignment matrices from {fileName}.')
         with open(fileName) as designFile:
             self.designMatrices = json.load(designFile)
 
+    def loadPerfectDetectorOverlaps(self, fileName):
+        print(f'Will load perfect detector overlaps from {fileName}.')
+        with open(fileName) as designFile:
+            self.overlaps = json.load(designFile)
+
     def hist(self):
 
+        # get all ideal matrices from json, already done
         # get all overlaps from json (id1, id2, path1, path2 compose an "overlap")
 
-        with open('input/detectorMatricesIdeal.json') as overlapFile:
-            overlaps = json.load(overlapFile)
+        for o in self.overlaps:
+            # path1 = self.overlaps[o]["path1"]
+            # path2 = self.overlaps[o]["path2"]
+            # print(f'Overlap: {o}')
+            # print(f'id 1: {self.overlaps[o]["id1"]}')
+            # print(f'id 2: {self.overlaps[o]["id2"]}')
+            # print(f'path 1: {path1}')
+            # print(f'path 2: {path2}')
 
-        for o in overlaps:
-            path1 = overlaps[o]["path1"]
-            path2 = overlaps[o]["path2"]
-            print(f'Overlap: {o}')
-            print(f'id 1: {overlaps[o]["id1"]}')
-            print(f'id 2: {overlaps[o]["id2"]}')
-            print(f'path 1: {path1}')
-            print(f'path 2: {path2}')
+            # # these are the design matrices without misalignment
+            # print(f'ideal matrix 1: {self.overlaps[o]["matrix1"]}')
+            # print(f'ideal matrix 2: {self.overlaps[o]["matrix2"]}')
 
-            # these are the design misalignment matrices
-            print(f'matrix 1: {self.designMatrices[path1]}')
-            print(f'matrix 2: {self.designMatrices[path2]}')
+            # # these are the design misalignment matrices
+            # print(f'mis matrix 1: {self.designMatrices[path1]}')
+            # print(f'mis matrix 2: {self.designMatrices[path2]}')
 
-        # get all ideal matrices from json, already done
-        
+            # print(f'ICP matrix: {self.overlapMatrices[o]}')
+
+            print(f'dx, dy:{self.computeOneICP(o)}')
+
+            # break
 
         # get all ICP matrices from constructor
 
