@@ -314,7 +314,7 @@ def createMultipleDefaultConfigs():
                 if Path(dest).exists():
                     print(f'ERROR! Config {dest} already exists, skipping!')
                     continue
-                    
+
                 config.toJSON(dest)
 
     # regenerate missing fields
@@ -405,7 +405,7 @@ if __name__ == "__main__":
         print(f'Testing...')
         sensorAligner = alignerSensors.fromRunConfig(LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json'))
         sensorAligner.sortPairs()
-        sensorAligner.findMatricesMT()
+        sensorAligner.findMatrices()
         done()
 
     if args.debug:
