@@ -30,9 +30,9 @@ class idealCompare:
 
     def histValues(self, values):
 
+        muX = np.average(values)
         sigX = np.std(values)
-        #muX = np.average(values)
-        textStr = 'σx={:1.2f}'.format(sigX)
+        textStr = 'µx={:1.2f}, σx={:1.2f}'.format(muX, sigX)
 
         # plot differnce hit array
         fig = plt.figure(figsize=(6, 4))
@@ -62,6 +62,7 @@ class idealCompare:
         mis1 = np.array(self.designMatrices[path1]).reshape(4, 4)                                                       # misalignment to sensor1
         mis2 = np.array(self.designMatrices[path2]).reshape(4, 4)                                                       # misalignment to sensor2
 
+        # TODO: will soon not longer be here but instead in detectorMatricesIdea.json!
         toSen1 = np.array(self.overlaps[overlapID]['matrix1']).reshape(4, 4)                                            # total matrix PANDA -> sensor1
         toSen2 = np.array(self.overlaps[overlapID]['matrix2']).reshape(4, 4)                                            # total matrix PANDA -> sensor2
 
