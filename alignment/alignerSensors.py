@@ -48,6 +48,7 @@ class alignerSensors:
         return temp
 
     # TODO: get these somewhere else, maybe even just the ideal detector matrices
+    #! FIXME: this will stop working when there are only four sensors on each side!
     def createAllOverlaps(self):
         overlapIDs = []
         for half in range(2):
@@ -102,6 +103,10 @@ class alignerSensors:
 
             # wait for all threads, this might not even be needed
             executor.shutdown(wait=True)
+
+    # TODO: implement!
+    def combineAlignmentMatrices(self):
+        pass
 
 
 if __name__ == "__main__":
