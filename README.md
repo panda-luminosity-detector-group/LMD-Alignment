@@ -18,6 +18,14 @@ pip3 install -r requirements.txt
 
 The most important files are `detectorMatricesIdeal.json` and `detectorOverlapsIdeal.json`. The former contains a mapping of all geometry paths to their ideal position matrices. The latter contains a mapping of `(ID1, ID2, path1, path2, matrix1, matrix2) -> overlapID`. They can be generated with PandaROOT (TODO: include details). **Without them, this alignment framework can not work.**
 
+## Generating `detectorMatricesIdeal.json`
+
+The macro to do that is in `Pandaroot/macro/detectors/lmd/geo/saveMatricesFromGeomanager.C`. You can optionally specify the output file name and apply misalignment matrices to the working geometry before saving. This way, you can create a set of detector matrices with misalignment just like the alignment framework does, and compare them with your alignment matrices that you obtained through software alignment.
+
+## Generating `detectorOverlapsIdeal.json`
+
+TODO
+
 # RunConfigs
 
 These are the main configuration files for a run. You can create a default run config with no misalignment using `./runSimulations.py -d`. You can create multiple default run configs (multiple momenta, misalignment factors, types) with the `-D` flag:
