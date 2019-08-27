@@ -30,7 +30,7 @@ This aligner needs a LMDRunConfig object. It will then:
 Info: all positional vectors are row-major! This aligner also need info about the geometry
 to transform sensor-local matrices to PANDA global:
 
-- detectorMatricesIdeal.json | containing all design matrices of the Luminosity detector 
+- detectorOverlapsIdeal.json | containing all design matrices of the Luminosity detector 
 
 TODO: save overlap matrices to json file!
 TODO: save log, how many pairs were available for each overlap?
@@ -62,6 +62,8 @@ class alignerSensors:
                         overlapIDs.append(str(half*1000 + plane*100 + module*10 + overlap))
         return overlapIDs
 
+    def createAllModule
+
     def sortPairs(self):
         pairSourcePath = Path(self.config.pathTrksQA())
         numpyPairPath = pairSourcePath / Path('npPairs')
@@ -88,7 +90,7 @@ class alignerSensors:
 
     def findMatrices(self):
         # setup paths
-        idealMatricesPath = Path('input') / Path('detectorMatricesIdeal.json')
+        idealMatricesPath = Path('input') / Path('detectorOverlapsIdeal.json')
         numpyPath = self.config.pathTrksQA() / Path('npPairs')
 
         if self.config.useDebug:
@@ -109,7 +111,7 @@ class alignerSensors:
             executor.shutdown(wait=True)
 
     def histCompareResults(self):
-        idealMatricesPath = Path('input') / Path('detectorMatricesIdeal.json')
+        idealMatricesPath = Path('input') / Path('detectorOverlapsIdeal.json')
         
         comparer = idealCompare(self.overlapMatrices)
         comparer.loadPerfectDetectorOverlaps(idealMatricesPath)

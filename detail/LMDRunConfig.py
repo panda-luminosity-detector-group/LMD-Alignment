@@ -55,6 +55,7 @@ class LMDRunConfig:
         self.__useDevQueue = False
 
     #! --------------------- for sortability
+    # TODO: something is still off here, sorting was introduced for the LaTeX table generation, but it didn't quite work
     def __lt__(self, other):
         # result = (
         #     (float(self.momentum) < float(other.momentum)) or

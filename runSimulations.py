@@ -403,7 +403,7 @@ if __name__ == "__main__":
 
     if args.test:
         print(f'Testing...')
-        sensorAligner = alignerSensors.fromRunConfig(LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json'))
+        sensorAligner = alignerSensors.fromRunConfig(LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-0.50.json'))
         sensorAligner.sortPairs()
         sensorAligner.findMatrices()
         # TODO: save matrices to disk

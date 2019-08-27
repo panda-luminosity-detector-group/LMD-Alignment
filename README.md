@@ -16,7 +16,7 @@ pip3 install -r requirements.txt
 
 # Files in `input/`
 
-The most important file is `detectorMatricesIdeal.json`. It contains a mapping of `(ID1, ID2, path1, path2, matrix1, matrix2) -> overlapID`. It can be generated with PandaROOT (TODO: include details).
+The most important files are `detectorMatricesIdeal.json` and `detectorOverlapsIdeal.json`. The former contains a mapping of all geometry paths to their ideal position matrices. The latter contains a mapping of `(ID1, ID2, path1, path2, matrix1, matrix2) -> overlapID`. They can be generated with PandaROOT (TODO: include details). **Without them, this alignment framework can not work.**
 
 # RunConfigs
 
