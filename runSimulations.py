@@ -311,6 +311,10 @@ def createMultipleDefaultConfigs():
                 config.misalignType = misType
                 config.momentum = mom
 
+                if Path(dest).exists():
+                    print(f'ERROR! Config {dest} already exists, skipping!')
+                    continue
+                    
                 config.toJSON(dest)
 
     # regenerate missing fields
