@@ -13,7 +13,7 @@ Finds the overlap matrix for two sensors. Requires an overlapID and the set of i
 """
 
 
-class sesorMatrixFinder:
+class sensorMatrixFinder:
 
     def __init__(self, overlapID):
         self.overlap = overlapID

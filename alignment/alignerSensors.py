@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from alignment.sensors.hitPairSorter import hitPairSorter
-from alignment.sensors.sensorMatrixFinder import sesorMatrixFinder
+from alignment.sensors.sensorMatrixFinder import sensorMatrixFinder
 
 from detail.LMDRunConfig import LMDRunConfig
 
@@ -66,7 +66,7 @@ class alignerSensors:
 
     def findSingleMatrix(self, overlapID, numpyPath, idealMatricesPath):
 
-        matrixFinder = sesorMatrixFinder(overlapID)
+        matrixFinder = sensorMatrixFinder(overlapID)
 
         with open(idealMatricesPath, 'r') as f:
             idealMatrices = json.load(f)
@@ -75,6 +75,8 @@ class alignerSensors:
 
         matrixFinder.readNumpyFiles(numpyPath)
         matrixFinder.findMatrix()
+
+        #TODO: implement this correctly
         matrix = matrixFinder.makeOverlapMatrixToMisalignmentMatrix()
 
         # python ditionaries might be thread safe, but just in case

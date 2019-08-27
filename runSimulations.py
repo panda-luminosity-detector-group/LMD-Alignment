@@ -292,11 +292,11 @@ def createMultipleDefaultConfigs():
 
     if smallBatch:
         momenta = ['1.5', '15.0']
-        misFactors = ['0.5', '1.00', '2.00']
+        misFactors = ['0.50', '1.00', '2.00']
         misTypes = ['sensors', 'box', 'identity']
     else:
         momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
-        misFactors = ['0.01', '0.05', '0.10', '0.15', '0.2', '0.25', '0.5', '1.00', '2.00', '3.00', '5.00', '10.00']
+        misFactors = ['0.01', '0.05', '0.10', '0.15', '0.20', '0.25', '0.50', '1.00', '2.00', '3.00', '5.00', '10.00']
         misTypes = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
 
     for misType in misTypes:
@@ -392,6 +392,7 @@ if __name__ == "__main__":
 
         for fileName in configs:
             conf = LMDRunConfig.fromJSON(fileName)
+            conf.updateEnvPaths()
             conf.generateMatrixNames()
             conf.toJSON(fileName)
         done()

@@ -37,17 +37,7 @@ class LMDRunConfig:
     def __init__(self):
         # find env variabled
         # paths must be stored as strings internally so they can be serialized to JSON!
-        simDirEnv = 'LMDFIT_DATA_DIR'
-        pndRootDir = 'VMCWORKDIR'
-        self.__cwd = str(Path.cwd())
-        try:
-            self.__simDataPath = os.environ[simDirEnv]
-            self.__pandaRootDir = os.environ[pndRootDir]
-        except:
-            print("can't find LuminosityFit installation, PandaRoot installation or Data_Dir!")
-            print(f"please set {pndRootDir} and {simDirEnv}!")
-            sys.exit(1)
-
+        self.updateEnvPaths()
         self.__tracksNum = '100000'
         self.__jobsNum = '100'
         self.__JobBaseDir = None
@@ -258,6 +248,20 @@ class LMDRunConfig:
                     print(f'DEBUG: Align factor is not the same as misalign type. Is this correct?')
 
                 self.__alignMatFile = str(self.pathAlMatrix())
+
+    #! --------------------- upadte env paths, for example when migrating to a different system
+    def updateEnvPaths(self):
+        simDirEnv = 'LMDFIT_DATA_DIR'
+        pndRootDir = 'VMCWORKDIR'
+        self.__cwd = str(Path.cwd())
+        try:
+            self.__simDataPath = os.environ[simDirEnv]
+            self.__pandaRootDir = os.environ[pndRootDir]
+        except:
+            print("can't find LuminosityFit installation, PandaRoot installation or Data_Dir!")
+            print(f"please set {pndRootDir} and {simDirEnv}!")
+            sys.exit(1)
+
 
     #! --------------------- generate matrix name after minimal initialization
     def generateMatrixNames(self):
