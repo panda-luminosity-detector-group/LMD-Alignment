@@ -114,7 +114,9 @@ class alignerSensors:
         comparer.loadPerfectDetectorOverlaps(idealMatricesPath)
         comparer.loadDesignMisalignmentMatrices(self.config.pathMisMatrix())
         
-        comparer.hist()
+        # TODO: better filename
+        histogramFileName = Path('output') / Path(self.config.misalignType)
+        comparer.saveHistogram(histogramFileName)
         pass
 
 

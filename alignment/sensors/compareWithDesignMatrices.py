@@ -18,31 +18,17 @@ class idealCompare:
     def __init__(self, overlapMatrices):
         self.overlapMatrices = overlapMatrices
 
-    def histogramICP(self):
+    def loadDesignMisalignmentMatrices(self, fileName):
+        print(f'Will load design misalignment matrices from {fileName}.')
+        with open(fileName) as designFile:
+            self.designMatrices = json.load(designFile)
 
-        misaligns = ['0', '100', '200']
-        cuts = [0, 2]
-        twoD = [False, True]
+    def loadPerfectDetectorOverlaps(self, fileName):
+        print(f'Will load perfect detector overlaps from {fileName}.')
+        with open(fileName) as designFile:
+            self.overlaps = json.load(designFile)
 
-        pdfOutPath = './output/forDPG/'
-
-        if not os.path.exists(pdfOutPath):
-            os.makedirs(pdfOutPath)
-
-        for misalign in misaligns:
-            for cut in cuts:
-                for use2D in twoD:
-                    print('generating for misalign {}, cut {}'.format(misalign, cut))
-                    values = self.computeAllMatrices(cut, misalign, use2D)
-                    self.histBinaryPairDistancesForDPG(misalign, values, use2D, cut)
-                    print('saving image...')
-                    if use2D:
-                        d = '2D'
-                    else:
-                        d = '1D'
-                    plt.savefig(pdfOutPath + 'dx-mis{}-cut{}-{}.png'.format(misalign, cut, d), dpi=150)
-
-    def histBinaryPairDistancesForDPG(self, misalign, values, use2Dcut=True, cutPercent=0):
+    def histValues(self, values):
 
         sigX = np.std(values)
         #muX = np.average(values)
@@ -51,23 +37,20 @@ class idealCompare:
         # plot differnce hit array
         fig = plt.figure(figsize=(6, 4))
 
-        if cutPercent == 0:
-            fig.suptitle('{}u, no cut'.format(misalign), fontsize=16)
-        elif use2Dcut:
-            fig.suptitle('{}u, {}% 2D cut'.format(misalign, cutPercent), fontsize=16)
-        elif not use2Dcut:
-            fig.suptitle('{}u, {}% 1D cut'.format(misalign, cutPercent), fontsize=16)
+        # TODO: better title
+        fig.suptitle('diff ICP/actual, 2% 2D cut', fontsize=16)
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
-        histA.hist(values, bins=20, range=[-6.0, 6.0])  # this is only the z distance
+        histA.hist(values, bins=20)  # this is only the z distance
         histA.set_title('distance ICP matrix - generated')   # change to mm!
-        histA.set_xlabel('d [µm]')
+        histA.set_xlabel('dx [µm]')
         histA.set_ylabel('count')
         histA.text(0.05, 0.95, textStr, transform=histA.transAxes, fontsize=12, verticalalignment='top')
         return fig
 
+    # compute differnce ICPmatrix - design overlap misalignment
     def computeOneICP(self, overlapID):
 
         ICPmatrix = self.overlapMatrices[overlapID]
@@ -89,50 +72,15 @@ class idealCompare:
         # return values in µm
         return ((mis1to2 - ICPmatrix)[0][3]*1e4), ((mis1to2 - ICPmatrix)[1][3]*1e4)
 
-    def loadDesignMisalignmentMatrices(self, fileName):
-        print(f'Will load design misalignment matrices from {fileName}.')
-        with open(fileName) as designFile:
-            self.designMatrices = json.load(designFile)
+    def saveHistogram(self, outputFileName):
 
-    def loadPerfectDetectorOverlaps(self, fileName):
-        print(f'Will load perfect detector overlaps from {fileName}.')
-        with open(fileName) as designFile:
-            self.overlaps = json.load(designFile)
+        differences = []
 
-    def hist(self):
-
-        # get all ideal matrices from json, already done
-        # get all overlaps from json (id1, id2, path1, path2 compose an "overlap")
-
+        # TODO: also include dy, use same output file
         for o in self.overlaps:
-            # path1 = self.overlaps[o]["path1"]
-            # path2 = self.overlaps[o]["path2"]
-            # print(f'Overlap: {o}')
-            # print(f'id 1: {self.overlaps[o]["id1"]}')
-            # print(f'id 2: {self.overlaps[o]["id2"]}')
-            # print(f'path 1: {path1}')
-            # print(f'path 2: {path2}')
+            differences.append(self.computeOneICP(o)[0])
 
-            # # these are the design matrices without misalignment
-            # print(f'ideal matrix 1: {self.overlaps[o]["matrix1"]}')
-            # print(f'ideal matrix 2: {self.overlaps[o]["matrix2"]}')
-
-            # # these are the design misalignment matrices
-            # print(f'mis matrix 1: {self.designMatrices[path1]}')
-            # print(f'mis matrix 2: {self.designMatrices[path2]}')
-
-            # print(f'ICP matrix: {self.overlapMatrices[o]}')
-
-            print(f'dx, dy:{self.computeOneICP(o)}')
-
-            # break
-
-        # get all ICP matrices from constructor
-
-        # get all overlapIDs from constructor
-
-        # compute dx and dy from ideal - ICP
-
-        # histogram that shit
+        self.histValues(differences)
+        plt.savefig(outputFileName, dpi=150)
 
         return
