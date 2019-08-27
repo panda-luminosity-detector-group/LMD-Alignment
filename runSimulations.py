@@ -406,7 +406,8 @@ if __name__ == "__main__":
         sensorAligner = alignerSensors.fromRunConfig(LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json'))
         sensorAligner.sortPairs()
         sensorAligner.findMatrices()
-        sensorAligner.testAndHistResults()
+        # TODO: save matrices to disk
+        sensorAligner.histCompareResults()
         done()
 
     if args.debug:

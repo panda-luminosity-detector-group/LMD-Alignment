@@ -36,7 +36,7 @@ class hitPairSorter:
         # sorting and saving
         for ID in self.availableOverlapIDs:
             # create mask by ID
-            IDmask = (flatOverlaps == ID)
+            IDmask = (flatOverlaps == float(ID))
             thisContent = np.array([flathit1[IDmask].x, flathit1[IDmask].y, flathit1[IDmask].z, flathit2[IDmask].x, flathit2[IDmask].y, flathit2[IDmask].z, flatDistance[IDmask]])
 
             # skip if we have just about enough pairs
@@ -66,6 +66,10 @@ class hitPairSorter:
         fileContents = {}
         executor = concurrent.futures.ThreadPoolExecutor(8)   # 8 threads
         
+        if len(self.availableOverlapIDs) < 1:
+            print(f'ERROR! No available overlap IDs. Did you set them?')
+            return
+
         for ID in self.availableOverlapIDs:
             fileContents[ID] = np.empty((7, 0))
 
@@ -75,6 +79,7 @@ class hitPairSorter:
             fileName = self.npyOutputDir / Path(f'pairs-{ID}.npy')
             if not Path(fileName).exists():
                 allThere = False
+                break
 
         if allThere:
             print(f'All npy files already present, skipping sorter!')
@@ -91,7 +96,7 @@ class hitPairSorter:
                 self.sortPairs(arrays, fileContents)
 
         # Keyboard interrupt
-        except (KeyboardInterrupt, Exception) as e:
+        except (KeyboardInterrupt) as e:
             print('caught exception:\n{}\nsaving files...'.format(e))
 
         print(f'. done!')

@@ -33,6 +33,7 @@ to transform sensor-local matrices to PANDA global:
 - detectorMatricesIdeal.json | containing all design matrices of the Luminosity detector 
 
 TODO: save overlap matrices to json file!
+TODO: save log, how many pairs were available for each overlap?
 """
 
 
@@ -107,7 +108,7 @@ class alignerSensors:
             # wait for all threads, this might not even be needed
             executor.shutdown(wait=True)
 
-    def testAndHistResults(self):
+    def histCompareResults(self):
         idealMatricesPath = Path('input') / Path('detectorMatricesIdeal.json')
         
         comparer = idealCompare(self.overlapMatrices)
@@ -117,8 +118,6 @@ class alignerSensors:
         # TODO: better filename
         histogramFileName = Path('output') / Path(self.config.misalignType)
         comparer.saveHistogram(histogramFileName)
-        pass
-
 
     # TODO: implement!
     def combineAlignmentMatrices(self):
