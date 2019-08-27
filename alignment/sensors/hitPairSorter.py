@@ -69,12 +69,24 @@ class hitPairSorter:
         for ID in self.availableOverlapIDs:
             fileContents[ID] = np.empty((7, 0))
 
+        allThere = True
+        # check if all files are already there
+        for ID in self.availableOverlapIDs:
+            fileName = self.npyOutputDir / Path(f'pairs-{ID}.npy')
+            if not Path(fileName).exists():
+                allThere = False
+
+        if allThere:
+            print(f'All npy files already present, skipping sorter!')
+            return
+
         print('Sorting HitPairs .', end='', flush=True)
 
         # open the root trees in a TChain-like manner
         lumiPairs = str( self.inputDir  / Path('Lumi_Pairs*.root') )
         try:
             for (_, _, arrays) in uproot.iterate(lumiPairs, 'pndsim', [b'PndLmdHitPair._overlapID', b'PndLmdHitPair._hit1', b'PndLmdHitPair._hit2'], entrysteps=1000000, executor=executor, reportentries=True):
+                # progress bar
                 print('.', end='', flush=True)
                 self.sortPairs(arrays, fileContents)
 
