@@ -2,6 +2,7 @@
 
 from alignment.sensors.hitPairSorter import hitPairSorter
 from alignment.sensors.sensorMatrixFinder import sensorMatrixFinder
+from alignment.sensors.alignmentMatrixCombiner import alignmentMatrixCombiner
 
 from detail.LMDRunConfig import LMDRunConfig
 
@@ -72,37 +73,35 @@ class alignerSensors:
             idealMatrices = json.load(f)
 
         matrixFinder.idealMatrices = idealMatrices
-
         matrixFinder.readNumpyFiles(numpyPath)
         matrixFinder.findMatrix()
-
-        #TODO: implement this correctly
-        matrix = matrixFinder.makeOverlapMatrixToMisalignmentMatrix()
+        matrix = matrixFinder.getOverlapMatrix()
 
         # python ditionaries might be thread safe, but just in case
         with self.lock:
             self.alignmentMatrices[overlapID] = matrix
 
-    def findMatricesMT(self):
-
+    def findMatrices(self):
         # setup paths
         idealMatricesPath = Path('input') / Path('detectorMatricesIdeal.json')
         numpyPath = self.config.pathTrksQA() / Path('npPairs')
 
-        # TODO: automatically set to something reasonable
-        maxThreads = 16
-
-        print('Waiting for all Sensor Aligners...')
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
-            # Start the load operations and mark each future with its URL
+        if self.config.useDebug:
+            print(f'Finding matrices single-threaded!')
             for overlapID in self.availableOverlapIDs:
-                executor.submit(self.findSingleMatrix, overlapID, numpyPath, idealMatricesPath)
+                self.findSingleMatrix(overlapID, numpyPath, idealMatricesPath)
 
-        executor.shutdown(wait=True)
+        else:
+            # TODO: automatically set to something reasonable
+            maxThreads = 16
+            print('Waiting for all Sensor Aligners...')
 
-        for i in self.alignmentMatrices:
-            print(f'matrix {i}:\n{self.alignmentMatrices[i]}\n')
+            with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
+                for overlapID in self.availableOverlapIDs:
+                    executor.submit(self.findSingleMatrix, overlapID, numpyPath, idealMatricesPath)
+
+            # wait for all threads, this might not even be needed
+            executor.shutdown(wait=True)
 
 
 if __name__ == "__main__":

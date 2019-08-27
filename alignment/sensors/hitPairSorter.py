@@ -16,7 +16,7 @@ class hitPairSorter:
         self.inputDir = PairDir
         self.npyOutputDir = numpyDir
         self.npyOutputDir.mkdir(parents=True, exist_ok=True)
-        self.availableOverlapIDs = None
+        self.availableOverlapIDs = {}
 
     def sortPairs(self, arrays, fileContents):
         # use just the overlaps for indexes, this tells us how many pairs there are in a given event
@@ -69,8 +69,8 @@ class hitPairSorter:
         for ID in self.availableOverlapIDs:
             fileContents[ID] = np.empty((7, 0))
 
-        allThere = True
         # check if all files are already there
+        allThere = True
         for ID in self.availableOverlapIDs:
             fileName = self.npyOutputDir / Path(f'pairs-{ID}.npy')
             if not Path(fileName).exists():

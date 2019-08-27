@@ -7,9 +7,7 @@ import json
 import numpy as np
 
 """
-
 Finds the overlap matrix for two sensors. Requires an overlapID and the set of ideal detector matrices.
-
 """
 
 
@@ -21,10 +19,6 @@ class sensorMatrixFinder:
         self.PairData = None
         self.idealMatrices = None
         self.overlapMatrix = None
-
-    # def readIdealMatrices(self, fileName):
-    #     with open(fileName, 'r') as f:
-    #         self.idealMatrices = json.load(f)
 
     def readNumpyFiles(self, path):
 
@@ -114,10 +108,7 @@ class sensorMatrixFinder:
         elif icpDimension == 3:
             self.overlapMatrix = T
 
-    def makeOverlapMatrixToMisalignmentMatrix(self):
+    def getOverlapMatrix(self):
         if self.overlapMatrix is None:
             print(f'Error! Please compute matrix first!')
         return self.overlapMatrix
-
-        # FIXME: the misalignment matrices are offset matrices that are applied to a sensor position
-        # but we only have overlap matrices here, so we need to compute them first!
