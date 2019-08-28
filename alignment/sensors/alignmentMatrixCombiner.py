@@ -43,7 +43,9 @@ class alignmentMatrixCombiner:
             return
 
         # computations here
-        print(f'\n\nCombiner for {self.modulePath}:\n{self.overlapMatrices}\n')
+        for sensorID in self.overlapMatrices:
+            smallOverlap = self.getSmallOverlap(sensorID)
+            print(f'ID {sensorID} (s.o. {smallOverlap}): {self.overlapMatrices[sensorID]}')
 
         # create all intermediate matrices here
 

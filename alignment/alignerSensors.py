@@ -71,7 +71,7 @@ class alignerSensors:
 
         sorter = hitPairSorter(pairSourcePath, numpyPairPath)
         sorter.availableOverlapIDs = self.availableOverlapIDs
-        
+
         sorter.sortAll()
 
     def findSingleMatrix(self, overlapID, numpyPath, idealOverlapsPath):
@@ -83,9 +83,9 @@ class alignerSensors:
 
         matrixFinder.idealMatrices = idealMatrices
         matrixFinder.readNumpyFiles(numpyPath)
-        
+
         matrixFinder.findMatrix()
-        
+
         matrix = matrixFinder.getOverlapMatrix()
 
         # python ditionaries might be thread safe, but just in case
@@ -112,9 +112,7 @@ class alignerSensors:
 
             # wait for all threads, this might not even be needed
             executor.shutdown(wait=True)
-    """
-    This function histograms the found ICP matrices vs actual simulation matrices
-    """
+
     def histCompareResults(self):
 
         comparer = idealCompare(self.overlapMatrices)
@@ -144,12 +142,11 @@ class alignerSensors:
 
         for modulePath in sortedMatrices:
             combiner = alignmentMatrixCombiner(modulePath)
-            
+
             combiner.setOverlapMatrices(sortedMatrices[modulePath])
             combiner.setIdealDetectorMatrices(idealMatrices)
 
             combiner.combineMatrices()
-            break
 
 
 if __name__ == "__main__":
