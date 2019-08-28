@@ -12,7 +12,7 @@ Steps:
 - combine overlap matrices to form 0->x matrices
 - gather perfect 0->x matrices (base transformed to module system)
 - substract (inverse multiply actually) perfect matrices to combined 0->x matrices
-- remainer is misalignment AS GIVEN IN MODULE SYSTEM
+- remainder is misalignment AS GIVEN IN MODULE SYSTEM
 - base transform each misalignment matrix to system of respective sensor
 - save to dict, return to master
 """

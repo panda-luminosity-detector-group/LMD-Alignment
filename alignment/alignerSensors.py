@@ -54,17 +54,6 @@ class alignerSensors:
         temp.config = runConfig
         return temp
 
-    # # TODO: get these somewhere else, maybe even just the ideal detector matrices
-    # #! FIXME: this will stop working when there are only four sensors on each side!
-    # def createAllOverlaps(self):
-    #     overlapIDs = []
-    #     for half in range(2):
-    #         for plane in range(4):
-    #             for module in range(5):
-    #                 for overlap in range(9):
-    #                     overlapIDs.append(str(half*1000 + plane*100 + module*10 + overlap))
-    #     return overlapIDs
-
     # this retrieves overlapIDs from the json file
     def getOverlapsFromJSON(self):
         overlapIDs = []
