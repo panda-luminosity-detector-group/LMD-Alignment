@@ -71,6 +71,7 @@ class alignerSensors:
 
         sorter = hitPairSorter(pairSourcePath, numpyPairPath)
         sorter.availableOverlapIDs = self.availableOverlapIDs
+        
         sorter.sortAll()
 
     def findSingleMatrix(self, overlapID, numpyPath, idealOverlapsPath):
@@ -82,7 +83,9 @@ class alignerSensors:
 
         matrixFinder.idealMatrices = idealMatrices
         matrixFinder.readNumpyFiles(numpyPath)
+        
         matrixFinder.findMatrix()
+        
         matrix = matrixFinder.getOverlapMatrix()
 
         # python ditionaries might be thread safe, but just in case
@@ -139,6 +142,7 @@ class alignerSensors:
 
         for modulePath in sortedMatrices:
             combiner = alignmentMatrixCombiner(modulePath)
+            
             combiner.setOverlapMatrices(sortedMatrices[modulePath])
             combiner.setIdealDetectorMatrices(idealMatrices)
 

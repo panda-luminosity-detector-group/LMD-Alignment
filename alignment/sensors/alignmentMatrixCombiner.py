@@ -4,8 +4,7 @@
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
 Uses multiple overlap matrices and the ideal detector matrices to compute alignment matrices for each sensor.
-
-Every combiner is responsible for a single module.
+Each combiner is responsible for a single module.
 
 Steps:
 
@@ -31,6 +30,12 @@ class alignmentMatrixCombiner:
     def setIdealDetectorMatrices(self, matrices):
         self.idealDetectorMatrices = matrices
 
+    def getDigit(self, number, n):
+        return int(number) // 10**n % 10
+
+    def getSmallOverlap(self, overlap):
+        return self.getDigit(overlap, 0)
+
     def combineMatrices(self):
         # checks here
         if self.overlapMatrices is None or self.idealDetectorMatrices is None:
@@ -40,7 +45,17 @@ class alignmentMatrixCombiner:
         # computations here
         print(f'\n\nCombiner for {self.modulePath}:\n{self.overlapMatrices}\n')
 
-        # save to internal state here
+        # create all intermediate matrices here
+
+        # compute here
+
+        # remove ideal here
+
+        # remainder is here
+
+        # transform here
+
+        # save to dict sensorID : alignment matrix here
 
 
     def getAlignmentMatrices(self):
