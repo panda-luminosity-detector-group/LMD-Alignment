@@ -9,6 +9,8 @@ import os
 import json
 
 """
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+
 pathlib wrapper specifically for our LMD case. a config object only hold the parameters for a single simulation run!
 
 uses pathlib internally and stores some additional values as well:

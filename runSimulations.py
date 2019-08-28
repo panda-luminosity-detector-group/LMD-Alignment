@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 """
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+
 This script handles all simulation related abstractions.
 
 it:

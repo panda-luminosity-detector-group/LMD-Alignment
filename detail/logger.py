@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 """
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+
 Minimum Logger object that can be passed to other objects
 """
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 """
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+
 Note: of course this will somehow be line based since every line corresponds to a runConfig.
 
 But later I want it column based, so that I can just add or remove a column to a Table, 

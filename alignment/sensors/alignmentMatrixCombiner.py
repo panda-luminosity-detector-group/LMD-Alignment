@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 """
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+
 Uses multiple overlap matrices and the ideal detector matrices to compute alignment matrices for each sensor.
 
 Every combiner is responsible for a single module.

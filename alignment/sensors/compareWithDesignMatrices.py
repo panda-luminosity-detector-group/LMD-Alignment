@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 matplotlib.use('Agg')   # so matplotlib works over ssh/with no DISPLAY
 
 """
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+
 Comapre ICP matrices from sensor overlap with actual misalignment matrices from PandaROOT.
 """
 

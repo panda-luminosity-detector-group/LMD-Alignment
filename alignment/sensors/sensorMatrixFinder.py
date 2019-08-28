@@ -7,6 +7,8 @@ import json
 import numpy as np
 
 """
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+
 Finds the overlap matrix for two sensors. Requires an overlapID and the set of ideal detector matrices.
 """
 

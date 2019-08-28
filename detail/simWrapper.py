@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 """
-LMD Simulation Wrapper
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+
+LMD Simulation Wrapper, uses Stefan Plügers Luminosity Fit Framework: https://github.com/panda-luminosity-detector-group/LuminosityFit
 
 Depends on:
 - FairRoot
