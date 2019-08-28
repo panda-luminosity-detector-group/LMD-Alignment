@@ -112,7 +112,9 @@ class alignerSensors:
 
             # wait for all threads, this might not even be needed
             executor.shutdown(wait=True)
-
+    """
+    This function histograms the found ICP matrices vs actual simulation matrices
+    """
     def histCompareResults(self):
 
         comparer = idealCompare(self.overlapMatrices)

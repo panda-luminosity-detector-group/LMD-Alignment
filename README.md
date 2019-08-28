@@ -1,11 +1,13 @@
 # LMD-python-scripts
 
-This is my collection of useful python scripts I wrote for the development of the LMD alignment. More info will come.
+This is my collection of useful python scripts I wrote for the development of the LMD alignment. Their main purpose is a quick and easy way to run lots of simualtion on the Himster II, but it also contains all the alignment stuff.
 
 # Usage
 
-The align scripts are in `align`. They can be called with command line arguments in interactive fashion, or can be called object-oriented from the `simWrapper` python script.
+The align scripts are in `align`. They can be called with command line arguments in interactive fashion, or can be called object-oriented from the `simWrapper` python script. Actually, for now they can *only* be called from the simWrapper, but I will add some basic wrapping scripts.
 
+The main idea is that every set of run parameters (beam momentum, misalingnment of geometry etc) is stored in a `LMDrunConfig` object, and the simWrapper can read these objects (for example from a json file, see the folder `runConfigs`) and execute every needed step to create monte carlo data, find pairs for sensor alignment, determine box rotation, cumpute alignment matrices, apply them to a new simulation and determine the luminosity.
+ 
 # Requirements
 
 These scripts work only with python3. The requirements can be installed with:
