@@ -408,6 +408,7 @@ if __name__ == "__main__":
         sensorAligner.findMatrices()
         # TODO: save matrices to disk
         sensorAligner.histCompareResults()
+        sensorAligner.combineAlignmentMatrices()
         done()
 
     if args.debug:

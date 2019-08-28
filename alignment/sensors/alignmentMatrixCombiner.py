@@ -7,7 +7,7 @@ Every combiner is responsible for a single module.
 
 Steps:
 
-- gather all overlap matrices for module
+- gather all overlap matrices for module in a dict 
 - base transform to module system
 - combine overlap matrices to form 0->x matrices
 - gather perfect 0->x matrices (base transformed to module system)
@@ -19,8 +19,8 @@ Steps:
 
 class alignmentMatrixCombiner:
 
-    def __init__(self, module):
-        self.module = module
+    def __init__(self, modulePath):
+        self.modulePath = modulePath
         self.alignmentMatrices = {}
 
     def setOverlapMatrices(self, matrices):
@@ -31,12 +31,15 @@ class alignmentMatrixCombiner:
 
     def combineMatrices(self):
         # checks here
+        if self.overlapMatrices is None or self.idealDetectorMatrices is None:
+            print(f'ERROR! Please set overlaps and ideal detector matrices first!')
+            return
 
         # computations here
+        print(f'\n\nCombiner for {self.modulePath}:\n{self.overlapMatrices}\n')
 
         # save to internal state here
 
-        pass
 
     def getAlignmentMatrices(self):
         return self.alignmentMatrices
