@@ -62,8 +62,6 @@ class alignerSensors:
                         overlapIDs.append(str(half*1000 + plane*100 + module*10 + overlap))
         return overlapIDs
 
-    def createAllModule
-
     def sortPairs(self):
         pairSourcePath = Path(self.config.pathTrksQA())
         numpyPairPath = pairSourcePath / Path('npPairs')
