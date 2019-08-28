@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from threading import Lock
 
+import collections
 import concurrent
 import json
 import numpy as np
@@ -40,8 +41,10 @@ TODO: save log, how many pairs were available for each overlap?
 class alignerSensors:
 
     def __init__(self):
-        self.availableOverlapIDs = self.createAllOverlaps()
-        self.overlapMatrices = {}
+        self.idealOverlapsPath = Path('input') / Path('detectorOverlapsIdeal.json')
+        self.idealDetectorMatrixPath = Path('input') / Path('detectorMatricesIdeal.json')
+        self.availableOverlapIDs = self.getOverlapsFromJSON()
+        self.overlapMatrices = {}                                                           # dictionary overlapID: matrix
         self.lock = Lock()
         pass
 
@@ -51,15 +54,26 @@ class alignerSensors:
         temp.config = runConfig
         return temp
 
-    # TODO: get these somewhere else, maybe even just the ideal detector matrices
-    #! FIXME: this will stop working when there are only four sensors on each side!
-    def createAllOverlaps(self):
+    # # TODO: get these somewhere else, maybe even just the ideal detector matrices
+    # #! FIXME: this will stop working when there are only four sensors on each side!
+    # def createAllOverlaps(self):
+    #     overlapIDs = []
+    #     for half in range(2):
+    #         for plane in range(4):
+    #             for module in range(5):
+    #                 for overlap in range(9):
+    #                     overlapIDs.append(str(half*1000 + plane*100 + module*10 + overlap))
+    #     return overlapIDs
+
+    # this retrieves overlapIDs from the json file
+    def getOverlapsFromJSON(self):
         overlapIDs = []
-        for half in range(2):
-            for plane in range(4):
-                for module in range(5):
-                    for overlap in range(9):
-                        overlapIDs.append(str(half*1000 + plane*100 + module*10 + overlap))
+        with open(self.idealOverlapsPath) as overlapsFile:
+            idealOverlaps = json.load(overlapsFile)
+
+        for overlapID in idealOverlaps:
+            overlapIDs.append(overlapID)
+
         return overlapIDs
 
     def sortPairs(self):
@@ -70,11 +84,11 @@ class alignerSensors:
         sorter.availableOverlapIDs = self.availableOverlapIDs
         sorter.sortAll()
 
-    def findSingleMatrix(self, overlapID, numpyPath, idealMatricesPath):
+    def findSingleMatrix(self, overlapID, numpyPath, idealOverlapsPath):
 
         matrixFinder = sensorMatrixFinder(overlapID)
 
-        with open(idealMatricesPath, 'r') as f:
+        with open(idealOverlapsPath, 'r') as f:
             idealMatrices = json.load(f)
 
         matrixFinder.idealMatrices = idealMatrices
@@ -88,13 +102,12 @@ class alignerSensors:
 
     def findMatrices(self):
         # setup paths
-        idealMatricesPath = Path('input') / Path('detectorOverlapsIdeal.json')
         numpyPath = self.config.pathTrksQA() / Path('npPairs')
 
         if self.config.useDebug:
             print(f'Finding matrices single-threaded!')
             for overlapID in self.availableOverlapIDs:
-                self.findSingleMatrix(overlapID, numpyPath, idealMatricesPath)
+                self.findSingleMatrix(overlapID, numpyPath, self.idealOverlapsPath)
 
         else:
             # TODO: automatically set to something reasonable
@@ -103,25 +116,45 @@ class alignerSensors:
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
                 for overlapID in self.availableOverlapIDs:
-                    executor.submit(self.findSingleMatrix, overlapID, numpyPath, idealMatricesPath)
+                    executor.submit(self.findSingleMatrix, overlapID, numpyPath, self.idealOverlapsPath)
 
             # wait for all threads, this might not even be needed
             executor.shutdown(wait=True)
 
     def histCompareResults(self):
-        idealMatricesPath = Path('input') / Path('detectorOverlapsIdeal.json')
-        
+
         comparer = idealCompare(self.overlapMatrices)
-        comparer.loadPerfectDetectorOverlaps(idealMatricesPath)
+        comparer.loadPerfectDetectorOverlaps(self.idealOverlapsPath)
         comparer.loadDesignMisalignmentMatrices(self.config.pathMisMatrix())
-        
+
         # TODO: better filename
         histogramFileName = Path('output') / Path(self.config.misalignType)
         comparer.saveHistogram(histogramFileName)
 
-    # TODO: implement!
     def combineAlignmentMatrices(self):
-        pass
+
+        sortedMatrices = collections.defaultdict(dict)
+
+        with open(self.idealOverlapsPath) as overlapsFile:
+            idealOverlaps = json.load(overlapsFile)
+
+        # sort overlap matrices by module they are on
+        for overlapID in self.availableOverlapIDs:
+            modulePath = idealOverlaps[overlapID]['pathModule']
+            sortedMatrices[modulePath].update({overlapID: self.overlapMatrices[overlapID]})
+
+        print(f'found {len(sortedMatrices)}, modules, should be 40.')
+
+        with open(self.idealDetectorMatrixPath) as idealMatricesFile:
+            idealMatrices = json.load(idealMatricesFile)
+
+        for modulePath in sortedMatrices:
+            combiner = alignmentMatrixCombiner(modulePath)
+            combiner.setOverlapMatrices(sortedMatrices[modulePath])
+            combiner.setIdealDetectorMatrices(idealMatrices)
+
+            combiner.combineMatrices()
+            break
 
 
 if __name__ == "__main__":
