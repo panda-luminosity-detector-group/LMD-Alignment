@@ -16,15 +16,25 @@ pip3 install -r requirements.txt
 
 # Files in `input/`
 
-The most important files are `detectorMatricesIdeal.json` and `detectorOverlapsIdeal.json`. The former contains a mapping of all geometry paths to their ideal position matrices. The latter contains a mapping of `(ID1, ID2, path1, path2, matrix1, matrix2) -> overlapID`. They can be generated with PandaROOT (TODO: include details). **Without them, this alignment framework can not work.**
+The most important files are `detectorMatricesIdeal.json` and `detectorOverlapsIdeal.json`. The former contains a mapping of all geometry paths to their ideal position matrices. The latter contains a mapping of `(ID1, ID2, path1, path2, matrix1, matrix2, module path) -> overlapID`. They can be generated with PandaROOT (TODO: include details). **Without them, this alignment framework can not work.**
 
 ## Generating `detectorMatricesIdeal.json`
 
-The macro to do that is in `Pandaroot/macro/detectors/lmd/geo/saveMatricesFromGeomanager.C`. You can optionally specify the output file name and apply misalignment matrices to the working geometry before saving. This way, you can create a set of detector matrices with misalignment just like the alignment framework does, and compare them with your alignment matrices that you obtained through software alignment.
+The macro to do that is `Pandaroot/macro/detectors/lmd/geo/saveMatricesFromGeomanager.C`, so just run:
+
+```
+root -l -q saveMatricesFromGeomanager.C
+```
+
+You can optionally specify the output file name and apply misalignment matrices to the working geometry before saving. This way, you can create a set of detector matrices with misalignment just like the alignment framework does, and compare them with your alignment matrices that you obtained through software alignment.
 
 ## Generating `detectorOverlapsIdeal.json`
 
-TODO
+The macro to do that is `Pandaroot/macro/detectors/lmd/geo/saveOverlapsToJSON.C`, so run:
+
+```
+root -l -q saveOverlapsToJSON.C
+```
 
 # RunConfigs
 
