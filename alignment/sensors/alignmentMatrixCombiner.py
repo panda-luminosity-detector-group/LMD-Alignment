@@ -30,15 +30,6 @@ REMEMBER. The overlap matrices come from the Reco Points and are thusly already 
 - save to dict, return to master
 """
 
-class overlapInfo:
-    def __init__(self):
-        self.pathSen1 = ''
-        self.pathSen2 = ''
-        self.pathMod = ''
-        self.smalloverlap = ''
-        self.overlapID = ''
-        self.matrix1 = None
-        self.matrix2 = None
 
 class alignmentMatrixCombiner:
 
@@ -54,6 +45,15 @@ class alignmentMatrixCombiner:
 
     def setOverlapInfos(self, infos):
         self.overlapInfos = infos
+        tempDict = {}
+        # add small overlap to each overlap info, we'll need that info later
+        for info in self.overlapInfos:
+            smallOverlap = self.getSmallOverlap(info)
+            self.overlapInfos[info]['smallOverlap'] = smallOverlap
+            tempDict[smallOverlap] = self.overlapInfos[info]
+
+        # and sort by new small overlap. that's okay, the real overlapID is still a field of the dict
+        self.overlapInfos = tempDict
 
     def getDigit(self, number, n):
         return int(number) // 10**n % 10
@@ -63,17 +63,17 @@ class alignmentMatrixCombiner:
 
     def getMatrixP1ToP2(self, path1, path2):
         # matrix from pnd global to sen1
-        m1 = np.array(self.idealDetectorMatrices[path1]).reshape(4,4)
+        m1 = np.array(self.idealDetectorMatrices[path1]).reshape(4, 4)
         # matrix from pnd global to sen2
-        m2 = np.array(self.idealDetectorMatrices[path2]).reshape(4,4)
+        m2 = np.array(self.idealDetectorMatrices[path2]).reshape(4, 4)
         # matrix from sen1 to sen2
         return np.linalg.inv(m1)@m2
 
-    def getMatrixP1ToP2GeoMan(self, path1, path2, mat):
+    def getMatrixP1ToP2fromMatrixDict(self, path1, path2, mat):
         # matrix from pnd global to sen1
-        m1 = np.array(mat[path1]).reshape(4,4)
+        m1 = np.array(mat[path1]).reshape(4, 4)
         # matrix from pnd global to sen2
-        m2 = np.array(mat[path2]).reshape(4,4)
+        m2 = np.array(mat[path2]).reshape(4, 4)
         # matrix from sen1 to sen2
         return np.linalg.inv(m1)@m2
 
@@ -91,17 +91,6 @@ class alignmentMatrixCombiner:
         if self.overlapMatrices is None or self.idealDetectorMatrices is None or self.overlapInfos is None:
             print(f'ERROR! Please set overlaps, overlap matrices and ideal detector matrices first!')
             return
-
-        overlaps = {} # dict smalloverlap to overlapInfo
-
-        # sort by small overlap here
-        for sensorID in self.overlapMatrices:
-            smallOverlap = self.getSmallOverlap(sensorID)
-            thisOverlap = overlapInfo()
-            #thisOverlap.pathMod = self.overlapMatrices[sensorID].pathMod
-
-            overlaps[smallOverlap] = thisOverlap
-
 
         # create all intermediate matrices here
         """
@@ -128,12 +117,14 @@ class alignmentMatrixCombiner:
         p1 = "/cave_1/lmd_root_0/half_0/plane_0/module_0/sensor_0"
         p2 = "/cave_1/lmd_root_0/half_0/plane_0/module_0/sensor_5"
 
-        mB = self.getMatrixP1ToP2GeoMan(p1, p2, actualMatrices)
+        mB = self.getMatrixP1ToP2fromMatrixDict(p1, p2, actualMatrices)
         print(f'Overlap matrix from geo manager with misalignment:\n{mB}')
 
         print(f'The moment you\'ve been waiting for: difference!\n{(mA - mB)*1e4}')
 
-        # compute here
+        # ? compute here
+
+        # self.overlapInfos is now sorted by smallOverlap, but contains the complete overlapID as well. that should be enough!
 
         # remove ideal here
 
@@ -142,7 +133,6 @@ class alignmentMatrixCombiner:
         # transform here
 
         # save to dict sensorID : alignment matrix here
-
 
     def getAlignmentMatrices(self):
         return self.alignmentMatrices
