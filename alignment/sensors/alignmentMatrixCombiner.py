@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import json
+import numpy as np
+
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
@@ -7,6 +10,8 @@ Uses multiple overlap matrices and the ideal detector matrices to compute alignm
 Each combiner is responsible for a single module.
 
 Steps:
+
+REMEMBER. The overlap matrices come from the Reco Points and are thusly already in PANDA global!
 
 - gather all overlap matrices for module in a dict 
 - base transform to module system
@@ -17,6 +22,16 @@ Steps:
 - base transform each misalignment matrix to system of respective sensor
 - save to dict, return to master
 """
+
+class overlapInfo:
+    def __init__(self):
+        self.pathSen1 = ''
+        self.pathSen2 = ''
+        self.pathMod = ''
+        self.smalloverlap = ''
+        self.overlapID = ''
+        self.matrix1 = None
+        self.matrix2 = None
 
 class alignmentMatrixCombiner:
 
@@ -30,24 +45,82 @@ class alignmentMatrixCombiner:
     def setIdealDetectorMatrices(self, matrices):
         self.idealDetectorMatrices = matrices
 
+    def setOverlapInfos(self, infos):
+        self.overlapInfos = infos
+
     def getDigit(self, number, n):
         return int(number) // 10**n % 10
 
     def getSmallOverlap(self, overlap):
-        return self.getDigit(overlap, 0)
+        return str(self.getDigit(overlap, 0))
+
+    def getMatrixP1ToP2(self, path1, path2):
+        # matrix from pnd global to sen1
+        m1 = np.array(self.idealDetectorMatrices[path1]).reshape(4,4)
+        # matrix from pnd global to sen2
+        m2 = np.array(self.idealDetectorMatrices[path2]).reshape(4,4)
+        # matrix from sen1 to sen2
+        return np.linalg.inv(m1)@m2
+
+    def getMatrixP1ToP2GeoMan(self, path1, path2, mat):
+        # matrix from pnd global to sen1
+        m1 = np.array(mat[path1]).reshape(4,4)
+        # matrix from pnd global to sen2
+        m2 = np.array(mat[path2]).reshape(4,4)
+        # matrix from sen1 to sen2
+        return np.linalg.inv(m1)@m2
+
+    def getOverlapMatrixWithMisalignment(self, overlapID):
+
+        p1 = self.overlapInfos[overlapID]['path1']
+        p2 = self.overlapInfos[overlapID]['path2']
+        m1to2ideal = self.getMatrixP1ToP2(p1, p2)
+        m1to2corr = self.overlapMatrices[overlapID]
+
+        return m1to2corr@m1to2ideal
 
     def combineMatrices(self):
         # checks here
-        if self.overlapMatrices is None or self.idealDetectorMatrices is None:
-            print(f'ERROR! Please set overlaps and ideal detector matrices first!')
+        if self.overlapMatrices is None or self.idealDetectorMatrices is None or self.overlapInfos is None:
+            print(f'ERROR! Please set overlaps, overlap matrices and ideal detector matrices first!')
             return
 
-        # computations here
+        overlaps = {} # dict smalloverlap to overlapInfo
+
+        # sort by small overlap here
         for sensorID in self.overlapMatrices:
             smallOverlap = self.getSmallOverlap(sensorID)
-            print(f'ID {sensorID} (s.o. {smallOverlap}): {self.overlapMatrices[sensorID]}')
+            thisOverlap = overlapInfo()
+            #thisOverlap.pathMod = self.overlapMatrices[sensorID].pathMod
+
+            overlaps[smallOverlap] = thisOverlap
+
 
         # create all intermediate matrices here
+        """
+        TGeoHMatrix sen1to2 = mat4 * mat5.Inverse();
+        TGeoHMatrix sen1to3 = mat4 * mat1.Inverse();
+        TGeoHMatrix sen1to4a = mat4 * mat5.Inverse() * mat6 * mat2.Inverse();
+        TGeoHMatrix sen1to4b = mat4 * mat1.Inverse() * mat7 * mat8.Inverse();
+
+        TGeoHMatrix sen1to5 = mat0;		// well, kind of...
+        TGeoHMatrix sen1to6 = mat4 * mat1.Inverse() * mat3;
+        TGeoHMatrix sen1to7 = mat4 * mat1.Inverse() * mat7;
+        TGeoHMatrix sen1to8 = mat4;
+        TGeoHMatrix sen1to9a = mat4 * mat5.Inverse() * mat6;
+        TGeoHMatrix sen1to9b = mat4 * mat1.Inverse() * mat7 * mat8.Inverse() * mat2;
+        """
+
+        #! test here, only overlap 0, sensor 0 to 5
+        print(f'Overlap matrix from ideal and ICP:\n{self.getOverlapMatrixWithMisalignment("0")}')
+
+        with open('input/detectorMatrices-sensors-1.00.json') as nf:
+            actualMatrices = json.load(nf)
+
+        p1 = "/cave_1/lmd_root_0/half_0/plane_0/module_0/sensor_0"
+        p2 = "/cave_1/lmd_root_0/half_0/plane_0/module_0/sensor_5"
+
+        print(f'Overlap matrix from geo manager with misalignment:\n{self.getMatrixP1ToP2GeoMan(p1, p2, actualMatrices)}')
 
         # compute here
 

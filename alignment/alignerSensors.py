@@ -145,8 +145,12 @@ class alignerSensors:
 
             combiner.setOverlapMatrices(sortedMatrices[modulePath])
             combiner.setIdealDetectorMatrices(idealMatrices)
+            combiner.setOverlapInfos(idealOverlaps)
 
             combiner.combineMatrices()
+            
+            # TODO: delete
+            break
 
 
 if __name__ == "__main__":
