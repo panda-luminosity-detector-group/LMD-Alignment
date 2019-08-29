@@ -79,9 +79,11 @@ class alignmentMatrixCombiner:
 
     def getOverlapMatrixWithMisalignment(self, overlapID):
 
+        # this is atm the smallOverlap, which is wrong
         p1 = self.overlapInfos[overlapID]['path1']
         p2 = self.overlapInfos[overlapID]['path2']
         m1to2ideal = self.getMatrixP1ToP2(p1, p2)
+        # this needs the complete overlapID
         m1to2corr = self.overlapMatrices[overlapID]
 
         return m1to2corr@m1to2ideal
@@ -108,6 +110,7 @@ class alignmentMatrixCombiner:
         """
 
         #! test here, only overlap 0, sensor 0 to 5
+        print(self.overlapInfos)
         mA = self.getOverlapMatrixWithMisalignment("0")
         print(f'Overlap matrix from ideal and ICP:\n{mA}')
 
@@ -125,6 +128,9 @@ class alignmentMatrixCombiner:
         # ? compute here
 
         # self.overlapInfos is now sorted by smallOverlap, but contains the complete overlapID as well. that should be enough!
+
+        # there is inconsistent use of overlapID and smallOverlap here!
+        m0 = self.getOverlapMatrixWithMisalignment(self.overlapInfos["0"]['overlapID'])
 
         # remove ideal here
 
