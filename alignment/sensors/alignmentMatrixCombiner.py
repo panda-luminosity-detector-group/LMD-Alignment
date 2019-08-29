@@ -11,6 +11,13 @@ Each combiner is responsible for a single module.
 
 Steps:
 
+WAIT UPDATE
+
+Okay so now I can create the overlap matrices like they are in the geometry (with alignment) from the ideal matrices plus the misalignment for the overlap.
+perfect, I only need to do the three steps I did to arrive here backwards! no base transforming etc, just do the three steps backwards.
+
+END UPDATE
+
 REMEMBER. The overlap matrices come from the Reco Points and are thusly already in PANDA global!
 
 - gather all overlap matrices for module in a dict 
@@ -112,15 +119,19 @@ class alignmentMatrixCombiner:
         """
 
         #! test here, only overlap 0, sensor 0 to 5
-        print(f'Overlap matrix from ideal and ICP:\n{self.getOverlapMatrixWithMisalignment("0")}')
+        mA = self.getOverlapMatrixWithMisalignment("0")
+        print(f'Overlap matrix from ideal and ICP:\n{mA}')
 
-        with open('input/detectorMatrices-sensors-1.00.json') as nf:
+        with open('input/detectorMatrices-sensors-2.00.json') as nf:
             actualMatrices = json.load(nf)
 
         p1 = "/cave_1/lmd_root_0/half_0/plane_0/module_0/sensor_0"
         p2 = "/cave_1/lmd_root_0/half_0/plane_0/module_0/sensor_5"
 
-        print(f'Overlap matrix from geo manager with misalignment:\n{self.getMatrixP1ToP2GeoMan(p1, p2, actualMatrices)}')
+        mB = self.getMatrixP1ToP2GeoMan(p1, p2, actualMatrices)
+        print(f'Overlap matrix from geo manager with misalignment:\n{mB}')
+
+        print(f'The moment you\'ve been waiting for: difference!\n{(mA - mB)*1e4}')
 
         # compute here
 
