@@ -82,8 +82,7 @@ class alignmentMatrixCombiner:
         # FIXME: fix this!
         return m2@inv(m1)
 
-    # TODO: remove entire function
-    def getIdealMatrixP1ToP2WRONG(self, path1, path2):
+    def getIdealMatrixP1ToP2Active(self, path1, path2):
         # matrix from pnd global to sen1
         m1 = np.array(self.idealDetectorMatrices[path1]).reshape(4, 4)
         # matrix from pnd global to sen2
@@ -190,7 +189,7 @@ class alignmentMatrixCombiner:
         matMisOn0 = np.array(misalignMatrices[self.modulePath + '/sensor_0']).reshape(4, 4)
         matMisOn5 = np.array(misalignMatrices[self.modulePath + '/sensor_5']).reshape(4, 4)
 
-        mat0to5Wrong = self.getIdealMatrixP1ToP2WRONG(self.modulePath + '/sensor_0', self.modulePath + '/sensor_5')
+        mat0to5Wrong = self.getIdealMatrixP1ToP2Active(self.modulePath + '/sensor_0', self.modulePath + '/sensor_5')
         print(f'wrong mat:\n{mat0to5Wrong}')
 
         # transform mis5 to 0
