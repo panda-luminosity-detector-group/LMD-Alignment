@@ -149,12 +149,16 @@ class alignerSensors:
         with open(self.idealDetectorMatrixPath) as idealMatricesFile:
             idealMatrices = json.load(idealMatricesFile)
 
+        with open('input/externalMatrices-sensors-1.00.json') as f:
+            externalMatrices = json.load(f)
+
         for modulePath in sortedMatrices:
             combiner = alignmentMatrixCombiner(modulePath)
 
             combiner.setIdealDetectorMatrices(idealMatrices)
             combiner.setOverlapMatrices(sortedMatrices[modulePath])
             combiner.setOverlapInfos(sortedOverlaps[modulePath])
+            combiner.setExternallyMeasuredMatrices(externalMatrices)
 
             combiner.combineMatrices()
 
