@@ -125,7 +125,10 @@ class alignerSensors:
 
     def combineAlignmentMatrices(self):
 
+        # these are important! the combiner MUST only get the overlap infos
+        # and overlap matrices that are on to its module, not all the other modules!
         sortedMatrices = collections.defaultdict(dict)
+        sortedOverlaps = collections.defaultdict(dict)
 
         with open(self.idealOverlapsPath) as overlapsFile:
             idealOverlaps = json.load(overlapsFile)
@@ -137,18 +140,24 @@ class alignerSensors:
 
         print(f'found {len(sortedMatrices)}, modules, should be 40.')
 
+        # sort overlapInfos to dict by module path
+        for modulePath in sortedMatrices:
+            for overlapID in idealOverlaps:
+                if idealOverlaps[overlapID]['pathModule'] == modulePath:
+                    sortedOverlaps[modulePath].update({overlapID: idealOverlaps[overlapID]})
+
         with open(self.idealDetectorMatrixPath) as idealMatricesFile:
             idealMatrices = json.load(idealMatricesFile)
 
         for modulePath in sortedMatrices:
             combiner = alignmentMatrixCombiner(modulePath)
 
-            combiner.setOverlapMatrices(sortedMatrices[modulePath])
             combiner.setIdealDetectorMatrices(idealMatrices)
-            combiner.setOverlapInfos(idealOverlaps)
+            combiner.setOverlapMatrices(sortedMatrices[modulePath])
+            combiner.setOverlapInfos(sortedOverlaps[modulePath])
 
             combiner.combineMatrices()
-            
+
             # TODO: delete
             break
 
