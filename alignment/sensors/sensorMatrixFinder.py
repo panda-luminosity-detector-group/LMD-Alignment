@@ -10,6 +10,8 @@ import numpy as np
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
 Finds the overlap matrix for two sensors. Requires an overlapID and the set of ideal detector matrices.
+
+TODO: actually delete all 3D related things, this will be done strictly in 2D
 """
 
 
@@ -81,7 +83,7 @@ class sensorMatrixFinder:
         # (because z is at 11m, while x is 30cm and y is 0)
         transformToLocalSensor = True
         if transformToLocalSensor:
-
+            icpDimension = 2
             # get lmd to sensor1 matrix1
             toSen1 = np.array(self.idealMatrices[str(self.overlap)]['matrix1']).reshape(4, 4)
 
@@ -121,6 +123,10 @@ class sensorMatrixFinder:
 
         elif icpDimension == 3:
             self.overlapMatrix = T
+
+        transformResultToPND = True
+        if transformResultToPND:
+            self.overlapMatrix = toSen1 @ self.overlapMatrix @ np.linalg.inv(toSen1)
 
     def getOverlapMatrix(self):
         if self.overlapMatrix is None:

@@ -3,6 +3,8 @@ from sklearn.neighbors import NearestNeighbors
 
 """
 Author: Clay Flannigan, https://github.com/ClayFlannigan/icp
+
+Minor modifications: R. Klasen, roklasen@uni-mainz.de
 """
 
 def best_fit_transform(A, B):

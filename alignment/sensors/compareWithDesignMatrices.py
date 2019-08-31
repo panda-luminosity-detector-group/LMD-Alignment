@@ -53,6 +53,7 @@ class idealCompare:
         return fig
 
     # compute differnce ICPmatrix - design overlap misalignment
+    # TODO: this worked only for ICP matrices in sensor-local, they will be in PND global in the future! 
     def computeOneICP(self, overlapID):
 
         ICPmatrix = self.overlapMatrices[overlapID]
@@ -68,6 +69,7 @@ class idealCompare:
         toSen1 = np.array(self.overlaps[overlapID]['matrix1']).reshape(4, 4)                                            # total matrix PANDA -> sensor1
         toSen2 = np.array(self.overlaps[overlapID]['matrix2']).reshape(4, 4)                                            # total matrix PANDA -> sensor2
 
+        # these lines are wrong if ICP matrices are in PND global
         sen1tosen2 = np.linalg.multi_dot([np.linalg.inv(toSen1), toSen2])                                               # matrix from sensor1 to sensor2, needed for base transform!
         mis2inSen1 = np.linalg.multi_dot([sen1tosen2, mis2, np.linalg.inv(sen1tosen2)])                                 # mis2 in the frame of reference of sensor1, this is a base transform
         mis1to2 = np.linalg.multi_dot([np.linalg.inv(mis1), mis2inSen1])                                                # the final matrix that we want
