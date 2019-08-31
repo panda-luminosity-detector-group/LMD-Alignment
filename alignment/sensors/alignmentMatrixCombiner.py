@@ -196,13 +196,13 @@ class alignmentMatrixCombiner:
         misOn5in0 = mat0to5Wrong @ matMisOn5 @ inv(mat0to5Wrong)
 
         # misalign is now
-        mat0to5misalignmentInPnd = np.round(misOn5in0 @ inv(matMisOn0), 5)
+        mat0to5misalignmentInS0 = np.round(misOn5in0 @ inv(matMisOn0), 5)
 
         m1t2misIcp = np.round(self.overlapMatrices['0'], 5)
 
         print(f'overlap matrix as seen by ICP:\n{m1t2misIcp}')
-        print(f'overlap matrix from calculations:\n{mat0to5misalignmentInPnd}')
-        print(f'Difference:\n{(m1t2misIcp-mat0to5misalignmentInPnd)*1e4}')
+        print(f'overlap matrix from calculations:\n{mat0to5misalignmentInS0}')
+        print(f'Difference:\n{(m1t2misIcp-mat0to5misalignmentInS0)*1e4}')
 
         # ? USE THIS TEST IF UNSURE, IT WORKS!
         if False:

@@ -69,12 +69,6 @@ class sensorMatrixFinder:
             print(f'Error! Please load ideal detector matrices and numpy pairs!')
             return
 
-        # get lmd to sensor1 matrix1
-        toSen1 = np.array(self.idealMatrices[str(self.overlap)]['matrix1']).reshape(4, 4)
-
-        # invert to transform pairs from lmd to sensor
-        toSen1Inv = np.linalg.inv(toSen1)
-
         # Make C a homogeneous representation of hits1 and hits2
         hit1H = np.ones((len(self.PairData), 4))
         hit1H[:, 0:3] = self.PairData[:, :3]
@@ -82,9 +76,27 @@ class sensorMatrixFinder:
         hit2H = np.ones((len(self.PairData), 4))
         hit2H[:, 0:3] = self.PairData[:, 3:6]
 
-        # Transform vectors (remember, C and D are vectors of vectors = matrices!)
-        hit1T = np.matmul(toSen1Inv, hit1H.T).T
-        hit2T = np.matmul(toSen1Inv, hit2H.T).T
+        # Attention! Always transform to sensor-local system,
+        # otherwise numerical errors will make the ICP matrices unusable!
+        # (because z is at 11m, while x is 30cm and y is 0)
+        transformToLocalSensor = True
+        if transformToLocalSensor:
+
+            # get lmd to sensor1 matrix1
+            toSen1 = np.array(self.idealMatrices[str(self.overlap)]['matrix1']).reshape(4, 4)
+
+            # invert to transform pairs from lmd to sensor
+            toSen1Inv = np.linalg.inv(toSen1)
+
+            # Transform vectors (remember, C and D are vectors of vectors = matrices!)
+            hit1T = np.matmul(toSen1Inv, hit1H.T).T
+            hit2T = np.matmul(toSen1Inv, hit2H.T).T
+
+        else:
+            print('WARNING! ICP working in Panda global, NOT sensor local.')
+            print('This will likely produce wrong overlap matrices!')
+            hit1T = hit1H
+            hit2T = hit2H
 
         if self.use2D:
             icpDimension = 2
