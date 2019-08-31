@@ -78,18 +78,7 @@ class alignmentMatrixCombiner:
         # matrix from pnd global to sen2
         m2 = np.array(self.idealDetectorMatrices[path2]).reshape(4, 4)
         # matrix from sen1 to sen2
-        # return inv(m1)@m2
-        # FIXME: fix this!
         return m2@inv(m1)
-
-    # TODO: delete!
-    def getIdealMatrixP1ToP2Active(self, path1, path2):
-        # matrix from pnd global to sen1
-        m1 = np.array(self.idealDetectorMatrices[path1]).reshape(4, 4)
-        # matrix from pnd global to sen2
-        m2 = np.array(self.idealDetectorMatrices[path2]).reshape(4, 4)
-        # matrix from sen1 to sen2
-        return inv(m1)@m2
 
     def getMatrixP1ToP2fromMatrixDict(self, path1, path2, mat):
         # matrix from pnd global to sen1
@@ -97,8 +86,6 @@ class alignmentMatrixCombiner:
         # matrix from pnd global to sen2
         m2 = np.array(mat[path2]).reshape(4, 4)
         # matrix from sen1 to sen2
-        # return inv(m1)@m2
-        # FIXME: fix this!
         return m2@inv(m1)
 
     def getOverlapMatrixWithMisalignment(self, overlapInfo):
@@ -107,7 +94,6 @@ class alignmentMatrixCombiner:
         p2 = overlapInfo['path2']
         m1to2ideal = self.getIdealMatrixP1ToP2(p1, p2)
         m1to2corr = self.overlapMatrices[overlapInfo['smallOverlap']]
-
         return m1to2corr@m1to2ideal
 
     def combineMatrices(self):
@@ -138,7 +124,7 @@ class alignmentMatrixCombiner:
         # m0mis = self.externalMatrices[self.modulePath]['mis0']
         # m1mis = self.externalMatrices[self.modulePath]['mis1']
 
-        m1t2icp = inv(m5) @ m4
+        #m1t2icp = inv(m5) @ m4
 
         # ? wrong after here, although it kinda worked...
         # m1t2icp = m4 @ inv(m5)
@@ -165,105 +151,88 @@ class alignmentMatrixCombiner:
         # print(f'm1t9a: {m1t9icpa}')
         # print(f'm1t9b: {m1t9icpb}')
 
-        with open('input/misMatrices/misMat-sensors-2.00.json') as f:
+        with open('input/misMatrices/misMat-sensors-1.00.json') as f:
             misalignMatrices = json.load(f)
 
-        with open('input/detectorMatrices-sensors-2.00.json') as f:
+        with open('input/detectorMatrices-sensors-1.00.json') as f:
             totalMatrices = json.load(f)
 
-        m1misTo2mis = self.getMatrixP1ToP2fromMatrixDict(self.modulePath + '/sensor_1', self.modulePath + '/sensor_2', totalMatrices)
-
-        # # ? current work position
-        # print(f'm1to2 from ICP:\n{m1t2icp}')
-        # print(f'm1to2 actually:\n{m1misTo2mis}')
-        # print(f'difference:\n{(m1t2icp - m1misTo2mis)*1e4}')
-
-        if True:
+        # TODO: port this to the comparer! this is how you compare the overlap matrix to the simulation matrix
+        if False:
             print('New test, ICP matrices should be in PND global now!')
 
-            m0t5misIcp = self.overlapMatrices['3']
+            m0t5misIcp = self.overlapMatrices['0']
 
-            matPndTo0 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_3']).reshape(4, 4)
-            matPndTo5 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_6']).reshape(4, 4)
+            matPndTo0 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_0']).reshape(4, 4)
+            matPndTo5 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_5']).reshape(4, 4)
 
-            matMisOn0 = np.array(misalignMatrices[self.modulePath + '/sensor_3']).reshape(4, 4)
-            matMisOn5 = np.array(misalignMatrices[self.modulePath + '/sensor_6']).reshape(4, 4)
+            matMisOn0 = np.array(misalignMatrices[self.modulePath + '/sensor_0']).reshape(4, 4)
+            matMisOn5 = np.array(misalignMatrices[self.modulePath + '/sensor_5']).reshape(4, 4)
 
             matMisOn0InPnd = matPndTo0 @ matMisOn0 @ inv(matPndTo0)
             matMisOn5InPnd = matPndTo5 @ matMisOn5 @ inv(matPndTo5)
 
             matMis0to5 = matMisOn5InPnd @ inv(matMisOn0InPnd)
 
-            matMis0to5 = np.round(matMis0to5 , 5)
-            m0t5misIcp = np.round(m0t5misIcp , 5)
+            matMis0to5 = np.round(matMis0to5, 5)
+            m0t5misIcp = np.round(m0t5misIcp, 5)
 
             print(f'overlap matrix as seen by ICP:\n{m0t5misIcp}')
             print(f'overlap matrix from calculations:\n{matMis0to5}')
             print(f'Difference:\n{(m0t5misIcp-matMis0to5)*1e4}')
 
-        # TODO: delete!
-        if False:
-            # ? new test, worked as long as ICP matrices were sensor-local! 
+        if True:
+            # test bed to get total matrices
 
-            m1t2misIcp = self.overlapMatrices['3']
+            mat0to5ICP = self.overlapMatrices['0']
+            
+            mat0to5ideal = self.getIdealMatrixP1ToP2(self.modulePath + '/sensor_0', self.modulePath + '/sensor_5')
+            mat0to5actually = self.getMatrixP1ToP2fromMatrixDict(self.modulePath + '/sensor_0', self.modulePath + '/sensor_5', totalMatrices)
+
             matPndTo0 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_0']).reshape(4, 4)
             matPndTo5 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_5']).reshape(4, 4)
 
-            matPndTo0Misaligned = np.array(totalMatrices[self.modulePath + '/sensor_0']).reshape(4, 4)
-            matPndTo5Misaligned = np.array(totalMatrices[self.modulePath + '/sensor_5']).reshape(4, 4)
-
+            # I don't have these!
             matMisOn0 = np.array(misalignMatrices[self.modulePath + '/sensor_0']).reshape(4, 4)
             matMisOn5 = np.array(misalignMatrices[self.modulePath + '/sensor_5']).reshape(4, 4)
 
-            mat0to5Wrong = self.getIdealMatrixP1ToP2Active(self.modulePath + '/sensor_0', self.modulePath + '/sensor_5')
-            print(f'wrong mat:\n{mat0to5Wrong}')
+            matMisOn0InPnd = matPndTo0 @ matMisOn0 @ inv(matPndTo0)
+            matMisOn5InPnd = matPndTo5 @ matMisOn5 @ inv(matPndTo5)
 
-            # transform mis5 to 0
-            misOn5in0 = mat0to5Wrong @ matMisOn5 @ inv(mat0to5Wrong)
+            matPndTo0mis = matMisOn0InPnd @ matPndTo0
+            matPndTo5mis = matMisOn5InPnd @ matPndTo5
 
-            # misalign is now
-            mat0to5misalignmentInS0 = np.round(misOn5in0 @ inv(matMisOn0), 5)
+            # this is the ICP like matrix
+            mat0to5MisInPnd = matMisOn5InPnd @ inv(matMisOn0InPnd)
 
-            m0t5misIcp = np.round(self.overlapMatrices['0'], 5)
+            #* but wait, we're in sensor local, transform everything here!
+            mat0to5actually = inv(matPndTo0mis) @ mat0to5actually @ (matPndTo0mis)
+            
+            mat0to5ideal = inv(matPndTo0) @ mat0to5ideal @ (matPndTo0)
+            matWanted = inv(matPndTo0) @ mat0to5MisInPnd @ (matPndTo0)
+            matWanted = matWanted @ mat0to5ideal
+            print(f'my new difference')
+            self.dMat(matWanted, mat0to5actually)
 
-            print(f'overlap matrix as seen by ICP:\n{m1t2misIcp}')
-            print(f'overlap matrix from calculations:\n{mat0to5misalignmentInS0}')
-            print(f'Difference:\n{(m1t2misIcp-mat0to5misalignmentInS0)*1e4}')
+        # ? current work position
 
-        # TODO: delete!
-        # ? USE THIS TEST IF UNSURE, IT WORKS!
-        if False:
-
-            m3 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_3']).reshape(4, 4)
-            m3mis = np.array(misalignMatrices[self.modulePath + '/sensor_3']).reshape(4, 4)
-            m3misInPnd = m3 @ m3mis @ inv(m3)
-            i3t4misalignedIdeal = self.getMatrixP1ToP2fromMatrixDict(self.modulePath + '/sensor_3', self.modulePath + '/sensor_4', totalMatrices)
-            mPndTo4misMyShit = i3t4misalignedIdeal @ m3misInPnd @ m3
-            mPndTo4misActually = np.array(totalMatrices[self.modulePath + '/sensor_4']).reshape(4, 4)
-            print(f'\n\nFinal Difference: {mPndTo4misMyShit-mPndTo4misActually}')
-
-        # TODO: delete!
-        # ? OR THIS, IT WORKS AS WELL!
-        if False:
-
-            m1 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_1']).reshape(4, 4)
-            m2 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_2']).reshape(4, 4)
-
-            m1mis = np.array(misalignMatrices[self.modulePath + '/sensor_1']).reshape(4, 4)
-            m2mis = np.array(misalignMatrices[self.modulePath + '/sensor_2']).reshape(4, 4)
-
-            m1misInPnd = m1 @ m1mis @ inv(m1)
-            m2misInPnd = m2 @ m2mis @ inv(m2)
-
-            m1misTo2mis = self.getMatrixP1ToP2fromMatrixDict(self.modulePath + '/sensor_1', self.modulePath + '/sensor_2', totalMatrices)
-
-            m2me = inv(m2misInPnd) @ m1misTo2mis @ m1misInPnd @ m1
-
-            print(f'm2 me:\n{m2}')
-            print(f'm2 actual:\n{m2me}')
-            print(f'difference:\n{m2 - m2me}')
+        """
+        now, the overlap misalignments are in PND global, as they should, but to apply them to an ideal overlap,
+        they must be transformed into the system of the first sensor of the overlap
+        """
 
         # save to dict sensorID : alignment matrix here
+
+    def dMat(self, mat1, mat2):
+        mat1 = np.round(mat1, 5)
+        mat2 = np.round(mat2, 5)
+        dmat = (mat1 - mat2)*1e4
+
+        print('=== dmat ===')
+        print(f'mat1:\n{mat1}')
+        print(f'mat2:\n{mat2}')
+        print(f'dmat *1e4:\n{dmat}')
+        print('=== end ===')
 
     def getAlignmentMatrices(self):
         return self.alignmentMatrices

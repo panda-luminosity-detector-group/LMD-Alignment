@@ -65,7 +65,7 @@ class idealCompare:
         mis1 = np.array(self.designMatrices[path1]).reshape(4, 4)                                                       # misalignment to sensor1
         mis2 = np.array(self.designMatrices[path2]).reshape(4, 4)                                                       # misalignment to sensor2
 
-        # TODO: will soon not longer be here but instead in detectorMatricesIdea.json!
+        # TODO: will soon not longer be here but instead in detectorMatricesIdeal.json!
         toSen1 = np.array(self.overlaps[overlapID]['matrix1']).reshape(4, 4)                                            # total matrix PANDA -> sensor1
         toSen2 = np.array(self.overlaps[overlapID]['matrix2']).reshape(4, 4)                                            # total matrix PANDA -> sensor2
 
