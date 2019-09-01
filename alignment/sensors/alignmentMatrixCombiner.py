@@ -629,7 +629,7 @@ We have the inverse ICP matrix and apply it to a misaligned total overlap, compa
             print(msg)
             self.dMat(mLeft, mRight)
 
-        if True:
+        if False:
             msg = "I used more math. This is going to be much weirder."
 
             with open('input/detectorMatrices-sensors-1.00.json') as f:
@@ -652,6 +652,33 @@ We have the inverse ICP matrix and apply it to a misaligned total overlap, compa
 
             mleft = T
             mright = ICPmat @ m1star @ Mideal @ inv(m2star) @ ICPmat
+
+            print(msg)
+            self.dMat(mleft, mright)
+
+        if True:
+            msg = "This math is getting out of hand."
+
+            with open('input/detectorMatrices-sensors-1.00.json') as f:
+                totalMatrices = json.load(f)
+
+            p1 = self.modulePath + '/sensor_0'
+            p2 = self.modulePath + '/sensor_5'
+
+            m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+            m2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+            m1mis = np.array(misalignMatrices[p1]).reshape(4, 4)
+            m2mis = np.array(misalignMatrices[p2]).reshape(4, 4)
+            
+            m1star = m1 @ m1mis @ inv(m1)
+            m2star = m2 @ m2mis @ inv(m2)
+
+            ICPmat = self.getOverlapMisalignLikeICP(p1, p2)
+            Mideal = self.getIdealMatrixP1ToP2(p1, p2)
+            T = self.getMatrixP1ToP2fromMatrixDict(p1, p2, totalMatrices)
+
+            mleft = self.baseTransform(T, inv(m1star))
+            mright = self.baseTransform(ICPmat, inv(m2star)) @ Mideal
 
             print(msg)
             self.dMat(mleft, mright)
