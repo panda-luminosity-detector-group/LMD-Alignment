@@ -405,7 +405,12 @@ if __name__ == "__main__":
 
     if args.test:
         print(f'Testing...')
-        sensorAligner = alignerSensors.fromRunConfig(LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json'))
+        runConfig = LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json')
+        if args.debug:
+            print(f'\n\n!!! Running in debug mode !!!\n\n')
+            runConfig.useDebug=True
+
+        sensorAligner = alignerSensors.fromRunConfig(runConfig)
         sensorAligner.sortPairs()
         sensorAligner.findMatrices()
         # TODO: save matrices to disk
