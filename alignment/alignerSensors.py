@@ -79,9 +79,13 @@ class alignerSensors:
         matrixFinder = sensorMatrixFinder(overlapID)
 
         with open(idealOverlapsPath, 'r') as f:
-            idealMatrices = json.load(f)
+            idealOverlapInfos = json.load(f)
 
-        matrixFinder.idealMatrices = idealMatrices
+        with open(self.idealDetectorMatrixPath) as idealMatricesFile:
+            idealDetectorMatrices = json.load(idealMatricesFile)
+
+        matrixFinder.idealOverlapInfos = idealOverlapInfos
+        matrixFinder.idealDetectorMatrices = idealDetectorMatrices
         matrixFinder.readNumpyFiles(numpyPath)
 
         matrixFinder.findMatrix()

@@ -21,8 +21,9 @@ class sensorMatrixFinder:
         self.overlap = overlapID
         self.use2D = True
         self.PairData = None
-        self.idealMatrices = {}
+        self.idealOverlapInfos = {}
         self.overlapMatrix = None
+        self.idealDetectorMatrices = {}
 
     def readNumpyFiles(self, path):
 
@@ -67,9 +68,12 @@ class sensorMatrixFinder:
 
     def findMatrix(self):
 
-        if self.idealMatrices is None or self.PairData is None:
+        if self.idealOverlapInfos is None or self.PairData is None:
             print(f'Error! Please load ideal detector matrices and numpy pairs!')
             return
+
+        if len(self.idealDetectorMatrices) < 1:
+            print('ERROR! Please set ideal detector matrices!')
 
         # Make C a homogeneous representation of hits1 and hits2
         hit1H = np.ones((len(self.PairData), 4))
@@ -78,17 +82,20 @@ class sensorMatrixFinder:
         hit2H = np.ones((len(self.PairData), 4))
         hit2H[:, 0:3] = self.PairData[:, 3:6]
 
-        # Attention! Always transform to sensor-local system,
+        # Attention! Always transform to module-local system,
         # otherwise numerical errors will make the ICP matrices unusable!
         # (because z is at 11m, while x is 30cm and y is 0)
         transformToLocalSensor = True
         if transformToLocalSensor:
             icpDimension = 2
-            # get lmd to sensor1 matrix1
-            toSen1 = np.array(self.idealMatrices[str(self.overlap)]['matrix1']).reshape(4, 4)
+            # get matrix lmd to module
+            #toSen1 = np.array(self.idealMatrices[str(self.overlap)]['matrix1']).reshape(4, 4)
+
+            modulePath = self.idealOverlapInfos[str(self.overlap)]['pathModule']
+            matToModule = np.array(self.idealDetectorMatrices[modulePath]).reshape(4, 4)
 
             # invert to transform pairs from lmd to sensor
-            toSen1Inv = np.linalg.inv(toSen1)
+            toSen1Inv = np.linalg.inv(matToModule)
 
             # Transform vectors (remember, C and D are vectors of vectors = matrices!)
             hit1T = np.matmul(toSen1Inv, hit1H.T).T
@@ -126,7 +133,7 @@ class sensorMatrixFinder:
 
         transformResultToPND = True
         if transformResultToPND:
-            self.overlapMatrix = toSen1 @ self.overlapMatrix @ np.linalg.inv(toSen1)
+            self.overlapMatrix = matToModule @ self.overlapMatrix @ np.linalg.inv(matToModule)
 
     def getOverlapMatrix(self):
         if self.overlapMatrix is None:
