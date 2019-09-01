@@ -83,6 +83,7 @@ class alignmentMatrixCombiner:
         # matrix from sen1 to sen2
         return m2@inv(m1)
 
+    # TODO: remove once the other stuff is in the comparer. this function was used for comparisons
     def getMatrixP1ToP2fromMatrixDict(self, path1, path2, mat):
         # matrix from pnd global to sen1
         m1 = np.array(mat[path1]).reshape(4, 4)
@@ -91,92 +92,100 @@ class alignmentMatrixCombiner:
         # matrix from sen1 to sen2
         return m2@inv(m1)
 
+    # FIXME: there is still an error in this function
     def getTotalOverlapMatrix(self, p1, p2):
-        
-        # prepare ideal matrix
+
+        # prepare ideal matrix, transform to sen1
         matPndTo1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+
         mat1to2ideal = self.getIdealMatrixP1ToP2(p1, p2)
         mat1to2idealIn1 = inv(matPndTo1) @ mat1to2ideal @ (matPndTo1)
 
-        # prepare ICP matrix
+        # prepare ICP matrix, transform to sen1
         # TODO: change this to use the actual ICP matrix
         matICPmisalign1to2 = self.getOverlapMisalignLikeICP(p1, p2)
         matICP1to2In1 = inv(matPndTo1) @ matICPmisalign1to2 @ (matPndTo1)
-        
+
         # make total matrix from ICP matrix and ideal matrix
         mat1to8TotalIn1 = matICP1to2In1 @ mat1to2idealIn1
         return mat1to8TotalIn1
 
-    def combine1to2NEW(self):
+    def baseTransform(self, mat, matFromAtoB):
+        return matFromAtoB @ mat @ inv(matFromAtoB)
+
+    def combine1to2(self):
+        # * matrix path: mat1t8 -> mat8to2
+
         p1 = self.modulePath + '/sensor_1'
         p2 = self.modulePath + '/sensor_2'
         p8 = self.modulePath + '/sensor_8'
 
+        # prepare matrices
         mat1to8TotalIn1 = self.getTotalOverlapMatrix(p1, p8)
         mat2to8TotalIn2 = self.getTotalOverlapMatrix(p2, p8)
 
-        # so, use the overlap matrices themselves to transform the matrices
-        # I know this base transform is pointless, but for completeness sake leave it in!
-        mat2to8TotalIn8 = mat2to8TotalIn2 @ mat2to8TotalIn2 @ inv(mat2to8TotalIn2)
+        # transform all matrices to sen1
+        mat2to8TotalIn8 = mat2to8TotalIn2
+        mat2to8TotalIn1 = self.baseTransform(mat2to8TotalIn8, inv(mat1to8TotalIn1))
 
-        # I know the base transform looks inverted,
-        # but that's because I need m8to1, and I only have m1to8. to that's fine.
-        mat2to8TotalIn1 = inv(mat1to8TotalIn1) @ mat2to8TotalIn8 @ mat1to8TotalIn1
-
-        # they are now both in the system of sensor 1
+        # combine matrices
         mat1to2totalIn1 = inv(mat2to8TotalIn1) @ mat1to8TotalIn1
         return mat1to2totalIn1
 
+    def combine1to3(self):
+        # * matrix path: mat1t8 -> mat8to3
 
-    def combine1to2(self):
         p1 = self.modulePath + '/sensor_1'
-        p2 = self.modulePath + '/sensor_2'
+        p3 = self.modulePath + '/sensor_3'
         p8 = self.modulePath + '/sensor_8'
 
-        # I have thse matrices from the detector design
-        mat1to8ideal = self.getIdealMatrixP1ToP2(p1, p8)
-        mat2to8ideal = self.getIdealMatrixP1ToP2(p2, p8)
+        # prepare matrices
+        mat1to8TotalIn1 = self.getTotalOverlapMatrix(p1, p8)
+        mat3to8TotalIn3 = self.getTotalOverlapMatrix(p3, p8)
 
-        matPndTo1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        matPndTo2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+        # transform all matrices to sen1
+        mat3to8TotalIn8 = mat3to8TotalIn3
+        mat8to1TotalIn1 = inv(mat1to8TotalIn1)
+        mat3to8TotalIn1 = self.baseTransform(mat3to8TotalIn8, mat8to1TotalIn1)
 
-        #? get ICP matrices and transform them to their local sensor 1
+        # combine matrices
+        mat1to3totalIn1 = inv(mat3to8TotalIn1) @ mat1to8TotalIn1
+        return mat1to3totalIn1
 
-        # this is the ICP-like matrix
-        # TODO: change this to use the actual ICP matrix
-        matICPmisalign1to8 = self.getOverlapMisalignLikeICP(p1, p8)
-        matICPmisalign2to8 = self.getOverlapMisalignLikeICP(p2, p8)
+    def combine1to4a(self):
+        # * matrix path: mat1t8 -> mat8to2 -> mat2to9 -> mat9to4
 
-        # this is the matrix the ICP finds in the frame of reference of MISALIGNED sensor 1/2
-        mat1to8idealIn1 = inv(matPndTo1) @ mat1to8ideal @ (matPndTo1)
-        mat2to8idealIn2 = inv(matPndTo2) @ mat2to8ideal @ (matPndTo2)
+        p1 = self.modulePath + '/sensor_1'
+        p2 = self.modulePath + '/sensor_2'
+        p4 = self.modulePath + '/sensor_4'
+        p8 = self.modulePath + '/sensor_8'
+        p9 = self.modulePath + '/sensor_9'
 
-        #? make total overlap matrices
+        # prepare matrices
+        mat1to8TotalIn1 = self.getTotalOverlapMatrix(p1, p8)
+        mat2to8TotalIn2 = self.getTotalOverlapMatrix(p2, p8)
+        mat2to9TotalIn2 = self.getTotalOverlapMatrix(p2, p9)
+        mat4to9TotalIn4 = self.getTotalOverlapMatrix(p4, p9)
 
-        # this is the trick! transform everything to sensor BEFORE you apply the ICP matrix to the ideal
-        matICP1to8In1 = inv(matPndTo1) @ matICPmisalign1to8 @ (matPndTo1)
-        # careful, this should be in sensor TWO, not one, because this is still local to 2!
-        matICP2to8In2 = inv(matPndTo2) @ matICPmisalign2to8 @ (matPndTo2)
+        # transform all matrices to sen1
+        # trafo from 8 to 1
+        mat2to8TotalIn8 = mat2to8TotalIn2
+        mat8to1TotalIn1 = inv(mat1to8TotalIn1)
+        mat2to8TotalIn1 = self.baseTransform(mat2to8TotalIn8, mat8to1TotalIn1)
 
-        # apply ICP matrix to ideal IN SENSOR 1/2!
-        mat1to8TotalIn1 = matICP1to8In1 @ mat1to8idealIn1
-        mat2to8TotalIn2 = matICP2to8In2 @ mat2to8idealIn2
+        # trafo from 2 to 8 to 1
+        mat2to9TotalIn8 = self.baseTransform(mat2to9TotalIn2, mat2to8TotalIn2)
+        mat2to9TotalIn1 = self.baseTransform(mat2to9TotalIn8, inv(mat1to8TotalIn1))
 
-        #? transform all total matrices to sensor 1
+        # trafo from 4 to 9 to 2 to 8 to 1
+        mat4to9TotalIn9 = mat4to9TotalIn4
+        mat4to9TotalIn2 = self.baseTransform(mat4to9TotalIn9, mat2to9TotalIn2)
+        mat4to9TotalIn8 = self.baseTransform(mat4to9TotalIn2, mat2to8TotalIn2)
+        mat4to9TotalIn1 = self.baseTransform(mat4to9TotalIn8, inv(mat1to8TotalIn1))
 
-        # so, use the overlap matrices themselves to transform the matrices
-        # I know this base transform is pointless, but for completeness sake leave it in!
-        mat2to8TotalIn8 = mat2to8TotalIn2 @ mat2to8TotalIn2 @ inv(mat2to8TotalIn2)
-
-        # I know the base transform looks inverted,
-        # but that's because I need m8to1, and I only have m1to8. to that's fine.
-        mat2to8TotalIn1 = inv(mat1to8TotalIn1) @ mat2to8TotalIn8 @ mat1to8TotalIn1
-
-        #? finally, combine individual total matrices
-
-        # they are now both in the system of sensor 1
-        mat1to2totalIn1 = inv(mat2to8TotalIn1) @ mat1to8TotalIn1
-        return mat1to2totalIn1
+        # # combine matrices
+        mat1to4TotalIn1 = inv(mat4to9TotalIn1) @ mat2to9TotalIn1 @ inv(mat2to8TotalIn1) @ mat1to8TotalIn1
+        return mat1to4TotalIn1
 
     def combineMatrices(self):
         # checks here
@@ -196,9 +205,10 @@ class alignmentMatrixCombiner:
         # m1mis = self.externalMatrices[self.modulePath]['mis1']
 
         # ? create all intermediate matrices here
-        m1t2icp = self.combine1to2NEW()
-        # m1t3icp = m4 @ inv(m1)
-        # m1t4icpa = m4 @ inv(m5) @ m6 @ inv(m2)
+        m1t2icp = self.combine1to2()
+        m1t3icp = self.combine1to3()
+        m1t4icpa = self.combine1to4a()
+
         # m1t4icpb = m4 @ inv(m1) @ m7 @ inv(m8)
 
         # m1t5icp = m0
@@ -223,9 +233,6 @@ class alignmentMatrixCombiner:
         # TODO: delte these after everything else is completed. the combiner won't know the misalignment matrices at all!
         with open('input/misMatrices/misMat-sensors-1.00.json') as f:
             misalignMatrices = json.load(f)
-
-        with open('input/detectorMatrices-sensors-1.00.json') as f:
-            totalMatrices = json.load(f)
 
         if False:
             """
@@ -252,7 +259,7 @@ class alignmentMatrixCombiner:
             print(f'overlap matrix as seen by ICP vs from calculations:')
             self.dMat(m0t5misIcp, matMis0to5)
 
-        if False:
+        if True:
             """
             This creates total overlap matrices from sensor A to B from the ICP matrix and the ideal matrix A to B!
             We can also compare the construced matrices with the actual matrices.
@@ -289,7 +296,8 @@ class alignmentMatrixCombiner:
             mat0to5idealIn0 = inv(matPndTo0) @ mat0to5ideal @ (matPndTo0)
 
             # this is the trick! transform everything to sensor BEFORE you apply the ICP matrix to the ideal
-            matWanted = inv(matPndTo0) @ matICP0to5 @ (matPndTo0)
+            #! but wait, using matPndTo0 is wrong, I need matPndTo0mis and I don't have that... damn...
+            matWanted = inv(matPndTo0mis) @ matICP0to5 @ (matPndTo0mis)
 
             # apply ICP matrix to ideal IN SENSOR 0!
             matWanted = matWanted @ mat0to5idealIn0
@@ -385,27 +393,23 @@ class alignmentMatrixCombiner:
             print(f'compare actual and constructed for 1-2:')
             self.dMat(mat1to2actuallyIn1mis, mat1to2totalIn1)
 
-            """
-            Oh my god yes, finally! This is it! This works! I can finally compute the combined matrices in a stringent way!
-            """
-
         """
         now, the overlap misalignments are in PND global, as they should, but to apply them to an ideal overlap,
         they must be transformed into the system of the first sensor of the overlap
         """
-        
-        #! keep cheating, just for now:
-        p1 = self.modulePath + '/sensor_1'
-        p2 = self.modulePath + '/sensor_2'
-        matPndTo1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        matMisOn1 = np.array(misalignMatrices[p1]).reshape(4, 4)
-        matMisOn1InPnd = matPndTo1 @ matMisOn1 @ inv(matPndTo1)
-        matPndTo1mis = matMisOn1InPnd @ matPndTo1
-        mat1to2actually = self.getActualMatrixFromGeoManager(p1, p2)
-        mat1to2actuallyIn1mis = inv(matPndTo1mis) @ mat1to2actually @ (matPndTo1mis)
 
-        print(f'while you refine:')
-        self.dMat(mat1to2actuallyIn1mis, m1t2icp)
+        # #! keep cheating, just for now:
+        # p1 = self.modulePath + '/sensor_1'
+        # p2 = self.modulePath + '/sensor_2'
+        # matPndTo1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+        # matMisOn1 = np.array(misalignMatrices[p1]).reshape(4, 4)
+        # matMisOn1InPnd = matPndTo1 @ matMisOn1 @ inv(matPndTo1)
+        # matPndTo1mis = matMisOn1InPnd @ matPndTo1
+        # mat1to2actually = self.getActualMatrixFromGeoManager(p1, p2)
+        # mat1to2actuallyIn1mis = inv(matPndTo1mis) @ mat1to2actually @ (matPndTo1mis)
+
+        # print(f'while you refine:')
+        # self.dMat(mat1to2actuallyIn1mis, m1t2icp)
 
     #! we don't have some of these matrices, this is cheating and should go in the comparer
     def getOverlapMisalignLikeICP(self, p1, p2):
