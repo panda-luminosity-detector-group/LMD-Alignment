@@ -65,10 +65,9 @@ class idealCompare:
         mis1 = np.array(self.designMatrices[path1]).reshape(4, 4)                                                       # misalignment to sensor1
         mis2 = np.array(self.designMatrices[path2]).reshape(4, 4)                                                       # misalignment to sensor2
 
-        # TODO: will soon not longer be here but instead in detectorMatricesIdeal.json!
-        toSen1 = np.array(self.overlaps[overlapID]['matrix1']).reshape(4, 4)                                            # total matrix PANDA -> sensor1
-        toSen2 = np.array(self.overlaps[overlapID]['matrix2']).reshape(4, 4)                                            # total matrix PANDA -> sensor2
-
+        toSen1 = np.array(self.designMatrices[path1]).reshape(4, 4)                                            # total matrix PANDA -> sensor1
+        toSen2 = np.array(self.designMatrices[path2]).reshape(4, 4)  
+        
         # these lines are wrong if ICP matrices are in PND global
         sen1tosen2 = np.linalg.multi_dot([np.linalg.inv(toSen1), toSen2])                                               # matrix from sensor1 to sensor2, needed for base transform!
         mis2inSen1 = np.linalg.multi_dot([sen1tosen2, mis2, np.linalg.inv(sen1tosen2)])                                 # mis2 in the frame of reference of sensor1, this is a base transform
