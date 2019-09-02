@@ -88,12 +88,13 @@ class sensorMatrixFinder:
         transformToLocalSensor = True
         if transformToLocalSensor:
             icpDimension = 2
+            # get matrix lmd to sensor 1
+            #pathToSen1 = self.idealOverlapInfos[str(self.overlap)]['path1']
+            #toSen1 = np.array(self.idealDetectorMatrices[pathToSen1]).reshape(4, 4)
             # get matrix lmd to module
-            #toSen1 = np.array(self.idealMatrices[str(self.overlap)]['matrix1']).reshape(4, 4)
-
             modulePath = self.idealOverlapInfos[str(self.overlap)]['pathModule']
             matToModule = np.array(self.idealDetectorMatrices[modulePath]).reshape(4, 4)
-
+            
             # invert to transform pairs from lmd to sensor
             toSen1Inv = np.linalg.inv(matToModule)
 
@@ -119,7 +120,7 @@ class sensorMatrixFinder:
             B = hit2T[:, :3]
 
         # find ideal transformation
-        T, _, _ = icp.best_fit_transform(B, A)
+        T, _, _ = icp.best_fit_transform(A, B)
 
         # copy 3x3 Matrix to 4x4 Matrix
         if icpDimension == 2:
@@ -133,7 +134,10 @@ class sensorMatrixFinder:
 
         transformResultToPND = True
         if transformResultToPND:
-            self.overlapMatrix = matToModule @ self.overlapMatrix @ np.linalg.inv(matToModule)
+            # remember, matToModule goes from Pnd->Module
+            # base trafo is T A T^-1,
+            # T = Pnd->Module
+            self.overlapMatrix = (matToModule) @ self.overlapMatrix @ np.linalg.inv(matToModule)
 
     def getOverlapMatrix(self):
         if self.overlapMatrix is None:
