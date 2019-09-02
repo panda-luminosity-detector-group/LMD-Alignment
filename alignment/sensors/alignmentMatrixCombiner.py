@@ -331,42 +331,81 @@ class alignmentMatrixCombiner:
             print(f'compare actual and constructed for 1-2:')
             self.dMat(mat1to2actuallyIn1mis, mat1to2totalIn1)
 
-        if True:
-            #* This is still correct!
-            """
-            Example: get perfect mat1to2 and apply misalignment onto it,
-            compare with actual mat1to2
-            """
+        if False:
+            # * This is still correct!
+            msg = "Example: get perfect mat1to2 and apply misalignment onto it, compare with actual mat1to2"
             with open('input/detectorMatrices-sensors-1.00.json') as f:
                 totalMatrices = json.load(f)
 
-            m1 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_1']).reshape(4, 4)
-            m2 = np.array(self.idealDetectorMatrices[self.modulePath + '/sensor_2']).reshape(4, 4)
-            m1mis = np.array(misalignMatrices[self.modulePath + '/sensor_1']).reshape(4, 4)
-            m2mis = np.array(misalignMatrices[self.modulePath + '/sensor_2']).reshape(4, 4)
+            p1 = self.modulePath + '/sensor_0'
+            p2 = self.modulePath + '/sensor_5'
+
+            m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+            m2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+            m1mis = np.array(misalignMatrices[p1]).reshape(4, 4)
+            m2mis = np.array(misalignMatrices[p2]).reshape(4, 4)
             m1misInPnd = m1 @ m1mis @ inv(m1)
             m2misInPnd = m2 @ m2mis @ inv(m2)
 
             matToModule = np.array(self.idealDetectorMatrices[self.modulePath]).reshape(4, 4)
 
             # get actual matrix from GeoManager
-            m1misTo2WithAddedMis = self.getMatrixP1ToP2fromMatrixDict(self.modulePath + '/sensor_1', self.modulePath + '/sensor_2', totalMatrices)
+            m1misTo2WithAddedMis = self.getMatrixP1ToP2fromMatrixDict(p1, p2, totalMatrices)
             m1misTo2misInMod = self.baseTransform(m1misTo2WithAddedMis, inv(matToModule))
 
-            # compute mat "by hand"
-            mat1to2Perfect = self.getIdealMatrixP1ToP2(self.modulePath + '/sensor_1', self.modulePath + '/sensor_2')
+            # method 1: use the perfect matrix, apply misalignments (which we don't actually know)
+            # and compare with unknown actual misaligned mat
+            mat1to2Perfect = self.getIdealMatrixP1ToP2(p1, p2)
             mat1to2Compute = m2misInPnd @ mat1to2Perfect @ inv(m1misInPnd)
 
             # transform to module, for ease of reading
             mat1to2ComputeInMod = self.baseTransform(mat1to2Compute, inv(matToModule))
             mat1to2PerfectInMod = self.baseTransform(mat1to2Perfect, inv(matToModule))
 
-            print(f'mat1to2Perfect in Module:\n{mat1to2PerfectInMod}')
+            print(msg)
+            print('Method 1:')
+            self.dMat(m1misTo2misInMod, mat1to2ComputeInMod)
 
-            self.dMat(mat1to2ComputeInMod, m1misTo2misInMod)
+        if True:
+            # * This is still correct!
+            msg = "Example: get ICP matrix and ideal matrix, compare with actual matrix. We can do this onlt if the actual matrix is transformed to MISALIGNED sensor A. After that, we can transform both to the module system."
+            with open('input/detectorMatrices-sensors-1.00.json') as f:
+                totalMatrices = json.load(f)
+
+            p1 = self.modulePath + '/sensor_1'
+            p2 = self.modulePath + '/sensor_2'
+
+            m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+            m2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+            m1mis = np.array(misalignMatrices[p1]).reshape(4, 4)
+            m2mis = np.array(misalignMatrices[p2]).reshape(4, 4)
+            m1misInPnd = m1 @ m1mis @ inv(m1)
+            m2misInPnd = m2 @ m2mis @ inv(m2)
+
+            matToModule = np.array(self.idealDetectorMatrices[self.modulePath]).reshape(4, 4)
+
+            # get actual matrix from GeoManager
+            m1misTo2Actual = self.getMatrixP1ToP2fromMatrixDict(p1, p2, totalMatrices)
+
+            # what does this matrix look like in the system of MISALIGNED sensor A?
+            m1misTo2ActualInAstar = self.baseTransform(m1misTo2Actual, inv(m1misInPnd))
+
+            # and now, what does it look like in the module?
+            m1misTo2ActualInMod = self.baseTransform(m1misTo2ActualInAstar, inv(matToModule))
+
+            # method 2: use ICP matrix and ideal m1, m2 to get misaligned mat
+            Micp = self.getOverlapMisalignLikeICP(p1, p2)
+            Mideal = self.getIdealMatrixP1ToP2(p1, p2)
+
+            mat1to2fromICP = inv(Micp) @ Mideal
+            mat1to2fromICPInModule = self.baseTransform(mat1to2fromICP, inv(matToModule))
+
+            print(msg)
+            print('Method 2:')
+            self.dMat(m1misTo2ActualInMod, mat1to2fromICPInModule)
 
         if False:
-            #* This is still correct!
+            # * This is still correct!
             """
             Example: we are sitting in MISALIGNED sensor 1 and want to know the matrix to misaligned sensor2.
             From that matrix, we remove the misalignment of sensor2 (because that is included in sensor2),
@@ -407,7 +446,7 @@ class alignmentMatrixCombiner:
             """
 
         if False:
-            #* This is still correct!
+            # * This is still correct!
             msg = """
             Example: we sit at misaligned sensor 1, and want to know the matrix to misaligned sensor 2.
             We start with the total matrix from mis1 to mis2, substract mis2 and add mis1.
