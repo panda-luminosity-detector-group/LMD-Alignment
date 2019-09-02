@@ -38,6 +38,7 @@ class alignmentMatrixCombiner:
         self.overlapInfos = None
         self.idealDetectorMatrices = None
         self.externalMatrices = None
+        self.matAstar = None
 
     def setOverlapMatrices(self, matrices):
         self.overlapMatrices = matrices
@@ -120,7 +121,7 @@ class alignmentMatrixCombiner:
         """
         return matFromAtoB @ mat @ inv(matFromAtoB)
 
-    def combine1to2(self):
+    def combine1to2VERBOSE(self):
 
         print('\n\n')
         print('=============')
@@ -187,7 +188,43 @@ class alignmentMatrixCombiner:
 
         print(f'so now what remains?')
         self.dMat(mBstarInSenB, m2mis)
+        return mBstarInSenB
+    
+    def combine1to2(self):
 
+        print('LIGHT version')
+
+        p1 = self.modulePath + '/sensor_1'
+        p2 = self.modulePath + '/sensor_2'
+        p8 = self.modulePath + '/sensor_8'
+
+        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+        m2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+
+        m1to2Ideal = self.getIdealMatrixP1ToP2(p1, p2)
+
+        #* we get this matrix from external measurements, remember!
+        m1misInPnd = self.baseTransform(self.matAstar, m1)
+
+        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
+
+        mICP1t8 = self.overlapMatrices['4']
+        mICP2t8 = self.overlapMatrices['5']
+
+        #* this is mathematically correct! and it works!
+        m1to2FromICP = inv( inv(mICP2t8) @ mICP1t8 ) @ m1to2Ideal
+
+        # one MUST be base-transformed, and it seems more logical to transform the ICP matrices
+        # also, this base transformation mus be done "backwards", look at the calculations
+        mTotalFromMathInAstar = self.baseTransform(m1to2FromICP, m1misInPnd)
+
+        # and FINALLY, we find the missing matrix B*:
+        mBstar = mTotalFromMathInAstar @ m1misInPnd @ inv(m1to2Ideal)
+        
+        # transform it to senB, because that's where it lives:
+        mBstarInSenB = self.baseTransform(mBstar, inv(m2))
+        return mBstarInSenB
 
     def combine1to3(self):
         # * matrix path: mat1t8 -> mat8to3
@@ -225,10 +262,23 @@ class alignmentMatrixCombiner:
         # m0mis = self.externalMatrices[self.modulePath]['mis0']
         # m1mis = self.externalMatrices[self.modulePath]['mis1']
 
+        # TODO: delete these after everything else is completed. the combiner won't know the misalignment matrices at all!
+        # except for the very first one, obviously
+        with open('input/misMatrices/misMat-sensors-1.00.json') as f:
+            misalignMatrices = json.load(f)
+
+        self.matAstar = np.array(misalignMatrices[self.modulePath + '/sensor_1']).reshape(4, 4)
+        cheatMatBstar = np.array(misalignMatrices[self.modulePath + '/sensor_2']).reshape(4, 4)
+
+        if self.matAstar is None:
+            print(f'ERROR! Please set the externally measured matrix for sensor 1 first!')
+            return
+
         # ? create all intermediate matrices here
-        m1t2icp = self.combine1to2()
-        m1t3icp = self.combine1to3()
-        m1t4icpa = self.combine1to4a()
+        mat2mis = self.combine1to2()
+
+        print('THIS IS IT OH MA GAWD')
+        self.dMat(cheatMatBstar, mat2mis)
 
         # m1t4icpb = m4 @ inv(m1) @ m7 @ inv(m8)
 
@@ -250,10 +300,6 @@ class alignmentMatrixCombiner:
         # print(f'm1t8: {m1t8icp}')
         # print(f'm1t9a: {m1t9icpa}')
         # print(f'm1t9b: {m1t9icpb}')
-
-        # TODO: delete these after everything else is completed. the combiner won't know the misalignment matrices at all!
-        with open('input/misMatrices/misMat-sensors-1.00.json') as f:
-            misalignMatrices = json.load(f)
 
         if False:
             #! Attention! This is WRONG, it used the old ICP matrices, which were wrong too
