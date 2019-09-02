@@ -130,76 +130,64 @@ class alignmentMatrixCombiner:
 
         # * matrix path: mat1t8 -> mat8to2
 
-        matToModule = np.array(self.idealDetectorMatrices[self.modulePath]).reshape(4, 4)
-
         p1 = self.modulePath + '/sensor_1'
         p2 = self.modulePath + '/sensor_2'
         p8 = self.modulePath + '/sensor_8'
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mIdeal1t8 = self.getIdealMatrixP1ToP2(p1, p8)
-        mTotal1t8 = inv(mICP1t8) @ mIdeal1t8
-
-        mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
-        mIdeal2t8 = self.getIdealMatrixP1ToP2(p2, p8)
-        mTotal2t8 = inv(mICP2t8) @ mIdeal2t8
-
-        mTotal1t8InMod = self.baseTransform(mTotal1t8, inv(matToModule))
-        mTotal2t8InMod = self.baseTransform(mTotal2t8, inv(matToModule))
-
-        #? honestly, is this even true?
-        m1to2 = inv(mTotal2t8) @ mIdeal1t8
-        m1to2inMod = self.baseTransform(m1to2, inv(matToModule))
-        
-        m1to2Ideal = self.getIdealMatrixP1ToP2(p1, p2)
-        m1to2IdealInMod = self.baseTransform(m1to2Ideal, inv(matToModule))
-
-        #self.dMat(m1to2IdealInMod, m1to2inMod)
-
-        print('OKAY for real this time')
-        #* this is mathematically correct!and it works
-        mIdeal1to2 = self.getIdealMatrixP1ToP2(p1, p2)
-        mTotalFromMath = inv( inv(mICP2t8) @ mICP1t8 ) @ mIdeal1to2
-
-        # get ICP matrices
-
-        # get ideal matrices
-
-        # combine
-
-        # compare with actual (remember, actual must be base transformed)
 
         #? ----------- begin cheat for comparison
         with open('input/detectorMatrices-sensors-1.00.json') as f:
             totalMatrices = json.load(f)
-
         with open('input/misMatrices/misMat-sensors-1.00.json') as f:
             misalignMatrices = json.load(f)
-
         m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+        m2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+
         m1mis = np.array(misalignMatrices[p1]).reshape(4, 4)
+        m2mis = np.array(misalignMatrices[p2]).reshape(4, 4)
+        
+        #* we get this matrix from external measurements, remember!
         m1misInPnd = self.baseTransform(m1mis, m1)
+
+        #! this is the matrix we are looking for!
+        m2misInPnd = self.baseTransform(m2mis, m2)
 
         # get actual matrix from GeoManager
         m1misTo2Actual = self.getMatrixP1ToP2fromMatrixDict(p1, p2, totalMatrices)
 
         # what does this matrix look like in the system of MISALIGNED sensor A?
-        m1misTo2ActualInAstar = self.baseTransform(m1misTo2Actual, inv(m1misInPnd))
+        #m1misTo2ActualInAstar = self.baseTransform(m1misTo2Actual, inv(m1misInPnd))
         #? ----------- end cheat for comparison
 
-        self.dMat(m1misTo2ActualInAstar, mTotalFromMath)
+        matToModule = np.array(self.idealDetectorMatrices[self.modulePath]).reshape(4, 4)
 
-        # # prepare matrices
-        # mat1to8TotalIn1 = self.getTotalOverlapMatrix(p1, p8)
-        # mat2to8TotalIn2 = self.getTotalOverlapMatrix(p2, p8)
+        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
 
-        # # transform all matrices to sen1
-        # mat2to8TotalIn8 = mat2to8TotalIn2
-        # mat2to8TotalIn1 = self.baseTransform(mat2to8TotalIn8, inv(mat1to8TotalIn1))
+        m1to2Ideal = self.getIdealMatrixP1ToP2(p1, p2)
 
-        # # combine matrices
-        # mat1to2totalIn1 = inv(mat2to8TotalIn1) @ mat1to8TotalIn1
-        # return mat1to2totalIn1
+        #* this is mathematically correct! and it works!
+        mTotalFromMath = inv( inv(mICP2t8) @ mICP1t8 ) @ m1to2Ideal
+
+        # compare with actual (remember, one must be transformed, but it seems more logical to transform the ICP matrices)
+        # also, this base transformation mus be done "backwards", look at the calculations
+        mTotalFromMathInAstar = self.baseTransform(mTotalFromMath, m1misInPnd)
+
+        # so now, just for shits and giggles, transform both to the module
+        m1misTo2ActualInMod = self.baseTransform(m1misTo2Actual, inv(m1misInPnd))
+        mTotalFromMathInAstarInMod = self.baseTransform(mTotalFromMathInAstar, inv(m1misInPnd))
+
+        self.dMat(m1misTo2ActualInMod, mTotalFromMathInAstarInMod)
+
+        # and FINALLY, we find the missing matrix B*:
+        mBstar = mTotalFromMathInAstar @ m1misInPnd @ m1 @ inv(m2)
+        
+        # transform it to senB, because that's where it lives:
+        mBstarInSenB = self.baseTransform(mBstar, inv(m2))
+
+        print(f'so now what remains?')
+        self.dMat(mBstarInSenB, m2mis)
+
 
     def combine1to3(self):
         # * matrix path: mat1t8 -> mat8to3
@@ -208,19 +196,7 @@ class alignmentMatrixCombiner:
         p3 = self.modulePath + '/sensor_3'
         p8 = self.modulePath + '/sensor_8'
 
-        # prepare matrices
-        mat1to8TotalIn1 = self.getTotalOverlapMatrix(p1, p8)
-        mat3to8TotalIn3 = self.getTotalOverlapMatrix(p3, p8)
-
-        # transform all matrices to sen1
-        mat3to8TotalIn8 = mat3to8TotalIn3
-        mat8to1TotalIn1 = inv(mat1to8TotalIn1)
-        mat3to8TotalIn1 = self.baseTransform(mat3to8TotalIn8, mat8to1TotalIn1)
-
-        # combine matrices
-        mat1to3totalIn1 = inv(mat3to8TotalIn1) @ mat1to8TotalIn1
-        return mat1to3totalIn1
-
+    
     def combine1to4a(self):
         # * matrix path: mat1t8 -> mat8to2 -> mat2to9 -> mat9to4
 
@@ -230,31 +206,7 @@ class alignmentMatrixCombiner:
         p8 = self.modulePath + '/sensor_8'
         p9 = self.modulePath + '/sensor_9'
 
-        # prepare matrices
-        mat1to8TotalIn1 = self.getTotalOverlapMatrix(p1, p8)
-        mat2to8TotalIn2 = self.getTotalOverlapMatrix(p2, p8)
-        mat2to9TotalIn2 = self.getTotalOverlapMatrix(p2, p9)
-        mat4to9TotalIn4 = self.getTotalOverlapMatrix(p4, p9)
-
-        # transform all matrices to sen1
-        # trafo from 8 to 1
-        mat2to8TotalIn8 = mat2to8TotalIn2
-        mat8to1TotalIn1 = inv(mat1to8TotalIn1)
-        mat2to8TotalIn1 = self.baseTransform(mat2to8TotalIn8, mat8to1TotalIn1)
-
-        # trafo from 2 to 8 to 1
-        mat2to9TotalIn8 = self.baseTransform(mat2to9TotalIn2, mat2to8TotalIn2)
-        mat2to9TotalIn1 = self.baseTransform(mat2to9TotalIn8, inv(mat1to8TotalIn1))
-
-        # trafo from 4 to 9 to 2 to 8 to 1
-        mat4to9TotalIn9 = mat4to9TotalIn4
-        mat4to9TotalIn2 = self.baseTransform(mat4to9TotalIn9, mat2to9TotalIn2)
-        mat4to9TotalIn8 = self.baseTransform(mat4to9TotalIn2, mat2to8TotalIn2)
-        mat4to9TotalIn1 = self.baseTransform(mat4to9TotalIn8, inv(mat1to8TotalIn1))
-
-        # # combine matrices
-        mat1to4TotalIn1 = inv(mat4to9TotalIn1) @ mat2to9TotalIn1 @ inv(mat2to8TotalIn1) @ mat1to8TotalIn1
-        return mat1to4TotalIn1
+        
 
     def combineMatrices(self):
         # checks here
