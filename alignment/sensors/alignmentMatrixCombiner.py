@@ -121,23 +121,85 @@ class alignmentMatrixCombiner:
         return matFromAtoB @ mat @ inv(matFromAtoB)
 
     def combine1to2(self):
+
+        print('\n\n')
+        print('=============')
+        print('Combine 1to2:')
+        print('=============')
+        print('\n\n')
+
         # * matrix path: mat1t8 -> mat8to2
+
+        matToModule = np.array(self.idealDetectorMatrices[self.modulePath]).reshape(4, 4)
 
         p1 = self.modulePath + '/sensor_1'
         p2 = self.modulePath + '/sensor_2'
         p8 = self.modulePath + '/sensor_8'
 
-        # prepare matrices
-        mat1to8TotalIn1 = self.getTotalOverlapMatrix(p1, p8)
-        mat2to8TotalIn2 = self.getTotalOverlapMatrix(p2, p8)
+        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        mIdeal1t8 = self.getIdealMatrixP1ToP2(p1, p8)
+        mTotal1t8 = inv(mICP1t8) @ mIdeal1t8
 
-        # transform all matrices to sen1
-        mat2to8TotalIn8 = mat2to8TotalIn2
-        mat2to8TotalIn1 = self.baseTransform(mat2to8TotalIn8, inv(mat1to8TotalIn1))
+        mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
+        mIdeal2t8 = self.getIdealMatrixP1ToP2(p2, p8)
+        mTotal2t8 = inv(mICP2t8) @ mIdeal2t8
 
-        # combine matrices
-        mat1to2totalIn1 = inv(mat2to8TotalIn1) @ mat1to8TotalIn1
-        return mat1to2totalIn1
+        mTotal1t8InMod = self.baseTransform(mTotal1t8, inv(matToModule))
+        mTotal2t8InMod = self.baseTransform(mTotal2t8, inv(matToModule))
+
+        #? honestly, is this even true?
+        m1to2 = inv(mTotal2t8) @ mIdeal1t8
+        m1to2inMod = self.baseTransform(m1to2, inv(matToModule))
+        
+        m1to2Ideal = self.getIdealMatrixP1ToP2(p1, p2)
+        m1to2IdealInMod = self.baseTransform(m1to2Ideal, inv(matToModule))
+
+        #self.dMat(m1to2IdealInMod, m1to2inMod)
+
+        print('OKAY for real this time')
+        #* this is mathematically correct!and it works
+        mIdeal1to2 = self.getIdealMatrixP1ToP2(p1, p2)
+        mTotalFromMath = inv( inv(mICP2t8) @ mICP1t8 ) @ mIdeal1to2
+
+        # get ICP matrices
+
+        # get ideal matrices
+
+        # combine
+
+        # compare with actual (remember, actual must be base transformed)
+
+        #? ----------- begin cheat for comparison
+        with open('input/detectorMatrices-sensors-1.00.json') as f:
+            totalMatrices = json.load(f)
+
+        with open('input/misMatrices/misMat-sensors-1.00.json') as f:
+            misalignMatrices = json.load(f)
+
+        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+        m1mis = np.array(misalignMatrices[p1]).reshape(4, 4)
+        m1misInPnd = self.baseTransform(m1mis, m1)
+
+        # get actual matrix from GeoManager
+        m1misTo2Actual = self.getMatrixP1ToP2fromMatrixDict(p1, p2, totalMatrices)
+
+        # what does this matrix look like in the system of MISALIGNED sensor A?
+        m1misTo2ActualInAstar = self.baseTransform(m1misTo2Actual, inv(m1misInPnd))
+        #? ----------- end cheat for comparison
+
+        self.dMat(m1misTo2ActualInAstar, mTotalFromMath)
+
+        # # prepare matrices
+        # mat1to8TotalIn1 = self.getTotalOverlapMatrix(p1, p8)
+        # mat2to8TotalIn2 = self.getTotalOverlapMatrix(p2, p8)
+
+        # # transform all matrices to sen1
+        # mat2to8TotalIn8 = mat2to8TotalIn2
+        # mat2to8TotalIn1 = self.baseTransform(mat2to8TotalIn8, inv(mat1to8TotalIn1))
+
+        # # combine matrices
+        # mat1to2totalIn1 = inv(mat2to8TotalIn1) @ mat1to8TotalIn1
+        # return mat1to2totalIn1
 
     def combine1to3(self):
         # * matrix path: mat1t8 -> mat8to3
@@ -366,14 +428,14 @@ class alignmentMatrixCombiner:
             print('Method 1:')
             self.dMat(m1misTo2misInMod, mat1to2ComputeInMod)
 
-        if True:
+        if False:
             # * This is still correct!
             msg = "Example: get ICP matrix and ideal matrix, compare with actual matrix. We can do this onlt if the actual matrix is transformed to MISALIGNED sensor A. After that, we can transform both to the module system."
             with open('input/detectorMatrices-sensors-1.00.json') as f:
                 totalMatrices = json.load(f)
 
             p1 = self.modulePath + '/sensor_1'
-            p2 = self.modulePath + '/sensor_2'
+            p2 = self.modulePath + '/sensor_3'
 
             m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
             m2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
@@ -547,8 +609,6 @@ class alignmentMatrixCombiner:
 
             ICPmat = inv(m2misInPnd) @ (m1misInPnd)
             compareICP = self.getOverlapMisalignLikeICP(p1, p2)
-
-            #m1misTo2WithAddedMis = self.getMatrixP1ToP2fromMatrixDict(p1, p2, totalMatrices)
 
             print(msg)
             self.dMat(ICPmat, m0t5misIcp)
