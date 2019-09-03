@@ -416,6 +416,8 @@ if __name__ == "__main__":
         # TODO: save matrices to disk
         sensorAligner.histCompareResults()
         sensorAligner.combineAlignmentMatrices()
+        # TODO: save misalignment matrices to disk
+        sensorAligner.saveAlignmentMatrices('output/sensorAligner-result-1.00.json')
         done()
 
     if args.debug:

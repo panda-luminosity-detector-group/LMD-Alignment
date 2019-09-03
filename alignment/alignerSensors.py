@@ -160,15 +160,40 @@ class alignerSensors:
 
         print(f'combined for all sensors on all modules. length: {len(self.alignmentMatrices)}')
 
+    def saveAlignmentMatrices(self, outputFile):
+        
+        # first, flatten all alignment matrices before saving them to json
+        for path in self.alignmentMatrices:
+            self.alignmentMatrices[path] = np.ndarray.tolist(self.alignmentMatrices[path].flatten())
+
+        # save them:
+        with open(outputFile, 'w') as fp:
+            fp.write(json.dumps(self.alignmentMatrices, indent=2))
+
+        print(f'All alignment matrices successfully saved to {outputFile}')
+
+    # TODO: throw all comparisons out of here
     def histCompareResults(self):
 
-        comparer = overlapComparator(self.overlapMatrices)
-        comparer.loadPerfectDetectorOverlaps(self.idealOverlapsPath)
-        comparer.loadDesignMisalignmentMatrices(self.config.pathMisMatrix())
+        with open(self.idealDetectorMatrixPath) as ideasF:
+            idealDetectorMatrices = json.load(ideasF)
+
+        with open(self.config.pathMisMatrix()) as f:
+            misMatrices = json.load(f)
+
+        comparator = overlapComparator()
+        
+        # set ideal and misalignment matrices
+        comparator.idealDetectorMatrices = idealDetectorMatrices
+        comparator.misalignMatrices = misMatrices
+
+        comparator.setOverlapMatrices(self.overlapMatrices)
+        comparator.loadPerfectDetectorOverlaps(self.idealOverlapsPath)
+        
 
         # TODO: better filename
         histogramFileName = Path('output') / Path(self.config.misalignType)
-        comparer.saveHistogram(histogramFileName)
+        comparator.saveHistogram(histogramFileName)
 
 if __name__ == "__main__":
     print(f'Error! Can not be run individually!')
