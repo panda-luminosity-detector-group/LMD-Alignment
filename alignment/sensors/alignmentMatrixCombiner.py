@@ -10,13 +10,14 @@ Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 Uses multiple overlap matrices and the ideal detector matrices to compute alignment matrices for each sensor.
 Each combiner is responsible for a single module.
 
-It requires the misalignment matrices of sensor 0 and 1 for it's assigned module.
+It requires the misalignment matrices of sensor 0 and 1 for its assigned module.
 We will obtain these with microscopic measurements.
 
 The overlap matrices come from the Reco Points and are thusly already in PANDA global!
 They were created in the module-local frame of reference. For a more detailed mathematical
 description, refer to my PhD thesis.
 """
+
 
 class alignmentMatrixCombiner:
 
@@ -37,6 +38,12 @@ class alignmentMatrixCombiner:
     def setExternallyMeasuredMatrices(self, matrices):
         self.externalMatrices = matrices
 
+    def getDigit(self, number, n):
+        return int(number) // 10**n % 10
+
+    def getSmallOverlap(self, overlap):
+        return str(self.getDigit(overlap, 0))
+
     def setOverlapInfos(self, infos):
         # should only contain the overlap infos relevant to THIS combiner, not all the overlaps!
         self.overlapInfos = infos
@@ -55,12 +62,6 @@ class alignmentMatrixCombiner:
         # and sort by new small overlap. that's okay, the real overlapID is still a field of the dict
         self.overlapInfos = tempDict
 
-    def getDigit(self, number, n):
-        return int(number) // 10**n % 10
-
-    def getSmallOverlap(self, overlap):
-        return str(self.getDigit(overlap, 0))
-
     def getAlignmentMatrices(self):
         return self.alignmentMatrices
 
@@ -71,33 +72,6 @@ class alignmentMatrixCombiner:
         m2 = np.array(self.idealDetectorMatrices[path2]).reshape(4, 4)
         # matrix from sen1 to sen2
         return m2@inv(m1)
-
-    # TODO: remove once the other stuff is in the comparer. this function was used for comparisons
-    def getMatrixP1ToP2fromMatrixDict(self, path1, path2, mat):
-        # matrix from pnd global to sen1
-        m1 = np.array(mat[path1]).reshape(4, 4)
-        # matrix from pnd global to sen2
-        m2 = np.array(mat[path2]).reshape(4, 4)
-        # matrix from sen1 to sen2
-        return m2@inv(m1)
-
-    # FIXME: there is still an error in this function
-    def getTotalOverlapMatrix(self, p1, p2):
-
-        # prepare ideal matrix, transform to sen1
-        matPndTo1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-
-        mat1to2ideal = self.getIdealMatrixP1ToP2(p1, p2)
-        mat1to2idealIn1 = inv(matPndTo1) @ mat1to2ideal @ (matPndTo1)
-
-        # prepare ICP matrix, transform to sen1
-        # TODO: change this to use the actual ICP matrix
-        matICPmisalign1to2 = self.getOverlapMisalignLikeICP(p1, p2)
-        matICP1to2In1 = inv(matPndTo1) @ matICPmisalign1to2 @ (matPndTo1)
-
-        # make total matrix from ICP matrix and ideal matrix
-        mat1to8TotalIn1 = matICP1to2In1 @ mat1to2idealIn1
-        return mat1to8TotalIn1
 
     def baseTransform(self, mat, matFromAtoB):
         """
@@ -119,13 +93,13 @@ class alignmentMatrixCombiner:
         m2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
 
         m1to2Ideal = self.getIdealMatrixP1ToP2(p1, p2)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP2t8 = self.overlapMatrices['5']
+        mICP1t8 = self.overlapMatrices['4']
+        mICP2t8 = self.overlapMatrices['5']
 
         # * this is the actual computation
         m1to2FromICP = inv(inv(mICP2t8) @ mICP1t8) @ m1to2Ideal
@@ -151,13 +125,13 @@ class alignmentMatrixCombiner:
         m3 = np.array(self.idealDetectorMatrices[p3]).reshape(4, 4)
 
         m1to3Ideal = self.getIdealMatrixP1ToP2(p1, p3)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP3t8 = self.overlapMatrices['1']
+        mICP1t8 = self.overlapMatrices['4']
+        mICP3t8 = self.overlapMatrices['1']
 
         # * this is the actual computation
         m1to3FromICP = inv(inv(mICP3t8) @ mICP1t8) @ m1to3Ideal
@@ -183,17 +157,17 @@ class alignmentMatrixCombiner:
         m4 = np.array(self.idealDetectorMatrices[p4]).reshape(4, 4)
 
         m1to4Ideal = self.getIdealMatrixP1ToP2(p1, p4)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
-        mICP2t9 = self.getOverlapMisalignLikeICP(p2, p9)
-        mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
+        # mICP2t9 = self.getOverlapMisalignLikeICP(p2, p9)
+        # mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP2t8 = self.overlapMatrices['5']
-        # mICP2t9 = self.overlapMatrices['6']
-        # mICP4t9 = self.overlapMatrices['2']
+        mICP1t8 = self.overlapMatrices['4']
+        mICP2t8 = self.overlapMatrices['5']
+        mICP2t9 = self.overlapMatrices['6']
+        mICP4t9 = self.overlapMatrices['2']
 
         # * this is the actual computation
         m1to4FromICP = inv(inv(mICP4t9) @ mICP2t9 @ inv(mICP2t8) @ mICP1t8) @ m1to4Ideal
@@ -219,17 +193,17 @@ class alignmentMatrixCombiner:
         m4 = np.array(self.idealDetectorMatrices[p4]).reshape(4, 4)
 
         m1to4Ideal = self.getIdealMatrixP1ToP2(p1, p4)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP3t7 = self.getOverlapMisalignLikeICP(p3, p7)
-        mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
-        mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP3t7 = self.getOverlapMisalignLikeICP(p3, p7)
+        # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
+        # mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP3t7 = self.overlapMatrices['7']
-        # mICP3t8 = self.overlapMatrices['1']
-        # mICP4t7 = self.overlapMatrices['8']
+        mICP1t8 = self.overlapMatrices['4']
+        mICP3t7 = self.overlapMatrices['7']
+        mICP3t8 = self.overlapMatrices['1']
+        mICP4t7 = self.overlapMatrices['8']
 
         # * this is the actual computation
         m1to4FromICP = inv(inv(mICP4t7) @ mICP3t7 @ inv(mICP3t8) @ mICP1t8) @ m1to4Ideal
@@ -252,11 +226,11 @@ class alignmentMatrixCombiner:
         m5 = np.array(self.idealDetectorMatrices[p5]).reshape(4, 4)
 
         m0to5Ideal = self.getIdealMatrixP1ToP2(p0, p5)
-        m0misInPnd = self.baseTransform(self.externalMatrices['0'], m0)
+        m0misInPnd = self.baseTransform(self.externalMatrices[p0], m0)
 
-        mICP0t5 = self.getOverlapMisalignLikeICP(p0, p5)
+        # mICP0t5 = self.getOverlapMisalignLikeICP(p0, p5)
 
-        # mICP0t5 = self.overlapMatrices['0']
+        mICP0t5 = self.overlapMatrices['0']
 
         # * this is the actual computation
         m0to5FromICP = inv(mICP0t5) @ m0to5Ideal
@@ -281,15 +255,15 @@ class alignmentMatrixCombiner:
         m6 = np.array(self.idealDetectorMatrices[p6]).reshape(4, 4)
 
         m1to6Ideal = self.getIdealMatrixP1ToP2(p1, p6)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP3t6 = self.getOverlapMisalignLikeICP(p3, p6)
-        mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP3t6 = self.getOverlapMisalignLikeICP(p3, p6)
+        # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP3t6 = self.overlapMatrices['3']
-        # mICP3t8 = self.overlapMatrices['1']
+        mICP1t8 = self.overlapMatrices['4']
+        mICP3t6 = self.overlapMatrices['3']
+        mICP3t8 = self.overlapMatrices['1']
 
         # * this is the actual computation
         m1to6FromICP = inv(mICP3t6 @ inv(mICP3t8) @ mICP1t8) @ m1to6Ideal
@@ -314,15 +288,15 @@ class alignmentMatrixCombiner:
         m7 = np.array(self.idealDetectorMatrices[p7]).reshape(4, 4)
 
         m1to7Ideal = self.getIdealMatrixP1ToP2(p1, p7)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
-        mICP3t7 = self.getOverlapMisalignLikeICP(p3, p7)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
+        # mICP3t7 = self.getOverlapMisalignLikeICP(p3, p7)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP3t8 = self.overlapMatrices['1']
-        # mICP3t7 = self.overlapMatrices['7']W
+        mICP1t8 = self.overlapMatrices['4']
+        mICP3t8 = self.overlapMatrices['1']
+        mICP3t7 = self.overlapMatrices['7']
 
         # * this is the actual computation
         m1to7FromICP = inv(mICP3t7 @ inv(mICP3t8) @ mICP1t8) @ m1to7Ideal
@@ -349,19 +323,19 @@ class alignmentMatrixCombiner:
         m7 = np.array(self.idealDetectorMatrices[p7]).reshape(4, 4)
 
         m1to7Ideal = self.getIdealMatrixP1ToP2(p1, p7)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
-        mICP2t9 = self.getOverlapMisalignLikeICP(p2, p9)
-        mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
-        mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
+        # mICP2t9 = self.getOverlapMisalignLikeICP(p2, p9)
+        # mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
+        # mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP2t8 = self.overlapMatrices['5']
-        # mICP2t9 = self.overlapMatrices['6']
-        # mICP4t7 = self.overlapMatrices['8']
-        # mICP4t9 = self.overlapMatrices['2']
+        mICP1t8 = self.overlapMatrices['4']
+        mICP2t8 = self.overlapMatrices['5']
+        mICP2t9 = self.overlapMatrices['6']
+        mICP4t7 = self.overlapMatrices['8']
+        mICP4t9 = self.overlapMatrices['2']
 
         # * this is the actual computation
         m1to7FromICP = inv(mICP4t7 @ inv(mICP4t9) @ mICP2t9 @ inv(mICP2t8) @ mICP1t8) @ m1to7Ideal
@@ -384,11 +358,11 @@ class alignmentMatrixCombiner:
         m8 = np.array(self.idealDetectorMatrices[p8]).reshape(4, 4)
 
         m1to8Ideal = self.getIdealMatrixP1ToP2(p1, p8)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
 
-        # mICP1t8 = self.overlapMatrices['4']
+        mICP1t8 = self.overlapMatrices['4']
 
         # * this is the actual computation
         m1to8FromICP = inv(mICP1t8) @ m1to8Ideal
@@ -413,15 +387,15 @@ class alignmentMatrixCombiner:
         m9 = np.array(self.idealDetectorMatrices[p9]).reshape(4, 4)
 
         m1to9Ideal = self.getIdealMatrixP1ToP2(p1, p9)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
-        mICP2t9 = self.getOverlapMisalignLikeICP(p2, p9)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
+        # mICP2t9 = self.getOverlapMisalignLikeICP(p2, p9)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP2t8 = self.overlapMatrices['5']
-        # mICP2t9 = self.overlapMatrices['6']
+        mICP1t8 = self.overlapMatrices['4']
+        mICP2t8 = self.overlapMatrices['5']
+        mICP2t9 = self.overlapMatrices['6']
 
         # * this is the actual computation
         m1to9FromICP = inv(mICP2t9 @ inv(mICP2t8)  @ mICP1t8) @ m1to9Ideal
@@ -448,19 +422,19 @@ class alignmentMatrixCombiner:
         m9 = np.array(self.idealDetectorMatrices[p9]).reshape(4, 4)
 
         m1to9Ideal = self.getIdealMatrixP1ToP2(p1, p9)
-        m1misInPnd = self.baseTransform(self.externalMatrices['1'], m1)
+        m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
 
-        mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
-        mICP3t7 = self.getOverlapMisalignLikeICP(p3, p7)
-        mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
-        mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
-        mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
+        # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
+        # mICP3t7 = self.getOverlapMisalignLikeICP(p3, p7)
+        # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
+        # mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
+        # mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
 
-        # mICP1t8 = self.overlapMatrices['4']
-        # mICP3t7 = self.overlapMatrices['7']
-        # mICP3t8 = self.overlapMatrices['1']
-        # mICP4t7 = self.overlapMatrices['8']
-        # mICP4t9 = self.overlapMatrices['2']
+        mICP1t8 = self.overlapMatrices['4']
+        mICP3t7 = self.overlapMatrices['7']
+        mICP3t8 = self.overlapMatrices['1']
+        mICP4t7 = self.overlapMatrices['8']
+        mICP4t9 = self.overlapMatrices['2']
 
         # * this is the actual computation
         m1to9FromICP = inv(mICP4t9 @ inv(mICP4t7) @ mICP3t7 @ inv(mICP3t8) @ mICP1t8) @ m1to9Ideal
@@ -483,38 +457,15 @@ class alignmentMatrixCombiner:
             print(f'ERROR! Please set the externally measured matrices for sensor 0 and 1 for module {self.modulePath}!')
             return
 
-        # these two matrices are measured externally, e.g. by microscope
-        # for now, they are generated by a different function,
+        # all external matrices are 1D arrays, constuct 2D np arrays from them
+        for path in self.externalMatrices:
+            self.externalMatrices[path] = np.array(self.externalMatrices[path]).reshape(4, 4)
 
-        # TODO: delete these after everything else is completed. the combiner won't know the misalignment matrices at all!
-        # except for the very first one, obviously
-        with open('input/misMatrices/misMat-sensors-1.00.json') as f:
-            misalignMatrices = json.load(f)
-
-        self.externalMatrices['0'] = np.array(misalignMatrices[self.modulePath + '/sensor_0']).reshape(4, 4)
-        self.externalMatrices['1'] = np.array(misalignMatrices[self.modulePath + '/sensor_1']).reshape(4, 4)
-
-        cheatMat2star = np.array(misalignMatrices[self.modulePath + '/sensor_2']).reshape(4, 4)
-        cheatMat3star = np.array(misalignMatrices[self.modulePath + '/sensor_3']).reshape(4, 4)
-        cheatMat4star = np.array(misalignMatrices[self.modulePath + '/sensor_4']).reshape(4, 4)
-        cheatMat5star = np.array(misalignMatrices[self.modulePath + '/sensor_5']).reshape(4, 4)
-        cheatMat6star = np.array(misalignMatrices[self.modulePath + '/sensor_6']).reshape(4, 4)
-        cheatMat7star = np.array(misalignMatrices[self.modulePath + '/sensor_7']).reshape(4, 4)
-        cheatMat8star = np.array(misalignMatrices[self.modulePath + '/sensor_8']).reshape(4, 4)
-        cheatMat9star = np.array(misalignMatrices[self.modulePath + '/sensor_9']).reshape(4, 4)
-
-        if len(self.externalMatrices) < 2:
-            print(f'ERROR! Please set the externally measured matrices for sensor 0 and 1 for module {self.modulePath}!')
-            return
-
-        # ? create all intermediate matrices here
         mat2mis = self.combine1to2()
         mat3mis = self.combine1to3()
         mat4amis = self.combine1to4a()
         mat4bmis = self.combine1to4b()
-
         mat5mis = self.combine0to5()
-
         mat6mis = self.combine1to6()
         mat7amis = self.combine1to7a()
         mat7bmis = self.combine1to7b()
@@ -522,40 +473,18 @@ class alignmentMatrixCombiner:
         mat9amis = self.combine1to9a()
         mat9bmis = self.combine1to9b()
 
-        print('Comparison m2*:')
-        self.dMat(cheatMat2star, mat2mis)
-        print('Comparison m3*:')
-        self.dMat(cheatMat3star, mat3mis)
-        print('Comparison m4a*:')
-        self.dMat(cheatMat4star, mat4amis)
-        print('Comparison m4b*:')
-        self.dMat(cheatMat4star, mat4bmis)
-
-        print('Comparison m5*:')
-        self.dMat(cheatMat5star, mat5mis)
-
-        print('Comparison m6*:')
-        self.dMat(cheatMat6star, mat6mis)
-        print('Comparison m7a*:')
-        self.dMat(cheatMat7star, mat7amis)
-        print('Comparison m7b*:')
-        self.dMat(cheatMat7star, mat7bmis)
-        print('Comparison m8*:')
-        self.dMat(cheatMat8star, mat8mis)
-        print('Comparison m9a*:')
-        self.dMat(cheatMat9star, mat9amis)
-        print('Comparison m9b*:')
-        self.dMat(cheatMat9star, mat9bmis)
-
         # compute averages for the matrices that can be reached two ways
-
-        mat4mis = (mat4amis + mat4bmis) / 2     # damn I love numpy
+        mat4mis = (mat4amis + mat4bmis) / 2     # man I love numpy
         mat7mis = (mat7amis + mat7bmis) / 2
         mat9mis = (mat9amis + mat9bmis) / 2
 
         # now, all the overlap misalignments are in PND global!
 
-        # store to internal dict
+        # copy the given misalignments, so that all are in the final set!
+        self.alignmentMatrices[self.modulePath + '/sensor_0'] = self.externalMatrices[self.modulePath + '/sensor_0']
+        self.alignmentMatrices[self.modulePath + '/sensor_1'] = self.externalMatrices[self.modulePath + '/sensor_1']
+
+        # store computed misalignment matrices to internal dict
         self.alignmentMatrices[self.modulePath + '/sensor_2'] = mat2mis
         self.alignmentMatrices[self.modulePath + '/sensor_3'] = mat3mis
         self.alignmentMatrices[self.modulePath + '/sensor_4'] = mat4mis
@@ -565,47 +494,5 @@ class alignmentMatrixCombiner:
         self.alignmentMatrices[self.modulePath + '/sensor_8'] = mat8mis
         self.alignmentMatrices[self.modulePath + '/sensor_9'] = mat9mis
 
+        print(f'successfully computed misalignments on module {self.modulePath} for {len(self.alignmentMatrices)} sensors!')
         return
-
-    #! we don't have some of these matrices, this is cheating and should go in the comparer
-    def getOverlapMisalignLikeICP(self, p1, p2):
-        with open('input/misMatrices/misMat-sensors-1.00.json') as f:
-            misalignMatrices = json.load(f)
-
-        # TODO: include a filter for overlapping sensors!
-        # this code works for any sensor pair (which is good),
-        # which doesn't make sense because I want overlap matrices!
-
-        matPndTo0 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        matPndTo5 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
-
-        # I don't have these!
-        matMisOn0 = np.array(misalignMatrices[p1]).reshape(4, 4)
-        matMisOn5 = np.array(misalignMatrices[p2]).reshape(4, 4)
-
-        matMisOn0InPnd = self.baseTransform(matMisOn0, (matPndTo0))
-        matMisOn5InPnd = self.baseTransform(matMisOn5, (matPndTo5))
-
-        # this is the ICP like matrix
-        # see paper calc.ICP
-        mat0to5MisInPnd = inv(matMisOn5InPnd) @ (matMisOn0InPnd)
-        return mat0to5MisInPnd
-
-    #! we don't have some of these matrices, this is cheating and should go in the comparer
-    def getActualMatrixFromGeoManager(self, p1, p2):
-        with open('input/detectorMatrices-sensors-1.00.json') as f:
-            totalMatrices = json.load(f)
-        matP1toP2 = self.getMatrixP1ToP2fromMatrixDict(p1, p2, totalMatrices)
-        return matP1toP2
-
-    #! this doesn't belong here, move it to the comparer or delete it!
-    def dMat(self, mat1, mat2):
-        mat1 = np.round(mat1, 10)
-        mat2 = np.round(mat2, 10)
-        dmat = np.round((mat1 - mat2)*1e4, 3)
-
-        print('=== dmat ===')
-        # print(f'mat1:\n{mat1}')
-        # print(f'mat2:\n{mat2}')
-        print(f'dmat *1e4:\n{dmat}')
-        print('=== end ===')

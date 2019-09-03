@@ -98,4 +98,54 @@ class overlapComparator(comparator):
         return
 
 class combinedComparator(comparator):
-    pass
+    
+    def baseTransform(self, mat, matFromAtoB):
+        """
+        Reminder: the way this works is that the matrix pointing from pnd to sen0 transforms a matrix IN sen0 back to Pnd
+        If you want to transform a matrix from Pnd to sen0, and you have the matrix to sen0, then you need to give
+        this function inv(matTo0). I know it's confusing, but that's the way this works.
+
+        Example: matrixInPanda = baseTransform(matrixInSensor, matrixPandaToSensor)
+        """
+        return matFromAtoB @ mat @ inv(matFromAtoB)
+
+    def cheatMatrices(self):
+        cheatMat2star = np.array(misalignMatrices[self.modulePath + '/sensor_2']).reshape(4, 4)
+        cheatMat3star = np.array(misalignMatrices[self.modulePath + '/sensor_3']).reshape(4, 4)
+        cheatMat4star = np.array(misalignMatrices[self.modulePath + '/sensor_4']).reshape(4, 4)
+        cheatMat5star = np.array(misalignMatrices[self.modulePath + '/sensor_5']).reshape(4, 4)
+        cheatMat6star = np.array(misalignMatrices[self.modulePath + '/sensor_6']).reshape(4, 4)
+        cheatMat7star = np.array(misalignMatrices[self.modulePath + '/sensor_7']).reshape(4, 4)
+        cheatMat8star = np.array(misalignMatrices[self.modulePath + '/sensor_8']).reshape(4, 4)
+        cheatMat9star = np.array(misalignMatrices[self.modulePath + '/sensor_9']).reshape(4, 4)
+
+    #! we don't have some of these matrices, this is cheating and should go in the comparer
+    def getOverlapMisalignLikeICP(self, p1, p2):
+        with open('input/misMatrices/misMat-sensors-1.00.json') as f:
+            misalignMatrices = json.load(f)
+
+        # TODO: include a filter for overlapping sensors!
+        # this code works for any sensor pair (which is good),
+        # which doesn't make sense because I want overlap matrices!
+
+        matPndTo0 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
+        matPndTo5 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+
+        # I don't have these!
+        matMisOn0 = np.array(misalignMatrices[p1]).reshape(4, 4)
+        matMisOn5 = np.array(misalignMatrices[p2]).reshape(4, 4)
+
+        matMisOn0InPnd = self.baseTransform(matMisOn0, (matPndTo0))
+        matMisOn5InPnd = self.baseTransform(matMisOn5, (matPndTo5))
+
+        # this is the ICP like matrix
+        # see paper calc.ICP
+        mat0to5MisInPnd = inv(matMisOn5InPnd) @ (matMisOn0InPnd)
+        return mat0to5MisInPnd
+
+    #! we don't have some of these matrices, this is cheating and should go in the comparer
+    def getActualMatrixFromGeoManager(self, p1, p2):
+        with open('input/detectorMatrices-sensors-1.00.json') as f:
+            totalMatrices = json.load(f)
+        matP1toP2 = self.getMatrixP1ToP2fromMatrixDict(p1, p2, totalMatrices)
+        return matP1toP2
