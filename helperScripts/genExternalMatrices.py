@@ -6,18 +6,14 @@ from numpy.linalg import inv
 import json
 
 """
-This script reads ideal detector matrices and the artificial misalignment matrices from the simulations to generate
+This script reads the artificial misalignment matrices from the simulations to generate
 the "externally measured matrices" for sensors 0 and 1 on each module. For the final detector,
 these matrices will of course really be measured, but for now, we need to cheat a little.
-"""
 
-def getMatrixP1ToP2fromMatrixDict(path1, path2, mat):
-        # matrix from pnd global to sen1
-        m1 = np.array(mat[path1]).reshape(4, 4)
-        # matrix from pnd global to sen2
-        m2 = np.array(mat[path2]).reshape(4, 4)
-        # matrix from sen1 to sen2
-        return inv(m1)@m2
+This is the script that will also translate the externally measured matrices to a form 
+the sensor aligner can read (i.e. all misalignment matrices must be sensor-local and
+describe the deviation from the ideal position)
+"""
 
 if __name__ == "__main__":
     print('greetings, human.')
