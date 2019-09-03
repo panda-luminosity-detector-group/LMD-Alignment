@@ -44,7 +44,8 @@ class alignerSensors:
         self.idealOverlapsPath = Path('input') / Path('detectorOverlapsIdeal.json')
         self.idealDetectorMatrixPath = Path('input') / Path('detectorMatricesIdeal.json')
         self.availableOverlapIDs = self.getOverlapsFromJSON()
-        self.overlapMatrices = {}                                                           # dictionary overlapID: matrix
+        self.overlapMatrices = {}     
+        self.alignmentMatrices = {}                                                      # dictionary overlapID: matrix
         self.lock = Lock()
         pass
 
@@ -92,7 +93,7 @@ class alignerSensors:
 
         matrix = matrixFinder.getOverlapMatrix()
 
-        # python ditionaries might be thread safe, but just in case
+        # python dictionaries might be thread safe, but just in case
         with self.lock:
             self.overlapMatrices[overlapID] = matrix
 
@@ -117,20 +118,9 @@ class alignerSensors:
             # wait for all threads, this might not even be needed
             executor.shutdown(wait=True)
 
-    def histCompareResults(self):
-
-        comparer = overlapComparator(self.overlapMatrices)
-        comparer.loadPerfectDetectorOverlaps(self.idealOverlapsPath)
-        comparer.loadDesignMisalignmentMatrices(self.config.pathMisMatrix())
-
-        # TODO: better filename
-        histogramFileName = Path('output') / Path(self.config.misalignType)
-        comparer.saveHistogram(histogramFileName)
-
     def combineAlignmentMatrices(self):
 
-        # these are important! the combiner MUST only get the overlap infos
-        # and overlap matrices that are on to its module, not all the other modules!
+        # these are important! the combiner MUST only get the overlap matrices
         sortedMatrices = collections.defaultdict(dict)
         sortedOverlaps = collections.defaultdict(dict)
 
@@ -161,14 +151,24 @@ class alignerSensors:
 
             combiner.setIdealDetectorMatrices(idealMatrices)
             combiner.setOverlapMatrices(sortedMatrices[modulePath])
-            combiner.setOverlapInfos(sortedOverlaps[modulePath])
             combiner.setExternallyMeasuredMatrices(externalMatrices)
 
             combiner.combineMatrices()
 
-            # TODO: delete
-            break
+            resultMatrices = combiner.getAlignmentMatrices()
+            self.alignmentMatrices.update(resultMatrices)
 
+        print(f'combined for all sensors on all modules. length: {len(self.alignmentMatrices)}')
+
+    def histCompareResults(self):
+
+        comparer = overlapComparator(self.overlapMatrices)
+        comparer.loadPerfectDetectorOverlaps(self.idealOverlapsPath)
+        comparer.loadDesignMisalignmentMatrices(self.config.pathMisMatrix())
+
+        # TODO: better filename
+        histogramFileName = Path('output') / Path(self.config.misalignType)
+        comparer.saveHistogram(histogramFileName)
 
 if __name__ == "__main__":
     print(f'Error! Can not be run individually!')

@@ -25,7 +25,6 @@ class alignmentMatrixCombiner:
         self.modulePath = modulePath
         self.alignmentMatrices = {}
         self.overlapMatrices = None
-        self.overlapInfos = None
         self.idealDetectorMatrices = None
         self.externalMatrices = None
 
@@ -44,26 +43,18 @@ class alignmentMatrixCombiner:
     def getSmallOverlap(self, overlap):
         return str(self.getDigit(overlap, 0))
 
-    def setOverlapInfos(self, infos):
-        # should only contain the overlap infos relevant to THIS combiner, not all the overlaps!
-        self.overlapInfos = infos
-        tempDict = {}
-        # add small overlap to each overlap info, we'll need that info later
-        for info in self.overlapInfos:
-
-            # check if modulePath from constructor and overlapInfo match
-            if self.modulePath != self.overlapInfos[info]['pathModule']:
-                print(f"ERROR! Module path mis match: {self.modulePath} and {self.overlapInfos[info]['pathModule']}")
-
-            smallOverlap = self.getSmallOverlap(info)
-            self.overlapInfos[info]['smallOverlap'] = smallOverlap
-            tempDict[smallOverlap] = self.overlapInfos[info]
-
-        # and sort by new small overlap. that's okay, the real overlapID is still a field of the dict
-        self.overlapInfos = tempDict
-
     def getAlignmentMatrices(self):
         return self.alignmentMatrices
+
+    def sortOverlapMatrices(self):
+        tempDict = {}
+        # add small overlap to each overlap info, we'll need that info later
+        for overlapID in self.overlapMatrices:
+            smallOverlap = self.getSmallOverlap(overlapID)
+            tempDict[smallOverlap] = self.overlapMatrices[overlapID]
+
+        # and sort by new small overlap. that's okay, the real overlapID is still a field of the dict
+        self.overlapMatrices = tempDict
 
     def getIdealMatrixP1ToP2(self, path1, path2):
         # matrix from pnd global to sen1
@@ -449,7 +440,7 @@ class alignmentMatrixCombiner:
 
     def combineMatrices(self):
         # checks here
-        if self.overlapMatrices is None or self.idealDetectorMatrices is None or self.overlapInfos is None:
+        if self.overlapMatrices is None or self.idealDetectorMatrices is None:
             print(f'ERROR! Please set overlaps, overlap matrices and ideal detector matrices first!')
             return
 
@@ -457,7 +448,10 @@ class alignmentMatrixCombiner:
             print(f'ERROR! Please set the externally measured matrices for sensor 0 and 1 for module {self.modulePath}!')
             return
 
-        # all external matrices are 1D arrays, constuct 2D np arrays from them
+        # the overlap matrices from the matrix finders still have their entire overlapID, but we need only the smallOverlap
+        self.sortOverlapMatrices()
+
+        # all external matrices are 1D arrays, construct 2D np arrays from them
         for path in self.externalMatrices:
             self.externalMatrices[path] = np.array(self.externalMatrices[path]).reshape(4, 4)
 
