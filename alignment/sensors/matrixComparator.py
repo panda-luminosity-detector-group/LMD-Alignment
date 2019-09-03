@@ -12,10 +12,18 @@ matplotlib.use('Agg')   # so matplotlib works over ssh/with no DISPLAY
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
 Comapre ICP matrices from sensor overlap with actual misalignment matrices from PandaROOT.
+
+This is obviously not possible with the actual, physical geometry, but can be used during simulations
+to estimate the remaining errors of the misalignment.
+
+We will therefore use the word CHEAT multiple times in here.
 """
 
+class comparator:
+    def __init__(self):
+        self.misalignMatrices = {}
 
-class idealCompare:
+class overlapComparator(comparator):
 
     def __init__(self, overlapMatrices):
         self.overlapMatrices = overlapMatrices
@@ -88,3 +96,6 @@ class idealCompare:
         plt.savefig(outputFileName, dpi=150)
 
         return
+
+class combinedComparator(comparator):
+    pass

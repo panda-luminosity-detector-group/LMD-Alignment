@@ -88,19 +88,16 @@ class sensorMatrixFinder:
         transformToLocalSensor = True
         if transformToLocalSensor:
             icpDimension = 2
-            # get matrix lmd to sensor 1
-            #pathToSen1 = self.idealOverlapInfos[str(self.overlap)]['path1']
-            #toSen1 = np.array(self.idealDetectorMatrices[pathToSen1]).reshape(4, 4)
             # get matrix lmd to module
             modulePath = self.idealOverlapInfos[str(self.overlap)]['pathModule']
             matToModule = np.array(self.idealDetectorMatrices[modulePath]).reshape(4, 4)
             
             # invert to transform pairs from lmd to sensor
-            toSen1Inv = np.linalg.inv(matToModule)
+            toModInv = np.linalg.inv(matToModule)
 
             # Transform vectors (remember, C and D are vectors of vectors = matrices!)
-            hit1T = np.matmul(toSen1Inv, hit1H.T).T
-            hit2T = np.matmul(toSen1Inv, hit2H.T).T
+            hit1T = np.matmul(toModInv, hit1H.T).T
+            hit2T = np.matmul(toModInv, hit2H.T).T
 
         else:
             print('WARNING! ICP working in Panda global, NOT sensor local.')

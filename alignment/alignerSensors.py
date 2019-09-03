@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from alignment.sensors.alignmentMatrixCombiner import alignmentMatrixCombiner
-from alignment.sensors.compareWithDesignMatrices import idealCompare
+from alignment.sensors.matrixComparator import overlapComparator
 from alignment.sensors.hitPairSorter import hitPairSorter
 from alignment.sensors.sensorMatrixFinder import sensorMatrixFinder
 
@@ -119,7 +119,7 @@ class alignerSensors:
 
     def histCompareResults(self):
 
-        comparer = idealCompare(self.overlapMatrices)
+        comparer = overlapComparator(self.overlapMatrices)
         comparer.loadPerfectDetectorOverlaps(self.idealOverlapsPath)
         comparer.loadDesignMisalignmentMatrices(self.config.pathMisMatrix())
 
