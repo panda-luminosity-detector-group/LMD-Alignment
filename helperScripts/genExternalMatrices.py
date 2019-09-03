@@ -22,13 +22,6 @@ def getMatrixP1ToP2fromMatrixDict(path1, path2, mat):
 if __name__ == "__main__":
     print('greetings, human.')
 
-    # load geometry specifications
-    with open('input/detectorOverlapsIdeal.json') as f:
-        overlapInfos = json.load(f)
-
-    with open('input/detectorMatricesIdeal.json') as f:
-        matricesIdeal = json.load(f)
-
     with open('input/misMatrices/misMat-sensors-1.00.json') as f:
         matricesMisalign = json.load(f)
 
@@ -36,15 +29,9 @@ if __name__ == "__main__":
 
     externalMatrices = {}
 
-    for overlapID in overlapInfos:
-        pathModule = overlapInfos[overlapID]['pathModule']
-        
-        misMat0 = matricesMisalign[pathModule + '/sensor_0']
-        misMat1 = matricesMisalign[pathModule + '/sensor_1']
-
-        externalMatrices[pathModule] = {}
-        externalMatrices[pathModule]['mis0'] = misMat0
-        externalMatrices[pathModule]['mis1'] = misMat1
+    for path in matricesMisalign:
+        if path.endswith('sensor_0') or path.endswith('sensor_1'):
+            externalMatrices[path] = matricesMisalign[path]
 
     with open(outputFile, 'w') as fp:
         fp.write(json.dumps(externalMatrices, indent=2))
