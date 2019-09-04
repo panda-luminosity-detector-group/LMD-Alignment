@@ -295,7 +295,7 @@ def createMultipleDefaultConfigs():
     if smallBatch:
         momenta = ['1.5', '15.0']
         misFactors = ['0.50', '1.00', '2.00']
-        misTypes = ['sensors', 'box', 'identity']
+        misTypes = ['aligned', 'identity', 'sensors', 'box']
     else:
         momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
         misFactors = ['0.01', '0.05', '0.10', '0.15', '0.20', '0.25', '0.50', '1.00', '2.00', '3.00', '5.00', '10.00']
@@ -304,6 +304,11 @@ def createMultipleDefaultConfigs():
     for misType in misTypes:
         for mom in momenta:
             for fac in misFactors:
+
+                # identity and aligned don't get factors, only momenta
+                if misType == 'aligned' or misType == 'identity':
+                    fac = '1.00'
+
                 dest = Path('runConfigs') / Path(misType) / Path(mom) / Path(f'factor-{fac}.json')
                 dest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -313,8 +318,10 @@ def createMultipleDefaultConfigs():
                 config.misalignType = misType
                 config.momentum = mom
 
+                if misType == 'aligned':
+                    config.misaligned = False
+
                 if Path(dest).exists():
-                    print(f'ERROR! Config {dest} already exists, skipping!')
                     continue
 
                 config.toJSON(dest)

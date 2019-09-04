@@ -10,8 +10,6 @@ import numpy as np
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
 Finds the overlap matrix for two sensors. Requires an overlapID and the set of ideal detector matrices.
-
-TODO: actually delete all 3D related things, this will be done strictly in 2D
 """
 
 
@@ -85,6 +83,8 @@ class sensorMatrixFinder:
         # Attention! Always transform to module-local system,
         # otherwise numerical errors will make the ICP matrices unusable!
         # (because z is at 11m, while x is 30cm and y is 0)
+        # also, we're ignroring z distance, which we can not do if we're in 
+        # PND global, due to the 40mrad rotation.
         transformToLocalSensor = True
         if transformToLocalSensor:
             icpDimension = 2
