@@ -18,18 +18,22 @@ describe the deviation from the ideal position)
 if __name__ == "__main__":
     print('greetings, human.')
 
-    with open('input/misMatrices/misMat-sensors-1.00.json') as f:
-        matricesMisalign = json.load(f)
+    factors = ['0.50', '1.00', '2.00']
+    
+    for factor in factors:
 
-    outputFile = 'input/externalMatrices-sensors-1.00.json'
+        with open(f'input/misMatrices/misMat-sensors-{factor}.json') as f:
+            matricesMisalign = json.load(f)
 
-    externalMatrices = {}
+        outputFile = f'input/sensorAligner/externalMatrices-sensors-{factor}.json'
 
-    for path in matricesMisalign:
-        if path.endswith('sensor_0') or path.endswith('sensor_1'):
-            externalMatrices[path] = matricesMisalign[path]
+        externalMatrices = {}
 
-    with open(outputFile, 'w') as fp:
-        fp.write(json.dumps(externalMatrices, indent=2))
+        for path in matricesMisalign:
+            if path.endswith('sensor_0') or path.endswith('sensor_1'):
+                externalMatrices[path] = matricesMisalign[path]
+
+        with open(outputFile, 'w') as fp:
+            fp.write(json.dumps(externalMatrices, indent=2))
 
     print('all saved!')

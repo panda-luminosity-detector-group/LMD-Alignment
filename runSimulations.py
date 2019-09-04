@@ -101,11 +101,21 @@ def runAligners(runConfig, threadID=None):
     thislogger.log(runConfig.dump())
 
     # create alignerSensors, run
+    externalMatPath = Path(f'input/sensorAligner/externalMatrices-sensors-{runConfig.misalignFactor}.json')
+    
+    sensorAligner = alignerSensors.fromRunConfig(runConfig)
+    sensorAligner.loadExternalMatrices(externalMatPath)
+    sensorAligner.sortPairs()
+    sensorAligner.findMatrices()
+    # TODO: save matrices to disk
+    sensorAligner.combineAlignmentMatrices()
+    sensorAligner.saveAlignmentMatrices(runConfig.pathAlMatrix())
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
+    IPaligner.saveAlignmentMatrix(runConfig.pathAlMatrix())
 
     # create alignerCorridors, run
 
@@ -318,8 +328,14 @@ def createMultipleDefaultConfigs():
                 config.misalignType = misType
                 config.momentum = mom
 
+                # ? ----- sepcial cases here
+                # aligned case has no misalignment
                 if misType == 'aligned':
                     config.misaligned = False
+
+                # sensor misalignment needs more data for pairfinder (default is 100)
+                if misType == 'sensors':
+                    config.jobsNum = 500
 
                 if Path(dest).exists():
                     continue

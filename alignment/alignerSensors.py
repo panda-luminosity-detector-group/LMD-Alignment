@@ -47,13 +47,16 @@ class alignerSensors:
         self.overlapMatrices = {}     
         self.alignmentMatrices = {}                                                      # dictionary overlapID: matrix
         self.lock = Lock()
-        pass
 
     @classmethod
     def fromRunConfig(cls, runConfig):
         temp = cls()
         temp.config = runConfig
         return temp
+
+    def loadExternalMatrices(self, fileName):
+        with open(fileName) as f:
+            self.externalMatrices = json.load(f)
 
     # this retrieves overlapIDs from the json file
     def getOverlapsFromJSON(self):
@@ -143,15 +146,12 @@ class alignerSensors:
         with open(self.idealDetectorMatrixPath) as idealMatricesFile:
             idealMatrices = json.load(idealMatricesFile)
 
-        with open('input/externalMatrices-sensors-1.00.json') as f:
-            externalMatrices = json.load(f)
-
         for modulePath in sortedMatrices:
             combiner = alignmentMatrixCombiner(modulePath)
 
             combiner.setIdealDetectorMatrices(idealMatrices)
             combiner.setOverlapMatrices(sortedMatrices[modulePath])
-            combiner.setExternallyMeasuredMatrices(externalMatrices)
+            combiner.setExternallyMeasuredMatrices(self.externalMatrices)
 
             combiner.combineMatrices()
 
@@ -171,29 +171,6 @@ class alignerSensors:
             fp.write(json.dumps(self.alignmentMatrices, indent=2))
 
         print(f'All alignment matrices successfully saved to {outputFile}')
-
-    # TODO: throw all comparisons out of here
-    def histCompareResults(self):
-
-        with open(self.idealDetectorMatrixPath) as ideasF:
-            idealDetectorMatrices = json.load(ideasF)
-
-        with open(self.config.pathMisMatrix()) as f:
-            misMatrices = json.load(f)
-
-        comparator = overlapComparator()
-        
-        # set ideal and misalignment matrices
-        comparator.idealDetectorMatrices = idealDetectorMatrices
-        comparator.misalignMatrices = misMatrices
-
-        comparator.setOverlapMatrices(self.overlapMatrices)
-        comparator.loadPerfectDetectorOverlaps(self.idealOverlapsPath)
-        
-
-        # TODO: better filename
-        histogramFileName = Path('output') / Path(self.config.misalignType)
-        comparator.saveHistogram(histogramFileName)
 
 if __name__ == "__main__":
     print(f'Error! Can not be run individually!')

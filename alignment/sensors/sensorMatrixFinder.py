@@ -83,7 +83,7 @@ class sensorMatrixFinder:
         # Attention! Always transform to module-local system,
         # otherwise numerical errors will make the ICP matrices unusable!
         # (because z is at 11m, while x is 30cm and y is 0)
-        # also, we're ignroring z distance, which we can not do if we're in 
+        # also, we're ignoring z distance, which we can not do if we're in 
         # PND global, due to the 40mrad rotation.
         transformToLocalSensor = True
         if transformToLocalSensor:

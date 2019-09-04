@@ -43,7 +43,7 @@ class alignerIP:
             # get values from survey / database!
             lumiPos = np.array([0.0, 0.0, 0.0, 1.0])[np.newaxis].T
             lumiMat = getMatrixFromJSON('../input/rootMisalignMatrices/json/detectorMatrices.json', '/cave_1/lmd_root_0')
-            newLumiPos = (lumiMat@lumiPos).T[0][:3]
+            newLumiPos = (lumiMat @ lumiPos).T[0][:3]
             return newLumiPos
         else:
             # values are pre-calculated for ideal lumi position
@@ -78,7 +78,7 @@ class alignerIP:
         dVector = actual[np.newaxis].T
 
         # compute skew symmetric cross product matrix
-        crossMatrix = np.matmul(dVector, cVector.T) - np.matmul(cVector, dVector.T)
+        crossMatrix = (dVector @ cVector.T) - (cVector @ dVector.T)
 
         # compute rotation matrix
         R = np.identity(3) + crossMatrix + np.dot(crossMatrix, crossMatrix) * (1/(1+cosine))
@@ -150,29 +150,30 @@ class alignerIP:
 
         ipApparent = getIPfromTrksQA(str(trksQAfile))
 
-        # add debug flag or something
-        if False:
-            ipApparent = np.array([1.0, 0.0, 0.0])
-
         # FIXME later: read from config or PANDA db/survey
         ipActual = np.array([0.0, 0.0, 0.0])
 
         self.logger.log(f'IP apparent:\n{ipApparent}\n')
         self.logger.log(f'IP actual:\n{ipActual}\n')
 
+        # we want the rotation of the lumi box, so we have to shift the frame of reference
+        # TODO: actually, a real transformation using the matrix (Pnd->lmd) would be even better
         ipApparentLMD = ipApparent - lumiPos
         ipActualLMD = ipActual - lumiPos
 
-        #! order is (IP_from_LMD, IP_actual, i.e. from PANDA)
+        #! order is (IP_from_LMD, IP_actual; i.e. from PANDA)
         Ra = self.getRot(ipApparentLMD, ipActualLMD)
         R1 = makeHomogenous(Ra)
 
-        resultJson = {"/cave_1/lmd_root_0": np.ndarray.tolist(np.ndarray.flatten(R1))}
+        self.resultJson = {"/cave_1/lmd_root_0": np.ndarray.tolist(np.ndarray.flatten(R1))}
 
         if not self.config.alMatFile:
             self.config.generateMatrixNames()
 
-        outFileName = self.config.alMatFile
+        self.logger.log(f'Interaction point alignment done!\n')
+
+    def saveAlignmentMatrix(self, fileName):
+        outFileName = fileName
 
         if Path(outFileName).exists():
             self.logger.log(f'WARNING. Replacing file: {outFileName}!\n')
@@ -183,10 +184,7 @@ class alignerIP:
 
         with open(outFileName, 'w') as outfile:
             self.logger.log(f'\nSaving alignment matrix to file: {outFileName}\n\n')
-            json.dump(resultJson, outfile, indent=2)
-
-        self.logger.log(f'Interaction point alignment done!\n')
-
+            json.dump(self.resultJson, outfile, indent=2)
 
 if __name__ == "__main__":
     print(f'Error! Can not be run individually!')
