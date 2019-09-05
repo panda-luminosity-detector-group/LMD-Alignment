@@ -101,6 +101,9 @@ class hitPairSorter:
         except (KeyboardInterrupt) as e:
             print('caught exception:\n{}\nsaving files...'.format(e))
 
+        except Exception as e:
+            print(f'\n\nERROR!\n{e}\n')
+
         print(f'. done!')
 
         self.saveAllFiles(fileContents)
