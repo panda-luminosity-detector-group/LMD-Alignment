@@ -210,9 +210,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     prealignWrapper.extractLumi()              # blocking
 
     # then run aligner(s)
-    IPaligner = alignerIP.fromRunConfig(runConfig)
-    IPaligner.logger = thislogger
-    IPaligner.computeAlignmentMatrix()
+    runAligners(runConfig, threadID)
 
     # then, set align correction in config true and recreate simWrapper
     runConfig.alignmentCorrection = True
@@ -356,7 +354,7 @@ def createMultipleDefaultConfigs():
 if __name__ == "__main__":
 
     # if os.fork():
-    #     sys.exit()
+    #     syns.exit()
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
 
@@ -437,7 +435,6 @@ if __name__ == "__main__":
         sensorAligner.sortPairs()
         sensorAligner.findMatrices()
         # TODO: save matrices to disk
-        sensorAligner.histCompareResults()
         sensorAligner.combineAlignmentMatrices()
         # TODO: save misalignment matrices to disk
         sensorAligner.saveAlignmentMatrices('output/sensorAligner-result-1.00.json')

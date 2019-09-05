@@ -166,10 +166,17 @@ class alignerSensors:
         for path in self.alignmentMatrices:
             self.alignmentMatrices[path] = np.ndarray.tolist(self.alignmentMatrices[path].flatten())
 
-        # save them:
-        with open(outputFile, 'w') as fp:
-            fp.write(json.dumps(self.alignmentMatrices, indent=2))
+        if Path(outputFile).exists():
+            print(f'WARNING. Replacing file: {outputFile}!\n')
+            Path(outputFile).unlink()
 
+        if not Path(outputFile).parent.exists():
+            Path(outputFile).parent.mkdir()
+
+        with open(outputFile, 'w') as outfile:
+            print(f'\nSaving alignment matrix to file: {outputFile}\n\n')
+            json.dump(self.alignmentMatrices, outfile, indent=2)
+        
         print(f'All alignment matrices successfully saved to {outputFile}')
 
 if __name__ == "__main__":

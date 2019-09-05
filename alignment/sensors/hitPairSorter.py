@@ -84,7 +84,7 @@ class hitPairSorter:
                 break
 
         if allThere:
-            print(f'All npy files already present, skipping sorter!')
+            print(f'All npy files already present in {self.npyOutputDir}, skipping sorter!')
             return
 
         print('Sorting HitPairs .', end='', flush=True)
