@@ -457,10 +457,11 @@ if __name__ == "__main__":
         showLumiFitResults(args.fitValuesConfigPath)
         done()
 
-    #! ---------------------- logging goes to file
+    #! ---------------------- logging goes to file if not in debug mode
 
-    if os.fork():
-        sys.exit()
+    if not args.debug:
+        if os.fork():
+            sys.exit()
 
     # ? =========== align, single config
     if args.alignConfig:
