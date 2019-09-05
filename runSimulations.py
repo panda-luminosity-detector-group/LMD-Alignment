@@ -52,6 +52,8 @@ from pathlib import Path
 
 from alignment.alignerIP import alignerIP
 from alignment.alignerSensors import alignerSensors
+from alignment.sensors.matrixComparator import combinedComparator
+from alignment.sensors.matrixComparator import overlapComparator
 from concurrent.futures import ThreadPoolExecutor
 from detail.LMDRunConfig import LMDRunConfig
 from detail.LumiValLaTeXTable import LumiValLaTeXTable
@@ -102,7 +104,7 @@ def runAligners(runConfig, threadID=None):
 
     # create alignerSensors, run
     externalMatPath = Path(f'input/sensorAligner/externalMatrices-sensors-{runConfig.misalignFactor}.json')
-    
+
     sensorAligner = alignerSensors.fromRunConfig(runConfig)
     sensorAligner.loadExternalMatrices(externalMatPath)
     sensorAligner.sortPairs()
@@ -326,7 +328,7 @@ def createMultipleDefaultConfigs():
                 config.misalignType = misType
                 config.momentum = mom
 
-                # ? ----- sepcial cases here
+                # ? ----- special cases here
                 # aligned case has no misalignment
                 if misType == 'aligned':
                     config.misaligned = False
@@ -378,6 +380,8 @@ if __name__ == "__main__":
 
     parser.add_argument('-r', action='store_true', dest='recursive', help='use with any config Path option to scan paths recursively')
 
+    parser.add_argument('--hist', metavar='--histSensorAligner', type=str, dest='histSensorAligner', help='hist matrix deviations for runConfig')
+
     parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     parser.add_argument('-D', action='store_true', dest='makeMultipleDefaults', help='make multiple example LMDRunConfigs')
     parser.add_argument('--debug', action='store_true', dest='debug', help='run single threaded, more verbose output, submit jobs to devel queue')
@@ -387,7 +391,7 @@ if __name__ == "__main__":
     try:
         args = parser.parse_args()
     except:
-        parser.print_help()
+        # parser.print_help()
         parser.exit(1)
 
     if len(sys.argv) < 2:
@@ -426,18 +430,43 @@ if __name__ == "__main__":
 
     if args.test:
         print(f'Testing...')
-        runConfig = LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json')
-        if args.debug:
-            print(f'\n\n!!! Running in debug mode !!!\n\n')
-            runConfig.useDebug=True
+        done()
 
-        sensorAligner = alignerSensors.fromRunConfig(runConfig)
-        sensorAligner.sortPairs()
-        sensorAligner.findMatrices()
-        # TODO: save matrices to disk
-        sensorAligner.combineAlignmentMatrices()
-        # TODO: save misalignment matrices to disk
-        sensorAligner.saveAlignmentMatrices('output/sensorAligner-result-1.00.json')
+    if args.histSensorAligner:
+        print(f'Testing HISTOGRAMMER...')
+        runConfig = LMDRunConfig.fromJSON('runConfigs/sensors/1.5/factor-1.00.json')
+        # if args.debug:
+        #     print(f'\n\n!!! Running in debug mode !!!\n\n')
+        #     runConfig.useDebug=True
+
+        # externalMatPath = Path(f'input/sensorAligner/externalMatrices-sensors-{runConfig.misalignFactor}.json')
+
+        # sensorAligner = alignerSensors.fromRunConfig(runConfig)
+        # sensorAligner.loadExternalMatrices(externalMatPath)
+        # sensorAligner.sortPairs()
+        # sensorAligner.findMatrices()
+        # sensorAligner.saveOverlapMatrices('output/overlap-sensors-1.00.json')
+        # sensorAligner.combineAlignmentMatrices()
+        # sensorAligner.saveAlignmentMatrices('output/sensorAligner-result-1.00.json')
+
+        # ? comparator starts here
+        comparator = overlapComparator()
+
+        comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+        comparator.loadDesignMisalignments('input/misMatrices/misMat-sensors-1.00.json')
+        comparator.loadSensorAlignerOverlapMatrices('output/overlap-sensors-1.00.json')
+        comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
+
+        comparator.saveHistogram('output/sensors-1.00-icp.png')
+
+        # done, next one:
+        comparator = combinedComparator()
+        comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+        comparator.loadDesignMisalignments('input/misMatrices/misMat-sensors-1.00.json')
+
+        comparator.loadSensorAlignerResults('output/sensorAligner-result-1.00.json')
+        comparator.saveHistogram('output/sensors-1.00-misalignments.png')
+
         done()
 
     if args.debug:

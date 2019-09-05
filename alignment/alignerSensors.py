@@ -123,6 +123,9 @@ class alignerSensors:
 
     def combineAlignmentMatrices(self):
 
+        if self.externalMatrices == None:
+            print('Error! Please set externally measured matrices!')
+
         # these are important! the combiner MUST only get the overlap matrices
         sortedMatrices = collections.defaultdict(dict)
         sortedOverlaps = collections.defaultdict(dict)
@@ -160,6 +163,24 @@ class alignerSensors:
 
         print(f'combined for all sensors on all modules. length: {len(self.alignmentMatrices)}')
 
+    def saveOverlapMatrices(self, outputFile):
+        # first, flatten all alignment matrices before saving them to json
+        saveOverlapMatrices = {}
+
+        for overlapID in self.overlapMatrices:
+            saveOverlapMatrices[overlapID] = np.ndarray.tolist(self.overlapMatrices[overlapID].flatten())
+
+        if Path(outputFile).exists():
+            print(f'WARNING. Replacing file: {outputFile}!\n')
+            Path(outputFile).unlink()
+
+        if not Path(outputFile).parent.exists():
+            Path(outputFile).parent.mkdir()
+
+        with open(outputFile, 'w') as outfile:
+            print(f'\nSaving alignment matrix to file: {outputFile}\n\n')
+            json.dump(saveOverlapMatrices, outfile, indent=2)
+        
     def saveAlignmentMatrices(self, outputFile):
         
         # first, flatten all alignment matrices before saving them to json
@@ -177,7 +198,5 @@ class alignerSensors:
             print(f'\nSaving alignment matrix to file: {outputFile}\n\n')
             json.dump(self.alignmentMatrices, outfile, indent=2)
         
-        print(f'All alignment matrices successfully saved to {outputFile}')
-
 if __name__ == "__main__":
     print(f'Error! Can not be run individually!')
