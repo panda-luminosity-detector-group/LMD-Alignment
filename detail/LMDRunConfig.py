@@ -373,6 +373,11 @@ class LMDRunConfig:
 
     #! --------------------- create paths to matrices, json results
     # alignment matrices are stored in the data directory from which they were found!
+    def pathAlMatrixPath(self):
+        self.__checkMinimum__()
+        return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
+    
+    # TODO: alignment matrix will be called alMat-all-1.00.json!
     def pathAlMatrix(self):
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json')

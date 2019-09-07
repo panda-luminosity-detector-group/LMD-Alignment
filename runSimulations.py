@@ -111,15 +111,17 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.findMatrices()
     # TODO: save matrices to disk
     sensorAligner.combineAlignmentMatrices()
-    sensorAligner.saveAlignmentMatrices(runConfig.pathAlMatrix())
+    sensorAligner.saveAlignmentMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json') )
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
-    IPaligner.saveAlignmentMatrix(runConfig.pathAlMatrix())
+    IPaligner.saveAlignmentMatrix(runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json'))
 
     # create alignerCorridors, run
+
+    # TODO: combine all algnment matrices to one single json File
 
     print(f'Thread {threadID} done!')
 
