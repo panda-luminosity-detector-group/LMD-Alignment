@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 from alignment.IP.trksQA import getIPfromTrksQA
-
 from detail.LMDRunConfig import LMDRunConfig
-from detail.matrices import getMatrixFromJSON, makeHomogenous
-
 from pathlib import Path
+from numpy.linalg import inv
 
 import json
 import numpy as np
@@ -28,7 +26,9 @@ class alignerIP:
 
     def __init__(self):
         self.logger = None
-        pass
+        self.idealDetectorMatrixPath = Path('input') / Path('detectorMatricesIdeal.json')
+        with open(self.idealDetectorMatrixPath) as f:
+            self.idealDetectorMatrices = json.load(f)
 
     @classmethod
     def fromRunConfig(cls, runConfig):
@@ -36,18 +36,8 @@ class alignerIP:
         temp.config = runConfig
         return temp
 
-    def getLumiPosition(self):
-
-        # TODO: better case separation
-        if False:
-            # get values from survey / database!
-            lumiPos = np.array([0.0, 0.0, 0.0, 1.0])[np.newaxis].T
-            lumiMat = getMatrixFromJSON('../input/rootMisalignMatrices/json/detectorMatrices.json', '/cave_1/lmd_root_0')
-            newLumiPos = (lumiMat @ lumiPos).T[0][:3]
-            return newLumiPos
-        else:
-            # values are pre-calculated for ideal lumi position
-            return np.array((25.37812835, 0.0, 1109.13))
+    def baseTransform(self, mat, matFromAtoB):
+        return matFromAtoB @ mat @ inv(matFromAtoB)
 
     """
     computes rotation from A to B when rotated through origin.
@@ -138,10 +128,6 @@ class alignerIP:
         trksQApath = self.config.pathTrksQA()
         self.logger.log(f'I\'m looking for the IP here: {trksQApath}\n')
 
-        # FIXME later: read from config or PANDA db/survey
-        lumiPos = self.getLumiPosition()
-        self.logger.log(f'Lumi Position is:\n{lumiPos}\n\n')
-
         # TODO: create list with about 3 TrksQA files by searching through the directory, no more hard coded values!
         trksQAfile = trksQApath / Path('Lumi_TrksQA_1000*.root')        # this will find 1-4 files, should be okay for now
 
@@ -151,25 +137,25 @@ class alignerIP:
         ipApparent = getIPfromTrksQA(str(trksQAfile))
 
         # FIXME later: read from config or PANDA db/survey
-        ipActual = np.array([0.0, 0.0, 0.0])
+        ipActual = np.array([0.0, 0.0, 0.0, 1.0])
 
         self.logger.log(f'IP apparent:\n{ipApparent}\n')
         self.logger.log(f'IP actual:\n{ipActual}\n')
 
-        # we want the rotation of the lumi box, so we have to shift the frame of reference
-        # TODO: actually, a real transformation using the matrix (Pnd->lmd) would be even better
-        ipApparentLMD = ipApparent - lumiPos
-        ipActualLMD = ipActual - lumiPos
+        # we want the rotation of the lumi box, so we have to change the basis
+        matPndtoLmd = np.array(self.idealDetectorMatrices['/cave_1/lmd_root_0']).reshape(4, 4)
+        ipApparentLMD = self.baseTransform(ipApparent, inv(matPndtoLmd))[:3]
+        ipActualLMD = self.baseTransform(ipActual, inv(matPndtoLmd))[:3]
 
-        #! order is (IP_from_LMD, IP_actual; i.e. from PANDA)
+        #! order is: IP_from_LMD, IP_actual (i.e. from PANDA)
         Ra = self.getRot(ipApparentLMD, ipActualLMD)
-        R1 = makeHomogenous(Ra)
 
+        # homogenize the matrix again
+        R1 = np.identity(4)
+        R1[:3, :3] = Ra
+
+        # after that, add the remaining translation (direct shift towards IP)
         self.resultJson = {"/cave_1/lmd_root_0": np.ndarray.tolist(np.ndarray.flatten(R1))}
-
-        if not self.config.alMatFile:
-            self.config.generateMatrixNames()
-
         self.logger.log(f'Interaction point alignment done!\n')
 
     def saveAlignmentMatrix(self, fileName):
@@ -185,6 +171,7 @@ class alignerIP:
         with open(outFileName, 'w') as outfile:
             self.logger.log(f'\nSaving alignment matrix to file: {outFileName}\n\n')
             json.dump(self.resultJson, outfile, indent=2)
+
 
 if __name__ == "__main__":
     print(f'Error! Can not be run individually!')
