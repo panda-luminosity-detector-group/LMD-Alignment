@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from pathlib import Path
 from numpy.linalg import inv
 
 import numpy as np
@@ -36,12 +37,24 @@ class comparator:
             self.idealDetectorMatrices.update({key: np.array(value).reshape(4, 4)})
 
     def loadDesignMisalignments(self, filename):
-        with open(filename) as f:
-            self.misalignMatrices = json.load(f)
+
+        if not Path(filename).exists():
+            print(f'INFO: Misalignment matrix file does not exist. Setting misalignments to identity matrices!')
+            self.setMisalignmentsToIdentity()
+
+        else:
+            with open(filename) as f:
+                self.misalignMatrices = json.load(f)
 
         # reshape
         # for key, value in self.misalignMatrices.items():
         #     self.misalignMatrices.update({key : np.array(value).reshape(4, 4)})
+
+    # if the geometry is not misaligned, the misalignments can be compared to identity matrices
+    # do this after loading the ideal detector matrices
+    def setMisalignmentsToIdentity(self):
+        for p in self.idealDetectorMatrices:
+            self.misalignMatrices[p] = np.identity(4).flatten()
 
     def baseTransform(self, mat, matFromAtoB):
         """

@@ -85,7 +85,6 @@ def done():
     # cleanup, probably not neccessary
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
-    # print(f'\nrunSimulations.py is done!\n')
     parser.exit(0)
 
 
@@ -108,7 +107,7 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.loadExternalMatrices(externalMatPath)
     sensorAligner.sortPairs()
     sensorAligner.findMatrices()
-    # TODO: save matrices to disk
+    sensorAligner.saveOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
     sensorAligner.combineAlignmentMatrices()
     sensorAligner.saveAlignmentMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json'))
 
@@ -124,6 +123,9 @@ def runAligners(runConfig, threadID=None):
 
     print(f'Thread {threadID} done!')
 
+
+def runComparators():
+    pass
 
 def runExtractLumi(runConfig, threadID=None):
 
@@ -453,15 +455,16 @@ if __name__ == "__main__":
         # box rotation comparator
         comparator = boxComparator()
         comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        comparator.loadDesignMisalignments('input/misMatrices/misMat-box-1.00.json')
-        comparator.loadAlignerMatrices('output/alMat-IPalignment-1.00-TESTING.json')
+        comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+        #comparator.setMisalignmentsToIdentity()
+        comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')) 
         comparator.saveHistogram('output/box-1.00-icp.png')
 
         # overlap comparator
         comparator = overlapComparator()
         comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        comparator.loadDesignMisalignments('input/misMatrices/misMat-sensors-1.00.json')
-        comparator.loadSensorAlignerOverlapMatrices('output/overlap-sensors-1.00.json')
+        comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+        comparator.loadSensorAlignerOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
         comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
         comparator.saveHistogram('output/sensors-1.00-icp.png')
 
@@ -469,7 +472,7 @@ if __name__ == "__main__":
         comparator = combinedComparator()
         comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
         comparator.loadDesignMisalignments('input/misMatrices/misMat-sensors-1.00.json')
-        comparator.loadSensorAlignerResults('output/sensorAligner-result-1.00.json')
+        comparator.loadSensorAlignerResults(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json'))
         comparator.saveHistogram('output/sensors-1.00-misalignments.png')
 
         done()

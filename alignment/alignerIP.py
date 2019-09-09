@@ -45,6 +45,8 @@ class alignerIP:
     
     see https://math.stackexchange.com/a/476311
     or https://en.wikipedia.org/wiki/Cross_product
+    
+    This function works on 3D points only, do not give homogenous coordinates to this!
     """
 
     def getRot(self, apparent, actual):
