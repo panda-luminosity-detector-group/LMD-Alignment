@@ -12,6 +12,7 @@ columns. But time is critical right now.
 """
 
 import json
+import sys
 
 
 class LumiValLaTeXTable:
@@ -28,12 +29,9 @@ class LumiValLaTeXTable:
 
         self.configs.sort()
 
-        # print(f'{self.configs[0].__dict__}')
-        # print(f'{self.configs[len(self.configs)-1].__dict__}')
-        
         print('Beam Momentum [GeV] & Misalign Type & Misalign Factor & Corrected & Lumi Deviation [\%]')
         for conf in self.configs:
             with open(conf.pathLumiVals()) as file:
-               lumiVals = json.load(file)
+                lumiVals = json.load(file)
 
             print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumiVals["relative_deviation_in_percent"]}')

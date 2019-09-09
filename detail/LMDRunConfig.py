@@ -65,16 +65,30 @@ class LMDRunConfig:
         #     (float(self.misalignFactor) < float(other.misalignFactor)) or
         #     (self.alignmentCorrection < other.alignmentCorrection)
         # )
-        if float(self.momentum) < float(other.momentum):
+
+        momLt = float(self.momentum) < float(other.momentum)
+        momEq = float(self.momentum) == float(other.momentum)
+
+        typeLt = self.misalignType < other.misalignType
+        typeEq = self.misalignType == other.misalignType
+
+        factorLt = float(self.misalignFactor) < float(other.misalignFactor)
+        factorEq = float(self.misalignFactor) == float(other.misalignFactor)
+        
+        corrLt = self.alignmentCorrection < other.alignmentCorrection
+        corrEq = self.alignmentCorrection == other.alignmentCorrection
+
+        if momLt:
             return True
-        elif self.misaligned < other.misaligned:
+        elif momEq and typeLt:
             return True
-        elif self.misalignType < other.misalignType:
+        elif momEq and typeEq and factorLt:
             return True
-        elif float(self.misalignFactor) < float(other.misalignFactor):
+        elif momEq and typeEq and factorEq and corrLt:
             return True
-        elif self.alignmentCorrection < other.alignmentCorrection:
-            return True
+
+        # elif self.misaligned < other.misaligned:
+        #     return True
         # elif self.trksNum < other.trksNum:
         #     return True
         # elif self.jobsNum < other.jobsNum:
