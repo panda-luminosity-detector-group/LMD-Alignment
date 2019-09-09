@@ -36,4 +36,4 @@ class LumiValLaTeXTable:
             with open(conf.pathLumiVals()) as file:
                lumiVals = json.load(file)
 
-            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumiVals["relative_deviation_in_percent"][0]}')
+            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumiVals["relative_deviation_in_percent"]}')
