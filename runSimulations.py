@@ -112,9 +112,9 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.loadExternalMatrices(externalMatPath)
     sensorAligner.sortPairs()
     sensorAligner.findMatrices()
-    sensorAligner.saveOverlapMatrices(sensorAlignerResultName)
+    sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
     sensorAligner.combineAlignmentMatrices()
-    sensorAligner.saveAlignmentMatrices(sensorAlignerOverlapsResultName)
+    sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
@@ -140,7 +140,7 @@ def runAligners(runConfig, threadID=None):
         mergedResult[p] = resTwo[p]
 
     with open(mergedAlignerResultName, 'w') as f:
-        json.dump(mergedResult, f)
+        json.dump(mergedResult, f, indent=2)
     print(f'Wrote merged alignment matrices to {mergedAlignerResultName}')
 
     print(f'Thread {threadID} done!')
