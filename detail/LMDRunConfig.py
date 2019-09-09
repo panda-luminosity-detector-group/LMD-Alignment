@@ -391,10 +391,9 @@ class LMDRunConfig:
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
     
-    # TODO: alignment matrix will be called alMat-all-1.00.json!
     def pathAlMatrix(self):
         self.__checkMinimum__()
-        return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices') / Path(f'alMat-{self.__alignType}-{self.__alignFactor}.json')
+        return self.pathAlMatrixPath / Path(f'alMat-merged.json')
 
     def pathMisMatrix(self):
         self.__checkMinimum__()
