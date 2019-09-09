@@ -104,14 +104,14 @@ class alignerSensors:
         # setup paths
         numpyPath = self.config.pathTrksQA() / Path('npPairs')
 
-        if self.config.useDebug or True:
+        if self.config.useDebug:
             print(f'Finding matrices single-threaded!')
             for overlapID in self.availableOverlapIDs:
                 self.findSingleMatrix(overlapID, numpyPath, self.idealOverlapsPath)
 
         else:
             # TODO: automatically set to something reasonable
-            maxThreads = 4
+            maxThreads = 16
             print('Waiting for all Sensor Aligners...')
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:

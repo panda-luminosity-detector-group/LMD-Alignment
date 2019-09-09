@@ -47,6 +47,14 @@ import os
 import random
 import sys
 
+# limit openblas's max threads, this must be done BEFORE importing numpy
+os.environ.update(
+    OMP_NUM_THREADS = '1',
+    OPENBLAS_NUM_THREADS = '1',
+    NUMEXPR_NUM_THREADS = '1',
+    MKL_NUM_THREADS = '1',
+)
+
 from argparse import RawTextHelpFormatter
 from pathlib import Path
 
