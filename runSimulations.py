@@ -96,30 +96,52 @@ def runAligners(runConfig, threadID=None):
 
     print(f'Thread {threadID}: starting!')
 
+    externalMatPath = Path(f'input/sensorAligner/externalMatrices-sensors-{runConfig.misalignFactor}.json')
+
+    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
+    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
+    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
+    mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
+
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create alignerSensors, run
-    externalMatPath = Path(f'input/sensorAligner/externalMatrices-sensors-{runConfig.misalignFactor}.json')
-
     sensorAligner = alignerSensors.fromRunConfig(runConfig)
     sensorAligner.loadExternalMatrices(externalMatPath)
     sensorAligner.sortPairs()
     sensorAligner.findMatrices()
-    sensorAligner.saveOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
+    sensorAligner.saveOverlapMatrices(sensorAlignerResultName)
     sensorAligner.combineAlignmentMatrices()
-    sensorAligner.saveAlignmentMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json'))
+    sensorAligner.saveAlignmentMatrices(sensorAlignerOverlapsResultName)
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
-    IPaligner.saveAlignmentMatrix(runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json'))
+    IPaligner.saveAlignmentMatrix(IPalignerResultName)
 
     # create alignerCorridors, run
 
     # TODO: combine all algnment matrices to one single json File
+    with open(sensorAlignerResultName, 'r') as f:
+        resOne = json.load(f)
+
+    with open(IPalignerResultName, 'r') as f:
+        resTwo = json.load(f)
+
+    mergedResult = {}
+
+    for p in resOne:
+        mergedResult[p] = resOne[p]
+    
+    for p in resTwo:
+        mergedResult[p] = resTwo[p]
+
+    with open(mergedAlignerResultName, 'w') as f:
+        json.dump(mergedResult, f)
+    print(f'Wrote merged alignment matrices to {mergedAlignerResultName}')
 
     print(f'Thread {threadID} done!')
 
