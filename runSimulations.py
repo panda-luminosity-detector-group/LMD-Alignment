@@ -111,7 +111,7 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.findMatrices()
     # TODO: save matrices to disk
     sensorAligner.combineAlignmentMatrices()
-    sensorAligner.saveAlignmentMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json') )
+    sensorAligner.saveAlignmentMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json'))
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
@@ -254,7 +254,7 @@ def showLumiFitResults(runConfigPath, threadID=None):
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
 
-def runConfigsMT(args, function):
+def runConfigsMT(args, function, threads=64):
 
     configs = []
     # read all configs from path
@@ -276,11 +276,11 @@ def runConfigsMT(args, function):
         runConfig = LMDRunConfig.fromJSON(configFile)
         simConfigs.append(runConfig)
 
-    maxThreads = min(len(simConfigs), 64)
+    maxThreads = min(len(simConfigs), threads)
+    print(f'INFO: running in {maxThreads} threads!')
 
     if args.debug:
         maxThreads = 1
-        print(f'DEBUG: running in {maxThreads} threads!')
 
         for con in simConfigs:
             con.useDebug = True
@@ -507,7 +507,7 @@ if __name__ == "__main__":
     if args.alignConfigPath:
         startLogToFile('AlignMulti')
         args.configPath = args.alignConfigPath
-        runConfigsMT(args, runAligners)
+        runConfigsMT(args, runAligners, 1)
         done()
 
     # ? =========== lumiFit, single config
