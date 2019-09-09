@@ -242,7 +242,10 @@ def showLumiFitResults(runConfigPath, threadID=None):
 
     configs = []
     for file in configFiles:
-        configs.append(LMDRunConfig.fromJSON(file))
+        config = LMDRunConfig.fromJSON(file)
+        configs.append(config)
+        config.alignmentCorrection = True
+        configs.append(config)
 
     if len(configs) == 0:
         print(f'No runConfig files found in {runConfigPath}!')
@@ -480,7 +483,7 @@ if __name__ == "__main__":
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
 
-    # # ? =========== lumi fit results, single config
+    # ? =========== lumi fit results, single config
     # if args.fitValuesConfig:
     #     config = LMDRunConfig.fromJSON(args.fitValuesConfig)
     #     if args.debug:
