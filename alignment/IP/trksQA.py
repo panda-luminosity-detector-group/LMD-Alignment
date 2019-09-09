@@ -59,7 +59,7 @@ def extractIP(cleanArray, module, half):
         recMask = recMask & (half == thalf)
 
     # this is the position of the interaction point!
-    ip = [np.average(recX[recMask]), np.average(recY[recMask]), np.average(recZ[recMask])]
+    ip = [np.average(recX[recMask]), np.average(recY[recMask]), np.average(recZ[recMask]), 1.0]
     return ip
 
 
