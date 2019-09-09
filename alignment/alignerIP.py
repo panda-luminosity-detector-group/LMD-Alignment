@@ -128,12 +128,10 @@ class alignerIP:
         trksQApath = self.config.pathTrksQA()
         self.logger.log(f'I\'m looking for the IP here: {trksQApath}\n')
 
+        ipApparent = np.array([0.0, 0.0, 0.0, 1.0])
+
         # TODO: create list with about 3 TrksQA files by searching through the directory, no more hard coded values!
         trksQAfile = trksQApath / Path('Lumi_TrksQA_1000*.root')        # this will find 1-4 files, should be okay for now
-
-        if not trksQAfile.exists():
-            self.logger.log(f'ERROR! Can not find TrksQA File: {trksQAfile}!\n')
-
         ipApparent = getIPfromTrksQA(str(trksQAfile))
 
         # FIXME later: read from config or PANDA db/survey
