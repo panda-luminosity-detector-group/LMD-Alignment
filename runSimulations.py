@@ -135,7 +135,7 @@ def runAligners(runConfig, threadID=None):
 
     for p in resOne:
         mergedResult[p] = resOne[p]
-    
+
     for p in resTwo:
         mergedResult[p] = resTwo[p]
 
@@ -148,6 +148,7 @@ def runAligners(runConfig, threadID=None):
 
 def runComparators():
     pass
+
 
 def runExtractLumi(runConfig, threadID=None):
 
@@ -282,7 +283,7 @@ def showLumiFitResults(runConfigPath, threadID=None):
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
 
-def runConfigsMT(args, function, threads=64):
+def runConfigsMT(args, function):
 
     configs = []
     # read all configs from path
@@ -304,6 +305,7 @@ def runConfigsMT(args, function, threads=64):
         runConfig = LMDRunConfig.fromJSON(configFile)
         simConfigs.append(runConfig)
 
+    threads = 64
     maxThreads = min(len(simConfigs), threads)
     print(f'INFO: running in {maxThreads} threads!')
 
@@ -325,6 +327,33 @@ def runConfigsMT(args, function, threads=64):
 
         print('waiting for all jobs...')
         executor.shutdown(wait=True)
+    return
+
+
+def runConfigsST(args, function):
+    configs = []
+    # read all configs from path
+    searchDir = Path(args.configPath)
+
+    if args.recursive:
+        configs = list(searchDir.glob('**/*.json'))
+    else:
+        configs = list(searchDir.glob('*.json'))
+
+    if len(configs) == 0:
+        print(f'No runConfig files found in {searchDir}. Exiting!')
+        sys.exit(1)
+
+    simConfigs = []
+
+    # loop over all configs, create wrapper and run
+    for configFile in configs:
+        runConfig = LMDRunConfig.fromJSON(configFile)
+        simConfigs.append(runConfig)
+
+    for con in simConfigs:
+        function(con, 0)
+
     return
 
 
@@ -465,17 +494,17 @@ if __name__ == "__main__":
     if args.histSensorAligner:
         print(f'Testing HISTOGRAMMER...')
         runConfig = LMDRunConfig.fromJSON('runConfigs/box/1.5/factor-1.00.json')
-        
+
         if args.debug:
             print(f'\n\n!!! Running in debug mode !!!\n\n')
-            runConfig.useDebug=True
+            runConfig.useDebug = True
 
         thislogger = LMDrunLogger(f'/tmp/tmpLog.txt')
 
         IPaligner = alignerIP.fromRunConfig(runConfig)
         IPaligner.logger = thislogger
         IPaligner.computeAlignmentMatrix()
-        
+
         IPaligner.saveAlignmentMatrix('output/alMat-IPalignment-1.00-TESTING.json')
 
         # ? comparator starts here
@@ -483,8 +512,8 @@ if __name__ == "__main__":
         comparator = boxComparator()
         comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
         comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-        #comparator.setMisalignmentsToIdentity()
-        comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')) 
+        # comparator.setMisalignmentsToIdentity()
+        comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json'))
         comparator.saveHistogram('output/box-1.00-icp.png')
 
         # overlap comparator
@@ -540,7 +569,7 @@ if __name__ == "__main__":
     if args.alignConfigPath:
         startLogToFile('AlignMulti')
         args.configPath = args.alignConfigPath
-        runConfigsMT(args, runAligners, 1)
+        runConfigsST(args, runAligners)
         done()
 
     # ? =========== lumiFit, single config
