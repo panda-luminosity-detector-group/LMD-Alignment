@@ -111,7 +111,7 @@ class alignerSensors:
 
         else:
             # TODO: automatically set to something reasonable
-            maxThreads = 16
+            maxThreads = 4
             print('Waiting for all Sensor Aligners...')
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
