@@ -104,7 +104,7 @@ class alignerSensors:
         # setup paths
         numpyPath = self.config.pathTrksQA() / Path('npPairs')
 
-        if self.config.useDebug:
+        if self.config.useDebug or True:
             print(f'Finding matrices single-threaded!')
             for overlapID in self.availableOverlapIDs:
                 self.findSingleMatrix(overlapID, numpyPath, self.idealOverlapsPath)
