@@ -393,7 +393,7 @@ class LMDRunConfig:
     
     def pathAlMatrix(self):
         self.__checkMinimum__()
-        return self.pathAlMatrixPath / Path(f'alMat-merged.json')
+        return self.pathAlMatrixPath() / Path(f'alMat-merged.json')
 
     def pathMisMatrix(self):
         self.__checkMinimum__()
