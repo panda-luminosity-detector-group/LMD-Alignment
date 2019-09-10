@@ -49,24 +49,22 @@ import sys
 
 # limit openblas's max threads, this must be done BEFORE importing numpy
 os.environ.update(
-    OMP_NUM_THREADS = '8',
-    OPENBLAS_NUM_THREADS = '8',
-    NUMEXPR_NUM_THREADS = '8',
-    MKL_NUM_THREADS = '8',
+    OMP_NUM_THREADS='8',
+    OPENBLAS_NUM_THREADS='8',
+    NUMEXPR_NUM_THREADS='8',
+    MKL_NUM_THREADS='8',
 )
 
-from argparse import RawTextHelpFormatter
-from pathlib import Path
-
-from alignment.alignerIP import alignerIP
-from alignment.alignerSensors import alignerSensors
-from alignment.sensors.matrixComparator import *
-from concurrent.futures import ThreadPoolExecutor
-from detail.LMDRunConfig import LMDRunConfig
-from detail.LumiValLaTeXTable import LumiValLaTeXTable
-from detail.logger import LMDrunLogger
 from detail.simWrapper import simWrapper
-
+from detail.logger import LMDrunLogger
+from detail.LumiValLaTeXTable import LumiValLaTeXTable
+from detail.LMDRunConfig import LMDRunConfig
+from concurrent.futures import ThreadPoolExecutor
+from alignment.sensors.matrixComparator import *
+from alignment.alignerSensors import alignerSensors
+from alignment.alignerIP import alignerIP
+from pathlib import Path
+from argparse import RawTextHelpFormatter
 
 def startLogToFile(functionName=None):
 
@@ -106,8 +104,8 @@ def runAligners(runConfig, threadID=None):
 
     externalMatPath = Path(f'input/sensorAligner/externalMatrices-sensors-{runConfig.misalignFactor}.json')
 
-    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
-    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
+    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
+    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
     mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
 
@@ -132,7 +130,7 @@ def runAligners(runConfig, threadID=None):
 
     # create alignerCorridors, run
 
-    # TODO: combine all algnment matrices to one single json File
+    # combine all algnment matrices to one single json File
     with open(sensorAlignerResultName, 'r') as f:
         resOne = json.load(f)
 

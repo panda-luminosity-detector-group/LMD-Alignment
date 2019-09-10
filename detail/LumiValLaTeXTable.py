@@ -39,7 +39,7 @@ class LumiValLaTeXTable:
                 with open(conf.pathLumiVals()) as file:
                     lumiVals = json.load(file)
 
-                lumi = lumiVals["relative_deviation_in_percent"]
+                lumi = np.round(lumiVals["relative_deviation_in_percent"][0], 3)
             else:
                 lumi = 'no data!'
 
