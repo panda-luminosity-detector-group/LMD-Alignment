@@ -271,6 +271,7 @@ def showLumiFitResults(runConfigPath, threadID=None):
     runConfigPath = Path(runConfigPath)
     configFiles = list(runConfigPath.glob('**/*.json'))
 
+    # copy each config for no correction and with correction
     configs = []
     for file in configFiles:
         configUncorr = LMDRunConfig.fromJSON(file)
@@ -284,8 +285,6 @@ def showLumiFitResults(runConfigPath, threadID=None):
         print(f'No runConfig files found in {runConfigPath}!')
 
     table = LumiValLaTeXTable.fromConfigs(configs)
-    # TODO: add a function to evaluate the config here somehow
-    #table.addColumn('Header name', )
     table.show()
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded

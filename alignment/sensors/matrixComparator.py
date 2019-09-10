@@ -52,12 +52,6 @@ class comparator:
         with open(fileName) as file:
             self.alignerResults = json.load(file)
 
-    # if the geometry is not misaligned, the misalignments can be compared to identity matrices
-    # do this after loading the ideal detector matrices
-    def setMisalignmentsToIdentity(self):
-        for p in self.idealDetectorMatrices:
-            self.misalignMatrices[p] = np.identity(4).flatten()
-
     def baseTransform(self, mat, matFromAtoB):
         """
         Reminder: the way this works is that the matrix pointing from pnd to sen0 transforms a matrix IN sen0 back to Pnd
