@@ -43,7 +43,7 @@ class sensorMatrixFinder:
         if cutPercent == 0:
             return fileUsable
 
-        # calculate center of mass of differces
+        # calculate center of mass of differences
         dRaw = fileUsable[:, 3:6] - fileUsable[:, :3]
         com = np.average(dRaw, axis=0)
 
@@ -90,7 +90,7 @@ class sensorMatrixFinder:
             icpDimension = 2
             # get matrix lmd to module
             modulePath = self.idealOverlapInfos[str(self.overlap)]['pathModule']
-            matToModule = np.array(self.idealDetectorMatrices[modulePath]).reshape(4, 4)
+            matToModule = self.idealDetectorMatrices[modulePath]
             
             # invert to transform pairs from lmd to sensor
             toModInv = np.linalg.inv(matToModule)

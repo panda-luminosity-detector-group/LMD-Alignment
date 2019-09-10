@@ -3,9 +3,9 @@
 from pathlib import Path
 from numpy.linalg import inv
 
+import detail.matrixInterface as mi
 import numpy as np
 
-import json
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -27,60 +27,13 @@ class comparator:
         self.misalignMatrices = {}
 
     def loadIdealDetectorMatrices(self, filename):
-        with open(filename) as f:
-            self.idealDetectorMatrices = json.load(f)
-
-        # reshape
-        for key, value in self.idealDetectorMatrices.items():
-            self.idealDetectorMatrices.update({key: np.array(value).reshape(4, 4)})
+        self.idealDetectorMatrices = mi.loadMatrices(filename)
 
     def loadDesignMisalignments(self, filename):
+        self.misalignMatrices = mi.loadMatrices(filename)
 
-        if not Path(filename).exists():
-            print(f'INFO: Misalignment matrix file does not exist. Setting misalignments to identity matrices!')
-            self.setMisalignmentsToIdentity()
-
-        else:
-            with open(filename) as f:
-                self.misalignMatrices = json.load(f)
-
-        # reshape
-        # for key, value in self.misalignMatrices.items():
-        #     self.misalignMatrices.update({key : np.array(value).reshape(4, 4)})
-
-    def loadAlignerMatrices(self, fileName):
-        with open(fileName) as file:
-            self.alignerResults = json.load(file)
-
-    def baseTransform(self, mat, matFromAtoB):
-        """
-        Reminder: the way this works is that the matrix pointing from pnd to sen0 transforms a matrix IN sen0 back to Pnd
-        If you want to transform a matrix from Pnd to sen0, and you have the matrix to sen0, then you need to give
-        this function inv(matTo0). I know it's confusing, but that's the way this works.
-
-        Example 1: matrixInPanda = baseTransform(matrixInSensor, matrixPandaToSensor)
-        Example 1: matrixInSensor = baseTransform(matrixInPanda, inv(matrixPandaToSensor))
-        """
-        return matFromAtoB @ mat @ inv(matFromAtoB)
-
-    # from https://www.learnopencv.com/rotation-matrix-to-euler-angles/
-    # Calculates rotation matrix to euler angles
-    def rotationMatrixToEulerAngles(self, R):
-
-        R = R.reshape(4, 4)
-        sy = np.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
-        singular = sy < 1e-6
-
-        if not singular:
-            x = np.arctan2(R[2, 1], R[2, 2])
-            y = np.arctan2(-R[2, 0], sy)
-            z = np.arctan2(R[1, 0], R[0, 0])
-        else:
-            x = np.arctan2(-R[1, 2], R[1, 1])
-            y = np.arctan2(-R[2, 0], sy)
-            z = 0
-
-        return np.array([x, y, z])
+    def loadAlignerMatrices(self, filename):
+        self.alignerResults = mi.loadMatrices(filename)
 
     def getOverlapMisalignLikeICP(self, p1, p2):
 
@@ -91,15 +44,15 @@ class comparator:
         # this code works for any sensor pair (which is good),
         # which doesn't make sense because I want overlap matrices!
 
-        matPndTo0 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        matPndTo5 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+        matPndTo0 = self.idealDetectorMatrices[p1]
+        matPndTo5 = self.idealDetectorMatrices[p2]
 
         # I don't have these!
-        matMisOn0 = np.array(self.misalignMatrices[p1]).reshape(4, 4)
-        matMisOn5 = np.array(self.misalignMatrices[p2]).reshape(4, 4)
+        matMisOn0 = self.misalignMatrices[p1]
+        matMisOn5 = self.misalignMatrices[p2]
 
-        matMisOn0InPnd = self.baseTransform(matMisOn0, (matPndTo0))
-        matMisOn5InPnd = self.baseTransform(matMisOn5, (matPndTo5))
+        matMisOn0InPnd = mi.baseTransform(matMisOn0, (matPndTo0))
+        matMisOn5InPnd = mi.baseTransform(matMisOn5, (matPndTo5))
 
         # this is the ICP like matrix
         # see paper.calc.ICP
@@ -138,8 +91,8 @@ class boxComparator(comparator):
         print(f'matrix actual:\n{np.array(self.misalignMatrices["/cave_1/lmd_root_0"])}')
         print(f'matrix found:\n{np.array(self.alignerResults["/cave_1/lmd_root_0"])}')
 
-        eActual = self.rotationMatrixToEulerAngles(np.array(self.misalignMatrices["/cave_1/lmd_root_0"]))
-        eFound = self.rotationMatrixToEulerAngles(np.array(self.alignerResults["/cave_1/lmd_root_0"]))
+        eActual = mi.rotationMatrixToEulerAngles(np.array(self.misalignMatrices["/cave_1/lmd_root_0"]))
+        eFound = mi.rotationMatrixToEulerAngles(np.array(self.alignerResults["/cave_1/lmd_root_0"]))
 
         print(f'Euler from actual: {eActual}')
         print(f'Euler from found: {eFound}')
@@ -158,16 +111,10 @@ class boxComparator(comparator):
 class overlapComparator(comparator):
 
     def loadPerfectDetectorOverlaps(self, fileName):
-        with open(fileName) as file:
-            self.overlaps = json.load(file)
+        self.overlaps = mi.loadMatrices(fileName)
 
     def loadSensorAlignerOverlapMatrices(self, filename):
-        with open(filename) as f:
-            self.overlapMatrices = json.load(f)
-
-        # reshape
-        for key, value in self.overlapMatrices.items():
-            self.overlapMatrices.update({key: np.array(value).reshape(4, 4)})
+        self.overlapMatrices = mi.loadMatrices(filename)
 
     def histValues(self, values):
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import json
 import numpy as np
 from numpy.linalg import inv
 
@@ -58,9 +57,9 @@ class alignmentMatrixCombiner:
 
     def getIdealMatrixP1ToP2(self, path1, path2):
         # matrix from pnd global to sen1
-        m1 = np.array(self.idealDetectorMatrices[path1]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[path1]
         # matrix from pnd global to sen2
-        m2 = np.array(self.idealDetectorMatrices[path2]).reshape(4, 4)
+        m2 = self.idealDetectorMatrices[path2]
         # matrix from sen1 to sen2
         return m2@inv(m1)
 
@@ -80,8 +79,8 @@ class alignmentMatrixCombiner:
         p2 = self.modulePath + '/sensor_2'
         p8 = self.modulePath + '/sensor_8'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m2 = np.array(self.idealDetectorMatrices[p2]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m2 = self.idealDetectorMatrices[p2]
 
         m1to2Ideal = self.getIdealMatrixP1ToP2(p1, p2)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -112,8 +111,8 @@ class alignmentMatrixCombiner:
         p3 = self.modulePath + '/sensor_3'
         p8 = self.modulePath + '/sensor_8'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m3 = np.array(self.idealDetectorMatrices[p3]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m3 = self.idealDetectorMatrices[p3]
 
         m1to3Ideal = self.getIdealMatrixP1ToP2(p1, p3)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -144,8 +143,8 @@ class alignmentMatrixCombiner:
         p8 = self.modulePath + '/sensor_8'
         p9 = self.modulePath + '/sensor_9'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m4 = np.array(self.idealDetectorMatrices[p4]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m4 = self.idealDetectorMatrices[p4]
 
         m1to4Ideal = self.getIdealMatrixP1ToP2(p1, p4)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -180,8 +179,8 @@ class alignmentMatrixCombiner:
         p7 = self.modulePath + '/sensor_7'
         p8 = self.modulePath + '/sensor_8'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m4 = np.array(self.idealDetectorMatrices[p4]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m4 = self.idealDetectorMatrices[p4]
 
         m1to4Ideal = self.getIdealMatrixP1ToP2(p1, p4)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -213,8 +212,8 @@ class alignmentMatrixCombiner:
         p0 = self.modulePath + '/sensor_0'
         p5 = self.modulePath + '/sensor_5'
 
-        m0 = np.array(self.idealDetectorMatrices[p0]).reshape(4, 4)
-        m5 = np.array(self.idealDetectorMatrices[p5]).reshape(4, 4)
+        m0 = self.idealDetectorMatrices[p0]
+        m5 = self.idealDetectorMatrices[p5]
 
         m0to5Ideal = self.getIdealMatrixP1ToP2(p0, p5)
         m0misInPnd = self.baseTransform(self.externalMatrices[p0], m0)
@@ -242,8 +241,8 @@ class alignmentMatrixCombiner:
         p6 = self.modulePath + '/sensor_6'
         p8 = self.modulePath + '/sensor_8'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m6 = np.array(self.idealDetectorMatrices[p6]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m6 = self.idealDetectorMatrices[p6]
 
         m1to6Ideal = self.getIdealMatrixP1ToP2(p1, p6)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -275,8 +274,8 @@ class alignmentMatrixCombiner:
         p7 = self.modulePath + '/sensor_7'
         p8 = self.modulePath + '/sensor_8'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m7 = np.array(self.idealDetectorMatrices[p7]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m7 = self.idealDetectorMatrices[p7]
 
         m1to7Ideal = self.getIdealMatrixP1ToP2(p1, p7)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -310,8 +309,8 @@ class alignmentMatrixCombiner:
         p8 = self.modulePath + '/sensor_8'
         p9 = self.modulePath + '/sensor_9'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m7 = np.array(self.idealDetectorMatrices[p7]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m7 = self.idealDetectorMatrices[p7]
 
         m1to7Ideal = self.getIdealMatrixP1ToP2(p1, p7)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -345,8 +344,8 @@ class alignmentMatrixCombiner:
         p1 = self.modulePath + '/sensor_1'
         p8 = self.modulePath + '/sensor_8'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m8 = np.array(self.idealDetectorMatrices[p8]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m8 = self.idealDetectorMatrices[p8]
 
         m1to8Ideal = self.getIdealMatrixP1ToP2(p1, p8)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -374,8 +373,8 @@ class alignmentMatrixCombiner:
         p8 = self.modulePath + '/sensor_8'
         p9 = self.modulePath + '/sensor_9'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m9 = np.array(self.idealDetectorMatrices[p9]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m9 = self.idealDetectorMatrices[p9]
 
         m1to9Ideal = self.getIdealMatrixP1ToP2(p1, p9)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -409,8 +408,8 @@ class alignmentMatrixCombiner:
         p8 = self.modulePath + '/sensor_8'
         p9 = self.modulePath + '/sensor_9'
 
-        m1 = np.array(self.idealDetectorMatrices[p1]).reshape(4, 4)
-        m9 = np.array(self.idealDetectorMatrices[p9]).reshape(4, 4)
+        m1 = self.idealDetectorMatrices[p1]
+        m9 = self.idealDetectorMatrices[p9]
 
         m1to9Ideal = self.getIdealMatrixP1ToP2(p1, p9)
         m1misInPnd = self.baseTransform(self.externalMatrices[p1], m1)
@@ -453,7 +452,7 @@ class alignmentMatrixCombiner:
 
         # all external matrices are 1D arrays, construct 2D np arrays from them
         for path in self.externalMatrices:
-            self.externalMatrices[path] = np.array(self.externalMatrices[path]).reshape(4, 4)
+            self.externalMatrices[path] = self.externalMatrices[path]
 
         mat2mis = self.combine1to2()
         mat3mis = self.combine1to3()
@@ -489,4 +488,3 @@ class alignmentMatrixCombiner:
         self.alignmentMatrices[self.modulePath + '/sensor_9'] = mat9mis
 
         print(f'successfully computed misalignments on module {self.modulePath} for {len(self.alignmentMatrices)} sensors!')
-        return

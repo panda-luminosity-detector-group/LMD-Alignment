@@ -51,11 +51,11 @@ it:
 from argparse import RawTextHelpFormatter
 from alignment.alignerIP import alignerIP
 from alignment.alignerSensors import alignerSensors
-from alignment.sensors.matrixComparator import *
 from concurrent.futures import ThreadPoolExecutor
 from detail.LMDRunConfig import LMDRunConfig
 from detail.logger import LMDrunLogger
 from detail.LumiValLaTeXTable import LumiValLaTeXTable
+from detail.matrixComparator import *
 from detail.simWrapper import simWrapper
 from pathlib import Path
 
@@ -71,12 +71,12 @@ import sys
 def startLogToFile(functionName=None):
 
     if functionName is None:
-        runSimLog = f'runLogs/runSim-{datetime.date.today()}-run{runNumber}.log'
-        runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-run{runNumber}-stderr.log'
+        runSimLog = f'runLogs/{datetime.date.today()}/main-run{runNumber}.log'
+        runSimLogErr = f'runLogs/{datetime.date.today()}/main-run{runNumber}-stderr.log'
 
     else:
-        runSimLog = f'runLogs/runSim-{datetime.date.today()}-run{runNumber}-{functionName}.log'
-        runSimLogErr = f'runLogs/runSim-{datetime.date.today()}-run{runNumber}-{functionName}-stderr.log'
+        runSimLog = f'runLogs/{datetime.date.today()}/main-run{runNumber}-{functionName}.log'
+        runSimLogErr = f'runLogs/{datetime.date.today()}/main-run{runNumber}-{functionName}-stderr.log'
 
     # redirect stdout/stderr to log files
     print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
@@ -112,7 +112,7 @@ def runAligners(runConfig, threadID=None):
     mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/worker-run{runNumber}-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create alignerSensors, run
@@ -163,7 +163,7 @@ def runExtractLumi(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-ExtractLumi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/worker-run{runNumber}-ExtractLumi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
@@ -182,7 +182,7 @@ def runLumifit(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-LumiFit-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/worker-run{runNumber}-LumiFit-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
@@ -203,7 +203,7 @@ def runSimRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-SimReco-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/worker-run{runNumber}-SimReco-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
     # create simWrapper from config
@@ -231,7 +231,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
         return
 
     # create logger
-    thislogger = LMDrunLogger(f'./runLogs/runLog-{datetime.date.today()}-run{runNumber}-FullRun-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/worker-run{runNumber}-FullRun-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)

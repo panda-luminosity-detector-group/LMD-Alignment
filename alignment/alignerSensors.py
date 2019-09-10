@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from alignment.sensors.alignmentMatrixCombiner import alignmentMatrixCombiner
-from alignment.sensors.matrixComparator import overlapComparator
 from alignment.sensors.hitPairSorter import hitPairSorter
 from alignment.sensors.sensorMatrixFinder import sensorMatrixFinder
 
@@ -13,7 +12,7 @@ from threading import Lock
 
 import collections
 import concurrent
-import json
+import detail.matrixInterface as mi
 import numpy as np
 
 """
@@ -42,9 +41,13 @@ class alignerSensors:
 
     def __init__(self):
         self.idealOverlapsPath = Path('input') / Path('detectorOverlapsIdeal.json')
+        self.idealOverlapInfos = mi.loadMatrices(self.idealOverlapsPath, False)
+
         self.idealDetectorMatrixPath = Path('input') / Path('detectorMatricesIdeal.json')
+        self.idealDetectorMatrices = mi.loadMatrices(self.idealDetectorMatrixPath)
+
         self.availableOverlapIDs = self.getOverlapsFromJSON()
-        self.overlapMatrices = {}     
+        self.overlapMatrices = {}
         self.alignmentMatrices = {}                                                      # dictionary overlapID: matrix
         self.lock = Lock()
 
@@ -55,16 +58,13 @@ class alignerSensors:
         return temp
 
     def loadExternalMatrices(self, fileName):
-        with open(fileName) as f:
-            self.externalMatrices = json.load(f)
+        self.externalMatrices = mi.loadMatrices(fileName)
 
     # this retrieves overlapIDs from the json file
     def getOverlapsFromJSON(self):
         overlapIDs = []
-        with open(self.idealOverlapsPath) as overlapsFile:
-            idealOverlaps = json.load(overlapsFile)
 
-        for overlapID in idealOverlaps:
+        for overlapID in self.idealOverlapInfos:
             overlapIDs.append(overlapID)
 
         return overlapIDs
@@ -78,20 +78,12 @@ class alignerSensors:
 
         sorter.sortAll()
 
-    def findSingleMatrix(self, overlapID, numpyPath, idealOverlapsPath):
+    def findSingleMatrix(self, overlapID, numpyPath):
 
         matrixFinder = sensorMatrixFinder(overlapID)
-
-        with open(idealOverlapsPath, 'r') as f:
-            idealOverlapInfos = json.load(f)
-
-        with open(self.idealDetectorMatrixPath) as idealMatricesFile:
-            idealDetectorMatrices = json.load(idealMatricesFile)
-
-        matrixFinder.idealOverlapInfos = idealOverlapInfos
-        matrixFinder.idealDetectorMatrices = idealDetectorMatrices
+        matrixFinder.idealOverlapInfos = self.idealOverlapInfos
+        matrixFinder.idealDetectorMatrices = self.idealDetectorMatrices
         matrixFinder.readNumpyFiles(numpyPath)
-
         matrixFinder.findMatrix()
 
         matrix = matrixFinder.getOverlapMatrix()
@@ -107,7 +99,7 @@ class alignerSensors:
         if self.config.useDebug:
             print(f'Finding matrices single-threaded!')
             for overlapID in self.availableOverlapIDs:
-                self.findSingleMatrix(overlapID, numpyPath, self.idealOverlapsPath)
+                self.findSingleMatrix(overlapID, numpyPath)
 
         else:
             # TODO: automatically set to something reasonable
@@ -130,24 +122,20 @@ class alignerSensors:
         sortedMatrices = collections.defaultdict(dict)
         sortedOverlaps = collections.defaultdict(dict)
 
-        with open(self.idealOverlapsPath) as overlapsFile:
-            idealOverlaps = json.load(overlapsFile)
-
         # sort overlap matrices by module they are on
         for overlapID in self.availableOverlapIDs:
-            modulePath = idealOverlaps[overlapID]['pathModule']
+            modulePath = self.idealOverlapInfos[overlapID]['pathModule']
             sortedMatrices[modulePath].update({overlapID: self.overlapMatrices[overlapID]})
 
         print(f'found {len(sortedMatrices)}, modules, should be 40.')
 
         # sort overlapInfos to dict by module path
         for modulePath in sortedMatrices:
-            for overlapID in idealOverlaps:
-                if idealOverlaps[overlapID]['pathModule'] == modulePath:
-                    sortedOverlaps[modulePath].update({overlapID: idealOverlaps[overlapID]})
+            for overlapID in self.idealOverlapInfos:
+                if self.idealOverlapInfos[overlapID]['pathModule'] == modulePath:
+                    sortedOverlaps[modulePath].update({overlapID: self.idealOverlapInfos[overlapID]})
 
-        with open(self.idealDetectorMatrixPath) as idealMatricesFile:
-            idealMatrices = json.load(idealMatricesFile)
+        idealMatrices = mi.loadMatrices(self.idealDetectorMatrixPath)
 
         for modulePath in sortedMatrices:
             combiner = alignmentMatrixCombiner(modulePath)
@@ -164,39 +152,7 @@ class alignerSensors:
         print(f'combined for all sensors on all modules. length: {len(self.alignmentMatrices)}')
 
     def saveOverlapMatrices(self, outputFile):
-        # first, flatten all alignment matrices before saving them to json
-        saveOverlapMatrices = {}
+        mi.saveMatrices(self.overlapMatrices, outputFile)
 
-        for overlapID in self.overlapMatrices:
-            saveOverlapMatrices[overlapID] = np.ndarray.tolist(self.overlapMatrices[overlapID].flatten())
-
-        if Path(outputFile).exists():
-            print(f'WARNING. Replacing file: {outputFile}!\n')
-            Path(outputFile).unlink()
-
-        if not Path(outputFile).parent.exists():
-            Path(outputFile).parent.mkdir()
-
-        with open(outputFile, 'w') as outfile:
-            print(f'\nSaving alignment matrix to file: {outputFile}\n\n')
-            json.dump(saveOverlapMatrices, outfile, indent=2)
-        
     def saveAlignmentMatrices(self, outputFile):
-        
-        # first, flatten all alignment matrices before saving them to json
-        for path in self.alignmentMatrices:
-            self.alignmentMatrices[path] = np.ndarray.tolist(self.alignmentMatrices[path].flatten())
-
-        if Path(outputFile).exists():
-            print(f'WARNING. Replacing file: {outputFile}!\n')
-            Path(outputFile).unlink()
-
-        if not Path(outputFile).parent.exists():
-            Path(outputFile).parent.mkdir()
-
-        with open(outputFile, 'w') as outfile:
-            print(f'\nSaving alignment matrix to file: {outputFile}\n\n')
-            json.dump(self.alignmentMatrices, outfile, indent=2)
-        
-if __name__ == "__main__":
-    print(f'Error! Can not be run individually!')
+        mi.saveMatrices(self.alignmentMatrices, outputFile)

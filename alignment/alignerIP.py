@@ -5,7 +5,7 @@ from detail.LMDRunConfig import LMDRunConfig
 from pathlib import Path
 from numpy.linalg import inv
 
-import json
+import detail.matrixInterface as mi
 import numpy as np
 
 """
@@ -27,17 +27,13 @@ class alignerIP:
     def __init__(self):
         self.logger = None
         self.idealDetectorMatrixPath = Path('input') / Path('detectorMatricesIdeal.json')
-        with open(self.idealDetectorMatrixPath) as f:
-            self.idealDetectorMatrices = json.load(f)
+        self.idealDetectorMatrices = mi.loadMatrices(self.idealDetectorMatrixPath)
 
     @classmethod
     def fromRunConfig(cls, runConfig):
         temp = cls()
         temp.config = runConfig
         return temp
-
-    def baseTransform(self, mat, matFromAtoB):
-        return matFromAtoB @ mat @ inv(matFromAtoB)
 
     """
     computes rotation from A to B when rotated through origin.
@@ -143,9 +139,9 @@ class alignerIP:
         self.logger.log(f'IP actual:\n{ipActual}\n')
 
         # we want the rotation of the lumi box, so we have to change the basis
-        matPndtoLmd = np.array(self.idealDetectorMatrices['/cave_1/lmd_root_0']).reshape(4, 4)
-        ipApparentLMD = self.baseTransform(ipApparent, inv(matPndtoLmd))[:3]
-        ipActualLMD = self.baseTransform(ipActual, inv(matPndtoLmd))[:3]
+        matPndtoLmd = self.idealDetectorMatrices['/cave_1/lmd_root_0']
+        ipApparentLMD = mi.baseTransform(ipApparent, inv(matPndtoLmd))[:3]
+        ipActualLMD = mi.baseTransform(ipActual, inv(matPndtoLmd))[:3]
 
         #! order is: IP_from_LMD, IP_actual (i.e. from PANDA)
         Ra = self.getRot(ipApparentLMD, ipActualLMD)
@@ -155,7 +151,7 @@ class alignerIP:
         R1[:3, :3] = Ra
 
         # after that, add the remaining translation (direct shift towards IP)
-        self.resultJson = {"/cave_1/lmd_root_0": np.ndarray.tolist(np.ndarray.flatten(R1))}
+        self.resultJson = {"/cave_1/lmd_root_0": R1}
         self.logger.log(f'Interaction point alignment done!\n')
 
     def saveAlignmentMatrix(self, fileName):
@@ -168,9 +164,7 @@ class alignerIP:
         if not Path(outFileName).parent.exists():
             Path(outFileName).parent.mkdir()
 
-        with open(outFileName, 'w') as outfile:
-            self.logger.log(f'\nSaving alignment matrix to file: {outFileName}\n\n')
-            json.dump(self.resultJson, outfile, indent=2)
+        mi.saveMatrices(self.resultJson, outFileName)
 
 
 if __name__ == "__main__":
