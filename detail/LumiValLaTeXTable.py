@@ -40,7 +40,10 @@ class LumiValLaTeXTable:
                 with open(conf.pathLumiVals()) as file:
                     lumiVals = json.load(file)
 
-                lumi = np.round(float(lumiVals["relative_deviation_in_percent"][0]), 3)
+                try:
+                    lumi = np.round(float(lumiVals["relative_deviation_in_percent"][0]), 3)
+                except:
+                    lumi = 'malformed data!'
             else:
                 lumi = 'no data!'
 
