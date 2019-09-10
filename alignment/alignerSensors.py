@@ -108,7 +108,7 @@ class alignerSensors:
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
                 for overlapID in self.availableOverlapIDs:
-                    executor.submit(self.findSingleMatrix, overlapID, numpyPath, self.idealOverlapsPath)
+                    executor.submit(self.findSingleMatrix, overlapID, numpyPath)
 
             # wait for all threads, this might not even be needed
             executor.shutdown(wait=True)
@@ -121,6 +121,10 @@ class alignerSensors:
         # these are important! the combiner MUST only get the overlap matrices
         sortedMatrices = collections.defaultdict(dict)
         sortedOverlaps = collections.defaultdict(dict)
+
+        if len(self.overlapMatrices) < 360:
+            print(f'ERROR! Not all overlap matrices could be found!')
+            return
 
         # sort overlap matrices by module they are on
         for overlapID in self.availableOverlapIDs:

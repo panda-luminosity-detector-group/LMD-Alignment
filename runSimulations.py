@@ -75,8 +75,8 @@ def startLogToFile(functionName=None):
         runSimLogErr = f'runLogs/{datetime.date.today()}/run{runNumber}-main-stderr.log'
 
     else:
-        runSimLog = f'runLogs/{datetime.date.today()}/run{runNumber}-{functionName}-main.log'
-        runSimLogErr = f'runLogs/{datetime.date.today()}/run{runNumber}-{functionName}-main-stderr.log'
+        runSimLog = f'runLogs/{datetime.date.today()}/run{runNumber}-main-{functionName}.log'
+        runSimLogErr = f'runLogs/{datetime.date.today()}/run{runNumber}-main-{functionName}-stderr.log'
 
     # redirect stdout/stderr to log files
     print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')

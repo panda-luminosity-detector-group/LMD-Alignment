@@ -42,12 +42,13 @@ def saveMatrices(matrices, fileName):
         print(f'WARNING. Replacing file: {fileName}!\n')
         Path(fileName).unlink()
 
-    # flatten matrices
+    # flatten matrices, make a copy (pass-by-reference!)
+    saveMatrices = {}
     for p in matrices:
-        matrices[p] = np.ndarray.tolist(np.ndarray.flatten(matrices[p]))
+        saveMatrices[p] = np.ndarray.tolist(np.ndarray.flatten(matrices[p]))
 
     with open(fileName, 'w') as f:
-        json.dump(matrices, f, indent=2)
+        json.dump(saveMatrices, f, indent=2)
 
 
 def baseTransform(mat, matFromAtoB):
