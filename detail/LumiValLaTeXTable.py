@@ -11,6 +11,8 @@ Then, I want to be able to quickly assemble a complete LaTeX table with arbitrar
 columns. But time is critical right now.
 """
 
+from pathlib import Path
+
 import json
 import sys
 
@@ -31,7 +33,14 @@ class LumiValLaTeXTable:
 
         print('Beam Momentum [GeV] & Misalign Type & Misalign Factor & Corrected & Lumi Deviation [\%]')
         for conf in self.configs:
-            with open(conf.pathLumiVals()) as file:
-                lumiVals = json.load(file)
 
-            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumiVals["relative_deviation_in_percent"]}')
+            if Path(conf.pathLumiVals()).exists():
+
+                with open(conf.pathLumiVals()) as file:
+                    lumiVals = json.load(file)
+
+                lumi = lumiVals["relative_deviation_in_percent"]
+            else:
+                lumi = 'no data!'
+
+            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumi}')
