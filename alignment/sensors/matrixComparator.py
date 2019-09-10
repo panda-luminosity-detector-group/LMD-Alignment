@@ -18,8 +18,6 @@ Comapre ICP matrices from sensor overlap with actual misalignment matrices from 
 
 This is obviously not possible with the actual, physical geometry, but can be used during simulations
 to estimate the remaining errors of the misalignment.
-
-We will therefore use the word CHEAT multiple times in here.
 """
 
 
@@ -49,6 +47,10 @@ class comparator:
         # reshape
         # for key, value in self.misalignMatrices.items():
         #     self.misalignMatrices.update({key : np.array(value).reshape(4, 4)})
+
+    def loadAlignerMatrices(self, fileName):
+        with open(fileName) as file:
+            self.alignerResults = json.load(file)
 
     # if the geometry is not misaligned, the misalignments can be compared to identity matrices
     # do this after loading the ideal detector matrices
@@ -112,10 +114,6 @@ class comparator:
 
 
 class boxComparator(comparator):
-
-    def loadAlignerMatrices(self, fileName):
-        with open(fileName) as file:
-            self.alignerResults = json.load(file)
 
     def histValues(self, values):
 
@@ -225,10 +223,6 @@ class overlapComparator(comparator):
 
 
 class combinedComparator(comparator):
-
-    def loadSensorAlignerResults(self, fileName):
-        with open(fileName) as file:
-            self.alignerResults = json.load(file)
 
     def histValues(self, values):
 
