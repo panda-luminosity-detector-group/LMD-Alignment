@@ -40,8 +40,8 @@ class LMDRunConfig:
         # find env variabled
         # paths must be stored as strings internally so they can be serialized to JSON!
         self.updateEnvPaths()
-        self.__tracksNum = '1000000'
-        self.__jobsNum = '500'
+        self.__tracksNum = '100000'
+        self.__jobsNum = '100'
         self.__JobBaseDir = None
         self.__fromPath = None
         self.__alignMatFile = None

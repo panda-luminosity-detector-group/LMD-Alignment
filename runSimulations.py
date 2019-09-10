@@ -393,11 +393,16 @@ def createMultipleDefaultConfigs():
                 config.misalignType = misType
                 config.momentum = mom
 
-                # identity and aligned don't get factors, only momenta
+                # identity and aligned don't get factors, only momenta and need fewer pairs
                 if misType == 'aligned' or misType == 'identity':
                     config.useIdentityMisalignment = True
                     config.jobsNum = '100'
                     config.trksNum = '100000'
+
+                # sensors need more FOR NOW. later, all misalignments are combined and ALL nedd more
+                if misType == 'sensors':
+                    config.jobsNum = '500'
+                    config.trksNum = '1000000'
 
                 # ? ----- special cases here
                 # aligned case has no misalignment
