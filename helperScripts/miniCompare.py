@@ -13,7 +13,7 @@ with open('input/misMatrices/misMat-sensors-1.00.json') as f:
 
 # load sensorAligner result
 
-with open('output/sensorAligner-result-1.00.json') as f:
+with open('output/alMat-sensorAlignment-1.00.json') as f:
     alMatrices = json.load(f)
 
 # compare
