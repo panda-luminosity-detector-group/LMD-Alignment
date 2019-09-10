@@ -40,8 +40,8 @@ class LMDRunConfig:
         # find env variabled
         # paths must be stored as strings internally so they can be serialized to JSON!
         self.updateEnvPaths()
-        self.__tracksNum = '100000'
-        self.__jobsNum = '100'
+        self.__tracksNum = '1000000'
+        self.__jobsNum = '500'
         self.__JobBaseDir = None
         self.__fromPath = None
         self.__alignMatFile = None
@@ -55,17 +55,11 @@ class LMDRunConfig:
         self.__alignmentCorrection = False
         self.__debug = False
         self.__useDevQueue = False
+        self.__useIdentityAlignment = False
+        self.__mergeAlignmentMatrices = False
 
     #! --------------------- for sortability
-    # TODO: something is still off here, sorting was introduced for the LaTeX table generation, but it didn't quite work
     def __lt__(self, other):
-        # result = (
-        #     (float(self.momentum) < float(other.momentum)) or
-        #     (self.misalignType < other.misalignType) or
-        #     (float(self.misalignFactor) < float(other.misalignFactor)) or
-        #     (self.alignmentCorrection < other.alignmentCorrection)
-        # )
-
         momLt = float(self.momentum) < float(other.momentum)
         momEq = float(self.momentum) == float(other.momentum)
 
@@ -86,17 +80,6 @@ class LMDRunConfig:
             return True
         elif momEq and typeEq and factorEq and corrLt:
             return True
-
-        # elif self.misaligned < other.misaligned:
-        #     return True
-        # elif self.trksNum < other.trksNum:
-        #     return True
-        # elif self.jobsNum < other.jobsNum:
-        #     return True
-        # elif self.useDebug < other.useDebug:
-        #     return True
-        # elif self.useDevQueue < other.useDevQueue:
-        #     return True
         else:
             return False
 

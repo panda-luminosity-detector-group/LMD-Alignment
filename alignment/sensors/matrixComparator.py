@@ -256,8 +256,11 @@ class combinedComparator(comparator):
 
         differences = []
 
-        for p in self.alignerResults:
-            differences.append((self.alignerResults[p][3] - self.misalignMatrices[p][3])*1e4)
+        for p in self.misalignMatrices:
+            try:
+                differences.append((self.alignerResults[p][3] - self.misalignMatrices[p][3])*1e4)
+            except:
+                continue
 
         self.histValues(differences)
         plt.savefig(outputFileName, dpi=150)
