@@ -36,6 +36,7 @@ class comparator:
         self.alignerResults = mi.loadMatrices(filename)
 
     def getOverlapMisalignLikeICP(self, p1, p2):
+        """Returns a 4x4 matrix that looks just like the one found by the ICP, but infinitely (well, double precision) precise."""
 
         if len(self.idealDetectorMatrices) < 400 or len(self.misalignMatrices) < 1:
             print('ERROR! Please load ideal and misalignment matrices first!')

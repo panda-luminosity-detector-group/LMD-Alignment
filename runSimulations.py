@@ -506,8 +506,8 @@ if __name__ == "__main__":
         done()
 
     if args.histSensorAligner:
-        print(f'Testing HISTOGRAMMER...')
-        runConfig = LMDRunConfig.fromJSON('runConfigs/box/1.5/factor-1.00.json')
+        fileName = 'runConfigs/box/1.5/factor-1.00.json'
+        runConfig = LMDRunConfig.fromJSON(fileName)
 
         if args.debug:
             print(f'\n\n!!! Running in debug mode !!!\n\n')

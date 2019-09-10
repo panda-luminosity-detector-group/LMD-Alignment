@@ -58,7 +58,7 @@ def baseTransform(mat, matFromAtoB):
     this function inv(matTo0). I know it's confusing, but that's the way this works.
 
     Example 1: matrixInPanda = baseTransform(matrixInSensor, matrixPandaToSensor)
-    Example 1: matrixInSensor = baseTransform(matrixInPanda, inv(matrixPandaToSensor))
+    Example 2: matrixInSensor = baseTransform(matrixInPanda, inv(matrixPandaToSensor))
     """
     return matFromAtoB @ mat @ inv(matFromAtoB)
 
