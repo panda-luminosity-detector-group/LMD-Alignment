@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+# limit openblas's max threads, this must be done BEFORE importing numpy
+import os
+os.environ.update(
+    OMP_NUM_THREADS='8',
+    OPENBLAS_NUM_THREADS='8',
+    NUMEXPR_NUM_THREADS='8',
+    MKL_NUM_THREADS='8',
+)
+
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
@@ -39,6 +48,17 @@ it:
 
 """
 
+from argparse import RawTextHelpFormatter
+from alignment.alignerIP import alignerIP
+from alignment.alignerSensors import alignerSensors
+from alignment.sensors.matrixComparator import *
+from concurrent.futures import ThreadPoolExecutor
+from detail.LMDRunConfig import LMDRunConfig
+from detail.logger import LMDrunLogger
+from detail.LumiValLaTeXTable import LumiValLaTeXTable
+from detail.simWrapper import simWrapper
+from pathlib import Path
+
 import argparse
 import concurrent
 import datetime
@@ -47,24 +67,6 @@ import os
 import random
 import sys
 
-# limit openblas's max threads, this must be done BEFORE importing numpy
-os.environ.update(
-    OMP_NUM_THREADS='8',
-    OPENBLAS_NUM_THREADS='8',
-    NUMEXPR_NUM_THREADS='8',
-    MKL_NUM_THREADS='8',
-)
-
-from detail.simWrapper import simWrapper
-from detail.logger import LMDrunLogger
-from detail.LumiValLaTeXTable import LumiValLaTeXTable
-from detail.LMDRunConfig import LMDRunConfig
-from concurrent.futures import ThreadPoolExecutor
-from alignment.sensors.matrixComparator import *
-from alignment.alignerSensors import alignerSensors
-from alignment.alignerIP import alignerIP
-from pathlib import Path
-from argparse import RawTextHelpFormatter
 
 def startLogToFile(functionName=None):
 
