@@ -130,7 +130,7 @@ def runAligners(runConfig, threadID=None):
 
     # create alignerCorridors, run
 
-    # combine all algnment matrices to one single json File
+    # combine all alignment matrices to one single json File
     with open(sensorAlignerResultName, 'r') as f:
         resOne = json.load(f)
 
@@ -383,7 +383,6 @@ def createMultipleDefaultConfigs():
                 # identity and aligned don't get factors, only momenta
                 if misType == 'aligned' or misType == 'identity':
                     fac = '1.00'
-                    useIdentityAsAlignmentHere = True
 
                 dest = Path('runConfigs') / Path(misType) / Path(mom) / Path(f'factor-{fac}.json')
                 dest.parent.mkdir(parents=True, exist_ok=True)
@@ -393,7 +392,12 @@ def createMultipleDefaultConfigs():
                 config.misalignFactor = fac
                 config.misalignType = misType
                 config.momentum = mom
-                config.useIdentityMisalignment = useIdentityAsAlignmentHere
+
+                # identity and aligned don't get factors, only momenta
+                if misType == 'aligned' or misType == 'identity':
+                    config.useIdentityMisalignment = True
+                    config.jobsNum = '100'
+                    config.trksNum = '100000'
 
                 # ? ----- special cases here
                 # aligned case has no misalignment
