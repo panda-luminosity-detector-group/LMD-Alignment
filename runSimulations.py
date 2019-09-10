@@ -383,6 +383,7 @@ def createMultipleDefaultConfigs():
                 # identity and aligned don't get factors, only momenta
                 if misType == 'aligned' or misType == 'identity':
                     fac = '1.00'
+                    useIdentityAsAlignmentHere = True
 
                 dest = Path('runConfigs') / Path(misType) / Path(mom) / Path(f'factor-{fac}.json')
                 dest.parent.mkdir(parents=True, exist_ok=True)
@@ -392,6 +393,7 @@ def createMultipleDefaultConfigs():
                 config.misalignFactor = fac
                 config.misalignType = misType
                 config.momentum = mom
+                config.useIdentityMisalignment = useIdentityAsAlignmentHere
 
                 # ? ----- special cases here
                 # aligned case has no misalignment

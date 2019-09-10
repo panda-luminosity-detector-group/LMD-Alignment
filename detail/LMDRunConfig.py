@@ -68,7 +68,7 @@ class LMDRunConfig:
 
         factorLt = float(self.misalignFactor) < float(other.misalignFactor)
         factorEq = float(self.misalignFactor) == float(other.misalignFactor)
-        
+
         corrLt = self.alignmentCorrection < other.alignmentCorrection
         corrEq = self.alignmentCorrection == other.alignmentCorrection
 
@@ -112,6 +112,22 @@ class LMDRunConfig:
         self.__misalignType = value
 
     misalignType = property(__getMisalignType, __setMisalignType)
+
+    def __setUseIdentityAlignment(self, value):
+        self.__useIdentityAlignment = value
+
+    def __getUseIdentityAlignment(self):
+        return self.__useIdentityAlignment
+
+    useIdentityMisalignment = property(__getUseIdentityAlignment, __setUseIdentityAlignment)
+
+    def __setMergeAlignmentMatrices(self, value):
+        self.mergeAlignmentMatrices = value
+
+    def __getMergeAlignmentMatrices(self):
+        return self.mergeAlignmentMatrices
+
+    mergeAlignmentMatrices = property(__getMergeAlignmentMatrices, __setMergeAlignmentMatrices)
 
     def __getDebug(self):
         return self.__debug
@@ -251,19 +267,21 @@ class LMDRunConfig:
 
     #! --------------------- upadte env paths, for example when migrating to a different system
     def updateEnvPaths(self):
+        alignmentDir = 'LMD_ALIGNMENT_DIR'
         simDirEnv = 'LMDFIT_DATA_DIR'
         pndRootDir = 'VMCWORKDIR'
         self.__cwd = str(Path.cwd())
         try:
             self.__simDataPath = os.environ[simDirEnv]
             self.__pandaRootDir = os.environ[pndRootDir]
+            self.__alignmentDir = os.environ[alignmentDir]
         except:
             print("can't find LuminosityFit installation, PandaRoot installation or Data_Dir!")
             print(f"please set {pndRootDir} and {simDirEnv}!")
             sys.exit(1)
 
-
     #! --------------------- generate matrix name after minimal initialization
+
     def generateMatrixNames(self):
         if self.__misalignType is None or self.__misalignFactor is None or self.__momentum is None:
             print(f'ERROR! not enough parameters set!')
@@ -373,10 +391,17 @@ class LMDRunConfig:
     def pathAlMatrixPath(self):
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
-    
+
     def pathAlMatrix(self):
         self.__checkMinimum__()
-        return self.pathAlMatrixPath() / Path(f'alMat-merged.json')
+
+        if self.__useIdentityAlignment:
+            return Path(self.__alignmentDir) / Path('input') / Path('alMat-identity-all.json')
+
+        elif self.__mergeAlignmentMatrices:
+            return self.pathAlMatrixPath() / Path(f'alMat-merged.json')
+        else:
+            return self.pathAlMatrixPath() / Path(f'alMat-{self.__misalignType}-{self.__misalignFactor}.json')
 
     def pathMisMatrix(self):
         self.__checkMinimum__()
