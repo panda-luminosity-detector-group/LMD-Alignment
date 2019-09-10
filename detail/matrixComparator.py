@@ -88,11 +88,14 @@ class boxComparator(comparator):
 
         differences = []
 
-        print(f'matrix actual:\n{np.array(self.misalignMatrices["/cave_1/lmd_root_0"])}')
-        print(f'matrix found:\n{np.array(self.alignerResults["/cave_1/lmd_root_0"])}')
+        misMat = self.misalignMatrices["/cave_1/lmd_root_0"]
+        alMat = self.alignerResults["/cave_1/lmd_root_0"]
 
-        eActual = mi.rotationMatrixToEulerAngles(np.array(self.misalignMatrices["/cave_1/lmd_root_0"]))
-        eFound = mi.rotationMatrixToEulerAngles(np.array(self.alignerResults["/cave_1/lmd_root_0"]))
+        print(f'matrix actual:\n{misMat}')
+        print(f'matrix found:\n{alMat}')
+
+        eActual = mi.rotationMatrixToEulerAngles(misMat)
+        eFound = mi.rotationMatrixToEulerAngles(alMat)
 
         print(f'Euler from actual: {eActual}')
         print(f'Euler from found: {eFound}')
