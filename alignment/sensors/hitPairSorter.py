@@ -37,13 +37,13 @@ class hitPairSorter:
 
         # sorting and saving
         for ID in self.availableOverlapIDs:
-            # create mask by ID
-            IDmask = (flatOverlaps == float(ID))
-            thisContent = np.array([flathit1[IDmask].x, flathit1[IDmask].y, flathit1[IDmask].z, flathit2[IDmask].x, flathit2[IDmask].y, flathit2[IDmask].z, flatDistance[IDmask]])
-
             # skip if we have just about enough pairs
             if len(fileContents[ID]) > 3e5:
                 continue
+
+            # create mask by ID
+            IDmask = (flatOverlaps == float(ID))
+            thisContent = np.array([flathit1[IDmask].x, flathit1[IDmask].y, flathit1[IDmask].z, flathit2[IDmask].x, flathit2[IDmask].y, flathit2[IDmask].z, flatDistance[IDmask]])
 
             oldContent = fileContents[ID]
             fileContents[ID] = np.concatenate((oldContent, thisContent), axis=1)
