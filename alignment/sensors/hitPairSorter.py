@@ -12,6 +12,7 @@ Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 Sorts HitPairs from Lumi_Pairs_*.root to numpy arrays
 """
 
+
 class hitPairSorter:
 
     def __init__(self, PairDir, numpyDir):
@@ -19,6 +20,7 @@ class hitPairSorter:
         self.npyOutputDir = numpyDir
         self.npyOutputDir.mkdir(parents=True, exist_ok=True)
         self.availableOverlapIDs = {}
+        self.overlapsDone = {}
 
     def sortPairs(self, arrays, fileContents):
         # use just the overlaps for indexes, this tells us how many pairs there are in a given event
@@ -35,39 +37,44 @@ class hitPairSorter:
         flathit2 = hit2[mask].flatten()
         flatDistance = (flathit1 - flathit2).mag    # calculate distance vectorized
 
+        # mark all as not done
+        for ID in self.availableOverlapIDs:
+            self.overlapsDone[ID] = False
+
         # sorting and saving
         for ID in self.availableOverlapIDs:
-            # skip if we have just about enough pairs
-            if len(fileContents[ID]) > 3e5:
+
+            # if marked done, skip
+            if self.overlapsDone[ID]:
                 continue
+
+            # read array from disk
+            fileName = self.npyOutputDir / Path(f'pairs-{ID}.npy')
+            try:
+                oldContent = np.load(fileName)
+            # first run, file not already present
+            except:
+                oldContent = np.empty((7, 0))
 
             # create mask by ID
             IDmask = (flatOverlaps == float(ID))
             thisContent = np.array([flathit1[IDmask].x, flathit1[IDmask].y, flathit1[IDmask].z, flathit2[IDmask].x, flathit2[IDmask].y, flathit2[IDmask].z, flatDistance[IDmask]])
 
-            oldContent = fileContents[ID]
-            fileContents[ID] = np.concatenate((oldContent, thisContent), axis=1)
+            # merge
+            newContent = np.concatenate((oldContent, thisContent), axis=1)
 
-    def saveAllFiles(self, fileContents):
-        for ID in self.availableOverlapIDs:
-            fileName = self.npyOutputDir / Path(f'pairs-{ID}.npy')
+            # mark as done as soon as there are enough pairs
+            if len(newContent) > 6e5:
+                self.overlapsDone[ID] = True
 
-            # check if array is empty
-            if len(fileContents[ID][0]) < 1:
-                print(f'array {ID} empty, skipping...')
-                continue
-
-            if Path(fileName).exists():
-                print(f'file for {ID} already present, aborting!')
-
-            # actually save
-            np.save(file=fileName, arr=fileContents[ID], allow_pickle=False)
+            # write back to disk
+            np.save(file=fileName, arr=newContent, allow_pickle=False)
 
     def sortAll(self):
         # create dict for all fileContents, this is rather non-pythonic
         fileContents = {}
         executor = concurrent.futures.ThreadPoolExecutor(2)   # 8 threads
-        
+
         if len(self.availableOverlapIDs) < 1:
             print(f'ERROR! No available overlap IDs. Did you set them?')
             return
@@ -90,9 +97,9 @@ class hitPairSorter:
         print('Sorting HitPairs .', end='', flush=True)
 
         # open the root trees in a TChain-like manner
-        lumiPairs = str( self.inputDir  / Path('Lumi_Pairs*.root') )
+        lumiPairs = str(self.inputDir / Path('Lumi_Pairs*.root'))
         try:
-            for (_, _, arrays) in uproot.iterate(lumiPairs, 'pndsim', [b'PndLmdHitPair._overlapID', b'PndLmdHitPair._hit1', b'PndLmdHitPair._hit2'], entrysteps=1000000, executor=executor, reportentries=True):
+            for (_, _, arrays) in uproot.iterate(lumiPairs, 'pndsim', [b'PndLmdHitPair._overlapID', b'PndLmdHitPair._hit1', b'PndLmdHitPair._hit2'], entrysteps=float("inf"), executor=executor, reportentries=True):
                 # progress bar
                 print('.', end='', flush=True)
                 self.sortPairs(arrays, fileContents)
@@ -103,8 +110,8 @@ class hitPairSorter:
 
         except Exception as e:
             print(f'\n\nERROR!\n{e}\n')
+            return
 
         print(f'. done!')
 
-        self.saveAllFiles(fileContents)
-        print('\ndone')
+        print('\nAll sorting done')
