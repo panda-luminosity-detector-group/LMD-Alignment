@@ -66,7 +66,7 @@ class hitPairSorter:
     def sortAll(self):
         # create dict for all fileContents, this is rather non-pythonic
         fileContents = {}
-        executor = concurrent.futures.ThreadPoolExecutor(8)   # 8 threads
+        executor = concurrent.futures.ThreadPoolExecutor(2)   # 8 threads
         
         if len(self.availableOverlapIDs) < 1:
             print(f'ERROR! No available overlap IDs. Did you set them?')
