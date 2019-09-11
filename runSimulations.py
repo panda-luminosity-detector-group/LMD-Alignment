@@ -409,7 +409,7 @@ def createMultipleDefaultConfigs():
                         config.jobsNum = '100'
                         config.trksNum = '100000'
 
-                    # sensors need more FOR NOW. later, all misalignments are combined and ALL nedd more
+                    # sensors need more FOR NOW. later, all misalignments are combined and ALL need more
                     if misType == 'sensors':
                         config.jobsNum = '500'
                         config.trksNum = '1000000'
