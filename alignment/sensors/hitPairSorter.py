@@ -21,7 +21,7 @@ class hitPairSorter:
         self.npyOutputDir.mkdir(parents=True, exist_ok=True)
         self.availableOverlapIDs = {}
         self.overlapsDone = {}
-        self.maxPairs = 6e1
+        self.maxPairs = 6e5
 
     def sortPairs(self, arrays, fileContents):
         # use just the overlaps for indexes, this tells us how many pairs there are in a given event
