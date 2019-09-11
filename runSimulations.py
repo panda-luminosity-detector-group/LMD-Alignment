@@ -369,10 +369,12 @@ def createMultipleDefaultConfigs():
     smallBatch = True
 
     if smallBatch:
+        correctedOptions = [False, True]
         momenta = ['1.5', '15.0']
         misFactors = ['0.50', '1.00', '2.00']
         misTypes = ['aligned', 'identity', 'sensors', 'box']
     else:
+        correctedOptions = ['uncorrected','corrected']
         momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
         misFactors = ['0.01', '0.05', '0.10', '0.15', '0.20', '0.25', '0.50', '1.00', '2.00', '3.00', '5.00', '10.00']
         misTypes = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
@@ -380,40 +382,47 @@ def createMultipleDefaultConfigs():
     for misType in misTypes:
         for mom in momenta:
             for fac in misFactors:
+                for corr in correctedOptions:
 
-                # identity and aligned don't get factors, only momenta
-                if misType == 'aligned' or misType == 'identity':
-                    fac = '1.00'
+                    # identity and aligned don't get factors, only momenta
+                    if misType == 'aligned' or misType == 'identity':
+                        fac = '1.00'
 
-                dest = Path('runConfigs') / Path(misType) / Path(mom) / Path(f'factor-{fac}.json')
-                dest.parent.mkdir(parents=True, exist_ok=True)
+                    if corr:
+                        corrPath = 'corrected'
+                    else:
+                        corrPath = 'uncorrected'
 
-                config = LMDRunConfig.minimalDefault()
+                    dest = Path('runConfigs') / Path(corrPath) / Path(misType) / Path(mom) / Path(f'factor-{fac}.json')
+                    dest.parent.mkdir(parents=True, exist_ok=True)
 
-                config.misalignFactor = fac
-                config.misalignType = misType
-                config.momentum = mom
+                    config = LMDRunConfig.minimalDefault()
 
-                # identity and aligned don't get factors, only momenta and need fewer pairs
-                if misType == 'aligned' or misType == 'identity':
-                    config.useIdentityMisalignment = True
-                    config.jobsNum = '100'
-                    config.trksNum = '100000'
+                    config.misalignFactor = fac
+                    config.misalignType = misType
+                    config.momentum = mom
+                    config.alignmentCorrection = corr
 
-                # sensors need more FOR NOW. later, all misalignments are combined and ALL nedd more
-                if misType == 'sensors':
-                    config.jobsNum = '500'
-                    config.trksNum = '1000000'
+                    # identity and aligned don't get factors, only momenta and need fewer pairs
+                    if misType == 'aligned' or misType == 'identity':
+                        config.useIdentityMisalignment = True
+                        config.jobsNum = '100'
+                        config.trksNum = '100000'
 
-                # ? ----- special cases here
-                # aligned case has no misalignment
-                if misType == 'aligned':
-                    config.misaligned = False
+                    # sensors need more FOR NOW. later, all misalignments are combined and ALL nedd more
+                    if misType == 'sensors':
+                        config.jobsNum = '500'
+                        config.trksNum = '1000000'
 
-                if Path(dest).exists():
-                    continue
+                    # ? ----- special cases here
+                    # aligned case has no misalignment
+                    if misType == 'aligned':
+                        config.misaligned = False
 
-                config.toJSON(dest)
+                    if Path(dest).exists():
+                        continue
+
+                    config.toJSON(dest)
 
     # regenerate missing fields
     targetDir = Path('runConfigs')
