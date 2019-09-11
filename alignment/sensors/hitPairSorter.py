@@ -21,6 +21,7 @@ class hitPairSorter:
         self.npyOutputDir.mkdir(parents=True, exist_ok=True)
         self.availableOverlapIDs = {}
         self.overlapsDone = {}
+        self.maxPairs = 6e1
 
     def sortPairs(self, arrays, fileContents):
         # use just the overlaps for indexes, this tells us how many pairs there are in a given event
@@ -64,11 +65,19 @@ class hitPairSorter:
             newContent = np.concatenate((oldContent, thisContent), axis=1)
 
             # mark as done as soon as there are enough pairs
-            if len(newContent) > 6e5:
+            if newContent.shape > (7, int(self.maxPairs)):
+                newContent = newContent[..., :int(self.maxPairs)]
                 self.overlapsDone[ID] = True
 
             # write back to disk
             np.save(file=fileName, arr=newContent, allow_pickle=False)
+
+        # are all arrays done?
+        allDone = True
+        for ID in self.availableOverlapIDs:
+            if not self.overlapsDone[ID]:
+                allDone = False
+        return allDone
 
     def sortAll(self):
         # create dict for all fileContents, this is rather non-pythonic
@@ -102,7 +111,11 @@ class hitPairSorter:
             for (_, _, arrays) in uproot.iterate(lumiPairs, 'pndsim', [b'PndLmdHitPair._overlapID', b'PndLmdHitPair._hit1', b'PndLmdHitPair._hit2'], entrysteps=float("inf"), executor=executor, reportentries=True):
                 # progress bar
                 print('.', end='', flush=True)
-                self.sortPairs(arrays, fileContents)
+                allDone = self.sortPairs(arrays, fileContents)
+
+                if allDone:
+                    print(f'All arrays reached {self.maxPairs} pairs, quitting!')
+                    return
 
         # Keyboard interrupt
         except (KeyboardInterrupt) as e:
