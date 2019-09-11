@@ -42,7 +42,7 @@ class hitPairSorter:
             thisContent = np.array([flathit1[IDmask].x, flathit1[IDmask].y, flathit1[IDmask].z, flathit2[IDmask].x, flathit2[IDmask].y, flathit2[IDmask].z, flatDistance[IDmask]])
 
             # skip if we have just about enough pairs
-            if len(thisContent) > 3e5:
+            if len(fileContents[ID]) > 3e5:
                 continue
 
             oldContent = fileContents[ID]
