@@ -271,15 +271,10 @@ def showLumiFitResults(runConfigPath, threadID=None):
     runConfigPath = Path(runConfigPath)
     configFiles = list(runConfigPath.glob('**/*.json'))
 
-    # copy each config for no correction and with correction
     configs = []
     for file in configFiles:
-        configUncorr = LMDRunConfig.fromJSON(file)
-        configUncorr.alignmentCorrection = False
-        configs.append(configUncorr)
-        configCorr = LMDRunConfig.fromJSON(file)
-        configCorr.alignmentCorrection = True
-        configs.append(configCorr)
+        config = LMDRunConfig.fromJSON(file)
+        configs.append(config)
 
     if len(configs) == 0:
         print(f'No runConfig files found in {runConfigPath}!')
