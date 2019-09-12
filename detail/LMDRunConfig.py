@@ -57,6 +57,7 @@ class LMDRunConfig:
         self.__useDevQueue = False
         self.__useIdentityAlignment = False
         self.__mergeAlignmentMatrices = False
+        self.__SensorAlignerExternalMatrices = 'input/alMat-identity-all.json'
 
     #! --------------------- for sortability
     def __lt__(self, other):
@@ -97,6 +98,13 @@ class LMDRunConfig:
     misMatFile = property(__getMisMatFile, None)
 
     #! --------------------- getters and setters
+
+    def __getExMatPath(self):
+        return self.__SensorAlignerExternalMatrices
+
+    def __setExMatPath(self, value):
+        self.__SensorAlignerExternalMatrices = value
+    sensorAlignExternalMatrixPath = property(__getExMatPath, __setExMatPath)
 
     def __getMisalignFactor(self):
         return self.__misalignFactor

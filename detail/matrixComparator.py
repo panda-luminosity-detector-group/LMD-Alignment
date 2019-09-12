@@ -249,6 +249,8 @@ class combinedComparator(comparator):
             except:
                 continue
 
+        #print(f'all differences:\n{self.alignerResults}')
+
         self.histValues(differences)
         plt.savefig(outputFileName, dpi=150)
 
