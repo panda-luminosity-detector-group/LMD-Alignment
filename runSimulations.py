@@ -290,7 +290,7 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
-    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.png')
+    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.jpg')
 
     # # overlap comparator
     comparator = overlapComparator()
@@ -298,14 +298,14 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadSensorAlignerOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
     comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
-    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.png')
+    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.jpg')
 
     # combined comparator
     comparator = combinedComparator()
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
-    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.png')
+    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.jpg')
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
