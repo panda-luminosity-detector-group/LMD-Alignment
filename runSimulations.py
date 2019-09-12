@@ -523,7 +523,7 @@ if __name__ == "__main__":
         comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
         comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
         comparator.loadAlignerMatrices( runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json') )
-        comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-runConfig.misalignType}/box-1.00-icp.png')
+        comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-1.00-icp.png')
 
         # # overlap comparator
         comparator = overlapComparator()
