@@ -97,6 +97,8 @@ class boxComparator(comparator):
             print(f'Design Misalignments not found! Skipping...')
             return
 
+        Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
+
         differences = []
 
         try:
@@ -180,13 +182,15 @@ class overlapComparator(comparator):
             print(f'Design Misalignments not found! Skipping...')
             return
 
+        Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
+
         differences = []
 
         # TODO: also include dy, use same output file
         for o in self.overlaps:
             differences.append(self.computeOneICP(o)[0])
 
-        Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
+        
 
         self.histValues(differences)
         plt.savefig(outputFileName, dpi=150)
@@ -230,6 +234,8 @@ class combinedComparator(comparator):
             print(f'Design Misalignments not found! Skipping...')
             return
         
+        Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
+
         differences = []
 
         for p in self.misalignMatrices:
