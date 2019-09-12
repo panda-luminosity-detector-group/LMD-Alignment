@@ -48,16 +48,21 @@ class comparator:
         matPndTo0 = self.idealDetectorMatrices[p1]
         matPndTo5 = self.idealDetectorMatrices[p2]
 
-        # I don't have these!
-        matMisOn0 = self.misalignMatrices[p1]
-        matMisOn5 = self.misalignMatrices[p2]
+        try:
+            matMisOn0 = self.misalignMatrices[p1]
+            matMisOn5 = self.misalignMatrices[p2]
 
-        matMisOn0InPnd = mi.baseTransform(matMisOn0, (matPndTo0))
-        matMisOn5InPnd = mi.baseTransform(matMisOn5, (matPndTo5))
+            matMisOn0InPnd = mi.baseTransform(matMisOn0, (matPndTo0))
+            matMisOn5InPnd = mi.baseTransform(matMisOn5, (matPndTo5))
 
-        # this is the ICP like matrix
-        # see paper.calc.ICP
-        mat0to5MisInPnd = inv(matMisOn5InPnd) @ (matMisOn0InPnd)
+            # this is the ICP like matrix
+            # see paper.calc.ICP
+            mat0to5MisInPnd = inv(matMisOn5InPnd) @ (matMisOn0InPnd)
+
+        except(KeyError):
+            print(f'Misalignment Matrix not found in misalignments file. That means this volume was not misaligned.')
+            mat0to5MisInPnd = np.identity(4)
+        
         return mat0to5MisInPnd
 
 
