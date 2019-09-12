@@ -591,7 +591,7 @@ if __name__ == "__main__":
     if args.alignConfigPath:
         startLogToFile('AlignMulti')
         args.configPath = args.alignConfigPath
-        runConfigsST(args, runAligners)
+        runConfigsMT(args, runAligners)
         done()
 
     # ? =========== lumiFit, single config

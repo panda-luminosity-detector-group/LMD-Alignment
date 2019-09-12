@@ -22,6 +22,7 @@ class sensorMatrixFinder:
         self.idealOverlapInfos = {}
         self.overlapMatrix = None
         self.idealDetectorMatrices = {}
+        self.maxPairs = 6e5
 
     def readNumpyFiles(self, path):
 
@@ -32,7 +33,11 @@ class sensorMatrixFinder:
         except:
             print(f'ERROR! Can not read {fileName}!')
 
-        # the new python Root Reader stores them slightly differently...
+        # reduce to maxPairs
+        if self.PairData.shape > (7, int(self.maxPairs)):
+            self.PairData = self.PairData[..., :int(self.maxPairs)]
+
+        # the new python Root Reader stores them slightly different...
         self.PairData = np.transpose(self.PairData)
 
         # apply dynamic cut
@@ -83,7 +88,7 @@ class sensorMatrixFinder:
         # Attention! Always transform to module-local system,
         # otherwise numerical errors will make the ICP matrices unusable!
         # (because z is at 11m, while x is 30cm and y is 0)
-        # also, we're ignoring z distance, which we can not do if we're in 
+        # also, we're ignoring z distance, which we can not do if we're in
         # PND global, due to the 40mrad rotation.
         transformToLocalSensor = True
         if transformToLocalSensor:
@@ -91,7 +96,7 @@ class sensorMatrixFinder:
             # get matrix lmd to module
             modulePath = self.idealOverlapInfos[str(self.overlap)]['pathModule']
             matToModule = self.idealDetectorMatrices[modulePath]
-            
+
             # invert to transform pairs from lmd to sensor
             toModInv = np.linalg.inv(matToModule)
 
