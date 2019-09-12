@@ -104,7 +104,7 @@ def runAligners(runConfig, threadID=None):
 
     print(f'Thread {threadID}: starting!')
 
-    externalMatPath = Path(config.sensorAlignExternalMatrixPath)
+    externalMatPath = Path(runConfig.sensorAlignExternalMatrixPath)
 
     sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
