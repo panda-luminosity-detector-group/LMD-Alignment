@@ -87,9 +87,24 @@ class boxComparator(comparator):
 
     def saveHistogram(self, outputFileName):
 
+        if self.alignerResults is None:
+            print(f'Aligner results not found! Skipping...')
+            return
+        if self.idealDetectorMatrices is None:
+            print(f'Ideal Detector Matrices not found! Skipping...')
+            return
+        if self.misalignMatrices is None:
+            print(f'Design Misalignments not found! Skipping...')
+            return
+
         differences = []
 
-        misMat = self.misalignMatrices["/cave_1/lmd_root_0"]
+        try:
+            misMat = self.misalignMatrices["/cave_1/lmd_root_0"]
+        except(KeyError):
+            print(f'Misalignment Matrix not found in misalignments file. That means this volume was not misaligned.')
+            misMat = np.identity(4)
+
         alMat = self.alignerResults["/cave_1/lmd_root_0"]
 
         print(f'matrix actual:\n{misMat}')
@@ -115,7 +130,7 @@ class boxComparator(comparator):
 class overlapComparator(comparator):
 
     def loadPerfectDetectorOverlaps(self, fileName):
-        self.overlaps = mi.loadMatrices(fileName)
+        self.overlaps = mi.loadMatrices(fileName, False)
 
     def loadSensorAlignerOverlapMatrices(self, filename):
         self.overlapMatrices = mi.loadMatrices(filename)
@@ -130,7 +145,7 @@ class overlapComparator(comparator):
         fig = plt.figure(figsize=(6, 4))
 
         # TODO: better title
-        fig.suptitle('Sensor Alignment Result', fontsize=16)
+        fig.suptitle('Found Overlap Matrices', fontsize=16)
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -155,11 +170,23 @@ class overlapComparator(comparator):
 
     def saveHistogram(self, outputFileName):
 
+        if self.overlapMatrices is None:
+            print(f'Overlap ICP Matrices not found! Skipping...')
+            return
+        if self.idealDetectorMatrices is None:
+            print(f'Ideal Detector Matrices not found! Skipping...')
+            return
+        if self.misalignMatrices is None:
+            print(f'Design Misalignments not found! Skipping...')
+            return
+
         differences = []
 
         # TODO: also include dy, use same output file
         for o in self.overlaps:
             differences.append(self.computeOneICP(o)[0])
+
+        Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
 
         self.histValues(differences)
         plt.savefig(outputFileName, dpi=150)
@@ -179,13 +206,13 @@ class combinedComparator(comparator):
         fig = plt.figure(figsize=(6, 4))
 
         # TODO: better title
-        fig.suptitle('Sensor Alignment Result', fontsize=16)
+        fig.suptitle('Sensor Alignment Final Result', fontsize=16)
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
         histA.hist(values, bins=20)  # this is only the z distance
-        histA.set_title('Distance Alignment (Result-Generated)')   # change to mm!
+        histA.set_title('Distance Alignment Matrix dx (Result-Generated)')   # change to mm!
         histA.set_xlabel('dx [µm]')
         histA.set_ylabel('count')
         histA.text(0.05, 0.95, textStr, transform=histA.transAxes, fontsize=12, verticalalignment='top')
@@ -193,11 +220,21 @@ class combinedComparator(comparator):
 
     def saveHistogram(self, outputFileName):
 
+        if self.alignerResults is None:
+            print(f'Aligner results not found! Skipping...')
+            return
+        if self.idealDetectorMatrices is None:
+            print(f'Ideal Detector Matrices not found! Skipping...')
+            return
+        if self.misalignMatrices is None:
+            print(f'Design Misalignments not found! Skipping...')
+            return
+        
         differences = []
 
         for p in self.misalignMatrices:
             try:
-                differences.append((self.alignerResults[p][3] - self.misalignMatrices[p][3])*1e4)
+                differences.append((self.alignerResults[p][0, 3] - self.misalignMatrices[p][0, 3])*1e4)
             except:
                 continue
 

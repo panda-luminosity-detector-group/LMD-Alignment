@@ -68,7 +68,7 @@ def baseTransform(mat, matFromAtoB):
 
 def rotationMatrixToEulerAngles(R):
 
-    assert(R.shape() == (4, 4) or R.shape() == (3, 3))
+    assert(R.shape == (4, 4) or R.shape == (3, 3))
     
     sy = np.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
     singular = sy < 1e-6

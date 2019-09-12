@@ -510,28 +510,20 @@ if __name__ == "__main__":
         done()
 
     if args.histSensorAligner:
-        fileName = Path('runConfigs/box/1.5/factor-1.00.json')
+        fileName = Path(args.histSensorAligner)
         runConfig = LMDRunConfig.fromJSON(fileName)
 
         if args.debug:
             print(f'\n\n!!! Running in debug mode !!!\n\n')
             runConfig.useDebug = True
 
-        thislogger = LMDrunLogger(f'/tmp/tmpLog.txt')
-
-        IPaligner = alignerIP.fromRunConfig(runConfig)
-        IPaligner.logger = thislogger
-        IPaligner.computeAlignmentMatrix()
-
-        IPaligner.saveAlignmentMatrix('output/alMat-IPalignment-1.00-TESTING.json')
-
         # ? comparator starts here
         # box rotation comparator
         comparator = boxComparator()
         comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
         comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-        comparator.loadAlignerMatrices(runConfig.pathAlMatrix())
-        comparator.saveHistogram(f'output/comp/{fileName.name}/box-1.00-icp.png')
+        comparator.loadAlignerMatrices( runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json') )
+        comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/{fileName.name}/box-1.00-icp.png')
 
         # # overlap comparator
         comparator = overlapComparator()
@@ -539,14 +531,14 @@ if __name__ == "__main__":
         comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
         comparator.loadSensorAlignerOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
         comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
-        comparator.saveHistogram(f'output/comp/{fileName.name}/sensors-1.00-icp.png')
+        comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/{fileName.name}/sensors-1.00-icp.png')
 
         # combined comparator
         comparator = combinedComparator()
         comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
         comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-        comparator.loadAlignerMatrices(runConfig.pathAlMatrix())
-        comparator.saveHistogram(f'output/comp/{fileName.name}/sensors-1.00-misalignments.png')
+        comparator.loadAlignerMatrices( runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json') )
+        comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/{fileName.name}/sensors-1.00-misalignments.png')
 
         done()
 
