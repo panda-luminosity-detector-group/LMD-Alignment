@@ -1,6 +1,22 @@
 #!/usr/bin/env python3
 
 # limit openblas's max threads, this must be done BEFORE importing numpy
+import sys
+import random
+import json
+import datetime
+import concurrent
+import argparse
+from pathlib import Path
+from detail.simWrapper import simWrapper
+from detail.matrixComparator import *
+from detail.LumiValLaTeXTable import LumiValLaTeXTable
+from detail.logger import LMDrunLogger
+from detail.LMDRunConfig import LMDRunConfig
+from concurrent.futures import ThreadPoolExecutor
+from alignment.alignerSensors import alignerSensors
+from alignment.alignerIP import alignerIP
+from argparse import RawTextHelpFormatter
 import os
 os.environ.update(
     OMP_NUM_THREADS='8',
@@ -47,25 +63,6 @@ it:
 - rerun ./extractLuminosity
 
 """
-
-from argparse import RawTextHelpFormatter
-from alignment.alignerIP import alignerIP
-from alignment.alignerSensors import alignerSensors
-from concurrent.futures import ThreadPoolExecutor
-from detail.LMDRunConfig import LMDRunConfig
-from detail.logger import LMDrunLogger
-from detail.LumiValLaTeXTable import LumiValLaTeXTable
-from detail.matrixComparator import *
-from detail.simWrapper import simWrapper
-from pathlib import Path
-
-import argparse
-import concurrent
-import datetime
-import json
-import os
-import random
-import sys
 
 
 def startLogToFile(functionName=None):
@@ -282,13 +279,17 @@ def showLumiFitResults(runConfigPath, threadID=None):
     table = LumiValLaTeXTable.fromConfigs(configs)
     table.show()
 
-def histogramRunConfig(runConfig):
+
+def histogramRunConfig(runConfig, threadId=0):
     # ? comparator starts here
+
+    print(runConfig.dump())
+
     # box rotation comparator
     comparator = boxComparator()
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-    comparator.loadAlignerMatrices( runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json') )
+    comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.png')
 
     # # overlap comparator
@@ -303,7 +304,7 @@ def histogramRunConfig(runConfig):
     comparator = combinedComparator()
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-    comparator.loadAlignerMatrices( runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json') )
+    comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.png')
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
@@ -393,7 +394,7 @@ def createMultipleDefaultConfigs():
         misFactors = ['0.50', '1.00', '2.00']
         misTypes = ['aligned', 'identity', 'sensors', 'box']
     else:
-        correctedOptions = ['uncorrected','corrected']
+        correctedOptions = ['uncorrected', 'corrected']
         momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
         misFactors = ['0.01', '0.05', '0.10', '0.15', '0.20', '0.25', '0.50', '1.00', '2.00', '3.00', '5.00', '10.00']
         misTypes = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
@@ -539,7 +540,6 @@ if __name__ == "__main__":
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
 
-
     # ? =========== histogram Aligner results
     if args.histSensorAligner:
         runConfig = LMDRunConfig.fromJSON(args.histSensorAligner)
@@ -551,7 +551,7 @@ if __name__ == "__main__":
 
     if args.histSensorAlignerPath:
         args.configPath = args.histSensorAlignerPath
-        runConfigsMT(args, histogramRunConfig)
+        runConfigsST(args, histogramRunConfig)
         done()
 
     # ? =========== lumi fit results, single config

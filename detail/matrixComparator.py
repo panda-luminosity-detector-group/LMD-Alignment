@@ -60,7 +60,7 @@ class comparator:
             mat0to5MisInPnd = inv(matMisOn5InPnd) @ (matMisOn0InPnd)
 
         except(KeyError):
-            print(f'Misalignment Matrix not found in misalignments file. That means this volume was not misaligned.')
+            #print(f'Misalignment Matrix not found in misalignments file. That means this volume was not misaligned.')
             mat0to5MisInPnd = np.identity(4)
         
         return mat0to5MisInPnd
@@ -179,6 +179,9 @@ class overlapComparator(comparator):
 
         if self.overlapMatrices is None:
             print(f'Overlap ICP Matrices not found! Skipping...')
+            return
+        if len(self.overlapMatrices) < 360:
+            print(f'not all matrices are in overlap file. something went VERY wrong!')
             return
         if self.idealDetectorMatrices is None:
             print(f'Ideal Detector Matrices not found! Skipping...')
