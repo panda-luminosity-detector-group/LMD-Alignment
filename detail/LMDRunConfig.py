@@ -409,7 +409,7 @@ class LMDRunConfig:
         elif self.__mergeAlignmentMatrices:
             return self.pathAlMatrixPath() / Path(f'alMat-merged.json')
         else:
-            if self.__misalignType == 'box':
+            if self.__misalignType == 'box' or self.__misalignType == 'boxRotZ':
                 return self.pathAlMatrixPath() / Path(f'alMat-IPalignment-{self.__misalignFactor}.json')
             elif self.__misalignType == 'sensors':
                 return self.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{self.__misalignFactor}.json')
