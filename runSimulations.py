@@ -397,7 +397,7 @@ def createMultipleDefaultConfigs():
         correctedOptions = ['uncorrected', 'corrected']
         momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
         misFactors = ['0.01', '0.05', '0.10', '0.15', '0.20', '0.25', '0.50', '1.00', '2.00', '3.00', '5.00', '10.00']
-        misTypes = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'all']
+        misTypes = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'boxRotZ', 'all']
 
     for misType in misTypes:
         for mom in momenta:
