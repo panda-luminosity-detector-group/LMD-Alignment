@@ -283,7 +283,6 @@ def showLumiFitResults(runConfigPath, threadID=None):
 def histogramRunConfig(runConfig, threadId=0):
     # ? comparator starts here
 
-    print(runConfig.dump())
 
     # box rotation comparator
     comparator = boxComparator()

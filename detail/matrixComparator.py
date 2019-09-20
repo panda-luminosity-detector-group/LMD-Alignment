@@ -53,15 +53,14 @@ class comparator:
             matMisOn0 = self.misalignMatrices[p1]
             matMisOn5 = self.misalignMatrices[p2]
 
-            matMisOn0InPnd = mi.baseTransform(matMisOn0, (matPndTo0))
-            matMisOn5InPnd = mi.baseTransform(matMisOn5, (matPndTo5))
+            matMis0InPnd = mi.baseTransform(matMisOn0, (matPndTo0))
+            matMis5InPnd = mi.baseTransform(matMisOn5, (matPndTo5))
 
             # this is the ICP like matrix
             # see paper.calc.ICP
-            mat0to5MisInPnd = inv(matMisOn5InPnd) @ (matMisOn0InPnd)
+            mat0to5MisInPnd = inv(matMis5InPnd) @ (matMis0InPnd)
 
         except(KeyError):
-            #print(f'Misalignment Matrix not found in misalignments file. That means this volume was not misaligned.')
             mat0to5MisInPnd = np.identity(4)
 
         return mat0to5MisInPnd
@@ -115,8 +114,8 @@ class boxComparator(comparator):
 
         alMat = self.alignerResults["/cave_1/lmd_root_0"]
 
-        print(f'matrix actual:\n{misMat}')
-        print(f'matrix found:\n{alMat}')
+        # print(f'matrix actual:\n{misMat}')
+        # print(f'matrix found:\n{alMat}')
 
         eActual = mi.rotationMatrixToEulerAngles(misMat)
         eFound = mi.rotationMatrixToEulerAngles(alMat)
@@ -143,8 +142,6 @@ class overlapComparator(comparator):
 
     def histValues(self, values):
 
-        print(f'values:\n{values}')
-
         muX = np.round(np.average(values[:,0]), 2)
         sigX = np.round(np.std(values[:,0]), 2)
 
@@ -159,7 +156,7 @@ class overlapComparator(comparator):
 
         fig.suptitle('Found Overlap Matrices', fontsize=16)
 
-        bucketLabels = [f'dx, µx={muX}, σx={sigX}', f'dy, µx={muY}, σx={sigY}', f'dz, µx={muZ}, σx={sigZ}']
+        bucketLabels = [f'dx, µx={muX}, σx={sigX}', f'dy, µy={muY}, σy={sigY}', f'dz, µz={muZ}, σz={sigZ}']
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -179,9 +176,18 @@ class overlapComparator(comparator):
         p2 = self.overlaps[overlapID]['path2']
         MisalignLikeICP = self.getOverlapMisalignLikeICP(p1, p2)
 
+        if True:
+            # transform to module system so that dz is zero and the matrices are more easily comparable
+            modulePath = self.overlaps[overlapID]['pathModule']
+            matModule = self.idealDetectorMatrices[modulePath]
+            ICPmatrix = mi.baseTransform(ICPmatrix, inv(matModule))
+            MisalignLikeICP = mi.baseTransform(MisalignLikeICP, inv(matModule))
+        
         # return values in µm
         dMat = (MisalignLikeICP - ICPmatrix)*1e4
-        return np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
+        returnArray = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
+        
+        return returnArray
 
     def saveHistogram(self, outputFileName):
 
@@ -233,7 +239,7 @@ class combinedComparator(comparator):
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
-        bucketLabels = [f'dx, µx={muX}, σx={sigX}', f'dy, µx={muY}, σx={sigY}', f'dz, µx={muZ}, σx={sigZ}']
+        bucketLabels = [f'dx, µx={muX}, σx={sigX}', f'dy, µy={muY}, σy={sigY}', f'dz, µz={muZ}, σz={sigZ}']
 
         histA.hist(values, bins=15, label=bucketLabels, histtype='bar', color=self.colors)
         histA.set_title('Distance Alignment Matrix dx (Result-Generated)')   # change to mm!
@@ -260,8 +266,11 @@ class combinedComparator(comparator):
 
         for p in self.misalignMatrices:
             try:
+                matResult = self.alignerResults[p]
+                matMisalign = self.misalignMatrices[p]
+
                 # return values in µm
-                dMat = (self.alignerResults[p] - self.misalignMatrices[p])*1e4
+                dMat = (matResult - matMisalign)*1e4
                 values = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
 
                 differences = np.append(differences, values, axis=0)
