@@ -26,8 +26,10 @@ class comparator:
         self.idealDetectorMatrices = {}
         self.misalignMatrices = {}
         self.colors = ['xkcd:coral', 'xkcd:kelly green', 'xkcd:dark sky blue']
-        plt.rc('font',**{'family':'serif','serif':['Palatino'], 'size':11})
+        self.latexsigma = r'\textsigma '
+        plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':11})
         plt.rc('text', usetex=True)
+        plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
     def loadIdealDetectorMatrices(self, filename):
         self.idealDetectorMatrices = mi.loadMatrices(filename)
@@ -158,7 +160,7 @@ class overlapComparator(comparator):
 
         fig.suptitle('Found Overlap Matrices')
 
-        bucketLabels = [f'dx, µx={muX}, σx={sigX}', f'dy, µy={muY}, σy={sigY}', f'dz, µz={muZ}, σz={sigZ}']
+        bucketLabels = [f'dx, µx={muX}, {self.latexsigma}x={sigX}', f'dy, µy={muY}, {self.latexsigma}y={sigY}', f'dz, µz={muZ}, {self.latexsigma} z={sigZ}']
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -241,7 +243,8 @@ class combinedComparator(comparator):
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
-        bucketLabels = [f'dx, µx={muX}, σx={sigX}', f'dy, µy={muY}, σy={sigY}', f'dz, µz={muZ}, σz={sigZ}']
+        
+        bucketLabels = [f'dx, µx={muX}, {self.latexsigma}x={sigX}', f'dy, µy={muY}, {self.latexsigma}y={sigY}', f'dz, µz={muZ}, {self.latexsigma} z={sigZ}']
 
         histA.hist(values, bins=15, label=bucketLabels, histtype='bar', color=self.colors)
         histA.set_title('Distance Alignment Matrix dx (Result-Generated)')   # change to mm!
