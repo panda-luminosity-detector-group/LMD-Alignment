@@ -26,6 +26,7 @@ class comparator:
         self.idealDetectorMatrices = {}
         self.misalignMatrices = {}
         self.colors = ['xkcd:coral', 'xkcd:kelly green', 'xkcd:dark sky blue']
+        plt.rc('font', family = 'serif', serif = 'STIXGeneral') 
 
     def loadIdealDetectorMatrices(self, filename):
         self.idealDetectorMatrices = mi.loadMatrices(filename)
