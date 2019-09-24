@@ -238,7 +238,7 @@ class combinedComparator(comparator):
         fig = plt.figure(figsize=(6, 4))
 
         # TODO: better title
-        fig.suptitle('Sensor Alignment Final Result')
+        fig.suptitle('Found Alignment Matrices')
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -247,7 +247,7 @@ class combinedComparator(comparator):
         bucketLabels = [f'dx, µx={muX}, {self.latexsigma}x={sigX}', f'dy, µy={muY}, {self.latexsigma}y={sigY}', f'dz, µz={muZ}, {self.latexsigma} z={sigZ}']
 
         histA.hist(values, bins=15, label=bucketLabels, histtype='bar', color=self.colors)
-        histA.set_title('Distance Alignment Matrix dx (Result-Generated)')   # change to mm!
+        histA.set_title('Distance Alignment Matrix dx (Result-Generated)')
         histA.set_xlabel('d [µm]')
         histA.set_ylabel('count')
         plt.legend()
@@ -269,7 +269,7 @@ class combinedComparator(comparator):
 
         differences = np.empty((0,3))
 
-        for p in self.misalignMatrices:
+        for p in self.alignerResults:
             try:
                 matResult = self.alignerResults[p]
                 matMisalign = self.misalignMatrices[p]
@@ -280,10 +280,14 @@ class combinedComparator(comparator):
 
                 differences = np.append(differences, values, axis=0)
             except:
-                continue
+                matResult = self.alignerResults[p]
+                matMisalign = np.identity(4)
 
-        self.histValues(differences)
-        plt.savefig(outputFileName, dpi=150)
+                # return values in µm
+                dMat = (matResult - matMisalign)*1e4
+                values = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
+
+                differences = np.append(differences, values, axis=0)
 
         self.histValues(differences)
         plt.savefig(outputFileName, dpi=150)

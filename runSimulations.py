@@ -513,7 +513,6 @@ if __name__ == "__main__":
         LMDRunConfig.minimalDefault().toJSON(dest)
         done()
 
-    # ? =========== helper functions
     if args.makeMultipleDefaults:
         createMultipleDefaultConfigs()
         done()
