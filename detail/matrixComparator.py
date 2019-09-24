@@ -26,7 +26,7 @@ class comparator:
         self.idealDetectorMatrices = {}
         self.misalignMatrices = {}
         self.colors = ['xkcd:coral', 'xkcd:kelly green', 'xkcd:dark sky blue']
-        plt.rc('font', family = 'serif', serif = 'STIXGeneral') 
+        plt.rc('font', family = 'serif', serif = 'STIXGeneral', size=11) 
 
     def loadIdealDetectorMatrices(self, filename):
         self.idealDetectorMatrices = mi.loadMatrices(filename)
@@ -78,7 +78,7 @@ class boxComparator(comparator):
         fig = plt.figure(figsize=(6, 4))
 
         # TODO: better title
-        fig.suptitle('Box Rotation Alignment Result, all axes', fontsize=16)
+        fig.suptitle('Box Rotation Alignment Result, all axes')
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -128,7 +128,7 @@ class boxComparator(comparator):
         d = (eActual - eFound).reshape((1,3))*1e6       # reshape, scale to um
 
         self.histValues(d)
-        plt.savefig(outputFileName, dpi=150)
+        plt.savefig(outputFileName, dpi=300)
 
         return
 
@@ -155,7 +155,7 @@ class overlapComparator(comparator):
         # plot difference hit array
         fig = plt.figure(figsize=(6, 4))
 
-        fig.suptitle('Found Overlap Matrices', fontsize=16)
+        fig.suptitle('Found Overlap Matrices')
 
         bucketLabels = [f'dx, µx={muX}, σx={sigX}', f'dy, µy={muY}, σy={sigY}', f'dz, µz={muZ}, σz={sigZ}']
 
@@ -235,7 +235,7 @@ class combinedComparator(comparator):
         fig = plt.figure(figsize=(6, 4))
 
         # TODO: better title
-        fig.suptitle('Sensor Alignment Final Result', fontsize=16)
+        fig.suptitle('Sensor Alignment Final Result')
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
