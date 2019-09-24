@@ -32,7 +32,7 @@ class LumiValLaTeXTable:
 
         self.configs.sort()
 
-        print('Beam Momentum [GeV] & Misalign Type & Misalign Factor & Corrected & Lumi Deviation [\%]')
+        print('Beam Momentum [GeV] & Misalign Type & Misalign Factor & Corrected & Lumi Deviation [\%] \\\\ \\hline')
         for conf in self.configs:
 
             if Path(conf.pathLumiVals()).exists():
@@ -47,4 +47,4 @@ class LumiValLaTeXTable:
             else:
                 lumi = 'no data!'
 
-            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumi}')
+            print(f'{conf.momentum} & {conf.misalignType} & {conf.misalignFactor} & {conf.alignmentCorrection} & {lumi} \\\\')
