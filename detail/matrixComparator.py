@@ -27,7 +27,7 @@ class comparator:
         self.misalignMatrices = {}
         self.colors = ['xkcd:coral', 'xkcd:kelly green', 'xkcd:dark sky blue']
         self.latexsigma = r'\textsigma '
-        plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':11})
+        plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':9})
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
