@@ -385,27 +385,23 @@ def runConfigsST(args, function):
 
 def createMultipleDefaultConfigs():
     # for now
-    smallBatch = True
-
-    if smallBatch:
-        correctedOptions = [False, True]
-        momenta = ['1.5', '15.0']
-        misFactors = ['0.50', '1.00', '2.00']
-        misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules']
-    else:
-        correctedOptions = [False, True]
-        momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
-        misFactors = ['0.01', '0.05', '0.10', '0.15', '0.20', '0.25', '0.50', '1.00', '2.00', '3.00', '5.00', '10.00']
-        misTypes = ['aligned', 'sensors', 'box', 'combi', 'modules', 'identity', 'boxRotZ', 'all']
+    correctedOptions = [False, True]
+    momenta = ['1.5', '15.0']
+    # momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
+    misFactors = {}
+    misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules']
+    
+    misFactors['aligned'] =     ['1.00']
+    misFactors['identity'] =    ['1.00']
+    misFactors['sensors'] =     ['0.10', '0.50', '1.00', '2.00', '5.00']
+    misFactors['box'] =         ['0.50', '1.00', '2.00']
+    misFactors['boxRotZ'] =     ['1.00', '2.00', '3.00', '5.00', '10.00']
+    misFactors['modules'] =     ['0.01', '0.10', '0.15', '0.25', '0.50', '1.00']
 
     for misType in misTypes:
         for mom in momenta:
-            for fac in misFactors:
+            for fac in misFactors[misType]:
                 for corr in correctedOptions:
-
-                    # identity and aligned don't get factors, only momenta
-                    if misType == 'aligned' or misType == 'identity':
-                        fac = '1.00'
 
                     if corr:
                         corrPath = 'corrected'
