@@ -17,11 +17,13 @@ class hitPairSorter:
 
     def __init__(self, PairDir, numpyDir):
         self.inputDir = PairDir
-        self.npyOutputDir = numpyDir
-        self.npyOutputDir.mkdir(parents=True, exist_ok=True)
+        self.shmDir = Path('/dev/shm')
+        self.targetDir = numpyDir
+        self.targetDir.mkdir(parents=True, exist_ok=True)
         self.availableOverlapIDs = {}
         self.overlapsDone = {}
         self.maxPairs = 6e5
+        self.sortInMemory = True
 
     def sortPairs(self, arrays, fileContents):
         # use just the overlaps for indexes, this tells us how many pairs there are in a given event
@@ -80,6 +82,16 @@ class hitPairSorter:
         return allDone
 
     def sortAll(self):
+
+        if self.sortInMemory:
+            self.npyOutputDir = self.shmDir / Path('pairSorter')
+            self.npyOutputDir.mkdir(exist_ok=True)
+            print(f'sorting in memory, using {str(self.npyOutputDir)}...')
+            
+        else:
+            print('sorting on disk...')
+            self.npyOutputDir = self.targetDir
+
         # create dict for all fileContents, this is rather non-pythonic
         fileContents = {}
         executor = concurrent.futures.ThreadPoolExecutor(2)   # 8 threads
@@ -113,6 +125,12 @@ class hitPairSorter:
                 print('.', end='', flush=True)
                 allDone = self.sortPairs(arrays, fileContents)
 
+                # every n iterations:
+                # load from disk what is already there
+                # concat with in memory copy
+                # dump to disk again
+                # empty memory copy 
+
                 if allDone:
                     print(f'All arrays reached {self.maxPairs} pairs, quitting!')
                     return
@@ -124,6 +142,13 @@ class hitPairSorter:
         except Exception as e:
             print(f'\n\nERROR!\n{e}\n')
             return
+
+        # copy from memory to disk
+        if self.sortInMemory:
+            srcPath = self.shmDir / self.targetDir
+            dstPath = self.npyOutputDir
+            for file in srcPath.glob('**'):
+                file.replace(dstPath / Path(file.name))
 
         print(f'. done!')
 
