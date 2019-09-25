@@ -130,6 +130,7 @@ class hitPairSorter:
                 # concat with in memory copy
                 # dump to disk again
                 # empty memory copy 
+                # mark ID as done if maxPairs is reached (this is important, otherwise the file will be load and read again an again!)
 
                 if allDone:
                     print(f'All arrays reached {self.maxPairs} pairs, quitting!')
