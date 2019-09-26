@@ -71,7 +71,7 @@ def _copy(self, target):
     try:
         assert self.is_file()
     except:
-        print(f'ERROR! {self} is not a file (somehow?!).')
+        print(f'ERROR! {self} is not a file!')
     shutil.copy(self, target) 
 Path.copy = _copy
 

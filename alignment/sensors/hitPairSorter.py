@@ -148,7 +148,7 @@ class hitPairSorter:
         # copy from memory to disk
         if self.sortInMemory:
             srcPath = self.shmDir / Path(f'pairSorter/{self.seed}')
-            dstPath = self.npyOutputDir
+            dstPath = self.targetDir
             for file in srcPath.glob('*.npy'):
                 file.copy(dstPath)
                 file.unlink()
