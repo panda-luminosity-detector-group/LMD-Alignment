@@ -149,7 +149,7 @@ class hitPairSorter:
         if self.sortInMemory:
             srcPath = self.shmDir / Path(f'pairSorter/{self.seed}')
             dstPath = self.npyOutputDir
-            for file in srcPath.glob('**'):
+            for file in srcPath.glob('*.npy'):
                 file.copy(dstPath)
                 file.unlink()
             srcPath.rmdir()
