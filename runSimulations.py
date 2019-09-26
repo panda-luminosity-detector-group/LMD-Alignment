@@ -437,8 +437,8 @@ def createMultipleDefaultConfigs():
                     # sensors need more FOR NOW. later, all misalignments are combined and ALL need more
                     # they also need the actual external matrices path
                     if misType == 'sensors':
-                        config.jobsNum = '500'
-                        config.trksNum = '1000000'
+                        #config.jobsNum = '500'
+                        #config.trksNum = '1000000'
                         config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
 
                     # ? ----- special cases here
