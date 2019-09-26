@@ -68,7 +68,10 @@ it:
 # to easily copy files, monkey patch
 def _copy(self, target):
     import shutil
-    assert self.is_file()
+    try:
+        assert self.is_file()
+    except:
+        print(f'ERROR! {self} is not a file (somehow?!).')
     shutil.copy(self, target) 
 Path.copy = _copy
 
