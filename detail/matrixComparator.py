@@ -25,12 +25,19 @@ class comparator:
     def __init__(self):
         self.idealDetectorMatrices = {}
         self.misalignMatrices = {}
-        self.colors = ['xkcd:coral', 'xkcd:kelly green', 'xkcd:dark sky blue']
+        goodColors = ['xkcd:coral', 'xkcd:pale orange', 'xkcd:dark lilac', 'xkcd:teal green', 'xkcd:bluish grey', 'xkcd:dark sky blue']
+        self.colors = ['xkcd:pale orange', 'xkcd:teal green', 'xkcd:dark sky blue']
         self.latexsigma = r'\textsigma '
         self.latexmu = r'\textmu '
         plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':9})
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+
+
+        #plt.rcParams['axes.spines.left'] = False
+        plt.rcParams['axes.spines.right'] = False
+        plt.rcParams['axes.spines.top'] = False
+        #plt.rcParams['axes.spines.bottom'] = False
 
     def loadIdealDetectorMatrices(self, filename):
         self.idealDetectorMatrices = mi.loadMatrices(filename)
@@ -133,6 +140,7 @@ class boxComparator(comparator):
 
         self.histValues(d)
         plt.savefig(outputFileName, dpi=300)
+        plt.close()
 
         return
 
@@ -159,18 +167,21 @@ class overlapComparator(comparator):
         # plot difference hit array
         fig = plt.figure(figsize=(6, 4))
 
-        fig.suptitle('Found Overlap Matrices')
-
         bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
-        histA.hist(values, bins=15, label=bucketLabels, histtype='bar', color=self.colors)
-        histA.set_title('diff ICP/actual, 2% 2D cut')   # change to mm!
+        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:2])
+        histA.hist(values[...,:2], **kwargs)
+        histA.set_title('Overlap Matrices ICP/actual | 2\% 2D cut')   # change to mm!
         histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
-        plt.legend()
+       
+        handles, labels = plt.gca().get_legend_handles_labels()
+        order = [1,0]
+        plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order])
+        
         return fig
 
     # compute difference ICPmatrix - design overlap misalignment
@@ -217,7 +228,8 @@ class overlapComparator(comparator):
             differences = np.append(differences, self.computeOneICP(o), axis=0)
 
         self.histValues(differences)
-        plt.savefig(outputFileName, dpi=150)
+        plt.savefig(outputFileName, dpi=300)
+        plt.close()
 
         return
 
@@ -238,20 +250,23 @@ class combinedComparator(comparator):
         # plot difference hit array
         fig = plt.figure(figsize=(6, 4))
 
-        # TODO: better title
-        fig.suptitle('Found Alignment Matrices')
-
         fig.subplots_adjust(wspace=0.05)
-        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        #fig.tight_layout(rect=[0.5, 0.03, 1, 0.45])
         histA = fig.add_subplot(1, 1, 1)
         
         bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
 
-        histA.hist(values, bins=15, label=bucketLabels, histtype='bar', color=self.colors)
+        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:2])
+        histA.hist(values[...,:2], **kwargs)
+
         histA.set_title('Distance Alignment Matrix dx (Result-Generated)')
         histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
-        plt.legend()
+
+        handles, labels = plt.gca().get_legend_handles_labels()
+        order = [1,0]
+        plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order])
+
         return fig
 
     def saveHistogram(self, outputFileName):
@@ -271,6 +286,10 @@ class combinedComparator(comparator):
         differences = np.empty((0,3))
 
         for p in self.alignerResults:
+            # check if this path is for a sensor!
+            if 'sensor' not in p:
+                print(f'sensor not in {p}')
+                continue
             try:
                 matResult = self.alignerResults[p]
                 matMisalign = self.misalignMatrices[p]
@@ -292,5 +311,6 @@ class combinedComparator(comparator):
 
         self.histValues(differences)
         plt.savefig(outputFileName, dpi=150)
+        plt.close()
 
         return
