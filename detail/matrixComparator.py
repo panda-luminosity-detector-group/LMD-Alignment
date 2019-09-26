@@ -27,6 +27,7 @@ class comparator:
         self.misalignMatrices = {}
         self.colors = ['xkcd:coral', 'xkcd:kelly green', 'xkcd:dark sky blue']
         self.latexsigma = r'\textsigma '
+        self.latexmu = r'\textmu '
         plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':9})
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
@@ -91,7 +92,7 @@ class boxComparator(comparator):
         
         histA.hist(values, bins=15, histtype='bar', label=bucketLabels, color=self.colors)  # this is only the z distance
         histA.set_title('distance alignment result - generated')   # change to mm!
-        histA.set_xlabel('d [µrad]')
+        histA.set_xlabel(f'd [{self.latexmu}rad]')
         histA.set_ylabel('count')
         plt.legend()
         return fig
@@ -160,14 +161,14 @@ class overlapComparator(comparator):
 
         fig.suptitle('Found Overlap Matrices')
 
-        bucketLabels = [f'dx, µx={muX}, {self.latexsigma}x={sigX}', f'dy, µy={muY}, {self.latexsigma}y={sigY}', f'dz, µz={muZ}, {self.latexsigma} z={sigZ}']
+        bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
         histA.hist(values, bins=15, label=bucketLabels, histtype='bar', color=self.colors)
         histA.set_title('diff ICP/actual, 2% 2D cut')   # change to mm!
-        histA.set_xlabel('d [µm]')
+        histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
         plt.legend()
         return fig
@@ -187,7 +188,7 @@ class overlapComparator(comparator):
             ICPmatrix = mi.baseTransform(ICPmatrix, inv(matModule))
             MisalignLikeICP = mi.baseTransform(MisalignLikeICP, inv(matModule))
         
-        # return values in µm
+        # return values in {self.latexmu}m
         dMat = (MisalignLikeICP - ICPmatrix)*1e4
         returnArray = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
         
@@ -244,11 +245,11 @@ class combinedComparator(comparator):
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
         
-        bucketLabels = [f'dx, µx={muX}, {self.latexsigma}x={sigX}', f'dy, µy={muY}, {self.latexsigma}y={sigY}', f'dz, µz={muZ}, {self.latexsigma} z={sigZ}']
+        bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
 
         histA.hist(values, bins=15, label=bucketLabels, histtype='bar', color=self.colors)
         histA.set_title('Distance Alignment Matrix dx (Result-Generated)')
-        histA.set_xlabel('d [µm]')
+        histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
         plt.legend()
         return fig
@@ -274,7 +275,7 @@ class combinedComparator(comparator):
                 matResult = self.alignerResults[p]
                 matMisalign = self.misalignMatrices[p]
 
-                # return values in µm
+                # return values in {self.latexmu}m
                 dMat = (matResult - matMisalign)*1e4
                 values = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
 
@@ -283,7 +284,7 @@ class combinedComparator(comparator):
                 matResult = self.alignerResults[p]
                 matMisalign = np.identity(4)
 
-                # return values in µm
+                # return values in {self.latexmu}m
                 dMat = (matResult - matMisalign)*1e4
                 values = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
 
