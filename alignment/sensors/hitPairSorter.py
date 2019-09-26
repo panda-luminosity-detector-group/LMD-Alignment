@@ -24,6 +24,7 @@ class hitPairSorter:
         self.overlapsDone = {}
         self.maxPairs = 6e5
         self.sortInMemory = True
+        self.seed = np.random.randint(1e6)
 
     def sortPairs(self, arrays, fileContents):
         # use just the overlaps for indexes, this tells us how many pairs there are in a given event
@@ -84,7 +85,7 @@ class hitPairSorter:
     def sortAll(self):
 
         if self.sortInMemory:
-            self.npyOutputDir = self.shmDir / Path('pairSorter')
+            self.npyOutputDir = self.shmDir / Path(f'pairSorter/{self.seed}')
             self.npyOutputDir.mkdir(exist_ok=True)
             print(f'sorting in memory, using {str(self.npyOutputDir)}...')
             
@@ -146,7 +147,7 @@ class hitPairSorter:
 
         # copy from memory to disk
         if self.sortInMemory:
-            srcPath = self.shmDir / self.targetDir
+            srcPath = self.shmDir / Path(f'pairSorter/{self.seed}')
             dstPath = self.npyOutputDir
             for file in srcPath.glob('**'):
                 file.copy(dstPath)
