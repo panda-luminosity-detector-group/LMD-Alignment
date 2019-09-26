@@ -32,7 +32,6 @@ to transform sensor-local matrices to PANDA global:
 
 - detectorOverlapsIdeal.json | containing all design matrices of the Luminosity detector 
 
-TODO: save overlap matrices to json file!
 TODO: save log, how many pairs were available for each overlap?
 """
 

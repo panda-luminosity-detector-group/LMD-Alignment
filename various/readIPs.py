@@ -15,11 +15,6 @@ $LMDFIT_DATA_DIR
 
 """
 
-"""
-TODO: cleanup functions
-TODO: better latex table generation
-"""
-
 class table:
     def __init__(self, dir_path_):
         pass
@@ -119,7 +114,6 @@ def test():
                             LumiErrorError = str(round(float(dataLumi['relative_deviation_error_in_percent']),3))
 
                         # clean and store data. if something fails, the combination is simply skipped
-                        # TODO: put in separate function
                         dirs += 1
                         mom2 = mom.replace('plab_', '')
                         mom2 = mom2.replace('_', '\_')

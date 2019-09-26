@@ -66,7 +66,6 @@ def extractIP(cleanArray, module, half):
 def percentileCut(arrayDict, cut):
 
     # first, remove outliers that are just too large, use a mask
-    # TODO: find reasonable value!
     outMaskLimit = 50
     outMask = (np.abs(arrayDict['x']) < outMaskLimit) & (np.abs(arrayDict['y']) < outMaskLimit) & (np.abs(arrayDict['z']) < outMaskLimit)
 

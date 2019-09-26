@@ -13,9 +13,6 @@ from matplotlib.colors import LogNorm   # for LogNorm
 import matplotlib
 matplotlib.use('Agg')   # so matplotlib works over ssh
 
-# TODO: separate functionality, this module should ONLY read interaction points!
-# TODO: also, maybe use an OOP approach here.
-
 def cleanArray(arrayDict):
 
     # okay, so arrays is a multi dimensional array, or jagged array. some lines don't have any values,
@@ -42,7 +39,6 @@ def cleanArray(arrayDict):
 def percentileCut(arrayDict, cut):
 
     # first, remove outliers that are just too large, use a mask
-    # TODO: find reasonable value!
     outMaskLimit = 50
     outMask = (np.abs(arrayDict['x']) < outMaskLimit) & (np.abs(arrayDict['y']) < outMaskLimit) & (np.abs(arrayDict['z']) < outMaskLimit)
 

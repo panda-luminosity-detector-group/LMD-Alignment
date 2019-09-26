@@ -1,4 +1,3 @@
-# TODO: throw all comparisons out of here
 def histCompareResults(self):
 
     with open(self.idealDetectorMatrixPath) as ideasF:
@@ -16,7 +15,5 @@ def histCompareResults(self):
     comparator.setOverlapMatrices(self.overlapMatrices)
     comparator.loadPerfectDetectorOverlaps(self.idealOverlapsPath)
     
-
-    # TODO: better filename
     histogramFileName = Path('output') / Path(self.config.misalignType)
     comparator.saveHistogram(histogramFileName)

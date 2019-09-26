@@ -12,8 +12,6 @@ def readBinaryPairFile(filename):
   f = open(filename, "r")
   fileRaw = np.fromfile(f, dtype=np.double)
 
-  #  TODO: header checks
-
   # ignore header
   fileUsable =  fileRaw[6:]
   Npairs = int(len(fileUsable)/7)
