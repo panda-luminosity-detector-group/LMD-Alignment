@@ -149,7 +149,9 @@ class hitPairSorter:
             srcPath = self.shmDir / self.targetDir
             dstPath = self.npyOutputDir
             for file in srcPath.glob('**'):
-                file.replace(dstPath / Path(file.name))
+                file.copy(dstPath)
+                file.unlink()
+            srcPath.rmdir()
 
         print(f'. done!')
 

@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+# to easily copy files, monkey patch
+def _copy(self, target):
+    import shutil
+    assert self.is_file()
+    shutil.copy(self, target) 
+Path.copy = _copy
+
 # limit openblas's max threads, this must be done BEFORE importing numpy
 import sys
 import random

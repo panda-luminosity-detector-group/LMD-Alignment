@@ -29,7 +29,7 @@ class comparator:
         self.colors = ['xkcd:pale orange', 'xkcd:teal green', 'xkcd:dark sky blue']
         self.latexsigma = r'\textsigma '
         self.latexmu = r'\textmu '
-        plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':9})
+        plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':11})
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
@@ -38,6 +38,8 @@ class comparator:
         plt.rcParams['axes.spines.right'] = False
         plt.rcParams['axes.spines.top'] = False
         #plt.rcParams['axes.spines.bottom'] = False
+
+        plt.rcParams["legend.loc"] = 'upper left'
 
     def loadIdealDetectorMatrices(self, filename):
         self.idealDetectorMatrices = mi.loadMatrices(filename)
@@ -165,7 +167,8 @@ class overlapComparator(comparator):
         sigZ = np.round(np.std(values[:,2]), 2)
 
         # plot difference hit array
-        fig = plt.figure(figsize=(6, 4))
+        fig = plt.figure()
+        fig.set_size_inches(16/2.54, 9/2.54) 
 
         bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
 
@@ -228,7 +231,11 @@ class overlapComparator(comparator):
             differences = np.append(differences, self.computeOneICP(o), axis=0)
 
         self.histValues(differences)
-        plt.savefig(outputFileName, dpi=300)
+        plt.savefig(outputFileName,
+                    #This is simple recomendation for publication plots
+                    dpi=1000, 
+                    # Plot will be occupy a maximum of available space
+                    bbox_inches='tight')
         plt.close()
 
         return
@@ -248,9 +255,9 @@ class combinedComparator(comparator):
         sigZ = np.round(np.std(values[:,2]), 2)
 
         # plot difference hit array
-        fig = plt.figure(figsize=(6, 4))
+        fig = plt.figure()
 
-        fig.subplots_adjust(wspace=0.05)
+        #fig.subplots_adjust(wspace=0.05)
         #fig.tight_layout(rect=[0.5, 0.03, 1, 0.45])
         histA = fig.add_subplot(1, 1, 1)
         
@@ -266,6 +273,9 @@ class combinedComparator(comparator):
         handles, labels = plt.gca().get_legend_handles_labels()
         order = [1,0]
         plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order])
+
+        #You must select the correct size of the plot in advance
+        fig.set_size_inches(16/2.54, 9/2.54) 
 
         return fig
 
@@ -310,7 +320,11 @@ class combinedComparator(comparator):
                 differences = np.append(differences, values, axis=0)
 
         self.histValues(differences)
-        plt.savefig(outputFileName, dpi=150)
+        plt.savefig(outputFileName,
+                    #This is simple recomendation for publication plots
+                    dpi=1000, 
+                    # Plot will be occupy a maximum of available space
+                    bbox_inches='tight')
         plt.close()
 
         return
