@@ -11,16 +11,27 @@ import json
 import matplotlib
 matplotlib.use('Agg')   # so matplotlib works over ssh
 
+goodColors = ['xkcd:coral', 'xkcd:pale orange', 'xkcd:dark lilac',
+              'xkcd:teal green', 'xkcd:bluish grey', 'xkcd:dark sky blue']
+colors = ['xkcd:pale orange', 'xkcd:teal green', 'xkcd:dark sky blue']
+latexsigma = r'\textsigma '
+latexmu = r'\textmu '
+plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 11})
+plt.rc('text', usetex=True)
+plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+
 
 def dynamicCut(fileUsable, cutPercent=2, use2DCut=True):
 
-    if use2DCut:
+    if cutPercent == 0:
+        return fileUsable
+
+    if not use2DCut:
+        newDist = fileUsable[:, 6]
+        print(newDist)
         return fileUsable
 
     else:
-
-        if cutPercent == 0:
-            return fileUsable
 
         # calculate center of mass of differences
         dRaw = fileUsable[:, 3:6] - fileUsable[:, :3]
@@ -111,14 +122,13 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
     histA = fig.add_subplot(1, 2, 1)
     histA.hist(fileUsable[:, 6]*10, bins=150, log=True,
                range=[0.25, 1.2])  # this is only the z distance
-    histA.set_title('distance')   # change to mm!
+    histA.set_title('Distance')   # change to mm!
     histA.set_xlabel('d [mm]')
-    histA.set_ylabel('count (logarithmic)')
+    histA.set_ylabel('Count (logarithmic)')
 
     histB = fig.add_subplot(1, 2, 2)
-    histB.hist2d(dHit[:, 0]*10, dHit[:, 1]*10, bins=150,
-                 norm=LogNorm(), range=[[-01.3, 01.3], [-01.3, 01.3]])
-    histB.set_title('2d distance')
+    histB.hist2d(dHit[:, 0]*10, dHit[:, 1]*10, bins=150, norm=LogNorm(), range=[[-01.3, 01.3], [-01.3, 01.3]])
+    histB.set_title('2D Distance')
     histB.yaxis.tick_right()
     histB.yaxis.set_ticks_position('both')
     histB.set_xlabel('dx [mm]')
