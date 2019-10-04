@@ -23,12 +23,17 @@ plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
 def dynamicCut(fileUsable, cutPercent=2, use2DCut=True):
 
-    if cutPercent == 0:
+    if cutPercent <= 0:
         return fileUsable
 
+    cut = int(len(fileUsable) * cutPercent/100.0)
+    
     if not use2DCut:
+        
         newDist = fileUsable[:, 6]
-        print(newDist)
+        fileUsable = fileUsable[newDist.argsort()]
+        fileUsable = fileUsable[cut:-cut]
+        
         return fileUsable
 
     else:
@@ -44,13 +49,10 @@ def dynamicCut(fileUsable, cutPercent=2, use2DCut=True):
         dRaw = newhit2 - fileUsable[:, :3]
         newDist = np.power(dRaw[:, 0], 2) + np.power(dRaw[:, 1], 2)
 
-        if cutPercent > 0:
-            # sort by distance and cut some percent from start and end (discard outliers)
-            cut = int(len(fileUsable) * cutPercent/100.0)
-            # sort by new distance
-            fileUsable = fileUsable[newDist.argsort()]
-            # cut off largest distances, NOT lowest
-            fileUsable = fileUsable[:-cut]
+        # sort by new distance
+        fileUsable = fileUsable[newDist.argsort()]
+        # cut off largest distances, NOT lowest
+        fileUsable = fileUsable[:-cut]
 
         return fileUsable
 
@@ -113,9 +115,9 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
     # plot difference hit array
     fig = plt.figure(figsize=(8, 4))
     if use2Dcut:
-        fig.suptitle('{}% 2D cut'.format(cutPercent), fontsize=16)
+        fig.suptitle('{}\% 2D cut'.format(cutPercent), fontsize=16)
     else:
-        fig.suptitle('{}% 1D cut'.format(cutPercent), fontsize=16)
+        fig.suptitle('{}\% 1D cut'.format(cutPercent), fontsize=16)
 
     fig.subplots_adjust(wspace=0.05)
 
