@@ -16,7 +16,7 @@ goodColors = ['xkcd:coral', 'xkcd:pale orange', 'xkcd:dark lilac',
 colors = ['xkcd:pale orange', 'xkcd:teal green', 'xkcd:dark sky blue']
 latexsigma = r'\textsigma '
 latexmu = r'\textmu '
-plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 11})
+plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
 plt.rc('text', usetex=True)
 plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
@@ -113,30 +113,33 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
     dHit = hit2T[:, :3] - hit1T[:, :3]
 
     # plot difference hit array
-    fig = plt.figure(figsize=(8, 4))
-    if use2Dcut:
-        fig.suptitle('{}\% 2D cut'.format(cutPercent), fontsize=16)
-    else:
-        fig.suptitle('{}\% 1D cut'.format(cutPercent), fontsize=16)
-
-    fig.subplots_adjust(wspace=0.05)
+    fig = plt.figure(figsize=(16/2.54, 8/2.54))
+    
+    # if use2Dcut:
+    #     fig.suptitle('{}\% 2D cut'.format(cutPercent), fontsize=11)
+    # else:
+    #     fig.suptitle('{}\% 1D cut'.format(cutPercent), fontsize=11)
 
     histA = fig.add_subplot(1, 2, 1)
-    histA.hist(fileUsable[:, 6]*10, bins=150, log=True,
-               range=[0.25, 1.2])  # this is only the z distance
+    histA.hist(fileUsable[:, 6]*10, bins=150, log=True, range=[0.25, 1.2])  # this is only the z distance
     histA.set_title('Distance')   # change to mm!
     histA.set_xlabel('d [mm]')
-    histA.set_ylabel('Count (logarithmic)')
+    histA.set_ylabel('Count (log)')
 
     histB = fig.add_subplot(1, 2, 2)
-    histB.hist2d(dHit[:, 0]*10, dHit[:, 1]*10, bins=150, norm=LogNorm(), range=[[-01.3, 01.3], [-01.3, 01.3]])
+    histB.hist2d(dHit[:, 0]*10, dHit[:, 1]*10, bins=150, norm=LogNorm(), range=[[-01.3, 01.3], [-01.3, 01.3]], label='Count (log)')
     histB.set_title('2D Distance')
     histB.yaxis.tick_right()
     histB.yaxis.set_ticks_position('both')
     histB.set_xlabel('dx [mm]')
     histB.set_ylabel('dy [mm]')
-    histB.tick_params(direction='in')
+    histB.tick_params(direction='out')
     histB.yaxis.set_label_position("right")
+
+    #img = histB.imshow(image_file)
+    #plt.colorbar(img, ax=ax)
+
+    fig.subplots_adjust(wspace=0.05)
 
     return fig
 
@@ -165,9 +168,9 @@ def pairDxDyDPG():
 
                 histBinaryPairDistancesForDPG(filename, cut, overlap, usage)
                 if usage:
-                    plt.savefig(outpath / Path(str(cut)+'-2D.pdf'), dpi=1200)
+                    plt.savefig(outpath / Path(str(cut)+'-2D.pdf'), dpi=1200, bbox_inches='tight')
                 else:
-                    plt.savefig(outpath / Path(str(cut)+'-1D.pdf'), dpi=1200)
+                    plt.savefig(outpath / Path(str(cut)+'-1D.pdf'), dpi=1200, bbox_inches='tight')
 
 
 if __name__ == "__main__":
