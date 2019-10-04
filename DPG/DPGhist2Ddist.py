@@ -1,31 +1,71 @@
 #!/usr/bin/env python3
 
+from pathlib import Path
+from matplotlib.backends.backend_pdf import PdfPages
+import sys
+from matplotlib.colors import LogNorm
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import json
 import matplotlib
 matplotlib.use('Agg')   # so matplotlib works over ssh
 
-import matplotlib.pyplot as plt
-from functions import rootInterface as ri
-from functions import pairFinder as finder
-from functions import histogramers as hi
-from matplotlib.colors import LogNorm
-import os
-import sys
-from matplotlib.backends.backend_pdf import PdfPages
 
-matrices = ri.readJSON("input/matricesIdeal.json")
+def dynamicCut(fileUsable, cutPercent=2, use2DCut=True):
+
+    if use2DCut:
+        return fileUsable
+
+    else:
+
+        if cutPercent == 0:
+            return fileUsable
+
+        # calculate center of mass of differences
+        dRaw = fileUsable[:, 3:6] - fileUsable[:, :3]
+        com = np.average(dRaw, axis=0)
+
+        # shift newhit2 by com of differences
+        newhit2 = fileUsable[:, 3:6] - com
+
+        # calculate new distance for cut
+        dRaw = newhit2 - fileUsable[:, :3]
+        newDist = np.power(dRaw[:, 0], 2) + np.power(dRaw[:, 1], 2)
+
+        if cutPercent > 0:
+            # sort by distance and cut some percent from start and end (discard outliers)
+            cut = int(len(fileUsable) * cutPercent/100.0)
+            # sort by new distance
+            fileUsable = fileUsable[newDist.argsort()]
+            # cut off largest distances, NOT lowest
+            fileUsable = fileUsable[:-cut]
+
+        return fileUsable
 
 
-def histBinaryPairDistancesForDPG(pathpre, misalign, pathpost, cutPercent=0, overlap='0', use2Dcut=True):
-    filename = pathpre + misalign + pathpost
+def readBinaryPairFile(filename):
+    # read file
+    f = open(filename, "r")
+    fileRaw = np.fromfile(f, dtype=np.double)
+
+    # ignore header
+    fileUsable = fileRaw[6:]
+    Npairs = int(len(fileUsable)/7)
+
+    # reshape to array with one pair each line
+    fileUsable = fileUsable.reshape(Npairs, 7)
+    return fileUsable
+
+
+def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dcut=True):
+    filename = binPairFile
 
     # read binary Pairs
-    fileUsable = ri.readBinaryPairFile(filename)
+    fileUsable = readBinaryPairFile(filename)
 
     # apply dynmaic cut
-    fileUsable = finder.dynamicCut(fileUsable, cutPercent, use2Dcut)
+    fileUsable = dynamicCut(fileUsable, cutPercent, use2Dcut)
 
     # slice to separate vectors
     hit1 = fileUsable[:, :3]
@@ -37,8 +77,17 @@ def histBinaryPairDistancesForDPG(pathpre, misalign, pathpost, cutPercent=0, ove
     hit2H = np.ones((len(fileUsable), 4))
     hit2H[:, 0:3] = hit2
 
+    with open("../input/detectorMatricesIdeal.json", "r") as f:
+        matrices = json.load(f)
+
+    with open("../input/detectorOverlapsIdeal.json", "r") as f:
+        overlaps = json.load(f)
+
+    path1 = overlaps[overlap]['path1']
+    path2 = overlaps[overlap]['path2']
+
     # make numpy matrix from JSON info
-    toSen1 = np.array(matrices[overlap]['matrix1']).reshape(4, 4)
+    toSen1 = np.array(matrices[path1]).reshape(4, 4)
 
     # invert matrices
     toSen1Inv = np.linalg.inv(toSen1)
@@ -50,7 +99,7 @@ def histBinaryPairDistancesForDPG(pathpre, misalign, pathpost, cutPercent=0, ove
     # make differnce hit array
     dHit = hit2T[:, :3] - hit1T[:, :3]
 
-    # plot differnce hit array
+    # plot difference hit array
     fig = plt.figure(figsize=(8, 4))
     if use2Dcut:
         fig.suptitle('{}% 2D cut'.format(cutPercent), fontsize=16)
@@ -84,27 +133,29 @@ def pairDxDyDPG():
 
     overlap = '0'
     #pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
-    pathpre = 'input/2018-08-himster2-'
+    pathpre = '../input/2018-08-himster2-'
     pathpost = '/binaryPairFiles/pairs-' + overlap + '-cm.bin'
     misaligns = [
         'misalign-200u',
     ]
-    outpath = 'output/forDPG'
+    outpath = Path('../output/forDPG')
     cuts = [0, 2]
 
     use2Dcuts = [True, False]
 
     for usage in use2Dcuts:
         for misalign in misaligns:
-            if not os.path.isdir(outpath):
-                os.mkdir(outpath)
+            if not outpath.exists:
+                outpath.mkdir(parents=True, exist_ok=True)
             for cut in cuts:
-                histBinaryPairDistancesForDPG(
-                    pathpre, misalign, pathpost, cut, overlap, usage)
+
+                filename = Path(pathpre + misalign + pathpost)
+
+                histBinaryPairDistancesForDPG(filename, cut, overlap, usage)
                 if usage:
-                    plt.savefig(outpath+'/'+str(cut)+'-2D.png', dpi=150)
+                    plt.savefig(outpath / Path(str(cut)+'-2D.pdf'), dpi=1200)
                 else:
-                    plt.savefig(outpath+'/'+str(cut)+'-1D.png', dpi=150)
+                    plt.savefig(outpath / Path(str(cut)+'-1D.pdf'), dpi=1200)
 
 
 if __name__ == "__main__":
