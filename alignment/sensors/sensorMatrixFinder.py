@@ -43,31 +43,30 @@ class sensorMatrixFinder:
         # apply dynamic cut
         self.PairData = self.dynamicCut(self.PairData, 2)
 
-    def dynamicCut(self, fileUsable, cutPercent=2):
+    def dynamicCut(self, hitPairs, cutPercent=2):
 
         if cutPercent == 0:
-            return fileUsable
+            return hitPairs
 
         # calculate center of mass of differences
-        dRaw = fileUsable[:, 3:6] - fileUsable[:, :3]
+        dRaw = hitPairs[:, 3:6] - hitPairs[:, :3]
         com = np.average(dRaw, axis=0)
 
         # shift newhit2 by com of differences
-        newhit2 = fileUsable[:, 3:6] - com
+        newhit2 = hitPairs[:, 3:6] - com
 
         # calculate new distance for cut
-        dRaw = newhit2 - fileUsable[:, :3]
+        dRaw = newhit2 - hitPairs[:, :3]
         newDist = np.power(dRaw[:, 0], 2) + np.power(dRaw[:, 1], 2)
 
-        if cutPercent > 0:
-            # sort by distance and cut some percent from start and end (discard outliers)
-            cut = int(len(fileUsable) * cutPercent/100.0)
-            # sort by new distance
-            fileUsable = fileUsable[newDist.argsort()]
-            # cut off largest distances, NOT lowest
-            fileUsable = fileUsable[:-cut]
+        # sort by distance and cut some percent from start and end (discard outliers)
+        cut = int(len(hitPairs) * cutPercent/100.0)
+        # sort by new distance
+        hitPairs = hitPairs[newDist.argsort()]
+        # cut off largest distances, NOT lowest
+        hitPairs = hitPairs[:-cut]
 
-        return fileUsable
+        return hitPairs
 
     def findMatrix(self):
 

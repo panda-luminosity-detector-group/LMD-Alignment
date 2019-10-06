@@ -146,7 +146,7 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
 
 def pairDxDyDPG():
 
-    overlap = '0'
+    overlap = '1300'
     #pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
     pathpre = '../input/2018-08-himster2-'
     pathpost = '/binaryPairFiles/pairs-' + overlap + '-cm.bin'
@@ -168,9 +168,9 @@ def pairDxDyDPG():
 
                 histBinaryPairDistancesForDPG(filename, cut, overlap, usage)
                 if usage:
-                    plt.savefig(outpath / Path(str(cut)+'-2D.pdf'), dpi=1200, bbox_inches='tight')
+                    plt.savefig(outpath / Path(f'area-{overlap}-cut-{cut}-2D.pdf'), dpi=1200, bbox_inches='tight')
                 else:
-                    plt.savefig(outpath / Path(str(cut)+'-1D.pdf'), dpi=1200, bbox_inches='tight')
+                    plt.savefig(outpath / Path(f'area-{overlap}-cut-{cut}-1D.pdf'), dpi=1200, bbox_inches='tight')
 
 
 if __name__ == "__main__":
