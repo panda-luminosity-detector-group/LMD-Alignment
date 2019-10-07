@@ -399,12 +399,13 @@ def createMultipleDefaultConfigs():
     momenta = ['1.5', '15.0']
     # momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
     misFactors = {}
-    misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules']
+    misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules', 'singlePlane']
     
     misFactors['aligned'] =     ['1.00']
     misFactors['identity'] =    ['1.00']
     misFactors['sensors'] =     ['0.10', '0.50', '1.00', '2.00', '5.00']
     misFactors['box'] =         ['0.50', '1.00', '2.00']
+    misFactors['singlePlane'] = ['0.50', '1.00', '2.00']
     misFactors['boxRotZ'] =     ['1.00', '2.00', '3.00', '5.00', '10.00']
     misFactors['modules'] =     ['0.01', '0.10', '0.15', '0.25', '0.50', '1.00']
 
