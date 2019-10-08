@@ -543,7 +543,7 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         alignerMod = alignerModules()
-        alignerMod.readTracks('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/testFullChain/mom-1_5/Lumi_Track_0.root')
+        alignerMod.readTracks('/home/arbeit/PandaRoot/macro/detectors/lmd/testFullChain/mom-1_5/Lumi_Track_0.root')
         done()
 
     if args.debug:

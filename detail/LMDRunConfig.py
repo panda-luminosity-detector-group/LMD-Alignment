@@ -424,6 +424,8 @@ class LMDRunConfig:
                 return self.pathAlMatrixPath() / Path(f'alMat-IPalignment-{self.__misalignFactor}.json')
             elif self.__misalignType == 'sensors':
                 return self.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{self.__misalignFactor}.json')
+            elif self.__misalignType == 'singlePlane':
+                return self.pathAlMatrixPath() / Path(f'alMat-modules-{self.__misalignFactor}.json')
             # TODO: add more cases for modules etc
 
     def pathMisMatrix(self):
