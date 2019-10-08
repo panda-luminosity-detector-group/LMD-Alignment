@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
+from pathlib import Path
+import numpy as np
+
 """
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
 TODO: Implement corridor alignment
 
@@ -13,9 +17,6 @@ steps:
 - convert to alignment matrices
 
 """
-
-from pathlib import Path
-import numpy as np
 
 class alignerModules:
     def __init__(self):
