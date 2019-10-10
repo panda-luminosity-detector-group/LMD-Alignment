@@ -27,7 +27,12 @@ class alignerModules:
     def __init__(self):
 
         reader = trackReader()
-        reader.readTracksFromJson(Path('input/moduleAlTest/tracks_processed.json'))
+        reader.readDetectorParameters()
+        reader.readTracksFromJson(Path('input/moduleAlTest/testRun/tracks_processed.json'))
+
+
+        for params in reader.generatorMilleParameters():
+            print(f'fecking params eh: {params}')
 
         
 
