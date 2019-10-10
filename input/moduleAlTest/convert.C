@@ -1,9 +1,6 @@
-#include <PndTrack.h>
-#include <TClonesArray.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TVector3.h>
-#include <iostream>
+#include "../../json/single_include/nlohmann/json.hpp"
+
+using nlohmann::json;
 
 struct recoPoint {
     int hitIndex;
@@ -11,7 +8,7 @@ struct recoPoint {
     double ex, ey, ez;
 };
 
-struct track3Dinfo : public TObject {
+struct track3Dinfo {
     double tx, ty, tz;
     double px, py, pz;
     std::vector<int> hitIndices;
@@ -21,7 +18,8 @@ struct track3Dinfo : public TObject {
 };
 
 void convert() {
-    cout << "Hi!\n";
+    //*** output json
+    json outJson;
 
     // filename
     TFile *trackFile = new TFile("Lumi_Track_100000.root");
@@ -44,17 +42,17 @@ void convert() {
     int runIndex = 0;
 
     // event loop
-    for (Long64_t ev = 0; ev < nEvents; ev++) {
+    for (Long64_t event = 0; event < nEvents; event++) {
         trackArray->Clear();
-        trackTree->GetEntry(ev);
-        recoTree->GetEntry(ev);
+        trackTree->GetEntry(event);
+        recoTree->GetEntry(event);
+
+        string evStr = std::to_string(event);
 
         Int_t tracksPerEvent = trackArray->GetEntriesFast();
 
-        if (tracksPerEvent > 0) {
-            cout << "\n\n==== Next Event\n";
-            cout << "for this event, there are " << recoArray->GetEntriesFast() << " reco hits\n";
-        }
+        // create empty json object which will hold this event
+        auto thisEvent = json({});
 
         // tracks loop per event
         for (Int_t iTrack = 0; iTrack < tracksPerEvent; iTrack++) {
@@ -62,14 +60,10 @@ void convert() {
 
             PndTrackCand thisCandidate = thisTrack->GetTrackCand();
 
-            // cout << "\n---- Next Track\n";
-
             // get all hits for this track candidate
             const int numPts = thisCandidate.GetNHits();
 
             //* Okay, now I have the track and all RecoHits that led to it. Now, all I need is the residuals from the track to the reco position on each plane!
-
-            cout << "Event summary: " << tracksPerEvent << " tracks in this event and this track had " << numPts << " merged hits.\n";
 
             FairTrackParP paramFirst = thisTrack->GetParamFirst();
 
@@ -81,11 +75,14 @@ void convert() {
             double trackPY = paramFirst.GetPy();
             double trackPZ = paramFirst.GetPz();
 
-            cout << "First Track in this event!\n";
-            cout << "Track: x,y,z: " << trackX << ", " << trackY << ", " << trackZ << "\n";
-            cout << "Track: Px,Py,Pz: " << trackPX << ", " << trackPY << ", " << trackPZ << "\n";
+            // cout << "First Track in this event!\n";
+            // cout << "Track: x,y,z: " << trackX << ", " << trackY << ", " << trackZ << "\n";
+            // cout << "Track: Px,Py,Pz: " << trackPX << ", " << trackPY << ", " << trackPZ << "\n";
 
             // can also be done with GetPosition() and GetMomentum(), return TVector3!
+
+            thisEvent.push_back({"trkPos", {trackX, trackY, trackZ}});
+            thisEvent.push_back({"trkMom", {trackPX, trackPY, trackPZ}});
 
             // hit loop per candidate
             for (int iHit = 0; iHit < numPts; iHit++) {
@@ -104,18 +101,28 @@ void convert() {
                 double erryhit = addHit->GetDy();
                 double errzhit = addHit->GetDz();
 
-                cout << "hitIndex: " << hitIndex << "\n";
-                cout << "Original RecoHit Positions: " << xhit << ", " << yhit << ", " << zhit << "\n";
-                cout << "-- Errors for this RecoHit: " << errxhit << ", " << erryhit << ", " << errzhit << "\n";
+                // cout << "hitIndex: " << hitIndex << "\n";
+                // cout << "Original RecoHit Positions: " << xhit << ", " << yhit << ", " << zhit << "\n";
+                // cout << "-- Errors for this RecoHit: " << errxhit << ", " << erryhit << ", " << errzhit << "\n";
+
+                thisEvent["recoHits"].push_back({{"index", hitIndex}, {"pos", {xhit, yhit, zhit}}, {"err", {errxhit, erryhit, errzhit}}});
             }
+
+            outJson["events"].push_back(thisEvent);
 
             //*** skip remaining tracks
             break;
         }
-
-        if (runIndex++ > 4) {
-            break;
-        }
+        // if (runIndex++ > 0) {
+        //     break;
+        // }
     }
     //! dump to json here!
+
+    // cout << outJson.dump(2) << "\n";
+    std::ofstream o("tracs_processed.json");
+    o << std::setw(2) << outJson << std::endl;
+
+
+    cout << "all done!\n";
 }
