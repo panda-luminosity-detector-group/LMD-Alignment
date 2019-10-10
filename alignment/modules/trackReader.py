@@ -3,6 +3,7 @@
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
 import numpy as np
+import json
 import uproot
 import sys
 
@@ -22,56 +23,45 @@ class trackReader():
     """
     sector goes from 0 to 9
     """
-    def readTracks(self, path, sector=0):
+    def readTracksFromRoot(self, path, sector=0):
 
         """
-        Reco file is incredibly easy, there are PixelHits who have fX, fY and fZ values already in PndGlobal, and a sensor ID.
-        Sorting by sector is trivial this way.
-        They are however still clusters, that means they have to be merged.
+        Currently not working, please use the json method
         """
 
+    def readTracksFromJson(self, filename, sector=0):
+        print(f'Oh hai!')
 
-        trackFile = uproot.open(path / Path('Lumi_Track_100000.root'))
-        #recoFile = uproot.open(path / Path('Lumi_recoMerged_100000.root'))
-        
-        trackBranch = trackFile[b'pndsim/LMDPndTrack']
-        #trackCandSubBranch = trackBranch[b'LMDPndTrack.fTrackCand.fHitId']
+        with open(filename, 'r') as infile:
+            trks = json.load(infile)['events']
+            print('file successfully read!')
 
-        #print(f"Tracks keys: {trackCandSubBranch.interpretation}")
+        print(f'no of events: {len(trks)}')
+        print(f"verbose!\ntrack pos: {trks[0]['trkPos']}\ntrack mom: {trks[0]['trkMom']}")
 
-        #flatCand = trackCand.flatten()
-        print(f'--------------------------')
+        # track origin and direction
+        trackOri = np.array(trks[0]['trkPos'])
+        trackDir = np.array(trks[0]['trkMom']) / np.linalg.norm(trks[0]['trkMom'])
 
-        subBranchInBranch = trackBranch["LMDPndTrack.fTrackCand.fHitId"]
-        subBranchInBranch2 = trackBranch["LMDPndTrack.fTrackCand.fTimeStamp"]
-        subBranchInBranch3 = trackBranch["LMDPndTrack.fTrackParamLast.fiver"]
+        print(f'track parameters: A={trackOri} and u={trackDir} (length {np.linalg.norm(trks[0]["trkMom"])})')
 
-        print(f'This is the second level:\n{ trackFile[b"pndsim"].show() }')
+        for reco in trks[0]['recoHits']:
+            # print(f'hit index: {reco["index"]}')
+            # print(f"reco hit pos: {reco['pos']}")
+            # print(f"reco hit err: {reco['err']}")
+            recoPos = np.array(reco['pos'])
 
-        #for i in subBranchInBranch.iterkeys():
-        #    print(f'Hi! {i}')
+            apVec = trackOri - recoPos
+            dist = np.linalg.norm( np.cross(apVec, trackDir))# / np.linalg.norm(trackDir)
 
+            # better way calculate vector from reco point to track
+            # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+            dVec = (trackOri - recoPos) - ((trackOri - recoPos)@trackDir) * trackDir
 
-        #print(f'Flat test: {(trackCandSubBranch.array("fIndex"))}')
+            print(f'------------------------')
+            
+            print(f'dVec: {dVec}')
+            print(f'-this dist: {np.linalg.norm(dVec)}')
+            print(f'other dist: {dist}')
 
-        # print(f"Reco keys: {recoFile[b'pndsim/LMDHitsMerged'].keys()}")
-
-        # * ignore the rest for now 
-
-        sys.exit(0)
-
-        # uproot.iterate will produce a dict with JaggedArrays, so we can create an empty dict and append each iteration
-        resultDict = defaultdict(list)
-
-        try:
-            # open the root trees in a TChain-like manner
-            print('reading files...')
-            for array in uproot.iterate(path, 'pndsim', [b'LMDTrackQ.fTrkRecStatus', b'LMDTrackQ.fHalf', b'LMDTrackQ.fModule', b'LMDTrackQ.fXrec', b'LMDTrackQ.fYrec', b'LMDTrackQ.fZrec']):
-
-                for key in array:
-                    resultDict[key] = np.append(resultDict[key], array[key], axis=0)
-
-        except Exception as e:
-            print('error occured:')
-            print(e)
-            sys.exit(0)
+            # okay, at this point, I have all distcanes in x and y

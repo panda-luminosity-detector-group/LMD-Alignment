@@ -27,7 +27,7 @@ class alignerModules:
     def __init__(self):
 
         reader = trackReader()
-        reader.readTracks(Path('input/moduleAlTest'))
+        reader.readTracksFromJson(Path('input/moduleAlTest/tracks_processed.json'))
 
         
 
