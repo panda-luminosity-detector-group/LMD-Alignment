@@ -101,11 +101,13 @@ void convert() {
                 double erryhit = addHit->GetDy();
                 double errzhit = addHit->GetDz();
 
+                int sensorID = addHit->GetSensorID();
+
                 // cout << "hitIndex: " << hitIndex << "\n";
                 // cout << "Original RecoHit Positions: " << xhit << ", " << yhit << ", " << zhit << "\n";
                 // cout << "-- Errors for this RecoHit: " << errxhit << ", " << erryhit << ", " << errzhit << "\n";
 
-                thisEvent["recoHits"].push_back({{"index", hitIndex}, {"pos", {xhit, yhit, zhit}}, {"err", {errxhit, erryhit, errzhit}}});
+                thisEvent["recoHits"].push_back({{"index", hitIndex}, {"sensorID", sensorID}, {"pos", {xhit, yhit, zhit}}, {"err", {errxhit, erryhit, errzhit}}});
             }
 
             outJson["events"].push_back(thisEvent);
@@ -120,7 +122,7 @@ void convert() {
     //! dump to json here!
 
     // cout << outJson.dump(2) << "\n";
-    std::ofstream o("tracs_processed.json");
+    std::ofstream o("tracks_processed.json");
     o << std::setw(2) << outJson << std::endl;
 
 
