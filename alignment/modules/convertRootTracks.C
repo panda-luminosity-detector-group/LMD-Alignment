@@ -1,5 +1,7 @@
 #include "../../json/single_include/nlohmann/json.hpp"
 
+// call with root -l -q convertRootTracks.C
+
 using nlohmann::json;
 
 struct recoPoint {
@@ -17,7 +19,7 @@ struct track3Dinfo {
     std::vector<recoPoint> recoPoints;
 };
 
-void convert() {
+void convertRootTracks() {
     //*** output json
     json outJson;
 
