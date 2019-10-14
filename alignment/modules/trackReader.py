@@ -65,6 +65,8 @@ class trackReader():
 
         print(f'no of events: {len(self.trks)}')
 
+        # TODO: use vectorized version to use numpy!
+
         # loop over all events
         for event in self.trks:
 

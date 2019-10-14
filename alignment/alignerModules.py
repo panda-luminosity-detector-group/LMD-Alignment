@@ -5,7 +5,7 @@ from alignment.modules.trackReader import trackReader
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
 import numpy as np
-import uproot
+import pyMille
 import sys
 
 """
@@ -30,10 +30,13 @@ class alignerModules:
         reader.readDetectorParameters()
         reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed.json'))
 
+        # TODO: sort by sector!
 
-        for params in reader.generatorMilleParameters():
-            print(f'fecking params eh: {params}')
-            pass
+        MyMille = pyMille.Mille('output/moduleAlignment.bin')
         
-
+        print(f'Running pyMille...')
+        for params in reader.generatorMilleParameters():
+            MyMille.write(params[0], params[1], params[2], params[3])
+        
+        # now, pede must be called
     
