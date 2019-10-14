@@ -148,22 +148,22 @@ class trackReader():
                 # okay, at this point, I have all positions, distances and errors in x and y
 
                 if plane == 0:
-                    yield from self.milleParamsPlaneOne(px, py, dz, dVec, reco['err'])
+                    yield from self.milleParamsPlaneOne(px, py, dz, dVec, reco['err'], sector)
                 
                 elif plane == 1:
-                    yield from self.milleParamsPlaneTwo(px, py, dz, dVec, reco['err'])
+                    yield from self.milleParamsPlaneTwo(px, py, dz, dVec, reco['err'], sector)
                 
                 elif plane == 2:
-                    yield from self.milleParamsPlaneThree(px, py, dz, dVec, reco['err'])
+                    yield from self.milleParamsPlaneThree(px, py, dz, dVec, reco['err'], sector)
                 
                 elif plane == 3:
-                    yield from self.milleParamsPlaneFour(px, py, dz, dVec, reco['err'])
+                    yield from self.milleParamsPlaneFour(px, py, dz, dVec, reco['err'], sector)
             
     
     """
     yield TWO lines, one for x, one for y
     """
-    def milleParamsPlaneOne(self, px, py, dz, dVec, errVec):
+    def milleParamsPlaneOne(self, px, py, dz, dVec, errVec, sector):
         #! ============== first plane
         #* -------------- x values
         #? ------ global derivtives
@@ -174,7 +174,7 @@ class trackReader():
         residual = dVec[0]   # distance x reco to track!
         sigma = errVec[0]    # error in x direction         
         
-        yield (derGL, derLC, residual, sigma)
+        yield (derGL, derLC, residual, sigma, sector)
 
         #* -------------- y values
         #? ------ global derivtives
@@ -185,9 +185,9 @@ class trackReader():
         residual = dVec[1]   # distance y reco to track!
         sigma = errVec[1]    # error in y direction   
 
-        yield (derGL, derLC, residual, sigma)
+        yield (derGL, derLC, residual, sigma, sector)
 
-    def milleParamsPlaneTwo(self, px, py, dz, dVec, errVec):
+    def milleParamsPlaneTwo(self, px, py, dz, dVec, errVec, sector):
         #! ============== second plane
         #* -------------- x values
         #? ------ global derivtives
@@ -198,7 +198,7 @@ class trackReader():
         residual = dVec[0]   # distance x reco to track!
         sigma = errVec[0]    # error in x direction         
         
-        yield (derGL, derLC, residual, sigma)
+        yield (derGL, derLC, residual, sigma, sector)
 
         #* -------------- y values
         #? ------ global derivtives
@@ -209,9 +209,9 @@ class trackReader():
         residual = dVec[1]   # distance y reco to track!
         sigma = errVec[1]    # error in y direction   
 
-        yield (derGL, derLC, residual, sigma)
+        yield (derGL, derLC, residual, sigma, sector)
 
-    def milleParamsPlaneThree(self, px, py, dz, dVec, errVec):
+    def milleParamsPlaneThree(self, px, py, dz, dVec, errVec, sector):
         #! ============== third plane
         #* -------------- x values
         #? ------ global derivtives
@@ -222,7 +222,7 @@ class trackReader():
         residual = dVec[0]   # distance x reco to track!
         sigma = errVec[0]    # error in x direction         
         
-        yield (derGL, derLC, residual, sigma)
+        yield (derGL, derLC, residual, sigma, sector)
 
         #* -------------- y values
         #? ------ global derivtives
@@ -233,9 +233,9 @@ class trackReader():
         residual = dVec[1]   # distance y reco to track!
         sigma = errVec[1]    # error in y direction   
 
-        yield (derGL, derLC, residual, sigma)
+        yield (derGL, derLC, residual, sigma, sector)
 
-    def milleParamsPlaneFour(self, px, py, dz, dVec, errVec):
+    def milleParamsPlaneFour(self, px, py, dz, dVec, errVec, sector):
         #! ============== third plane
         #* -------------- x values
         #? ------ global derivtives
@@ -246,7 +246,7 @@ class trackReader():
         residual = dVec[0]   # distance x reco to track!
         sigma = errVec[0]    # error in x direction         
         
-        yield (derGL, derLC, residual, sigma)
+        yield (derGL, derLC, residual, sigma, sector)
 
         #* -------------- y values
         #? ------ global derivtives
@@ -257,7 +257,7 @@ class trackReader():
         residual = dVec[1]   # distance y reco to track!
         sigma = errVec[1]    # error in y direction   
 
-        yield (derGL, derLC, residual, sigma)
+        yield (derGL, derLC, residual, sigma, sector)
 
 
 

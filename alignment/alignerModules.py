@@ -26,19 +26,22 @@ steps:
 class alignerModules:
     def __init__(self):
 
+        sector = 0
+
         reader = trackReader()
         reader.readDetectorParameters()
         reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed.json'))
 
-        # TODO: sort by sector!
+        # TODO: sort better by sector!
 
-        milleOut = 'output/millepede/moduleAlignment.bin'
+        milleOut = f'output/millepede/moduleAlignment-sector{sector}.bin'
 
         MyMille = pyMille.Mille(milleOut)
         
         print(f'Running pyMille...')
         for params in reader.generatorMilleParameters():
-            MyMille.write(params[0], params[1], params[2], params[3])
+            if params[4] == sector:
+                MyMille.write(params[0], params[1], params[2], params[3])
         
         print(f'Mille binary data written to {milleOut}!')
         # now, pede must be called
