@@ -23,9 +23,10 @@ PYBIND11_MODULE(pyMille, m) {
                std::vector<int> labels(GlobalParameterDerivatives.size());
                std::iota(labels.begin(), labels.end(), 1);
                MilleInstance.mille(LocalParameterDerivatives.size(),
-                                   &LocalParameterDerivatives[0],
+                                   LocalParameterDerivatives.data(),
                                    GlobalParameterDerivatives.size(),
-                                   &GlobalParameterDerivatives[0], &labels[0],
+                                   GlobalParameterDerivatives.data(),
+                                   labels.data(),
                                    Residual, Sigma);
                MilleInstance.end();
              }

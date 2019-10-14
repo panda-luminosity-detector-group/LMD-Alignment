@@ -32,11 +32,14 @@ class alignerModules:
 
         # TODO: sort by sector!
 
-        MyMille = pyMille.Mille('output/moduleAlignment.bin')
+        milleOut = 'output/millepede/moduleAlignment.bin'
+
+        MyMille = pyMille.Mille(milleOut)
         
         print(f'Running pyMille...')
         for params in reader.generatorMilleParameters():
             MyMille.write(params[0], params[1], params[2], params[3])
         
+        print(f'Mille binary data written to {milleOut}!')
         # now, pede must be called
     
