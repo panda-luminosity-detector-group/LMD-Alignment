@@ -123,7 +123,7 @@ void convertRootTracks() {
     }
     //! dump to json here!
 
-    // cout << outJson.dump(2) << "\n";
+    // TODO: better target dir!
     std::ofstream o("../../input/modulesAlTest/tracks_processed.json");
     o << std::setw(2) << outJson << std::endl;
 
