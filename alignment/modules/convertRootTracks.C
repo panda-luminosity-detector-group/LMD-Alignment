@@ -24,7 +24,7 @@ void convertRootTracks() {
     json outJson;
 
     // filename
-    TFile *trackFile = new TFile("Lumi_Track_100000.root");
+    TFile *trackFile = new TFile("../../input/modulesAlTest/Lumi_Track_100000.root");
     // TTree name, use TBrowser if the name is unknown
     TTree *trackTree = (TTree *)trackFile->Get("pndsim");
     // the TClonesArray needs to know the class of the objects you want to retrieve
@@ -33,7 +33,7 @@ void convertRootTracks() {
     trackTree->SetBranchAddress("LMDPndTrack", &trackArray);
 
     // same for recoHits
-    TFile *recoFile = new TFile("Lumi_recoMerged_100000.root");
+    TFile *recoFile = new TFile("../../input/modulesAlTest/Lumi_recoMerged_100000.root");
     TTree *recoTree = (TTree *)recoFile->Get("pndsim");
     TClonesArray *recoArray = new TClonesArray("PndSdsMergedHit");
     recoTree->SetBranchAddress("LMDHitsMerged", &recoArray);
@@ -124,7 +124,7 @@ void convertRootTracks() {
     //! dump to json here!
 
     // cout << outJson.dump(2) << "\n";
-    std::ofstream o("tracks_processed.json");
+    std::ofstream o("../../input/modulesAlTest/tracks_processed.json");
     o << std::setw(2) << outJson << std::endl;
 
 
