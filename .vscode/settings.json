@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "convert.C": "cpp",
+        "convertRootTracks.C": "cpp"
+    },
+    "restructuredtext.confPath": "${workspaceFolder}/pybind11/docs"
+}
