@@ -3,6 +3,7 @@
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
 import numpy as np
+from numpy.linalg import inv
 import json
 import uproot
 import re
@@ -40,14 +41,17 @@ class trackReader():
         with open(Path('input/detectorOverlapsIdeal.json')) as inFile:
             self.detectorOverlaps = json.load(inFile)
 
+        with open(Path('input/detectorMatricesIdeal.json')) as inFile:
+            self.detectorMatrices = json.load(inFile)
+
     def getPathModuleFromSensorID(self, sensorID):
         for overlap in self.detectorOverlaps:
             if self.detectorOverlaps[overlap]['id1'] == sensorID or self.detectorOverlaps[overlap]['id2'] == sensorID:
                 return self.detectorOverlaps[overlap]["pathModule"]
 
-    def getSectorFromModulePath(self, modulePath):
+    def getParamsFromModulePath(self, modulePath):
         # "/cave_1/lmd_root_0/half_1/plane_0/module_3"
-        regex = "\/cave_(\d+)\/lmd_root_(\d+)\/half_(\d+)\/plane_(\d+)\/module_(\d+)"
+        regex = r"/cave_(\d+)/lmd_root_(\d+)/half_(\d+)/plane_(\d+)/module_(\d+)"
         p = re.compile(regex)
         m = p.match(modulePath)
         if m:
@@ -55,72 +59,103 @@ class trackReader():
             plane = int(m.group(4))
             module = int(m.group(5))
             sector = (module) + (half)*5;
-            return plane, sector
-
+            return half, plane, module, sector
+    
     def generatorMilleParameters(self):
 
         print(f'no of events: {len(self.trks)}')
 
-        # TODO: loop over all events!
+        # loop over all events
+        for event in self.trks:
 
-        # TODO: transform all values to system of first... module? yes, module, since this is using the ideal position
+            # track origin and direction
+            trackOri = np.array(event['trkPos'])
+            trackDir = np.array(event['trkMom']) / np.linalg.norm(event['trkMom'])
 
-        print(f"verbose!\ntrack pos: {self.trks[0]['trkPos']}\ntrack mom: {self.trks[0]['trkMom']}")
+            for reco in event['recoHits']:
+                # print(f'hit index: {reco["index"]}')
+                # print(f"reco hit pos: {reco['pos']}")
+                # print(f"reco hit err: {reco['err']}")
+                recoPos = np.array(reco['pos'])
 
-        # track origin and direction
-        trackOri = np.array(self.trks[0]['trkPos'])
-        trackDir = np.array(self.trks[0]['trkMom']) / np.linalg.norm(self.trks[0]['trkMom'])
+                sensorID = reco['sensorID']
+                modulePath = self.getPathModuleFromSensorID(sensorID)
 
-        # print(f'track parameters: A=[trackOri] and u=[trackDir] (length [np.linalg.norm(self.trks[0]["trkMom"])])')
+                # determine module position from reco hit
+                half, plane, module, sector = self.getParamsFromModulePath(modulePath)
 
-        print(f'fecking track eh:\n{self.trks[0]}\n')
+                # create path to first module in this sector
+                pathFirstMod = f"/cave_1/lmd_root_0/half_{half}/plane_0/module_{module}"
 
-        for reco in self.trks[0]['recoHits']:
-            # print(f'hit index: {reco["index"]}')
-            # print(f"reco hit pos: {reco['pos']}")
-            # print(f"reco hit err: {reco['err']}")
-            recoPos = np.array(reco['pos'])
+                # get matrix to first module
+                matrixFirstMod = np.array(self.detectorMatrices[pathFirstMod]).reshape(4,4)
 
-            apVec = trackOri - recoPos
-            dist = np.linalg.norm( np.cross(apVec, trackDir))# / np.linalg.norm(trackDir)
+                # homogenize reco hit
+                recoH = np.ones(4)
+                recoH[:3] = recoPos
+                recoH = recoH.reshape((1,4)).T
 
-            # better way calculate vector from reco point to track
-            # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-            dVec = (trackOri - recoPos) - ((trackOri - recoPos)@trackDir) * trackDir
+                # transform track origin, direction and reco hit position (vectors must be col-major amd homogenous!)
+                trackOriH = np.ones(4)
+                trackOriH[:3] = trackOri
+                
+                trackDirH = np.ones(4)
+                trackDirH[:3] = trackDir
 
-            # print(f'------------------------')
-            
-            # print(f'dVec: [dVec]')
-            # print(f'-this dist: [np.linalg.norm(dVec)]')
-            # print(f'other dist: [dist]')
+                trackOriH = trackOriH.reshape((1,4)).T
+                trackDirH = trackDirH.reshape((1,4)).T
 
-            # okay, at this point, I have all positions, distances and errors in x and y
+                # transform
+                trackOriH = inv(matrixFirstMod) @ trackOriH
+                trackDirH = inv(matrixFirstMod) @ trackDirH
+                recoH = inv(matrixFirstMod) @ recoH         # warning, not a unit vector anymore!
 
-            # TODO: determine plane number for reco hit
-            px = reco['pos'][0]
-            py = reco['pos'][1]
+                # de-homogenize
+                trackOriNew = trackOriH[:3] / trackOriH[3]
+                trackDirNew = trackDirH[:3] / trackDirH[3]
+                # make direction unit length
+                trackDirNew = trackDirNew / np.linalg.norm(trackDirNew)
+                recoNew = recoH[:3] / recoH[3]
 
-            sensorID = reco['sensorID']
-            modulePath = self.getPathModuleFromSensorID(sensorID)
-            plane, sector = self.getSectorFromModulePath(modulePath)
+                # and re-transpose
+                trackOriNew = trackOriNew.T.reshape(3)
+                trackDirNew = trackDirNew.T.reshape(3)
+                recoNew = recoNew.T.reshape(3)
 
-            dz = 20 # TODO: change by plane!
+                # print(f'\ntrackOri: {trackOri}\ntrackDir: {trackDir}\n')
+                # print(f'\ntrackOriH: {trackOriH}\ntrackDirH: {trackDirH}\n')
+                # print(f'\nreco: {reco["pos"]}\nrecoH: {recoH}\n')
 
-            if plane == 0:
-                dz = 0 # TODO: use reco z val!
-                yield from self.milleParamsPlaneOne(px, py, dz, dVec, reco['err'])
-            
-            elif plane == 1:
-                dz = 20 # TODO: use reco z val!
-                yield from self.milleParamsPlaneTwo(px, py, dz, dVec, reco['err'])
-            
-            elif plane == 2:
-                dz = 30 # TODO: use reco z val!
-                yield from self.milleParamsPlaneThree(px, py, dz, dVec, reco['err'])
-            
-            elif plane == 3:
-                dz = 40 # TODO: use reco z val!
-                yield from self.milleParamsPlaneFour(px, py, dz, dVec, reco['err'])
+                # print(f'de-homogenized:')
+                # print(trackOriNew, "\n", trackDirNew, "\n", recoNew)
+
+                # better way calculate vector from reco point to track
+                # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+                dVec = (trackOriNew - recoNew) - ((trackOriNew - recoNew)@trackDirNew) * trackDirNew
+
+                px = recoNew[0]
+                py = recoNew[1]
+                dz = recoNew[2]
+
+                # print(f'------------------------')
+                
+                # print(f'dVec: [dVec]')
+                # print(f'-this dist: [np.linalg.norm(dVec)]')
+                # print(f'other dist: [dist]')
+
+                # okay, at this point, I have all positions, distances and errors in x and y
+
+                if plane == 0:
+                    yield from self.milleParamsPlaneOne(px, py, dz, dVec, reco['err'])
+                
+                elif plane == 1:
+                    yield from self.milleParamsPlaneTwo(px, py, dz, dVec, reco['err'])
+                
+                elif plane == 2:
+                    yield from self.milleParamsPlaneThree(px, py, dz, dVec, reco['err'])
+                
+                elif plane == 3:
+                    yield from self.milleParamsPlaneFour(px, py, dz, dVec, reco['err'])
             
     
     """
