@@ -13,7 +13,7 @@ You should setup a virtual enviroment of python first and activate it. Also for 
    
    mkdir build && cd build
    cmake .. && cmake --build .
-   cd .. && pip install .
+   cd .. && pip3 install .
 
 This installation procedure can be improved in the future (make the cmake calls within python setup).
 
