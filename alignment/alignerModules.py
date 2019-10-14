@@ -34,15 +34,22 @@ class alignerModules:
 
         # TODO: sort better by sector!
 
-        milleOut = f'output/millepede/moduleAlignment-sector{sector}.bin'
+        milleOut = f'output/millepede/moduleAlignment-sector{sector}.txt'
 
-        MyMille = pyMille.Mille(milleOut)
+        MyMille = pyMille.Mille(milleOut, False, False)
         
+        sigmaScale = 1e3
+        gotems = 0
+
         print(f'Running pyMille...')
         for params in reader.generatorMilleParameters():
             if params[4] == sector:
-                MyMille.write(params[0], params[1], params[2], params[3])
+                # TODO: this order of parameters does't match the interface!!!
+                MyMille.write(params[1], params[0], params[2], params[3]*sigmaScale)
+                # print(f'params: {params}')
+                #print(f'residual: {params[2]}, sigma: {params[3]*sigmaScale} (factor {params[2]/(params[3]*sigmaScale)})')
+                gotems += 1
         
-        print(f'Mille binary data written to {milleOut}!')
+        print(f'Mille binary data ({gotems} records) written to {milleOut}!')
         # now, pede must be called
     
