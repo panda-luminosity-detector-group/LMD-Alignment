@@ -17,22 +17,27 @@ PYBIND11_MODULE(pyMille, m) {
            [](Mille &MilleInstance,
               const std::vector<float> &LocalParameterDerivatives,
               const std::vector<float> &GlobalParameterDerivatives,
+              const std::vector<int> &Labels,
               float Residual, float Sigma) {
              if (LocalParameterDerivatives.size() > 0 &&
-                 GlobalParameterDerivatives.size() > 0) {
-               std::vector<int> labels(GlobalParameterDerivatives.size());
-               std::iota(labels.begin(), labels.end(), 1);
+                 GlobalParameterDerivatives.size() > 0 &&
+                 Labels.size() == GlobalParameterDerivatives.size()) {
+               //std::vector<int> labels(GlobalParameterDerivatives.size());
+               //std::iota(labels.begin(), labels.end(), 1);
                MilleInstance.mille(LocalParameterDerivatives.size(),
                                    LocalParameterDerivatives.data(),
                                    GlobalParameterDerivatives.size(),
                                    GlobalParameterDerivatives.data(),
-                                   labels.data(),
+                                   Labels.data(),
                                    Residual, Sigma);
-               MilleInstance.end();
              }
            },
            "Write data to the mille output file.",
            py::arg("local_parameter_derivatives"),
-           py::arg("global_parameter_derivatives"), py::arg("residual"),
-           py::arg("sigma"));
+           py::arg("global_parameter_derivatives"),
+           py::arg("labels"),
+           py::arg("residual"),
+           py::arg("sigma"))
+      .def("end", &Mille::end);
+
 }
