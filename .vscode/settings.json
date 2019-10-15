@@ -1,7 +1,14 @@
 {
     "files.associations": {
         "convert.C": "cpp",
-        "convertRootTracks.C": "cpp"
+        "convertRootTracks.C": "cpp",
+        "array": "cpp",
+        "bitset": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp",
+        "utility": "cpp",
+        "valarray": "cpp"
     },
     "restructuredtext.confPath": "${workspaceFolder}/pybind11/docs"
 }

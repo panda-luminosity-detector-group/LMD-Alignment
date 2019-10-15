@@ -89,6 +89,8 @@ class trackReader():
                 # create path to first module in this sector
                 pathFirstMod = f"/cave_1/lmd_root_0/half_{half}/plane_0/module_{module}"
 
+                # pathFirstMod = '/cave_1/lmd_root_0'
+
                 # get matrix to first module
                 matrixFirstMod = np.array(self.detectorMatrices[pathFirstMod]).reshape(4,4)
 
@@ -133,11 +135,34 @@ class trackReader():
 
                 # better way calculate vector from reco point to track
                 # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-                dVec = (trackOriNew - recoNew) - ((trackOriNew - recoNew)@trackDirNew) * trackDirNew
+                # attention! this goes FROM reco TO track, so minus is important!
+                dVec = -((trackOriNew - recoNew) - ((trackOriNew - recoNew)@trackDirNew) * trackDirNew)
 
-                px = recoNew[0]
-                py = recoNew[1]
-                dz = recoNew[2]
+                # TODO: this is supposed to be the track position in the module, NOT the reco hit position!
+                # px = recoNew[0]
+                # py = recoNew[1]
+                # dz = recoNew[2]
+
+                # z position of the plane
+                dz = (recoNew[2] / trackDirNew[2])
+
+                # position of the track on a module
+                px = (trackOriNew + trackDirNew*dz)[0]
+                py = (trackOriNew + trackDirNew*dz)[1]
+                pz = (trackOriNew + trackDirNew*dz)[2]
+
+                # distances = np.array((recoNew[0]-px, recoNew[1]-py, recoNew[2]-pz))
+                # print(f'\ndistances: {distances}')
+                # print(f'dVec: {dVec}')
+                # print(f'DDist: {distances-dVec}\n')
+
+                # px = distances[0]
+                # py = distances[1]
+                # pz = distances[2]
+
+                # print('\n\n---------------')
+                # print(f'dz: {dz}')
+                # print(f'track position: {(trackOriNew + trackDirNew*dz)}')
 
                 # print(f'------------------------')
                 
