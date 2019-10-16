@@ -69,7 +69,7 @@ class alignerModules:
 
                 outFile += f'{params[1]}, {params[0]}, {labels}, {params[2]}, {params[3]*sigmaScale}\n'
 
-                if (gotems % 200) == 0:
+         point if (gotems % 200) == 0:
                     endCalls += 1
                     MyMille.end()
 

@@ -61,14 +61,14 @@ class trackReader():
             sector = (module) + (half)*5;
             return half, plane, module, sector
     
-    def transformPoint(self, vector, matrix, makeUnitVector=False):
+    def transformPoint(self, point, matrix):
 
         # vector must be row-major 3 vector
-        assert vector.shape == (3,)
+        assert point.shape == (3,)
 
         # homogenize
         vecH = np.ones(4)
-        vecH[:3] = vector
+        vecH[:3] = point
 
         # make 2D array, reshape and transpose
         vecH = vecH.reshape((1,4)).T
@@ -81,10 +81,6 @@ class trackReader():
         
         # and re-transpose
         vecNew = vecNew.T.reshape(3)
-
-        # optionally make unit length
-        if makeUnitVector:
-            vecNew = vecNew / np.linalg.norm(vecNew)
 
         return vecNew
 
@@ -110,7 +106,8 @@ class trackReader():
                 # transform track and reco to module system
                 thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
 
-                # now, several steps are reuired. we nee the origin, the point where origin+direction look at and transform both, then calculate vector from a to b
+                # now, several steps are reuired. we nee the origin a, the point where origin+direction point at b 
+                # then we must transform both, then calculate vector from a to b
                 thisTrackDirectionPoint = self.transformPoint((trackOri+trackDir), inv(thisModMatrix))
                 thisTrackD = thisTrackDirectionPoint - thisTrackO
 
