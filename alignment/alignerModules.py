@@ -69,7 +69,7 @@ class alignerModules:
 
                 outFile += f'{params[1]}, {params[0]}, {labels}, {params[2]}, {params[3]*sigmaScale}\n'
 
-         point if (gotems % 200) == 0:
+            if (gotems % 200) == 0:
                     endCalls += 1
                     MyMille.end()
 
@@ -89,13 +89,13 @@ class alignerModules:
     def alignICP(self):
         print(f'Oh Hai!')
 
-        module = '/cave_1/lmd_root_0/half_0/plane_0/module_0'
+        module = '/cave_1/lmd_root_0/half_0/plane_0/module_2'
         self.justFuckingRefactorMe(module)
-        module = '/cave_1/lmd_root_0/half_0/plane_1/module_0'
+        module = '/cave_1/lmd_root_0/half_0/plane_1/module_2'
         self.justFuckingRefactorMe(module)
-        module = '/cave_1/lmd_root_0/half_0/plane_2/module_0'
+        module = '/cave_1/lmd_root_0/half_0/plane_2/module_2'
         self.justFuckingRefactorMe(module)
-        module = '/cave_1/lmd_root_0/half_0/plane_3/module_0'
+        module = '/cave_1/lmd_root_0/half_0/plane_3/module_2'
         self.justFuckingRefactorMe(module)
         
 
