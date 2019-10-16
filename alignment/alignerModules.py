@@ -31,8 +31,8 @@ class alignerModules:
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
         print(f'reading processed tracks file...')
-        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
-        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
+        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
+        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
 
     def alignMillepede(self):
 

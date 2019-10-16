@@ -102,7 +102,6 @@ class trackReader():
                 
                 thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
 
-                # TODO: there is still a bug here, with transformation, the dVec is wrong!
                 # transform track and reco to module system
                 thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
 
