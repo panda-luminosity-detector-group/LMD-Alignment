@@ -61,12 +61,79 @@ class trackReader():
             sector = (module) + (half)*5;
             return half, plane, module, sector
     
+    def transformPoint(self, vector, matrix, makeUnitVector=False):
+
+        # vector must be row-major 3 vector
+        assert vector.shape == (3,)
+
+        # homogenize
+        vecH = np.ones(4)
+        vecH[:3] = vector
+
+        # make 2D array, reshape and transpose
+        vecH = vecH.reshape((1,4)).T
+
+        # perform actual transform
+        vecH = matrix @ vecH
+
+        # de-homogenize
+        vecNew = vecH[:3] / vecH[3]
+        
+        # and re-transpose
+        vecNew = vecNew.T.reshape(3)
+
+        # optionally make unit length
+        if makeUnitVector:
+            vecNew = vecNew / np.linalg.norm(vecNew)
+
+        return vecNew
+
+    def generateICPParameters(self):
+
+        # TODO: use vectorized version to use numpy!
+        # loop over all events
+        for event in self.trks:
+
+            # track origin and direction
+            trackOri = np.array(event['trkPos'])
+            trackDir = np.array(event['trkMom']) / np.linalg.norm(event['trkMom'])
+
+            for reco in event['recoHits']:
+                
+                recoPos = np.array(reco['pos'])
+                sensorID = reco['sensorID']
+                modulePath = self.getPathModuleFromSensorID(sensorID)
+                
+                thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
+
+                # TODO: there is still a bug here, with transformation, the dVec is wrong!
+                # transform track and reco to module system
+                thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
+
+                # now, several steps are reuired. we nee the origin, the point where origin+direction look at and transform both, then calculate vector from a to b
+                thisTrackDirectionPoint = self.transformPoint((trackOri+trackDir), inv(thisModMatrix))
+                thisTrackD = thisTrackDirectionPoint - thisTrackO
+
+                thisReco = self.transformPoint(recoPos, inv(thisModMatrix))
+
+                # get vector from reco hit to line
+                # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+                dVec = ((thisTrackO - thisReco) - ((thisTrackO - thisReco)@thisTrackD) * thisTrackD)
+
+                # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+                pIntersection = thisReco+dVec
+
+                # yield track position at module plane and reco position and modulePath
+                yield [modulePath, pIntersection, thisReco]
+
+            # skip remaining tracks
+            continue
+
     def generatorMilleParameters(self):
 
         print(f'no of events: {len(self.trks)}')
 
         # TODO: use vectorized version to use numpy!
-
         # loop over all events
         for event in self.trks:
 
@@ -88,8 +155,6 @@ class trackReader():
 
                 # create path to first module in this sector
                 pathFirstMod = f"/cave_1/lmd_root_0/half_{half}/plane_0/module_{module}"
-
-                # pathFirstMod = '/cave_1/lmd_root_0'
 
                 # get matrix to first module
                 matrixFirstMod = np.array(self.detectorMatrices[pathFirstMod]).reshape(4,4)
