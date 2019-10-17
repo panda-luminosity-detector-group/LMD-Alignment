@@ -31,8 +31,8 @@ class alignerModules:
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
         print(f'reading processed tracks file...')
-        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
-        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
+        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
+        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
 
     def alignMillepede(self):
 
@@ -43,7 +43,7 @@ class alignerModules:
 
         MyMille = pyMille.Mille(milleOut, True, True)
         
-        sigmaScale = 1e2
+        sigmaScale = 1e1
         gotems = 0
         endCalls = 0
 
@@ -83,8 +83,8 @@ class alignerModules:
         print(f'endCalls: {endCalls}')
         # now, pede must be called
     
-        with open('writtenData.txt', 'w') as f:
-            f.write(outFile)
+        # with open('writtenData.txt', 'w') as f:
+            # f.write(outFile)
 
     def alignICP(self):
         print(f'Oh Hai!')

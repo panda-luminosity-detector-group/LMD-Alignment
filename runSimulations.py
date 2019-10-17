@@ -543,7 +543,8 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         alignerMod = alignerModules()
-        alignerMod.alignICP()
+        # alignerMod.alignICP()
+        alignerMod.alignMillepede()
         done()
 
     if args.debug:

@@ -137,6 +137,9 @@ class trackReader():
             trackOri = np.array(event['trkPos'])
             trackDir = np.array(event['trkMom']) / np.linalg.norm(event['trkMom'])
 
+            if np.linalg.norm(event['trkMom']) == 0.0:
+                continue
+
             for reco in event['recoHits']:
                 # print(f'hit index: {reco["index"]}')
                 # print(f"reco hit pos: {reco['pos']}")
@@ -155,44 +158,17 @@ class trackReader():
                 # get matrix to first module
                 matrixFirstMod = np.array(self.detectorMatrices[pathFirstMod]).reshape(4,4)
 
-                # homogenize reco hit
-                recoH = np.ones(4)
-                recoH[:3] = recoPos
-                recoH = recoH.reshape((1,4)).T
+                # transform recoHit and track origin
+                recoNew = self.transformPoint(recoPos, inv(matrixFirstMod))
+                trackOriNew = self.transformPoint(trackOri, inv(matrixFirstMod))
 
-                # transform track origin, direction and reco hit position (vectors must be col-major amd homogenous!)
-                trackOriH = np.ones(4)
-                trackOriH[:3] = trackOri
-                
-                trackDirH = np.ones(4)
-                trackDirH[:3] = trackDir
+                # track direction requires more work
+                trackDirPoint = self.transformPoint(trackOri + trackDir, inv(matrixFirstMod))
+                trackDirNew = trackDirPoint - trackOriNew
 
-                trackOriH = trackOriH.reshape((1,4)).T
-                trackDirH = trackDirH.reshape((1,4)).T
-
-                # transform
-                trackOriH = inv(matrixFirstMod) @ trackOriH
-                trackDirH = inv(matrixFirstMod) @ trackDirH
-                recoH = inv(matrixFirstMod) @ recoH         # warning, not a unit vector anymore!
-
-                # de-homogenize
-                trackOriNew = trackOriH[:3] / trackOriH[3]
-                trackDirNew = trackDirH[:3] / trackDirH[3]
-                # make direction unit length
-                trackDirNew = trackDirNew / np.linalg.norm(trackDirNew)
-                recoNew = recoH[:3] / recoH[3]
-
-                # and re-transpose
-                trackOriNew = trackOriNew.T.reshape(3)
-                trackDirNew = trackDirNew.T.reshape(3)
-                recoNew = recoNew.T.reshape(3)
-
-                # print(f'\ntrackOri: {trackOri}\ntrackDir: {trackDir}\n')
-                # print(f'\ntrackOriH: {trackOriH}\ntrackDirH: {trackDirH}\n')
-                # print(f'\nreco: {reco["pos"]}\nrecoH: {recoH}\n')
-
-                # print(f'de-homogenized:')
-                # print(trackOriNew, "\n", trackDirNew, "\n", recoNew)
+                # print(f'recoNew: {recoNew}')
+                # print(f'trackOriNew: {trackOriNew}')
+                # print(f'trackDirNew: {trackDirNew}')
 
                 # better way calculate vector from reco point to track
                 # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
@@ -200,9 +176,6 @@ class trackReader():
                 dVec = -((trackOriNew - recoNew) - ((trackOriNew - recoNew)@trackDirNew) * trackDirNew)
 
                 # TODO: this is supposed to be the track position in the module, NOT the reco hit position!
-                # px = recoNew[0]
-                # py = recoNew[1]
-                # dz = recoNew[2]
 
                 # z position of the plane
                 dz = (recoNew[2] / trackDirNew[2])
@@ -212,24 +185,9 @@ class trackReader():
                 py = (trackOriNew + trackDirNew*dz)[1]
                 pz = (trackOriNew + trackDirNew*dz)[2]
 
-                # distances = np.array((recoNew[0]-px, recoNew[1]-py, recoNew[2]-pz))
-                # print(f'\ndistances: {distances}')
-                # print(f'dVec: {dVec}')
-                # print(f'DDist: {distances-dVec}\n')
-
-                # px = distances[0]
-                # py = distances[1]
-                # pz = distances[2]
-
-                # print('\n\n---------------')
-                # print(f'dz: {dz}')
-                # print(f'track position: {(trackOriNew + trackDirNew*dz)}')
-
                 # print(f'------------------------')
-                
-                # print(f'dVec: [dVec]')
-                # print(f'-this dist: [np.linalg.norm(dVec)]')
-                # print(f'other dist: [dist]')
+                # print(f'dx: {px}, dy: {py}, dz: {dz}')
+                # print(f'dVec: {dVec}')
 
                 # okay, at this point, I have all positions, distances and errors in x and y
 
