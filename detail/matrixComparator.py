@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
+import re
+
 matplotlib.use('Agg')   # so matplotlib works over ssh/with no DISPLAY
 
 """
@@ -146,6 +148,93 @@ class boxComparator(comparator):
 
         return
 
+
+class moduleComparator(comparator):
+    def callMe(self):
+        print(f'yarrrr!')
+
+
+    def histValues(self, values):
+
+        muX = np.average(values)
+        sigX = np.std(values)
+
+        # plot difference hit array
+        fig = plt.figure(figsize=(6, 4))
+
+        # TODO: better title
+        fig.suptitle('Module Misalignment')
+
+        fig.subplots_adjust(wspace=0.05)
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        histA = fig.add_subplot(1, 1, 1)
+
+        bucketLabels = ['dx', 'dy', 'rot z']
+
+        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
+        histA.hist(values[...,:2], **kwargs)  # this is only the z distance
+        histA.set_title('distance alignment result - generated')   # change to mm!
+        histA.set_xlabel(f'd [{self.latexmu}rad]')
+        histA.set_ylabel('count')
+        plt.legend()
+        return fig
+
+    def saveHistogram(self, outputFileName):
+
+        if self.alignerResults is None:
+            print(f'Aligner results not found! Skipping...')
+            return
+        if self.idealDetectorMatrices is None:
+            print(f'Ideal Detector Matrices not found! Skipping...')
+            return
+        if self.misalignMatrices is None:
+            print(f'Design Misalignments not found! Skipping...')
+            return
+
+        Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
+
+        resValues = []
+
+        modules = []
+        # get only module paths
+        for path in self.idealDetectorMatrices:
+            regex = r"^/cave_(\d+)/lmd_root_(\d+)/half_(\d+)/plane_(\d+)/module_(\d+)$"
+            p = re.compile(regex)
+            m = p.match(path)
+
+            if m:
+                if m.group(3) != 1:
+                    modules.append(m.group(0))
+        
+        results = {}
+        # jesus what are you doing here
+        for mod in modules:
+            alMat = self.alignerResults[mod]
+            actualMat = self.misalignMatrices[mod]
+
+            diffMat = alMat-actualMat
+            dAlpha = mi.rotationMatrixToEulerAngles(diffMat)
+
+            # print(f'OI MAT: {diffMat}')
+            values = [diffMat[0,3]*1e4, diffMat[1,3]*1e4, dAlpha[2]]
+
+            if values[0] > 0.01 or values[1] > 0.01:
+
+                print(f'\nOI PATH: {mod}')
+                print(f'OI VALUES: {values}')
+            
+            resValues.append(values)
+        
+        resValues = np.array(resValues)
+        # print(f'these are all values:\n{resValues}\nthese were all values')
+
+        self.histValues(resValues)
+        plt.savefig(outputFileName, dpi=300)
+        plt.close()
+
+        return
+
+    pass
 
 class overlapComparator(comparator):
 

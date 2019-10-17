@@ -5,8 +5,10 @@ from alignment.sensors import icp
 
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
+import json
 import numpy as np
 import pyMille
+import re
 import sys
 
 """
@@ -31,8 +33,8 @@ class alignerModules:
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
         print(f'reading processed tracks file...')
-        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
-        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
+        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
+        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
 
     def alignMillepede(self):
 
@@ -89,15 +91,39 @@ class alignerModules:
     def alignICP(self):
         print(f'Oh Hai!')
 
-        module = '/cave_1/lmd_root_0/half_0/plane_0/module_2'
-        self.justFuckingRefactorMe(module)
-        module = '/cave_1/lmd_root_0/half_0/plane_1/module_2'
-        self.justFuckingRefactorMe(module)
-        module = '/cave_1/lmd_root_0/half_0/plane_2/module_2'
-        self.justFuckingRefactorMe(module)
-        module = '/cave_1/lmd_root_0/half_0/plane_3/module_2'
-        self.justFuckingRefactorMe(module)
+        # open detector geometry
+        with open('input/detectorMatricesIdeal.json') as f:
+            detectorComponents = json.load(f)
+
+        modules = []
+
+        # get only module paths
+        for path in detectorComponents:
+            regex = r"^/cave_(\d+)/lmd_root_(\d+)/half_(\d+)/plane_(\d+)/module_(\d+)$"
+            p = re.compile(regex)
+            m = p.match(path)
+
+            if m:
+                # print(m.group(0))
+                modules.append(m.group(0))
         
+        results = {}
+        # jesus what are you doing here
+        for mod in modules:
+            tempMat = self.justFuckingRefactorMe(mod)
+
+            # homogenize
+            resultMat = np.identity(4)
+            resultMat[:2, :2] = tempMat[:2, :2]
+            resultMat[:2, 3] = tempMat[:2, 2]
+
+            results[mod] =  np.ndarray.tolist(resultMat.flatten())
+
+        # print(results)
+
+        with open('alMat-modules-aligned.json', 'w') as f:
+            json.dump(results, f, indent=2)
+
 
     def justFuckingRefactorMe(self, module):
         arrayOne = ()
@@ -130,4 +156,6 @@ class alignerModules:
 
         T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
 
-        print(f'Result transformation:\n{T}')
+        return T
+
+        # print(f'Result transformation:\n{T}')

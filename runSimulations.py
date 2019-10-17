@@ -409,7 +409,9 @@ def createMultipleDefaultConfigs():
     misFactors['box'] =         ['0.50', '1.00', '2.00']
     misFactors['singlePlane'] = ['0.50', '1.00', '2.00']
     misFactors['boxRotZ'] =     ['1.00', '2.00', '3.00', '5.00', '10.00']
-    misFactors['modules'] =     ['0.01', '0.10', '0.15', '0.25', '0.50', '1.00']
+    misFactors['modules'] =     ['0.50', '1.00', '2.00']
+    # misFactors['modules'] =     ['0.01', '0.10', '0.15', '0.25', '0.50', '1.00']
+
 
     for misType in misTypes:
         for mom in momenta:
@@ -544,7 +546,16 @@ if __name__ == "__main__":
         print(f'Testing...')
         alignerMod = alignerModules()
         # alignerMod.alignICP()
-        alignerMod.alignMillepede()
+        # alignerMod.alignMillepede()
+
+        comp = moduleComparator()
+        comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+        comp.loadDesignMisalignments('input/misMat-identity-1.00.json')
+        # comp.loadAlignerMatrices('alMat-modules-aligned.json')
+        comp.loadAlignerMatrices('alMat-modules-singlePlane.json')
+        comp.callMe()
+        comp.saveHistogram('lawl.pdf')
+
         done()
 
     if args.debug:
