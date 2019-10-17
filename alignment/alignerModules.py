@@ -3,6 +3,7 @@
 from alignment.modules.trackReader import trackReader
 from alignment.sensors import icp
 
+from tqdm import tqdm
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
 import json
@@ -33,8 +34,8 @@ class alignerModules:
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
         print(f'reading processed tracks file...')
-        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
-        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
+        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
+        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
 
     def alignMillepede(self):
 
@@ -109,7 +110,7 @@ class alignerModules:
         
         results = {}
         # jesus what are you doing here
-        for mod in modules:
+        for mod in tqdm(modules):
             tempMat = self.justFuckingRefactorMe(mod)
 
             # homogenize
@@ -126,27 +127,29 @@ class alignerModules:
 
 
     def justFuckingRefactorMe(self, module):
-        arrayOne = ()
-        arrayTwo = ()
+        arrayOne = []
+        arrayTwo = []
 
         gotems = 0
 
         for line in self.reader.generateICPParameters():
             # if True:
             if line[0] == module:
-                # print(f'line: {line[1]}, {line[2]}')
-                arrayOne = np.append(arrayOne, line[1], axis=0)
-                arrayTwo = np.append(arrayTwo, line[2], axis=0)
+                arrayOne.append(np.ndarray.tolist(line[1]))
+                arrayTwo.append(np.ndarray.tolist(line[2]))
 
-                # print(f'arrays:\n{arrayOne}\n{arrayTwo}\n')
                 gotems += 1
 
-                if gotems > 1000:
+                if gotems > 100:
                     break
 
-        nElem = len(arrayOne)/3
-        arrayOne = arrayOne.reshape((int(nElem), 3))
-        arrayTwo = arrayTwo.reshape((int(nElem), 3))
+        arrayOne = np.array(arrayOne)
+        arrayTwo = np.array(arrayTwo)
+
+        # nElem = len(arrayOne)/3
+
+        # arrayOne = arrayOne.reshape((int(nElem), 3))
+        # arrayTwo = arrayTwo.reshape((int(nElem), 3))
 
         # use 2D values
         arrayOne = arrayOne[..., :2]

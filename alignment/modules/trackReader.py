@@ -86,9 +86,17 @@ class trackReader():
 
     def generateICPParameters(self):
 
+        # DEBUG since this is where the misalignment Matrix was applied
+        modulePath = "/cave_1/lmd_root_0/half_0/plane_1"
+
+        thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
+
         # TODO: use vectorized version to use numpy!
         # loop over all events
         for event in self.trks:
+
+            if np.linalg.norm(event['trkMom']) == 0.0:
+                continue
 
             # track origin and direction
             trackOri = np.array(event['trkPos'])
@@ -99,8 +107,11 @@ class trackReader():
                 recoPos = np.array(reco['pos'])
                 sensorID = reco['sensorID']
                 modulePath = self.getPathModuleFromSensorID(sensorID)
-                
-                thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
+
+                # DEBUG since this is where the misalignment Matrix was applied
+                # modulePath = "/cave_1/lmd_root_0/half_0/plane_1"
+
+                # thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
 
                 # transform track and reco to module system
                 thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
@@ -133,12 +144,12 @@ class trackReader():
         # loop over all events
         for event in self.trks:
 
+            if np.linalg.norm(event['trkMom']) == 0.0:
+                continue
+
             # track origin and direction
             trackOri = np.array(event['trkPos'])
             trackDir = np.array(event['trkMom']) / np.linalg.norm(event['trkMom'])
-
-            if np.linalg.norm(event['trkMom']) == 0.0:
-                continue
 
             for reco in event['recoHits']:
                 # print(f'hit index: {reco["index"]}')
