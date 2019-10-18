@@ -165,16 +165,15 @@ class alignerModules:
 
         gotems = 0
 
-        for line in self.reader.generateICPParameters():
+        for line in self.reader.generateICPParameters(module):
             # if True:
-            if line[0] == module:
-                arrayOne.append(np.ndarray.tolist(line[1]))
-                arrayTwo.append(np.ndarray.tolist(line[2]))
+            arrayOne.append(np.ndarray.tolist(line[0]))
+            arrayTwo.append(np.ndarray.tolist(line[1]))
 
-                gotems += 1
+            gotems += 1
 
-                if gotems == 1000:
-                    break
+            if gotems == 1000:
+                break
 
         arrayOne = np.array(arrayOne)
         arrayTwo = np.array(arrayTwo)
