@@ -150,9 +150,6 @@ class boxComparator(comparator):
 
 
 class moduleComparator(comparator):
-    def callMe(self):
-        print(f'yarrrr!')
-
 
     def histValues(self, values):
 
@@ -218,7 +215,7 @@ class moduleComparator(comparator):
             # print(f'OI MAT: {diffMat}')
             values = [diffMat[0,3]*1e4, diffMat[1,3]*1e4, dAlpha[2]]
 
-            if values[0] > 0.5*1e3 or values[1] > 0.5*1e3:
+            if abs(values[0]) > 0.5*1e3 or abs(values[1]) > 0.5*1e3:
 
                 print(f'\nOI PATH: {mod}')
                 print(f'OI VALUES: {values}')

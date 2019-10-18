@@ -84,12 +84,7 @@ class trackReader():
 
         return vecNew
 
-    def generateICPParameters(self):
-
-        # DEBUG since this is where the misalignment Matrix was applied
-        modulePath = "/cave_1/lmd_root_0/half_0/plane_1"
-
-        thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
+    def generateICPParameters(self, modulePath=''):
 
         # TODO: use vectorized version to use numpy!
         # loop over all events
@@ -108,10 +103,10 @@ class trackReader():
                 sensorID = reco['sensorID']
                 modulePath = self.getPathModuleFromSensorID(sensorID)
 
-                # DEBUG since this is where the misalignment Matrix was applied
+                # TODO: DEBUG since this is where the misalignment Matrix was applied
                 # modulePath = "/cave_1/lmd_root_0/half_0/plane_1"
 
-                # thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
+                thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
 
                 # transform track and reco to module system
                 thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
@@ -130,11 +125,12 @@ class trackReader():
                 # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
                 pIntersection = thisReco+dVec
 
+                # print(f'modulePath: {modulePath}, {(pIntersection-thisReco)*1e4}')
                 # yield track position at module plane and reco position and modulePath
                 yield [modulePath, pIntersection, thisReco]
 
             # skip remaining tracks
-            continue
+            # continue
 
     def generatorMilleParameters(self):
 
