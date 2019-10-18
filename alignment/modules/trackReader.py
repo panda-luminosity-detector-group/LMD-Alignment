@@ -98,6 +98,8 @@ class trackReader():
 
         # new code seems to be working
         if True:
+
+            # prefilter step
             newDict = []
             for track in self.trks:
                 newTrack = {}
@@ -117,6 +119,8 @@ class trackReader():
             # modulePath = "/cave_1/lmd_root_0/half_0/plane_1"
             thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
 
+            # TODO: now this can use numpy array notation for even greater speedup
+            # return whole np.array instead single lines then
             for track in newDict:
 
                 recoPos = np.array(track['recoHit'])
@@ -144,8 +148,6 @@ class trackReader():
                 # yield track position at module plane and reco position and modulePath
                 # print(modulePath)
                 yield [pIntersection, thisReco]
-
-            return
 
         else:
             # TODO: use vectorized version to use numpy!

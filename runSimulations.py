@@ -551,12 +551,12 @@ if __name__ == "__main__":
         comp = moduleComparator()
         comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
         
-        # comp.loadDesignMisalignments('input/misMat-identity-1.00.json')
+        comp.loadDesignMisalignments('input/misMat-identity-1.00.json')
         # comp.loadDesignMisalignments(f'input/allDetectorMatrices-singlePlane-2.00.json')
-        comp.loadDesignMisalignments('input/misMat-modules-1.00.json')
+        # comp.loadDesignMisalignments('input/misMat-modules-1.00.json')
 
         comp.loadAlignerMatrices('alMat-modules-1.0.json')
-        # comp.loadAlignerMatrices('alMat-modules-aligned.json')
+        # comp.loadAlignerMatrices('alMat-aligned.json')
         # comp.loadAlignerMatrices('alMat-modules-singlePlane.json')
         comp.saveHistogram('lawl.pdf')
 
