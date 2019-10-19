@@ -129,13 +129,17 @@ class trackReader():
 
                 # transform track and reco to module system
                 thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
+                thisReco = self.transformPoint(recoPos, inv(thisModMatrix))
 
-                # now, several steps are reuired. we nee the origin a, the point where origin+direction point at b 
+                # now, several steps are required. we nee the origin a, the point where origin+direction point at b 
                 # then we must transform both, then calculate vector from a to b
                 thisTrackDirectionPoint = self.transformPoint((trackOri+trackDir), inv(thisModMatrix))
                 thisTrackD = thisTrackDirectionPoint - thisTrackO
 
-                thisReco = self.transformPoint(recoPos, inv(thisModMatrix))
+                # no transformation this time
+                # thisTrackO = trackOri
+                # thisTrackD = trackDir
+                # thisReco = recoPos
 
                 # get vector from reco hit to line
                 # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
@@ -144,6 +148,13 @@ class trackReader():
                 # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
                 pIntersection = thisReco+dVec
 
+                # other method: just insert z position into track parametrization
+                # print(f'\nrecoHit: {thisReco}')
+                # print(f'track: {thisTrackO} + u*{thisTrackD}')
+                # print(f'wrong dist: {(thisReco - thisTrackO)*1e4}')
+                # print(f'right dist: {dVec*1e4}')
+
+                # input()
                 # print(f'modulePath: {modulePath}, {(pIntersection-thisReco)*1e4}')
                 # yield track position at module plane and reco position and modulePath
                 # print(modulePath)
@@ -206,9 +217,6 @@ class trackReader():
         # TODO: use vectorized version to use numpy!
         # loop over all events
         for event in self.trks:
-
-            if np.linalg.norm(event['trkMom']) == 0.0:
-                continue
 
             # track origin and direction
             trackOri = np.array(event['trkPos'])

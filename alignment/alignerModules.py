@@ -155,8 +155,8 @@ class alignerModules:
 
         # print(results)
 
-        with open('alMat-modules-1.0.json', 'w') as f:
-            json.dump(results, f, indent=2)
+        # with open('alMat-modules-1.0.json', 'w') as f:
+        #     json.dump(results, f, indent=2)
 
 
     def justFuckingRefactorMe(self, module):
@@ -172,7 +172,7 @@ class alignerModules:
 
             gotems += 1
 
-            if gotems == 1000:
+            if gotems == 2000:
                 break
 
         arrayOne = np.array(arrayOne)
@@ -184,7 +184,7 @@ class alignerModules:
         # arrayTwo = arrayTwo.reshape((int(nElem), 3))
 
         if True:
-            arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 5)
+            arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 90)
 
         if False:
 
