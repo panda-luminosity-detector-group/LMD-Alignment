@@ -4,35 +4,59 @@ import numpy as np
 from numpy.linalg import inv
 from scipy.optimize import minimize
 
+"""
+Fits a single track to 4 reco hits
+"""
 class TrackFitter:
-    def __init__(self, track_hits):
-        self.track_hits = track_hits
-        self.alignment_parameters = None
-        self.trackfit_parameters = np.array([0.0, 0.0])
+    """
+    init values: a 12 tuple with 3* (rx, ry, rz)  
+    """
+    def __init__(self, recoHits):
+      
+        self.recoHits = []
+        # 4 dVec, one for each reco point
+        noOfPoints = 4
+        reco = [0,0,0]
 
-    def __call__(self, recoHits):
-        direction = np.append(recoHits, [1.0])
-        direction = direction / np.linalg.norm(direction)
+        for i in range(noOfPoints):
+            reco[0] = recoHits[i*3 + 0]
+            reco[1] = recoHits[i*3 + 1]
+            reco[2] = recoHits[i*3 + 2]
+            recoHits.append(reco)
 
-        chi2 = sum([np.linalg.norm(self.track_hits[0][:2]
-                                   + (direction*x[0][2])[:2]
-                                   - x[0][:2]+x[1])
-                    for x in zip(self.track_hits)])
+    """
+    call values: a 5 tuple with [x0, y0, dx, dy, dz]
+    """
+    def __call__(self, trackGuess):
+        
+        # track origin should be on first plane, so no z coordinate
+        x0, y0, dx, dy, dz = trackGuess[0], trackGuess[1], trackGuess[2], trackGuess[3], trackGuess[4]
+        
+        trackOrigin = np.array([x0, y0])
+        trackDirection = np.array([dx, dy, dz])
+        trackDirection = trackDirection / np.linalg.norm(trackDirection)
+        
+        trkO = np.zeros(3)
+        trkO[:2] = trackOrigin
+        trkD = trackDirection
+                
+        dVecs = []
+
+        # TODO: use numpy notation here
+        for reco in self.recoHits:
+            dVecs.append((trkO - reco) - ((trkO - reco)@trkD) * trkD)
+
+        # distance squre sum
+        chi2 = sum(np.linalg.norm(x) for x in dVecs)
         return chi2
 
-class PlanCorridorFitter:
-    def __init__(self, track_hits):
-        self.track_hits = track_hits
+class CorridorFitter():
+    """
+    tracks is a tuple of dicts
+    each dict has track -> 5 tuple and recoHits -> 12 tuple
+    """
+    def __init__(self, tracks):
+        self.tracks = tracks
 
-    def __call__(self, parameters):
-
-        results = [minimize(x, x.trackfit_parameters,
-                            method='BFGS',
-                            options={'disp': False})
-                   for x in self.track_fitters]
-
-        chi2s = [x.fun for x in results]
-
-        # chi2s = [straightlinefit3d(x, parameters) for x in self.track_hits]
-        # print("single iteration finished!")
-        return sum(chi2s)
+    def fitTracks(self):
+        self.results = [minimize(TrackFitter(track['track']), track['recoHits']) for track in self.tracks ] 
