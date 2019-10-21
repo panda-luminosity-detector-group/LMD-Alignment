@@ -555,10 +555,10 @@ if __name__ == "__main__":
         # comp.loadDesignMisalignments(f'input/allDetectorMatrices-singlePlane-2.00.json')
         # comp.loadDesignMisalignments('input/misMat-modules-1.00.json')
 
-        comp.loadAlignerMatrices('alMat-modules-1.0.json')
-        # comp.loadAlignerMatrices('alMat-aligned.json')
-        # comp.loadAlignerMatrices('alMat-modules-singlePlane.json')
-        comp.saveHistogram('lawl.pdf')
+        comp.loadAlignerMatrices('output/alignmentModules/alMat-modules-1.0.json')
+        # comp.loadAlignerMatrices('output/alignmentModules/alMat-aligned.json')
+        # comp.loadAlignerMatrices('output/alignmentModules/alMat-modules-singlePlane.json')
+        comp.saveHistogram('output/alignmentModules/lawl.pdf')
 
         done()
 

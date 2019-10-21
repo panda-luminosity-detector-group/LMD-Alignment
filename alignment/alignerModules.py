@@ -35,8 +35,8 @@ class alignerModules:
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
         print(f'reading processed tracks file...')
-        #self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane.json'))
-        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-modules-1.0.json'))
+        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane-1.00.json'))
+        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-modules-1.00.json'))
         # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
 
     def dynamicCut(self, cloud1, cloud2, cutPercent=2):
@@ -155,8 +155,8 @@ class alignerModules:
 
         # print(results)
 
-        # with open('alMat-modules-1.0.json', 'w') as f:
-        #     json.dump(results, f, indent=2)
+        with open('output/alignmentModules/alMat-modules-singlePlane-1.00.json', 'w') as f:
+            json.dump(results, f, indent=2)
 
 
     def justFuckingRefactorMe(self, module):
@@ -204,15 +204,15 @@ class alignerModules:
             # plot difference hit array
             fig = plt.figure(figsize=(16/2.54, 16/2.54))
             
-            histB = fig.add_subplot()
-            histB.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=150, norm=LogNorm(), label='Count (log)')
-            histB.set_title(f'2D Distance\n{module}')
-            histB.yaxis.tick_right()
-            histB.yaxis.set_ticks_position('both')
-            histB.set_xlabel('dx [µm]')
-            histB.set_ylabel('dy [µm]')
-            histB.tick_params(direction='out')
-            histB.yaxis.set_label_position("right")
+            axis = fig.add_subplot()
+            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=150, norm=LogNorm(), label='Count (log)')
+            axis.set_title(f'2D Distance\n{module}')
+            axis.yaxis.tick_right()
+            axis.yaxis.set_ticks_position('both')
+            axis.set_xlabel('dx [µm]')
+            axis.set_ylabel('dy [µm]')
+            axis.tick_params(direction='out')
+            axis.yaxis.set_label_position("right")
 
             fig.show()
             input()
