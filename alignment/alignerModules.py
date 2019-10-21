@@ -35,8 +35,8 @@ class alignerModules:
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
         print(f'reading processed tracks file...')
-        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane-1.00.json'))
-        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-modules-1.00.json'))
+        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane-1.00.json'))
+        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-modules-1.00.json'))
         # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
 
     def dynamicCut(self, cloud1, cloud2, cutPercent=2):
@@ -141,23 +141,64 @@ class alignerModules:
                 # print(m.group(0))
                 modules.append(m.group(0))
         
-        results = {}
+        tracksAndRecos = {}
+        matrices= {}
+
         # jesus what are you doing here
         for mod in tqdm(modules):
-            tempMat = self.justFuckingRefactorMe(mod)
+            tracksAndRecos[mod] = self.getTracksAndRecoHits(mod)
+            matrices[mod] = self.getMatrix(tracksAndRecos[mod][0], tracksAndRecos[mod][1])
 
-            # homogenize
-            resultMat = np.identity(4)
-            resultMat[:2, :2] = tempMat[:2, :2]
-            resultMat[:2, 3] = tempMat[:2, 2]
+        # print(tracksAndRecos)
 
-            results[mod] =  np.ndarray.tolist(resultMat.flatten())
+        # for path in tqdm(matrices):
+        #     print(matrices[path]) 
 
-        # print(results)
+        print(matrices)
 
-        with open('output/alignmentModules/alMat-modules-singlePlane-1.00.json', 'w') as f:
-            json.dump(results, f, indent=2)
+        # with open('output/alignmentModules/alMat-modules-singlePlane-1.00.json', 'w') as f:
+        #     json.dump(results, f, indent=2)
 
+
+    def getTracksAndRecoHits(self, module):
+        trackPositions = []
+        recoPositions = []
+
+        gotems = 0
+
+        for line in self.reader.generateICPParameters(module):
+            trackPositions.append(np.ndarray.tolist(line[0]))
+            recoPositions.append(np.ndarray.tolist(line[1]))
+
+            gotems += 1
+            if gotems == 1000:
+                break
+
+        trackPositions = np.array(trackPositions)
+        recoPositions = np.array(recoPositions)
+
+        return trackPositions, recoPositions
+
+    def getMatrix(self, trackPositions, recoPositions):
+        arrayOne = np.array(trackPositions)
+        arrayTwo = np.array(recoPositions)
+
+        if True:
+            arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 5)
+
+        # use 2D values
+        arrayOne = arrayOne[..., :2]
+        arrayTwo = arrayTwo[..., :2]
+
+        T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
+
+        # homogenize
+        resultMat = np.identity(4)
+        resultMat[:2, :2] = T[:2, :2]
+        resultMat[:2, 3] = T[:2, 2]
+
+        return resultMat
+    
 
     def justFuckingRefactorMe(self, module):
         arrayOne = []
@@ -178,13 +219,8 @@ class alignerModules:
         arrayOne = np.array(arrayOne)
         arrayTwo = np.array(arrayTwo)
 
-        # nElem = len(arrayOne)/3
-
-        # arrayOne = arrayOne.reshape((int(nElem), 3))
-        # arrayTwo = arrayTwo.reshape((int(nElem), 3))
-
         if True:
-            arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 90)
+            arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 5)
 
         if False:
 
@@ -194,18 +230,17 @@ class alignerModules:
 
             #! begin hist
 
-            print(dVec.shape)
+            # print(dVec.shape)
 
             import matplotlib
             import matplotlib.pyplot as plt
             from matplotlib.colors import LogNorm
-            matplotlib.use('QT4Agg')
-
+            
             # plot difference hit array
             fig = plt.figure(figsize=(16/2.54, 16/2.54))
             
-            axis = fig.add_subplot()
-            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=150, norm=LogNorm(), label='Count (log)')
+            axis = fig.add_subplot(1,1,1)
+            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')
             axis.set_title(f'2D Distance\n{module}')
             axis.yaxis.tick_right()
             axis.yaxis.set_ticks_position('both')
@@ -214,21 +249,17 @@ class alignerModules:
             axis.tick_params(direction='out')
             axis.yaxis.set_label_position("right")
 
-            fig.show()
-            input()
+            module = module.replace('/', '-')
 
+            # fig.show()
+            fig.savefig(f'output/alignmentModules/{module}.png')
+            plt.close(fig)
             #! end hist
 
         # use 2D values
         arrayOne = arrayOne[..., :2]
         arrayTwo = arrayTwo[..., :2]
 
-        # print(f'both arrays:\n{arrayOne}\n{arrayTwo}')
-
         T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
 
-        # print(f'T is:\n{T*1e4}')
-
         return T
-
-        # print(f'Result transformation:\n{T}')

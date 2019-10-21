@@ -115,8 +115,6 @@ class trackReader():
                         newTrack['trkPos'] = track['trkPos'] 
                         newDict.append(newTrack)
             
-            # TODO: DEBUG since this is where the misalignment Matrix was applied
-            # modulePath = "/cave_1/lmd_root_0/half_0/plane_1"
             thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
 
             # TODO: now this can use numpy array notation for even greater speedup
@@ -148,16 +146,6 @@ class trackReader():
                 # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
                 pIntersection = thisReco+dVec
 
-                # other method: just insert z position into track parametrization
-                # print(f'\nrecoHit: {thisReco}')
-                # print(f'track: {thisTrackO} + u*{thisTrackD}')
-                # print(f'wrong dist: {(thisReco - thisTrackO)*1e4}')
-                # print(f'right dist: {dVec*1e4}')
-
-                # input()
-                # print(f'modulePath: {modulePath}, {(pIntersection-thisReco)*1e4}')
-                # yield track position at module plane and reco position and modulePath
-                # print(modulePath)
                 yield [pIntersection, thisReco]
 
         else:
