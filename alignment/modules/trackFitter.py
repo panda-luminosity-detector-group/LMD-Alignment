@@ -5,24 +5,19 @@ from numpy.linalg import inv
 from scipy.optimize import minimize
 
 """
-Fits a single track to 4 reco hits
+Fits a single track to 3 or 4 reco hits
 """
 class TrackFitter:
     """
-    init values: a 12 tuple with 3* (rx, ry, rz)  
+    init values: a n*3 tuple with n*(rx, ry, rz)  
     """
     def __init__(self, recoHits):
-      
-        self.recoHits = []
-        # 4 dVec, one for each reco point
-        noOfPoints = 4
-        reco = [0,0,0]
 
-        for i in range(noOfPoints):
-            reco[0] = recoHits[i*3 + 0]
-            reco[1] = recoHits[i*3 + 1]
-            reco[2] = recoHits[i*3 + 2]
-            recoHits.append(reco)
+        assert len(recoHits) == 3 or len(recoHits) == 4
+        for reco in recoHits:
+            assert reco.shape == (3,)
+
+        self.recoHits = recoHits
 
     """
     call values: a 5 tuple with [x0, y0, dx, dy, dz]
@@ -32,13 +27,12 @@ class TrackFitter:
         # track origin should be on first plane, so no z coordinate
         x0, y0, dx, dy, dz = trackGuess[0], trackGuess[1], trackGuess[2], trackGuess[3], trackGuess[4]
         
-        trackOrigin = np.array([x0, y0])
+        # trackOrigin = np.array([x0, y0])
         trackDirection = np.array([dx, dy, dz])
-        trackDirection = trackDirection / np.linalg.norm(trackDirection)
+        trkD = trackDirection / np.linalg.norm(trackDirection)
         
         trkO = np.zeros(3)
-        trkO[:2] = trackOrigin
-        trkD = trackDirection
+        trkO[:2] = [x0, y0]
                 
         dVecs = []
 
@@ -50,13 +44,27 @@ class TrackFitter:
         chi2 = sum(np.linalg.norm(x) for x in dVecs)
         return chi2
 
+class TrackDirConstraint():
+    def __call__(self, trackGuess):
+        _, _, dx, dy, dz = trackGuess[0], trackGuess[1], trackGuess[2], trackGuess[3], trackGuess[4]
+        trackDirection = np.array([dx, dy, dz])
+        trackDirection = trackDirection / np.linalg.norm(trackDirection)
+        
+        return np.linalg.norm(trackDirection) - 1
+
+
 class CorridorFitter():
     """
-    tracks is a tuple of dicts
-    each dict has track -> 5 tuple and recoHits -> 12 tuple
+    tracks is a tuple of tuples of tuples
+    outer tuple: all tracks (of this sector)
+    second layer tuples: all recoHits for this track (3 or 4)
+    third layer tuples: 3 tuple for (rx, ry, rz)
     """
     def __init__(self, tracks):
         self.tracks = tracks
 
     def fitTracks(self):
-        self.results = [minimize(TrackFitter(track['track']), track['recoHits']) for track in self.tracks ] 
+        # con = {'type': 'eq', 'fun': TrackDirConstraint}
+        track0 = np.array([0,0,0,0,1])
+        #self.results = [minimize(TrackFitter([0,0,0,0,1]), track['recoHits'], constraints=con ) for track in self.tracks ] 
+        self.results = [minimize(TrackFitter(trackRecos), track0) for trackRecos in self.tracks ] 
