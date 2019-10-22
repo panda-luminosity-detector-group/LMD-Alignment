@@ -164,6 +164,18 @@ class alignerModules:
     def alignICPiterative(self, sector=0):
         assert (sector > -1) and (sector < 10)
 
+        # get tracks and recos in two arrays
+
+        # 0: get initial align matrices for 4 modules
+
+        # 1: apply matrices to reco points
+
+        # 2: do track fit
+
+        # 3: get alignment matrices
+
+        # 4: go to 1 until max_iter is reached
+
         recos = self.reader.generateICPParametersBySector(0)
 
         print(f'OI OI OI')
@@ -220,6 +232,7 @@ class alignerModules:
     
 
     def justFuckingRefactorMe(self, module):
+
         arrayOne = []
         arrayTwo = []
 
@@ -282,3 +295,9 @@ class alignerModules:
         T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
 
         return T
+
+    def trackToEquation(self, trackO, trackD):
+        return [0,0,0]
+
+    def equationToTrack(self, equation):
+        return [0,0,0], [0,0,0]

@@ -7,6 +7,8 @@ from scipy.optimize import minimize
 
 """
 Fits a single track to 3 or 4 reco hits
+
+TODO: use determinant form of track, minimizer then requires only three paramters
 """
 class TrackFitter:
     """
@@ -44,31 +46,7 @@ class TrackFitter:
             # dVecs.append(dVec)
             dists.append(np.linalg.norm(dVec))
 
-        # print(f'recoHits:\n{self.recoHits}')
-
-        # reco = self.recoHits
-
-        # numpy notation
-
-        # dVecs = (trkO - reco[,:]) - ((trkO - reco[,:])@trkD) * trkD
-        # dists = np.linalg.norm(dVecs)
-
-        
-        # print(f'dVecs:\n{dVecs}')
-        # print(f'dists:\n{dists}')
         return np.sum( dists )
-        # return np.sum(dVec)
-        # print(f'dVec: {dVec}')
-        # dists = np.linalg.norm(  )
-
-        # different distance estimation:
-        # for reco in self.recoHits:
-        #     rx, ry, rz = reco[0], reco[1], reco[2]
-        #     dists.append(np.linalg.norm(reco - (trkO + rz*trkD)))
-
-        # distance squre sum
-        # chi2 = sum( np.array(dists) )
-        # return chi2
 
 class CorridorFitter():
     """
@@ -87,3 +65,12 @@ class CorridorFitter():
                 np.array([trackRecos[0][0], trackRecos[0][1], 0, 0, 1]),
                 method='SLSQP'
                 ) for trackRecos in tqdm(self.tracks) ] 
+
+    def getFittedTracks(self):
+        results = []
+        for track in self.results:
+            thisTrackO = [ track.x[0], track.x[1], 0]
+            thisTrackD = [ track.x[2], track.x[3], track.x[4] ]
+            results.append[thisTrackO, thisTrackD]
+
+        return results
