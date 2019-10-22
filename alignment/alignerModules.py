@@ -215,7 +215,7 @@ class alignerModules:
 
         #! ------ old code after here
 
-        recos = self.reader.generateICPParametersBySector(0)
+        # recos = self.reader.generateICPParametersBySector(0)
 
         print(f'OI OI OI')
         # print(f'len(recos[0]): {len(recos[0])}')

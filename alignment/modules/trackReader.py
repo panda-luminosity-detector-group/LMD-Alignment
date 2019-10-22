@@ -141,9 +141,6 @@ class trackReader():
     
     def generateICPParametersBySector(self, sector):
         # presorter step
-        # TODO: this can be made faster! pre-compute dict for inverse matrices and params for module path,
-        # TODO: don't use a regex and an explicit calculation for every reco!
-
         allTracks = []
         for track in self.trks:
             newTrack = []

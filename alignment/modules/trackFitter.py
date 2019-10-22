@@ -75,6 +75,7 @@ class CorridorFitter():
 
         return results
 
+    # TODO: return two n*3 np-arrays, one for all track origins and one for all directions
     def fitTracksSVD(self):
         
         self.results = []
