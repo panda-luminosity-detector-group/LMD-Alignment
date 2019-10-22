@@ -60,20 +60,19 @@ class CorridorFitter():
 
     def fitTracks(self):
         print(f'fitting tracks...')
-        self.results = [ minimize(
+        results = [ minimize(
             TrackFitter(trackRecos),
                 np.array([trackRecos[0][0], trackRecos[0][1], 0, 0, 1]),
                 method='SLSQP'
                 ) for trackRecos in tqdm(self.tracks) ] 
 
-    def getFittedTracks(self):
-        results = []
-        for track in self.results:
+        for track in results:
             thisTrackO = [ track.x[0], track.x[1], 0]
             thisTrackD = [ track.x[2], track.x[3], track.x[4] ]
-            results.append([thisTrackO, thisTrackD])
+            self.results.append([thisTrackO, thisTrackD])
 
-        return results
+    def getFittedTracks(self):
+        return self.results
 
     # TODO: return two n*3 np-arrays, one for all track origins and one for all directions
     def fitTracksSVD(self):
@@ -96,6 +95,7 @@ class CorridorFitter():
             # print(f'trkD: {trkD}')
 
             # TODO: re-parametrize so that this track originates in plane0... 
+            # you can use this: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
             # or not actually, shouldn't really matter 
             self.results.append([trkO, trkD])
 

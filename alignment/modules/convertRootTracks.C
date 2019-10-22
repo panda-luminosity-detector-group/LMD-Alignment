@@ -114,9 +114,10 @@ void convertRootTracks() {
 
             outJson["events"].push_back(thisEvent);
 
-            //*** skip remaining tracks
+            //*** skip remaining tracks, they are copies of the first
             break;
         }
+        // break;
         // if (runIndex++ > 0) {
         //     break;
         // }
