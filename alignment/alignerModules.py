@@ -150,11 +150,6 @@ class alignerModules:
             tracksAndRecos[mod] = self.getTracksAndRecoHitsByModule(mod)
             matrices[mod] = self.getMatrix(tracksAndRecos[mod][0], tracksAndRecos[mod][1])
 
-        # print(tracksAndRecos)
-
-        # for path in tqdm(matrices):
-        #     print(matrices[path]) 
-
         print(matrices)
 
         # with open('output/alignmentModules/alMat-modules-singlePlane-1.00.json', 'w') as f:
@@ -163,6 +158,16 @@ class alignerModules:
 
     def alignICPiterative(self, sector=0):
         assert (sector > -1) and (sector < 10)
+
+        """
+        I need: tracks, recos for every module in a sector
+        from that: track positions and reco positions (for ICP)
+
+        then: all recos in a sector, not tracks, get new tracks from fit
+
+        get (new) tracks, old recos for matrix determination
+        from that: track positions and reco positions (for ICP)
+        """
 
         # get tracks and recos in two arrays
 

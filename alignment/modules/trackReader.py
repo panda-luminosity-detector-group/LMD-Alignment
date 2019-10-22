@@ -1,5 +1,7 @@
 #!usr/bin/env python3
 
+from alignment.modules.sectorContainer import sectorContainer
+
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
 import numpy as np
@@ -101,6 +103,7 @@ class trackReader():
         # TODO: don't use a regex and an explicit calculation for every reco!
 
         allTracks = []
+        allRecos = []
         for track in self.trks:
             newTrack = []
             for reco in track['recoHits']:
@@ -119,10 +122,10 @@ class trackReader():
 
                     newTrack.append(reco)
             if len(newTrack) == 3 or len(newTrack) == 4:
-                allTracks.append(newTrack)
+                allRecos.append(newTrack)
 
         # allTracks should now be a tuple of tuples of tuples. just return it
-        return allTracks
+        return allRecos
 
     def generateICPParameters(self, modulePath=''):
 
