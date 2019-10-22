@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from alignment.modules.trackReader import trackReader
+from alignment.modules.trackFitter import CorridorFitter
 from alignment.sensors import icp
 
 from tqdm import tqdm
@@ -122,7 +123,7 @@ class alignerModules:
         # with open('writtenData.txt', 'w') as f:
             # f.write(outFile)
 
-    def alignICP(self):
+    def alignICPold(self):
         print(f'Oh Hai!')
 
         # open detector geometry
@@ -146,7 +147,7 @@ class alignerModules:
 
         # jesus what are you doing here
         for mod in tqdm(modules):
-            tracksAndRecos[mod] = self.getTracksAndRecoHits(mod)
+            tracksAndRecos[mod] = self.getTracksAndRecoHitsByModule(mod)
             matrices[mod] = self.getMatrix(tracksAndRecos[mod][0], tracksAndRecos[mod][1])
 
         # print(tracksAndRecos)
@@ -160,7 +161,25 @@ class alignerModules:
         #     json.dump(results, f, indent=2)
 
 
-    def getTracksAndRecoHits(self, module):
+    def alignICPiterative(self, sector=0):
+        assert (sector > -1) and (sector < 10)
+
+        recos = self.reader.generateICPParametersBySector(0)
+
+        print(f'OI OI OI')
+        # print(f'len(recos[0]): {len(recos[0])}')
+        # print(f'recos[0]:\n{recos[0]}')
+        # print(f'len(recos[1]): {len(recos[1])}')
+        # print(f'recos[1]:\n{recos[1]}')
+
+        print(f'attempting fit!')
+        corrFitter = CorridorFitter(recos)
+        corrFitter.fitTracks()
+        results = corrFitter.results
+
+        print(f'results:\n{results[0]}')
+
+    def getTracksAndRecoHitsByModule(self, module):
         trackPositions = []
         recoPositions = []
 

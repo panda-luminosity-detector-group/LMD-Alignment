@@ -545,8 +545,11 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         alignerMod = alignerModules()
-        alignerMod.alignICP()
+        # alignerMod.alignICPold()
         # alignerMod.alignMillepede()
+        alignerMod.alignICPiterative()
+
+        done()
 
         comp = moduleComparator()
         comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')

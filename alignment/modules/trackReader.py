@@ -60,7 +60,8 @@ class trackReader():
         return self.betterDict[sensorID]
 
     def getParamsFromModulePath(self, modulePath):
-        # "/cave_1/lmd_root_0/half_1/plane_0/module_3"
+        # TODO: change this to a look-up table
+        
         regex = r"/cave_(\d+)/lmd_root_(\d+)/half_(\d+)/plane_(\d+)/module_(\d+)"
         p = re.compile(regex)
         m = p.match(modulePath)
@@ -94,109 +95,85 @@ class trackReader():
 
         return vecNew
 
+    def generateICPParametersBySector(self, sector):
+        # presorter step
+        # TODO: this can be made faster! pre-compute dict for inverse matrices and params for module path,
+        # TODO: don't use a regex and an explicit calculation for every reco!
+
+        allTracks = []
+        for track in self.trks:
+            newTrack = []
+            for reco in track['recoHits']:
+                thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
+                half, _, mod, thisSector = self.getParamsFromModulePath(thisModulePath)
+
+                if thisSector == sector:
+
+                    # get matrix
+                    firstModPath = f'/cave_1/lmd_root_0/half_{half}/plane_0/module_{mod}'
+                    firstModMatrix = np.array(self.detectorMatrices[firstModPath]).reshape(4,4)
+
+                    # transform!
+                    reco = np.array(reco['pos'])
+                    reco = self.transformPoint(reco, inv(firstModMatrix))
+
+                    newTrack.append(reco)
+            if len(newTrack) == 3 or len(newTrack) == 4:
+                allTracks.append(newTrack)
+
+        # allTracks should now be a tuple of tuples of tuples. just return it
+        return allTracks
+
     def generateICPParameters(self, modulePath=''):
 
-        # new code seems to be working
-        if True:
+        # presorter step
+        newTracks = []
+        for track in self.trks:
+            newTrack = {}
+            for reco in track['recoHits']:
 
-            # prefilter step
-            newDict = []
-            for track in self.trks:
-                newTrack = {}
-                for reco in track['recoHits']:
+                thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
 
-                    thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
+                if thisModulePath == modulePath:
+                    newTrack['recoHit'] = reco['pos']
+                    newTrack['recoErr'] = reco['err']
+                    newTrack['recoSensor'] = reco['sensorID']
+                    newTrack['trkMom'] = track['trkMom'] / np.linalg.norm(track['trkMom'])
+                    newTrack['trkPos'] = track['trkPos'] 
+                    newTracks.append(newTrack)
+        
+        thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
 
-                    if thisModulePath == modulePath:
-                        newTrack['recoHit'] = reco['pos']
-                        newTrack['recoErr'] = reco['err']
-                        newTrack['recoSensor'] = reco['sensorID']
-                        newTrack['trkMom'] = track['trkMom'] / np.linalg.norm(track['trkMom'])
-                        newTrack['trkPos'] = track['trkPos'] 
-                        newDict.append(newTrack)
-            
-            thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
+        # TODO: now this can use numpy array notation for even greater speedup
+        # return whole np.array instead single lines then
+        for track in newTracks:
 
-            # TODO: now this can use numpy array notation for even greater speedup
-            # return whole np.array instead single lines then
-            for track in newDict:
+            recoPos = np.array(track['recoHit'])
+            trackOri = np.array(track['trkPos'])
+            trackDir = np.array(track['trkMom'])
 
-                recoPos = np.array(track['recoHit'])
-                trackOri = np.array(track['trkPos'])
-                trackDir = np.array(track['trkMom'])
+            # transform track and reco to module system
+            thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
+            thisReco = self.transformPoint(recoPos, inv(thisModMatrix))
 
-                # transform track and reco to module system
-                thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
-                thisReco = self.transformPoint(recoPos, inv(thisModMatrix))
+            # now, several steps are required. we nee the origin a, the point where origin+direction point at b 
+            # then we must transform both, then calculate vector from a to b
+            thisTrackDirectionPoint = self.transformPoint((trackOri+trackDir), inv(thisModMatrix))
+            thisTrackD = thisTrackDirectionPoint - thisTrackO
 
-                # now, several steps are required. we nee the origin a, the point where origin+direction point at b 
-                # then we must transform both, then calculate vector from a to b
-                thisTrackDirectionPoint = self.transformPoint((trackOri+trackDir), inv(thisModMatrix))
-                thisTrackD = thisTrackDirectionPoint - thisTrackO
+            # no transformation this time
+            # thisTrackO = trackOri
+            # thisTrackD = trackDir
+            # thisReco = recoPos
 
-                # no transformation this time
-                # thisTrackO = trackOri
-                # thisTrackD = trackDir
-                # thisReco = recoPos
+            # get vector from reco hit to line
+            # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+            dVec = ((thisTrackO - thisReco) - ((thisTrackO - thisReco)@thisTrackD) * thisTrackD)
 
-                # get vector from reco hit to line
-                # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-                dVec = ((thisTrackO - thisReco) - ((thisTrackO - thisReco)@thisTrackD) * thisTrackD)
+            # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+            pIntersection = thisReco+dVec
 
-                # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
-                pIntersection = thisReco+dVec
-
-                yield [pIntersection, thisReco]
-
-        else:
-            # TODO: use vectorized version to use numpy!
-            # loop over all events
-            for event in self.trks:
-
-                if np.linalg.norm(event['trkMom']) == 0.0:
-                    continue
-
-                # track origin and direction
-                trackOri = np.array(event['trkPos'])
-                trackDir = np.array(event['trkMom']) / np.linalg.norm(event['trkMom'])
-
-                for reco in event['recoHits']:
-                    
-                    recoPos = np.array(reco['pos'])
-                    sensorID = reco['sensorID']
-                    thisModulePath = self.getPathModuleFromSensorID(sensorID)
-
-                    if modulePath != thisModulePath:
-                        continue
-
-                    # TODO: DEBUG since this is where the misalignment Matrix was applied
-                    # modulePath = "/cave_1/lmd_root_0/half_0/plane_1"
-
-                    thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
-
-                    # transform track and reco to module system
-                    thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
-
-                    # now, several steps are reuired. we nee the origin a, the point where origin+direction point at b 
-                    # then we must transform both, then calculate vector from a to b
-                    thisTrackDirectionPoint = self.transformPoint((trackOri+trackDir), inv(thisModMatrix))
-                    thisTrackD = thisTrackDirectionPoint - thisTrackO
-
-                    thisReco = self.transformPoint(recoPos, inv(thisModMatrix))
-
-                    # get vector from reco hit to line
-                    # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-                    dVec = ((thisTrackO - thisReco) - ((thisTrackO - thisReco)@thisTrackD) * thisTrackD)
-
-                    # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
-                    pIntersection = thisReco+dVec
-
-                    # print(f'modulePath: {modulePath}, {(pIntersection-thisReco)*1e4}')
-                    # yield track position at module plane and reco position and modulePath
-                    yield [pIntersection, thisReco]
-
-                # skip remaining tracks
-                continue
+            yield [pIntersection, thisReco]
 
     def generatorMilleParameters(self):
 
