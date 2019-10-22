@@ -166,8 +166,8 @@ class alignerModules:
 
         print(f'Container ho!')
 
-        print(f'container info!')
-        container.print()
+
+        recos = container.getAllRecos()
 
         """
         I need: tracks, recos for every module in a sector

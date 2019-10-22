@@ -37,9 +37,12 @@ class sectorContainer():
         # reassign
         self.recos[module] = recos[:3]
 
+    # TODO fix me!
     def getAllRecos(self):
         # for track fitter
-        result = np.concatenate( (self.recos[i] for i in self.recos) )
+        result = defaultdict(int)
+        for i in self.recos:
+            result = np.concatenate(result, self.recos[i])
         return result
 
     def getRecos(self, modulePath):
@@ -78,11 +81,11 @@ class sectorContainer():
 
         for i in self.recos:
             print(len(self.recos[i])) 
-
+        
         for i in self.tracks:
             print(len(self.tracks[i])) 
 
         for i in self.initialRecos:
-            print(len(self.initialRecos)) 
+            print(len(self.initialRecos[i])) 
         
     pass

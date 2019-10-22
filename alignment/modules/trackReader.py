@@ -126,8 +126,8 @@ class trackReader():
                     reco = np.array(reco['pos'])
                     container.addInitialReco(thisModulePath, reco)
 
-                    reco = self.transformPoint(reco, inv(firstModMatrix))
-                    container.addReco(thisModulePath, reco)
+                    recoT = self.transformPoint(reco, inv(firstModMatrix))
+                    container.addReco(thisModulePath, recoT)
 
                     # the same track will be added multiple times. this is okay!
                     container.addTrack(thisModulePath, (track['trkPos'], track['trkMom']))
