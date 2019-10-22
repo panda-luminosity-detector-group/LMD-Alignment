@@ -96,6 +96,7 @@ class CorridorFitter():
             # print(f'trkD: {trkD}')
 
             # TODO: re-parametrize so that this track originates in plane0... 
+            # you can use this: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
             # or not actually, shouldn't really matter 
             self.results.append([trkO, trkD])
 
