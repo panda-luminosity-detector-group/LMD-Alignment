@@ -548,6 +548,7 @@ if __name__ == "__main__":
         # alignerMod.alignICPold()
         # alignerMod.alignMillepede()
         alignerMod.alignICPiterative(0)
+        # alignerMod.alignICPold()
 
         done()
 

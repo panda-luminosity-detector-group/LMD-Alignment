@@ -162,12 +162,12 @@ class alignerModules:
 
         assert (sector > -1) and (sector < 10)
 
-        container = self.reader.getContainer(sector)
+        # container = self.reader.getContainer(sector)
 
         print(f'Container ho!')
 
 
-        recos = container.getAllRecos()
+        # recos = container.getAllRecos()
 
         """
         I need: tracks, recos for every module in a sector
@@ -193,11 +193,9 @@ class alignerModules:
         # 4: go to 1 until max_iter is reached
 
 
-        return
+        #* ------ new code using SVD in track fitter
 
-        #! ------ old code after here
-
-        # recos = self.reader.generateICPParametersBySector(0)
+        recos = self.reader.generateICPParametersBySector(0)
 
         print(f'OI OI OI')
         # print(f'len(recos[0]): {len(recos[0])}')
@@ -206,11 +204,31 @@ class alignerModules:
         # print(f'recos[1]:\n{recos[1]}')
 
         print(f'attempting fit!')
-        # corrFitter = CorridorFitter(recos)
-        # corrFitter.fitTracks()
-        # results = corrFitter.results
+        corrFitter = CorridorFitter(recos)
+        corrFitter.fitTracksSVD()
+        results = corrFitter.results
 
-        # print(f'results:\n{results[0]}')
+        print(f'results:\n{results[:10]}')
+
+
+        return
+
+        #! ------ old code after here
+
+        recos = self.reader.generateICPParametersBySector(0)
+
+        print(f'OI OI OI')
+        # print(f'len(recos[0]): {len(recos[0])}')
+        # print(f'recos[0]:\n{recos[0]}')
+        # print(f'len(recos[1]): {len(recos[1])}')
+        # print(f'recos[1]:\n{recos[1]}')
+
+        print(f'attempting fit!')
+        corrFitter = CorridorFitter(recos)
+        corrFitter.fitTracks()
+        results = corrFitter.results
+
+        print(f'results:\n{results[0]}')
 
     def getTracksAndRecoHitsByModule(self, module):
         trackPositions = []

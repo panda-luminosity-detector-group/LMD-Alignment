@@ -139,6 +139,35 @@ class trackReader():
         return container
 
     
+    def generateICPParametersBySector(self, sector):
+        # presorter step
+        # TODO: this can be made faster! pre-compute dict for inverse matrices and params for module path,
+        # TODO: don't use a regex and an explicit calculation for every reco!
+
+        allTracks = []
+        for track in self.trks:
+            newTrack = []
+            for reco in track['recoHits']:
+                thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
+                half, _, mod, thisSector = self.getParamsFromModulePath(thisModulePath)
+
+                if thisSector == sector:
+
+                    # get matrix
+                    firstModPath = f'/cave_1/lmd_root_0/half_{half}/plane_0/module_{mod}'
+                    firstModMatrix = np.array(self.detectorMatrices[firstModPath]).reshape(4,4)
+
+                    # transform!
+                    reco = np.array(reco['pos'])
+                    reco = self.transformPoint(reco, inv(firstModMatrix))
+
+                    newTrack.append(reco)
+            if len(newTrack) == 3 or len(newTrack) == 4:
+                allTracks.append(newTrack)
+
+        # allTracks should now be a tuple of tuples of tuples. just return it
+        return allTracks
+    
     def generateICPParameters(self, modulePath=''):
 
         # presorter step

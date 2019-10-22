@@ -74,3 +74,28 @@ class CorridorFitter():
             results.append([thisTrackO, thisTrackD])
 
         return results
+
+    def fitTracksSVD(self):
+        
+        self.results = []
+
+        for trackRecos in self.tracks:
+
+            # TODO: this is so ugly, all of this needs to be rewritten
+            trackRecos = np.array([np.array(xi) for xi in trackRecos])
+
+            meanPoint = trackRecos.mean(axis=0)
+
+            _, _, vv = np.linalg.svd(trackRecos - meanPoint)
+
+            trkO = meanPoint
+            trkD = vv[0]
+
+            # print(f'trkO: {trkO}')
+            # print(f'trkD: {trkD}')
+
+            # TODO: re-parametrize so that this track originates in plane0... 
+            # or not actually, shouldn't really matter 
+            self.results.append([trkO, trkD])
+
+        pass
