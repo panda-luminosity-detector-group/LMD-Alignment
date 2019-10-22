@@ -71,6 +71,6 @@ class CorridorFitter():
         for track in self.results:
             thisTrackO = [ track.x[0], track.x[1], 0]
             thisTrackD = [ track.x[2], track.x[3], track.x[4] ]
-            results.append[thisTrackO, thisTrackD]
+            results.append([thisTrackO, thisTrackD])
 
         return results

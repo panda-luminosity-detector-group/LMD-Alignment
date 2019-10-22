@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from alignment.modules.trackReader import trackReader
+# from alignment.modules.sectorContainer import sectorContainer
 from alignment.modules.trackFitter import CorridorFitter
+from alignment.modules.trackReader import trackReader
 from alignment.sensors import icp
 
 from tqdm import tqdm
@@ -157,7 +158,16 @@ class alignerModules:
 
 
     def alignICPiterative(self, sector=0):
+
+
         assert (sector > -1) and (sector < 10)
+
+        container = self.reader.getContainer(sector)
+
+        print(f'Container ho!')
+
+        print(f'container info!')
+        container.print()
 
         """
         I need: tracks, recos for every module in a sector
@@ -173,7 +183,8 @@ class alignerModules:
 
         # 0: get initial align matrices for 4 modules
 
-        # 1: apply matrices to reco points
+        # 1: apply matrices (inversely?) to reco points
+        # do this in the container class itself, not outside
 
         # 2: do track fit
 
@@ -181,7 +192,12 @@ class alignerModules:
 
         # 4: go to 1 until max_iter is reached
 
-        recos = self.reader.generateICPParametersBySector(0)
+
+        return
+
+        #! ------ old code after here
+
+        # recos = self.reader.generateICPParametersBySector(0)
 
         print(f'OI OI OI')
         # print(f'len(recos[0]): {len(recos[0])}')
@@ -190,11 +206,11 @@ class alignerModules:
         # print(f'recos[1]:\n{recos[1]}')
 
         print(f'attempting fit!')
-        corrFitter = CorridorFitter(recos)
-        corrFitter.fitTracks()
-        results = corrFitter.results
+        # corrFitter = CorridorFitter(recos)
+        # corrFitter.fitTracks()
+        # results = corrFitter.results
 
-        print(f'results:\n{results[0]}')
+        # print(f'results:\n{results[0]}')
 
     def getTracksAndRecoHitsByModule(self, module):
         trackPositions = []

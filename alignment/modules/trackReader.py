@@ -48,32 +48,41 @@ class trackReader():
             self.detectorOverlaps = json.load(inFile)
 
         #make new dict sensorID-> modulePath
-        self.betterDict = {}
+        self.modPathDict = {}
         for overlap in self.detectorOverlaps:
             id1 = self.detectorOverlaps[overlap]['id1']
             id2 = self.detectorOverlaps[overlap]['id2']
-            self.betterDict[id1] = self.detectorOverlaps[overlap]["pathModule"]
-            self.betterDict[id2] = self.detectorOverlaps[overlap]["pathModule"]
+            self.modPathDict[id1] = self.detectorOverlaps[overlap]["pathModule"]
+            self.modPathDict[id2] = self.detectorOverlaps[overlap]["pathModule"]
+
 
         with open(Path('input/detectorMatricesIdeal.json')) as inFile:
             self.detectorMatrices = json.load(inFile)
 
+        regex = r'^/cave_(\d+)/lmd_root_(\d+)/half_(\d+)/plane_(\d+)/module_(\d+)$'
+        p = re.compile(regex)
+
+        self.detParamDict = {}
+        # self.sectorDict = {}
+
+        # fill look-up dicts
+        for path in self.detectorMatrices:
+            m = p.match(path)
+            if m:
+                half = int(m.group(3))
+                plane = int(m.group(4))
+                module = int(m.group(5))
+                sector = (module) + (half)*5;
+                self.detParamDict[path] = (half, plane, module, sector)
+                # self.sectorDict[sector] = 
+
+
     def getPathModuleFromSensorID(self, sensorID):
-        return self.betterDict[sensorID]
+        return self.modPathDict[sensorID]
 
     def getParamsFromModulePath(self, modulePath):
-        # TODO: change this to a look-up table
-        
-        regex = r"/cave_(\d+)/lmd_root_(\d+)/half_(\d+)/plane_(\d+)/module_(\d+)"
-        p = re.compile(regex)
-        m = p.match(modulePath)
-        if m:
-            half = int(m.group(3))
-            plane = int(m.group(4))
-            module = int(m.group(5))
-            sector = (module) + (half)*5;
-            return half, plane, module, sector
-    
+        return self.detParamDict[modulePath]
+
     def transformPoint(self, point, matrix):
 
         # vector must be row-major 3 vector
@@ -97,36 +106,39 @@ class trackReader():
 
         return vecNew
 
-    def generateICPParametersBySector(self, sector):
-        # presorter step
-        # TODO: this can be made faster! pre-compute dict for inverse matrices and params for module path,
-        # TODO: don't use a regex and an explicit calculation for every reco!
+    def getContainer(self, sector):
 
-        allTracks = []
-        allRecos = []
+        container = sectorContainer(sector)
+        
         for track in self.trks:
-            newTrack = []
+            
             for reco in track['recoHits']:
+                
                 thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
-                half, _, mod, thisSector = self.getParamsFromModulePath(thisModulePath)
+                (half, _, mod, thisSector) = self.getParamsFromModulePath(thisModulePath)
 
                 if thisSector == sector:
-
                     # get matrix
                     firstModPath = f'/cave_1/lmd_root_0/half_{half}/plane_0/module_{mod}'
                     firstModMatrix = np.array(self.detectorMatrices[firstModPath]).reshape(4,4)
 
                     # transform!
                     reco = np.array(reco['pos'])
+                    container.addInitialReco(thisModulePath, reco)
+
                     reco = self.transformPoint(reco, inv(firstModMatrix))
+                    container.addReco(thisModulePath, reco)
 
-                    newTrack.append(reco)
-            if len(newTrack) == 3 or len(newTrack) == 4:
-                allRecos.append(newTrack)
+                    # the same track will be added multiple times. this is okay!
+                    container.addTrack(thisModulePath, (track['trkPos'], track['trkMom']))
 
-        # allTracks should now be a tuple of tuples of tuples. just return it
-        return allRecos
+        container.pathFirstMod = firstModPath
+        container.matrixFirstMod = firstModMatrix
+        container.modulePaths = container.tracks.keys()
 
+        return container
+
+    
     def generateICPParameters(self, modulePath=''):
 
         # presorter step
