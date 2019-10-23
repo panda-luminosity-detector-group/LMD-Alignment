@@ -71,18 +71,16 @@ class CorridorFitter():
             thisTrackD = [ track.x[2], track.x[3], track.x[4] ]
             self.results.append([thisTrackO, thisTrackD])
 
-    def getFittedTracks(self):
-        return self.results
-
     # TODO: return two n*3 np-arrays, one for all track origins and one for all directions
     def fitTracksSVD(self):
         
-        self.results = []
+        self.fittedTracks = []
+        self.trackRecos = []
 
         for trackRecos in self.tracks:
 
             # TODO: this is so ugly, all of this needs to be rewritten
-            trackRecos = np.array([np.array(xi) for xi in trackRecos])
+            trackRecos = np.array([np.array(line) for line in trackRecos])
 
             meanPoint = trackRecos.mean(axis=0)
 
@@ -91,12 +89,8 @@ class CorridorFitter():
             trkO = meanPoint
             trkD = vv[0]
 
-            # print(f'trkO: {trkO}')
-            # print(f'trkD: {trkD}')
-
             # TODO: re-parametrize so that this track originates in plane0... 
             # you can use this: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
             # or not actually, shouldn't really matter 
-            self.results.append([trkO, trkD])
-
-        pass
+            self.fittedTracks.append([trkO, trkD])
+            self.trackRecos.append(trackRecos)

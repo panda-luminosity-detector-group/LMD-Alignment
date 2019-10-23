@@ -40,9 +40,7 @@ class sectorContainer():
     # TODO fix me!
     def getAllRecos(self):
         # for track fitter
-        result = defaultdict(int)
-        for i in self.recos:
-            result = np.concatenate(result, self.recos[i])
+        result = np.array([np.array(self.recos[path]) for path in self.recos])
         return result
 
     def getRecos(self, modulePath):

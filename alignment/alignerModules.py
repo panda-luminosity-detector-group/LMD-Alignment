@@ -161,13 +161,14 @@ class alignerModules:
 
 
         assert (sector > -1) and (sector < 10)
-
-        # container = self.reader.getContainer(sector)
-
         print(f'Container ho!')
 
+        container = self.reader.getContainer(sector)
 
-        # recos = container.getAllRecos()
+
+        recos = container.getAllRecos()
+
+        print(recos)
 
         """
         I need: tracks, recos for every module in a sector
@@ -177,6 +178,8 @@ class alignerModules:
 
         get (new) tracks, old recos for matrix determination
         from that: track positions and reco positions (for ICP)
+        
+        Problem: tracks have 4 recos each, and they have to be sorted! 
         """
 
         # get tracks and recos in two arrays
@@ -192,6 +195,7 @@ class alignerModules:
 
         # 4: go to 1 until max_iter is reached
 
+        return
 
         #* ------ new code using SVD in track fitter
 
@@ -206,7 +210,8 @@ class alignerModules:
         print(f'attempting fit!')
         corrFitter = CorridorFitter(recos)
         corrFitter.fitTracksSVD()
-        results = corrFitter.results
+        # corrFitter.fitTracks()
+        results = corrFitter.fittedTracks
 
         print(f'results:\n{results[:10]}')
 
@@ -226,7 +231,7 @@ class alignerModules:
         print(f'attempting fit!')
         corrFitter = CorridorFitter(recos)
         corrFitter.fitTracks()
-        results = corrFitter.results
+        results = corrFitter.fittedTracks
 
         print(f'results:\n{results[0]}')
 
