@@ -51,8 +51,21 @@ class sectorContainer():
         # to use with matrix finder
 
         # first: sort recos, tracks to temp arrays by module path
+        # theseRecos = self.recos[modulePath]
+        # theseTracks = self.tracks[modulePath]
+
+        theseRecos = np.array([np.array(track) for track in self.recos[modulePath]])
+        theseTracks = np.array([np.array(track) for track in self.tracks[modulePath]])
+
+        print(f'recos:\n{theseRecos}')
+        print(f'tracks:\n{theseTracks}')
 
         # then, do calc like in trackReader
+
+        dVec = ((thisTrackO - thisReco) - ((thisTrackO - thisReco)@thisTrackD) * thisTrackD)
+
+        # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+        pIntersection = thisReco+dVec
 
         # return trackPositions, recoPositions
 
@@ -69,6 +82,9 @@ class sectorContainer():
 
     def addTrack(self, modulePath, track):
         self.tracks[modulePath].append(track)
+
+    def cleanupArrays(self):
+        pass
 
     def print(self):
         print('=== CONTAINER INFO ===')

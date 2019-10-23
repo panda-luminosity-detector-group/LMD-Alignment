@@ -168,7 +168,7 @@ class alignerModules:
 
         recos = container.getAllRecos()
 
-        print(recos)
+        # print(recos)
 
         """
         I need: tracks, recos for every module in a sector
@@ -184,7 +184,14 @@ class alignerModules:
 
         # get tracks and recos in two arrays
 
+
         # 0: get initial align matrices for 4 modules
+        for path in container.modulePaths:
+            print(path)
+            # recos = container.getRecos(path)
+            # print(recos)
+            print(f'getting track distances')
+            container.getTrackPositions(path)
 
         # 1: apply matrices (inversely?) to reco points
         # do this in the container class itself, not outside
@@ -274,7 +281,6 @@ class alignerModules:
 
         return resultMat
     
-
     def justFuckingRefactorMe(self, module):
 
         arrayOne = []
