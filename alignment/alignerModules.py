@@ -176,6 +176,8 @@ class alignerModules:
             # get tracks and recos in two arrays
             trackPos, recoPos = self.reader.getTrackAndRecoPos(path)
 
+            # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
+
             # 0: get initial align matrices for 4 modules
             T0 = self.getMatrix(trackPos, recoPos)
             matrices[path] = T0
@@ -198,6 +200,7 @@ class alignerModules:
             # print(f'recos after:\n{recoPos}')
 
             recos[path] = recoPos
+            print('\n\n\n\n')
 
         # print(f'alright, I should now have 4 sets of recos and 4 matrices.')
         # print(f'mats: {matrices}')

@@ -165,17 +165,8 @@ class trackReader():
                 newtrack.pop('recoHits', None)
                 newTracks.append(newtrack)
         
-        # doesn't work yet!
-        # newTracks = [ [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ] for track in tracks if ( len(track['recoHits']) > 0 ) ]
-
-        # newTracks now contains tracks with only one reco hit!
-        
         nTrks = len(newTracks)
                 
-        # trackPosArr = np.array(tracks[:]['trkPos'])
-        # trackDirArr = np.array(tracks[:]['trkDir'])
-        # recoPosArr = np.array(tracks[:]['recoPos'])
-
         trackPosArr = np.zeros((nTrks, 3))
         trackDirArr = np.zeros((nTrks, 3))
         recoPosArr = np.zeros((nTrks, 3))
@@ -190,14 +181,20 @@ class trackReader():
         # for i in range(len(newTracks)):
         #     dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
 
-        # norm momentum vectors
-        # trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+        # norm momentum vectors, this is important for the distance formula!
+        trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+
+        print(f'trackPosArr: {trackPosArr}')
+        print(f'trackDirArr: {trackDirArr}')
+        print(f'recoPosArr: {recoPosArr}')
 
         # vectorized version, much faster
         tempV1 = (trackPosArr - recoPosArr)
         tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
         dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
         
+        print(f'dVec: {dVec}')
+
         # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
         pIntersection = recoPosArr+dVec
         return pIntersection, recoPosArr
