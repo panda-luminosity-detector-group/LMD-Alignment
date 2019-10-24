@@ -162,13 +162,12 @@ class alignerModules:
 
         assert (sector > -1) and (sector < 10)
 
-        print(f'sensorID {208} has {self.reader.getPathModuleFromSensorID(208)}')
-
-        recos = self.reader.getRecos(0)
+        # recos = self.reader.getRecos(0)
 
         path = '/cave_1/lmd_root_0/half_0/plane_0/module_0'
         ICPparams = self.reader.getTrackAndRecoPos(path)
 
+        print(f'len ICPparams: {len(ICPparams)}')
         print(ICPparams[0])
 
         # print(recos)

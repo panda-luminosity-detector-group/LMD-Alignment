@@ -147,8 +147,12 @@ class trackReader():
         # TODO: express the outer loop as list comprehension as well, for speedup
         for track in tracks:
             # filter relevant recos
-            track['recoHits'] = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
-            if len(track['recoHits']) > 0 and len(track['recoHits']) < 2:
+            # track['recoHits'] = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+            goodRecos = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+            if len(goodRecos) == 1:
+                track['recoPos'] = goodRecos[0]['pos']
+                track.pop('recoHits', None)
+                # del track['recoHits']
                 newTracks.append(track)
         
         # doesn't work yet!
