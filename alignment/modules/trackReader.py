@@ -165,57 +165,30 @@ class trackReader():
         # trackDirArr = np.array(tracks[:]['trkDir'])
         # recoPosArr = np.array(tracks[:]['recoPos'])
 
-        from time import time
-
-        td = time()
         trackPosArr = np.zeros((nTrks, 3))
         trackDirArr = np.zeros((nTrks, 3))
         recoPosArr = np.zeros((nTrks, 3))
-        dVecTest = np.zeros((nTrks, 3))
-        te = time()
+        # dVecTest = np.zeros((nTrks, 3))
 
-        
-
-        ta = time()
         for i in range(len(newTracks)):
             trackPosArr[i] = newTracks[i]['trkPos']
             trackDirArr[i] = newTracks[i]['trkMom']
             recoPosArr[i] = newTracks[i]['recoPos']
 
-        tb= time()
-
-        
-
-        t0 = time()
-        for i in range(len(newTracks)):
-            dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
-        t1 = time()
+        # compare this with the vectorized version
+        # for i in range(len(newTracks)):
+        #     dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
 
         # norm momentum vectors
-        trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+        # trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
 
-        print(f'trackDirArr: {trackDirArr}')
-
-        # print(f'pos: {trackPosArr}')
-        # print(f'dir: {trackDirArr}')
-        # print(f'reco: {recoPosArr}')
-
-        # vectorized version, don't know which is faster
+        # vectorized version, much faster
         tempV1 = (trackPosArr - recoPosArr)
         tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
         dVec = ((trackPosArr - recoPosArr) - tempV2[np.newaxis].T * trackDirArr)
-        # # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
-
-        t2 = time()
-
-        print(f'algo1: {(t1-t0)*1e3}, algo2: {(t2-t1)*1e3}, (setup was {(tb-ta)*1e3}, allocation was {(te-td)*1e3})')
-
-        print(f'\n\b ========== Here it is:')
-        print(dVec)
-        print(f'\n\b ---------- Here it is:')
-        print(dVecTest)
-
-        pIntersection = recoPosArr+dVecTest
+        
+        # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+        pIntersection = recoPosArr+dVec
         return pIntersection, recoPosArr
 
     # for trackFitter
