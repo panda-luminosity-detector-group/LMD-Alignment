@@ -184,16 +184,16 @@ class trackReader():
         # norm momentum vectors, this is important for the distance formula!
         trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
 
-        print(f'trackPosArr: {trackPosArr}')
-        print(f'trackDirArr: {trackDirArr}')
-        print(f'recoPosArr: {recoPosArr}')
+        # print(f'trackPosArr: {trackPosArr}')
+        # print(f'trackDirArr: {trackDirArr}')
+        # print(f'recoPosArr: {recoPosArr}')
 
         # vectorized version, much faster
         tempV1 = (trackPosArr - recoPosArr)
         tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
         dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
         
-        print(f'dVec: {dVec}')
+        # print(f'dVec: {dVec}')
 
         # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
         pIntersection = recoPosArr+dVec

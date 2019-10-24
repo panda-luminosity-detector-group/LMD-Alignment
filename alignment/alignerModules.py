@@ -172,7 +172,7 @@ class alignerModules:
         matrices = {}
 
         for path in paths:
-            print(f'path: {path}')
+            # print(f'path: {path}')
             # get tracks and recos in two arrays
             trackPos, recoPos = self.reader.getTrackAndRecoPos(path)
 
@@ -182,7 +182,7 @@ class alignerModules:
             T0 = self.getMatrix(trackPos, recoPos)
             matrices[path] = T0
             
-            print(T0)
+            # print(T0)
             # 1: apply matrices (inversely?) to copy of reco points
             # do this here, not in the track reader
 
@@ -200,9 +200,9 @@ class alignerModules:
             # print(f'recos after:\n{recoPos}')
 
             recos[path] = recoPos
-            print('\n\n\n\n')
+            # print('\n\n\n\n')
 
-        # print(f'alright, I should now have 4 sets of recos and 4 matrices.')
+        print(f'alright, I should now have 4 sets of recos and 4 matrices.')
         # print(f'mats: {matrices}')
         # print(f'recos: {recos}')
 
