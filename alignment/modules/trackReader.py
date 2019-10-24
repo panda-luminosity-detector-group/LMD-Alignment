@@ -52,17 +52,13 @@ class trackReader():
             _, _, _, firstSec = self.getParamsFromModulePath(firstPath)
             
             # give each track sector info
-            track['sector'] = sector
+            track['sector'] = firstSec
             track['valid'] = True
-
-            # give first reco module path info
-            #track['recoHits'][0]['modulePath'] = firstPath
 
             # loop over remaining recos
             for reco in track['recoHits'][1:]:
                 sensor = reco['sensorID']
                 path = self.getPathModuleFromSensorID(sensor)
-                #reco['modulePath'] = path
                 _, _, _, sector = self.getParamsFromModulePath(path)
                 
                 if sector != firstSec:
@@ -71,7 +67,7 @@ class trackReader():
         
         # actually remove
         self.trks = [ x for x in self.trks if x['valid'] ]
-        print(f'pre-processing done!')
+        print(f'pre-processing done, got {len(self.trks)} tracks!')
                 
     def readDetectorParameters(self):
         with open(Path('input/detectorOverlapsIdeal.json')) as inFile:
@@ -109,6 +105,7 @@ class trackReader():
     def getPathModuleFromSensorID(self, sensorID):
         return self.modPathDict[sensorID]
 
+    # order is half, plane, module, sector
     def getParamsFromModulePath(self, modulePath):
         return self.detParamDict[modulePath]
 
@@ -140,7 +137,7 @@ class trackReader():
 
         # first: filter tracks that are not even in the same sector, that should remove 90%
         thisSector = self.detParamDict[modulePath][3]
-        tracks = [x for x in self.trks if x['sector'] == thisSector ]
+        tracks = self.getRecos(thisSector)
 
         newTracks = []
 
@@ -149,10 +146,11 @@ class trackReader():
             # filter relevant recos
             # track['recoHits'] = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
             goodRecos = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+            
             if len(goodRecos) == 1:
                 track['recoPos'] = goodRecos[0]['pos']
+                # this info is not needed anymore
                 track.pop('recoHits', None)
-                # del track['recoHits']
                 newTracks.append(track)
         
         # doesn't work yet!

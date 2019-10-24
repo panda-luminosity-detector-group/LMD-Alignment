@@ -162,7 +162,9 @@ class alignerModules:
 
         assert (sector > -1) and (sector < 10)
 
-        # recos = self.reader.getRecos(0)
+        recos = self.reader.getRecos(0)
+
+        print(f'len recos: {len(recos)}')
 
         path = '/cave_1/lmd_root_0/half_0/plane_0/module_0'
         ICPparams = self.reader.getTrackAndRecoPos(path)
