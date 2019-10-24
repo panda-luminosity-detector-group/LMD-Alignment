@@ -211,7 +211,7 @@ class alignerModules:
             # print(f'path: {path}')
             # get tracks and recos in two arrays
             newTracks = self.reader.getTrackAndRecoPos(path)
-            print(newTracks[0])
+            # print(newTracks[0])
             trackPos, recoPos = self.getTrackPosFromTracksAndRecos(newTracks)
 
             # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
@@ -220,10 +220,11 @@ class alignerModules:
             T0 = self.getMatrix(trackPos, recoPos)
             matrices[path] = T0
             
-            print(T0)
+            # print(T0)
             # 1: apply matrices (inversely?) to copy of reco points
             # do this here, not in the track reader
             # or... ehm... do it in the reader after all?
+            # no, do it here, the readers contents will not be changed!
 
             # print(f'recos before:\n{recoPos}')
 
@@ -241,6 +242,7 @@ class alignerModules:
             recos[path] = recoPos
             # print('\n\n\n\n')
 
+
         print(f'alright, I should now have 4 sets of recos and 4 matrices.')
         # print(f'mats: {matrices}')
         # print(f'recos: {recos}')
@@ -250,10 +252,9 @@ class alignerModules:
         {'trkMom': [0.6, 0.1, 14.9], 'trkPos': [31.2, 3.93, 1096.98], 'sector': 0, 'valid': True, 'recoPos': [31.2, 3.9, 1096.98]}
         this way, I can easily extract trackPositions and recoPositions
 
-        the track fitter must also accept this format!
+        the track fitter must also accept this format! REMEMBER: the track fitter needs all four modules!
         """
 
-        return
 
         # 2: do track fit with new recos, we need all four planes!
         # BUT: this is the old code! skip it!
@@ -263,9 +264,11 @@ class alignerModules:
         # 2: do track fit with new recos, we need all four planes!
         # the track fitter will return tracks and the corresponding recoHits
         # from those, I need the trackPositions and recoHits, just like above
+        #? recos is a dict-> list of dicts like above. pass to track fitter, get the same thing back!
         
-        
-        # 3: get alignment matrices, just like above
+        # 3a: get trackPositions, recoPositions from newTracks that you got from trackFitter
+
+        # 3b: get alignment matrices, just like above
 
 
         # 4: go to 1 until max_iter is reached

@@ -71,8 +71,34 @@ class CorridorFitter():
             thisTrackD = [ track.x[2], track.x[3], track.x[4] ]
             self.results.append([thisTrackO, thisTrackD])
 
-    # TODO: return two n*3 np-arrays, one for all track origins and one for all directions
     def fitTracksSVD(self):
+
+        """
+        you'll get a dict with path -> list of these:
+
+        {'trkMom': [0.6, 0.1, 14.9], 'trkPos': [31.2, 3.93, 1096.98], 'sector': 0, 'valid': True, 'recoPos': [31.2, 3.9, 1096.98]}
+        
+        fit tracks over all four modules but sort the reco hits and the track to the correct dict position (tracks will be saved 4 times, that is okay!)
+        """
+
+
+        self.fittedTracks = []
+        self.trackRecos = []
+
+        for trackRecos in self.tracks:
+            pass
+
+        """
+        return something like 
+        {'trkOri': [0,0,0], 'trkDir' : [0,0,0], 'recoHits' : [ [0,0,0], [0,0,0], [0,0,0], [0,0,0] ]}
+        nah...
+
+        return a dict with path -> list of these:
+        {'trkOri' : [0,0,0], 'trkDir' : [0,0,0], 'recoPos' : [0,0,0]}
+        I think this is the format the moduleAligner can handle
+        """
+
+    def fitTracksSVDold(self):
         
         self.fittedTracks = []
         self.trackRecos = []
