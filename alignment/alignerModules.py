@@ -162,43 +162,57 @@ class alignerModules:
 
         assert (sector > -1) and (sector < 10)
 
-        recos = self.reader.getRecos(0)
 
-        print(f'len recos: {len(recos)}')
-
-        path = '/cave_1/lmd_root_0/half_0/plane_0/module_0'
-        ICPparams = self.reader.getTrackAndRecoPos(path)
-
-        print(f'len ICPparams: {len(ICPparams)}')
-        print(ICPparams[0])
-
-        # print(recos)
-
-        """
-        I need: tracks, recos for every module in a sector
-        from that: track positions and reco positions (for ICP)
-
-        then: all recos in a sector, not tracks, get new tracks from fit
-
-        get (new) tracks, old recos for matrix determination
-        from that: track positions and reco positions (for ICP)
+        paths = self.reader.getModulePathsInSector(sector)
         
-        Problem: tracks have 4 recos each, and they have to be sorted! 
-        """
+        # temporary helper dicts for the steps between iterations
+        recos = {}
 
-        # get tracks and recos in two arrays
+        # TODO: remove, this is not needed, it's only here for debug
+        matrices = {}
 
+        for path in paths:
+            print(f'path: {path}')
+            # get tracks and recos in two arrays
+            trackPos, recoPos = self.reader.getTrackAndRecoPos(path)
 
-        # 0: get initial align matrices for 4 modules
+            # 0: get initial align matrices for 4 modules
+            T0 = self.getMatrix(trackPos, recoPos)
+            matrices[path] = T0
+            
+            print(T0)
+            # 1: apply matrices (inversely?) to copy of reco points
+            # do this here, not in the track reader
 
-        # 1: apply matrices (inversely?) to reco points
-        # do this in the container class itself, not outside
+            # print(f'recos before:\n{recoPos}')
 
-        # 2: do track fit
+            # homogenize
+            recosH = np.ones((len(recoPos), 4))
+            recosH[:,:3] = recoPos
+            # transform
+            # TODO: is the direction correct? i.e. inv(T0)?
+            recosH = np.matmul(T0, recosH.T).T
+            # de-homogenize
+            recoPos = recosH[:,:3]
+
+            # print(f'recos after:\n{recoPos}')
+
+            recos[path] = recoPos
+
+        # print(f'alright, I should now have 4 sets of recos and 4 matrices.')
+        # print(f'mats: {matrices}')
+        # print(f'recos: {recos}')
+
+        return
+
+        # 2: do track fit with new recos, we need all four planes!
+        recos = self.reader.getRecos(0)
+        print(f'number of tracks: {len(recos)}')
 
         # 3: get alignment matrices
 
         # 4: go to 1 until max_iter is reached
+
 
         return
 
@@ -263,19 +277,27 @@ class alignerModules:
         arrayOne = np.array(trackPositions)
         arrayTwo = np.array(recoPositions)
 
-        if True:
+        # TODO: somewhere else!
+        if False:
             arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 5)
 
-        # use 2D values
-        arrayOne = arrayOne[..., :2]
-        arrayTwo = arrayTwo[..., :2]
+        # use 2D
+        if False:
 
-        T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
+            # use 2D values
+            arrayOne = arrayOne[..., :2]
+            arrayTwo = arrayTwo[..., :2]
 
-        # homogenize
-        resultMat = np.identity(4)
-        resultMat[:2, :2] = T[:2, :2]
-        resultMat[:2, 3] = T[:2, 2]
+            T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
+
+            # homogenize
+            resultMat = np.identity(4)
+            resultMat[:2, :2] = T[:2, :2]
+            resultMat[:2, 3] = T[:2, 2]
+
+        else:
+            T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
+            resultMat = T
 
         return resultMat
     

@@ -1,7 +1,7 @@
 #!usr/bin/env python3
 
 from alignment.modules.sectorContainer import sectorContainer
-
+import copy
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
 import numpy as np
@@ -89,10 +89,8 @@ class trackReader():
         regex = r'^/cave_(\d+)/lmd_root_(\d+)/half_(\d+)/plane_(\d+)/module_(\d+)$'
         p = re.compile(regex)
 
+        # fill look-up dict for parameters
         self.detParamDict = {}
-        # self.sectorDict = {}
-
-        # fill look-up dicts
         for path in self.detectorMatrices:
             m = p.match(path)
             if m:
@@ -101,7 +99,12 @@ class trackReader():
                 module = int(m.group(5))
                 sector = (module) + (half)*5;
                 self.detParamDict[path] = (half, plane, module, sector)
-                # self.sectorDict[sector] = 
+
+        # fill look-up dict for paths in a sector
+        self.sectorDict = defaultdict(list)
+        for path in self.detParamDict:
+            _, _, _, sector = self.getParamsFromModulePath(path)
+            self.sectorDict[sector].append(path)
 
     def getPathModuleFromSensorID(self, sensorID):
         return self.modPathDict[sensorID]
@@ -109,6 +112,9 @@ class trackReader():
     # order is half, plane, module, sector
     def getParamsFromModulePath(self, modulePath):
         return self.detParamDict[modulePath]
+
+    def getModulePathsInSector(self, sector):
+        return self.sectorDict[sector]
 
     def transformPoint(self, point, matrix):
 
@@ -137,22 +143,27 @@ class trackReader():
     def getTrackAndRecoPos(self, modulePath):
 
         # first: filter tracks that are not even in the same sector, that should remove 90%
-        thisSector = self.detParamDict[modulePath][3]
+        _, _, _, thisSector = self.getParamsFromModulePath(modulePath)
         tracks = self.getRecos(thisSector)
 
         newTracks = []
+
+        # print(f'asking for sector {thisSector} for mod {modulePath}')
+        # print(f'tracks: {len(tracks)}')
+        # print(f'tracks[0]: {tracks[0]}')
 
         # TODO: express the outer loop as list comprehension as well, for speedup
         for track in tracks:
             # filter relevant recos
             # track['recoHits'] = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+            newtrack = copy.deepcopy(track)
             goodRecos = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
             
             if len(goodRecos) == 1:
-                track['recoPos'] = goodRecos[0]['pos']
+                newtrack['recoPos'] = goodRecos[0]['pos']
                 # this info is not needed anymore
-                track.pop('recoHits', None)
-                newTracks.append(track)
+                newtrack.pop('recoHits', None)
+                newTracks.append(newtrack)
         
         # doesn't work yet!
         # newTracks = [ [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ] for track in tracks if ( len(track['recoHits']) > 0 ) ]
@@ -185,7 +196,7 @@ class trackReader():
         # vectorized version, much faster
         tempV1 = (trackPosArr - recoPosArr)
         tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
-        dVec = ((trackPosArr - recoPosArr) - tempV2[np.newaxis].T * trackDirArr)
+        dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
         
         # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
         pIntersection = recoPosArr+dVec
@@ -195,7 +206,7 @@ class trackReader():
     def getRecos(self, sector):
         return [ x for x in self.trks if x['sector'] == sector ]
 
-    # after track fitter worked, the traks need to be set anew
+    # after track fitter worked, the tracks need to be set anew
     # the format should be identical to the format already in this class!
     def setNewTracks(self, sector, tracks):
 
