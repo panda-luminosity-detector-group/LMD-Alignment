@@ -22,13 +22,7 @@ It then gives those values to millepede, obtains the alignment parameters back a
 """
 
 class trackReader():
-    def __init__(self):
-        self.trks = None
-        pass
 
-    """
-    sector goes from 0 to 9
-    """
     def readTracksFromRoot(self, path, sector=-1):
         """
         Currently not working, please use the json method
@@ -70,6 +64,7 @@ class trackReader():
         self.trks = [ x for x in self.trks if x['valid'] ]
         print(f'pre-processing done, got {len(self.trks)} tracks!')
                 
+    # this reads detector parameters and sets up several dicts for fast loop ups
     def readDetectorParameters(self):
         with open(Path('input/detectorOverlapsIdeal.json')) as inFile:
             self.detectorOverlaps = json.load(inFile)
@@ -144,7 +139,7 @@ class trackReader():
 
         # first: filter tracks that are not even in the same sector, that should remove 90%
         _, _, _, thisSector = self.getParamsFromModulePath(modulePath)
-        tracks = self.getRecos(thisSector)
+        tracks = self.getAllRecosInSector(thisSector)
 
         newTracks = []
 
@@ -165,44 +160,49 @@ class trackReader():
                 newtrack.pop('recoHits', None)
                 newTracks.append(newtrack)
         
-        nTrks = len(newTracks)
+        # return just the newTracks list of dicts, the mouleAligner will take it from here
+        return newTracks
+
+        # nTrks = len(newTracks)
                 
-        trackPosArr = np.zeros((nTrks, 3))
-        trackDirArr = np.zeros((nTrks, 3))
-        recoPosArr = np.zeros((nTrks, 3))
-        # dVecTest = np.zeros((nTrks, 3))
+        # trackPosArr = np.zeros((nTrks, 3))
+        # trackDirArr = np.zeros((nTrks, 3))
+        # recoPosArr = np.zeros((nTrks, 3))
+        # # dVecTest = np.zeros((nTrks, 3))
 
-        for i in range(len(newTracks)):
-            trackPosArr[i] = newTracks[i]['trkPos']
-            trackDirArr[i] = newTracks[i]['trkMom']
-            recoPosArr[i] = newTracks[i]['recoPos']
-
-        # compare this with the vectorized version
         # for i in range(len(newTracks)):
-        #     dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
+        #     trackPosArr[i] = newTracks[i]['trkPos']
+        #     trackDirArr[i] = newTracks[i]['trkMom']
+        #     recoPosArr[i] = newTracks[i]['recoPos']
 
-        # norm momentum vectors, this is important for the distance formula!
-        trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+        # # compare this with the vectorized version
+        # # for i in range(len(newTracks)):
+        # #     dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
 
-        # print(f'trackPosArr: {trackPosArr}')
-        # print(f'trackDirArr: {trackDirArr}')
-        # print(f'recoPosArr: {recoPosArr}')
+        # # norm momentum vectors, this is important for the distance formula!
+        # trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
 
-        # vectorized version, much faster
-        tempV1 = (trackPosArr - recoPosArr)
-        tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
-        dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
+        # # print(f'trackPosArr: {trackPosArr}')
+        # # print(f'trackDirArr: {trackDirArr}')
+        # # print(f'recoPosArr: {recoPosArr}')
+
+        # # vectorized version, much faster
+        # tempV1 = (trackPosArr - recoPosArr)
+        # tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
+        # dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
         
-        # print(f'dVec: {dVec}')
+        # # print(f'dVec: {dVec}')
 
-        # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
-        pIntersection = recoPosArr+dVec
-        return pIntersection, recoPosArr
+        # # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+        # pIntersection = recoPosArr+dVec
+        # return pIntersection, recoPosArr
 
+    # TODO: deprecate! the track fitter gets its tracks from the moduleAligner! 
     # for trackFitter
-    def getRecos(self, sector):
+    def getAllRecosInSector(self, sector):
         return [ x for x in self.trks if x['sector'] == sector ]
 
+    # TODO: deprecate! the track reader will always have the immutable REAL info
     # after track fitter worked, the tracks need to be set anew
     # the format should be identical to the format already in this class!
     def setNewTracks(self, sector, tracks):

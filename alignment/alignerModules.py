@@ -157,6 +157,42 @@ class alignerModules:
         #     json.dump(results, f, indent=2)
 
 
+    def getTrackPosFromTracksAndRecos(self, newTracks):
+        
+        nTrks = len(newTracks)
+                
+        trackPosArr = np.zeros((nTrks, 3))
+        trackDirArr = np.zeros((nTrks, 3))
+        recoPosArr = np.zeros((nTrks, 3))
+        # dVecTest = np.zeros((nTrks, 3))
+
+        for i in range(len(newTracks)):
+            trackPosArr[i] = newTracks[i]['trkPos']
+            trackDirArr[i] = newTracks[i]['trkMom']
+            recoPosArr[i] = newTracks[i]['recoPos']
+
+        # compare this with the vectorized version
+        # for i in range(len(newTracks)):
+        #     dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
+
+        # norm momentum vectors, this is important for the distance formula!
+        trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+
+        # print(f'trackPosArr: {trackPosArr}')
+        # print(f'trackDirArr: {trackDirArr}')
+        # print(f'recoPosArr: {recoPosArr}')
+
+        # vectorized version, much faster
+        tempV1 = (trackPosArr - recoPosArr)
+        tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
+        dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
+        
+        # print(f'dVec: {dVec}')
+
+        # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+        pIntersection = recoPosArr+dVec
+        return pIntersection, recoPosArr
+
     def alignICPiterative(self, sector=0):
 
 
@@ -174,7 +210,9 @@ class alignerModules:
         for path in paths:
             # print(f'path: {path}')
             # get tracks and recos in two arrays
-            trackPos, recoPos = self.reader.getTrackAndRecoPos(path)
+            newTracks = self.reader.getTrackAndRecoPos(path)
+            print(newTracks[0])
+            trackPos, recoPos = self.getTrackPosFromTracksAndRecos(newTracks)
 
             # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
 
@@ -182,9 +220,10 @@ class alignerModules:
             T0 = self.getMatrix(trackPos, recoPos)
             matrices[path] = T0
             
-            # print(T0)
+            print(T0)
             # 1: apply matrices (inversely?) to copy of reco points
             # do this here, not in the track reader
+            # or... ehm... do it in the reader after all?
 
             # print(f'recos before:\n{recoPos}')
 
@@ -206,13 +245,28 @@ class alignerModules:
         # print(f'mats: {matrices}')
         # print(f'recos: {recos}')
 
+        """
+        the list newTracks should always look like this:
+        {'trkMom': [0.6, 0.1, 14.9], 'trkPos': [31.2, 3.93, 1096.98], 'sector': 0, 'valid': True, 'recoPos': [31.2, 3.9, 1096.98]}
+        this way, I can easily extract trackPositions and recoPositions
+
+        the track fitter must also accept this format!
+        """
+
         return
 
         # 2: do track fit with new recos, we need all four planes!
-        recos = self.reader.getRecos(0)
-        print(f'number of tracks: {len(recos)}')
+        # BUT: this is the old code! skip it!
+        # recos = self.reader.getAllRecosInSector(0)
+        # print(f'number of tracks: {len(recos)}')
 
-        # 3: get alignment matrices
+        # 2: do track fit with new recos, we need all four planes!
+        # the track fitter will return tracks and the corresponding recoHits
+        # from those, I need the trackPositions and recoHits, just like above
+        
+        
+        # 3: get alignment matrices, just like above
+
 
         # 4: go to 1 until max_iter is reached
 
