@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+TODO: deprecate, this is what the trackReader is supposed to do!
+"""
+
 import numpy as np
 from collections import defaultdict
 from numpy.linalg import inv

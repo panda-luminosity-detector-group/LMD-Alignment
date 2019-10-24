@@ -161,12 +161,15 @@ class alignerModules:
 
 
         assert (sector > -1) and (sector < 10)
-        print(f'Container ho!')
 
-        container = self.reader.getContainer(sector)
+        print(f'sensorID {208} has {self.reader.getPathModuleFromSensorID(208)}')
 
+        recos = self.reader.getRecos(0)
 
-        recos = container.getAllRecos()
+        path = '/cave_1/lmd_root_0/half_0/plane_0/module_0'
+        ICPparams = self.reader.getTrackAndRecoPos(path)
+
+        print(ICPparams[0])
 
         # print(recos)
 
@@ -186,12 +189,6 @@ class alignerModules:
 
 
         # 0: get initial align matrices for 4 modules
-        for path in container.modulePaths:
-            print(path)
-            # recos = container.getRecos(path)
-            # print(recos)
-            print(f'getting track distances')
-            container.getTrackPositions(path)
 
         # 1: apply matrices (inversely?) to reco points
         # do this in the container class itself, not outside

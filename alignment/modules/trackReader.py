@@ -22,7 +22,7 @@ It then gives those values to millepede, obtains the alignment parameters back a
 
 class trackReader():
     def __init__(self):
-        self.trks = {}
+        self.trks = None
         pass
 
     """
@@ -40,9 +40,39 @@ class trackReader():
             print('file successfully read!')
 
         # list comprehension to filter tracks with no momentum from this dict
+        print('removing empty tracks...')
         self.trks = [ x for x in self.trks if np.linalg.norm(x['trkMom']) != 0 ]
-        print('empty tracks removed!')
+        
+        # find sector crossing tracks
+        print('removing sector-crossing tracks...')
+        for track in self.trks:
+            # check if all recos are in the same sector
+            firstSen = track['recoHits'][0]['sensorID']
+            firstPath = self.getPathModuleFromSensorID(firstSen)
+            _, _, _, firstSec = self.getParamsFromModulePath(firstPath)
+            
+            # give each track sector info
+            track['sector'] = sector
+            track['valid'] = True
 
+            # give first reco module path info
+            #track['recoHits'][0]['modulePath'] = firstPath
+
+            # loop over remaining recos
+            for reco in track['recoHits'][1:]:
+                sensor = reco['sensorID']
+                path = self.getPathModuleFromSensorID(sensor)
+                #reco['modulePath'] = path
+                _, _, _, sector = self.getParamsFromModulePath(path)
+                
+                if sector != firstSec:
+                    track['valid'] = False
+                    break
+        
+        # actually remove
+        self.trks = [ x for x in self.trks if x['valid'] ]
+        print(f'pre-processing done!')
+                
     def readDetectorParameters(self):
         with open(Path('input/detectorOverlapsIdeal.json')) as inFile:
             self.detectorOverlaps = json.load(inFile)
@@ -76,7 +106,6 @@ class trackReader():
                 self.detParamDict[path] = (half, plane, module, sector)
                 # self.sectorDict[sector] = 
 
-
     def getPathModuleFromSensorID(self, sensorID):
         return self.modPathDict[sensorID]
 
@@ -106,6 +135,48 @@ class trackReader():
 
         return vecNew
 
+    # for module aligner, intermediate matrices
+    def getTrackAndRecoPos(self, modulePath):
+
+        # first: filter tracks that are not even in the same sector, that should remove 90%
+        thisSector = self.detParamDict[modulePath][3]
+        tracks = [x for x in self.trks if x['sector'] == thisSector ]
+
+        newTracks = []
+
+        # TODO: express the outer loop as list comprehension as well, for speedup
+        for track in tracks:
+            # filter relevant recos
+            track['recoHits'] = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+            if len(track['recoHits']) > 0 and len(track['recoHits']) < 2:
+                newTracks.append(track)
+        
+        # doesn't work yet!
+        # newTracks = [ [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ] for track in tracks if ( len(track['recoHits']) > 0 ) ]
+
+        # newTracks now contains tracks with only one reco hit!
+
+        # TODO: calc the track positions here!
+        return newTracks
+
+    # for trackFitter
+    def getRecos(self, sector):
+        return [ x for x in self.trks if x['sector'] == sector ]
+
+    # after track fitter worked, the traks need to be set anew
+    # the format should be identical to the format already in this class!
+    def setNewTracks(self, sector, tracks):
+
+        # remove sector for current track list (list comprehension)
+        self.trks =  [ x for x in self.trks if x['sector'] != sector ]
+
+        # check if new track list only contains sector
+        tracks = [x for x in tracks if x['sector'] == sector ]
+
+        # simply append new list to old list
+        self.trks.append(tracks)
+
+    # TODO: deprecate
     def getContainer(self, sector):
 
         container = sectorContainer(sector)
@@ -138,7 +209,7 @@ class trackReader():
 
         return container
 
-    
+    # TODO: deprecate
     def generateICPParametersBySector(self, sector):
         # presorter step
         allTracks = []
@@ -165,6 +236,7 @@ class trackReader():
         # allTracks should now be a tuple of tuples of tuples. just return it
         return allTracks
     
+    # TODO: deprecate
     def generateICPParameters(self, modulePath=''):
 
         # presorter step
@@ -291,7 +363,6 @@ class trackReader():
                 elif plane == 3:
                     yield from self.milleParamsPlaneFour(px, py, dz, dVec, reco['err'], sector)
             
-    
     """
     yield TWO lines, one for x, one for y
     """
