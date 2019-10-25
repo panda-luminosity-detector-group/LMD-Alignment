@@ -5,11 +5,12 @@ from alignment.modules.trackFitter import CorridorFitter
 from alignment.modules.trackReader import trackReader
 from alignment.sensors import icp
 
-from tqdm import tqdm
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
-import json
+from tqdm import tqdm
 
+import copy
+import json
 import numpy as np
 import pyMille
 import re
@@ -156,20 +157,122 @@ class alignerModules:
         # with open('output/alignmentModules/alMat-modules-singlePlane-1.00.json', 'w') as f:
         #     json.dump(results, f, indent=2)
 
+    def transformRecoHit(self, point, matrix):
 
-    def getTrackPosFromTracksAndRecos(self, newTracks):
+        # vector must be row-major 3 vector
+        assert len(point) == 3
+
+        # homogenize
+        vecH = np.ones(4)
+        vecH[:3] = point
+
+        # make 2D array, reshape and transpose
+        vecH = vecH.reshape((1,4)).T
+
+        # perform actual transform
+        vecH = matrix @ vecH
+
+        # de-homogenize
+        vecNew = vecH[:3] / vecH[3]
         
+        # and re-transpose
+        vecNew = vecNew.T.reshape(3)
+
+        return vecNew
+
+    def getTracksOnModule(self, allTracks, modulePath):
+
+        # first: filter tracks that are not even in the same sector, that should remove 90%
+        _, _, _, thisSector = self.reader.getParamsFromModulePath(modulePath)
+        allTracks = self.reader.getAllRecosInSector(thisSector)
+
+        filteredTracks = []
+
+        # TODO: express the outer loop as list comprehension as well, for speedup
+        for track in allTracks:
+            # filter relevant recos
+            # track['recoHits'] = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+            newtrack = copy.deepcopy(track)
+            goodRecos = [x for x in track['recoHits'] if ( self.reader.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+            
+            if len(goodRecos) == 1:
+                newtrack['recoPos'] = goodRecos[0]['pos']
+                # this info is not needed anymore
+                newtrack.pop('recoHits', None)
+                filteredTracks.append(newtrack)
+        
+        # return just the newTracks list of dicts, the mouleAligner will take it from here
+        return filteredTracks
+
+    # oen way function, the results go to track fitter and are then discarded
+    def getAllRecosFromAllTracks(self, allTracks):
+        nTrks = len(allTracks)
+
+        # this array has nTrks entries, each entry has 4 reco hits, each reco hit has 3 values
+        recoPosArr = np.zeros((nTrks, 4, 3))
+
+        for i in range(nTrks):
+            nRecos = len(allTracks[i]['recoHits'])
+            if nRecos != 4:
+                print('listen. you fucked up.')
+                continue
+
+            for j in range(nRecos):
+                recoPosArr[i, j] = allTracks[i]['recoHits'][j]['pos']
+        
+        return recoPosArr
+
+    #* this function modifies the resident data! be careful!
+    # allTracks is all data
+    # matrices is a dict modulePath->np.array() 
+    def transformRecos(self, allTracks, matrices):
+
+        # TODO: this can be vectorized by:
+        # first writing all reco points to 4 arrays
+        # then transforming the arrays vectorized
+        # then reassigning the new reco values
+
+        for track in allTracks:
+
+            # loop over reco hits
+            for reco in track['recoHits']:
+                # for every reco hit, find path from sensorID
+                thisPath = self.reader.getPathModuleFromSensorID(reco['sensorID'])
+                # transform reco hit using matrix from matrices
+                reco['pos'] = self.transformRecoHit( reco['pos'], matrices[thisPath] )
+
+        return allTracks
+
+    #* this function modifies the resident data! be careful!
+    # allTracks is (reference to) all data
+    # matrices is a dict modulePath->np.array() 
+    def updateTracks(self, allTracks, newTracks):
+        assert len(newTracks) == len(allTracks)
         nTrks = len(newTracks)
+
+        for i in range(nTrks):
+            allTracks[i]['trkPos'] = newTracks[i][0]
+            allTracks[i]['trkMom'] = newTracks[i][1]
+        
+        return allTracks
+
+    # one way function, the results are only important for matrix finder and are then discarded
+    # filteredTracks are the tracks for a single module with a single reco hit!
+    def getTrackPosFromTracksAndRecos(self, filteredTracks):
+        
+        nTrks = len(filteredTracks)
                 
         trackPosArr = np.zeros((nTrks, 3))
         trackDirArr = np.zeros((nTrks, 3))
         recoPosArr = np.zeros((nTrks, 3))
         # dVecTest = np.zeros((nTrks, 3))
 
-        for i in range(len(newTracks)):
-            trackPosArr[i] = newTracks[i]['trkPos']
-            trackDirArr[i] = newTracks[i]['trkMom']
-            recoPosArr[i] = newTracks[i]['recoPos']
+        for i in range(nTrks):
+            trackPosArr[i] = filteredTracks[i]['trkPos']
+            trackDirArr[i] = filteredTracks[i]['trkMom']
+            recoPosArr[i] = filteredTracks[i]['recoPos']
+
+        # optionally, transform the track to a different frame of reference
 
         # compare this with the vectorized version
         # for i in range(len(newTracks)):
@@ -178,100 +281,122 @@ class alignerModules:
         # norm momentum vectors, this is important for the distance formula!
         trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
 
-        # print(f'trackPosArr: {trackPosArr}')
-        # print(f'trackDirArr: {trackDirArr}')
-        # print(f'recoPosArr: {recoPosArr}')
-
         # vectorized version, much faster
         tempV1 = (trackPosArr - recoPosArr)
         tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
         dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
         
-        # print(f'dVec: {dVec}')
-
         # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
         pIntersection = recoPosArr+dVec
         return pIntersection, recoPosArr
 
     def alignICPiterative(self, sector=0):
 
-
         assert (sector > -1) and (sector < 10)
 
+        modulePaths = self.reader.getModulePathsInSector(sector)
+        allTracks = self.reader.getAllRecosInSector(sector)
 
-        paths = self.reader.getModulePathsInSector(sector)
-        
-        # temporary helper dicts for the steps between iterations
-        recos = {}
+        print(f'Fitting for sector {sector}! {len(allTracks)} tracks are available.')
 
         # TODO: remove, this is not needed, it's only here for debug
+        # temporary helper dicts for the steps between iterations
+        # recos = {}
+
+        # this one I need
         matrices = {}
 
-        for path in paths:
-            # print(f'path: {path}')
-            # get tracks and recos in two arrays
-            newTracks = self.reader.getTrackAndRecoPos(path)
-            # print(newTracks[0])
-            trackPos, recoPos = self.getTrackPosFromTracksAndRecos(newTracks)
+        iterations = 3
+        #* begin iteration loop
+        for _ in tqdm(range(iterations), desc='Working'):
 
-            # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
+            for path in modulePaths:
+                # print(f'path: {path}')
+                # get tracks and recos in two arrays
+                filteredTracks = self.getTracksOnModule(allTracks, path)
+                # print(newTracks[0])
+                trackPos, recoPos = self.getTrackPosFromTracksAndRecos(filteredTracks)
 
-            # 0: get initial align matrices for 4 modules
-            T0 = self.getMatrix(trackPos, recoPos)
-            matrices[path] = T0
-            
-            # print(T0)
-            # 1: apply matrices (inversely?) to copy of reco points
-            # do this here, not in the track reader
-            # or... ehm... do it in the reader after all?
-            # no, do it here, the readers contents will not be changed!
+                # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
 
-            # print(f'recos before:\n{recoPos}')
+                # 0: get initial align matrices for 4 modules
+                T0 = self.getMatrix(trackPos, recoPos)
+                matrices[path] = np.linalg.inv(T0)
+                # matrices[path] = T0
+                print(T0*1e4)
+                
+                # print(f'recos before:\n{recoPos}')
 
-            # homogenize
-            recosH = np.ones((len(recoPos), 4))
-            recosH[:,:3] = recoPos
-            # transform
-            # TODO: is the direction correct? i.e. inv(T0)?
-            recosH = np.matmul(T0, recosH.T).T
-            # de-homogenize
-            recoPos = recosH[:,:3]
+                # # homogenize
+                # recosH = np.ones((len(recoPos), 4))
+                # recosH[:,:3] = recoPos
+                # # transform
+                # # TODO: is the direction correct? i.e. inv(T0)?
+                # recosH = np.matmul(T0, recosH.T).T
+                # # de-homogenize
+                # recoPos = recosH[:,:3]
 
-            # print(f'recos after:\n{recoPos}')
+                # # print(f'recos after:\n{recoPos}')
 
-            recos[path] = recoPos
-            # print('\n\n\n\n')
+                # recos[path] = recoPos
+                # print('\n\n\n\n')
 
+            # 2: apply matrices to all recos
+            print(f'shifting reco hits...')
+            allTracks = self.transformRecos(allTracks, matrices)
 
-        print(f'alright, I should now have 4 sets of recos and 4 matrices.')
-        # print(f'mats: {matrices}')
-        # print(f'recos: {recos}')
+            print(f'fitting tracks...')
+            recos = self.getAllRecosFromAllTracks(allTracks)
+            corrFitter = CorridorFitter(recos)
+            resultTracks = corrFitter.fitTracksSVD()
+            allTracks = self.updateTracks(allTracks, resultTracks)
 
-        """
-        the list newTracks should always look like this:
-        {'trkMom': [0.6, 0.1, 14.9], 'trkPos': [31.2, 3.93, 1096.98], 'sector': 0, 'valid': True, 'recoPos': [31.2, 3.9, 1096.98]}
-        this way, I can easily extract trackPositions and recoPositions
+        #* end iteration loop
 
-        the track fitter must also accept this format! REMEMBER: the track fitter needs all four modules!
-        """
+        # the recos are now shifted to the position of the "ideal" track fits
+        # now, calculate alignment matrices one last time in the f.o.r. of the module
 
-
-        # 2: do track fit with new recos, we need all four planes!
-        # BUT: this is the old code! skip it!
-        # recos = self.reader.getAllRecosInSector(0)
-        # print(f'number of tracks: {len(recos)}')
-
-        # 2: do track fit with new recos, we need all four planes!
-        # the track fitter will return tracks and the corresponding recoHits
-        # from those, I need the trackPositions and recoHits, just like above
-        #? recos is a dict-> list of dicts like above. pass to track fitter, get the same thing back!
+        # these are the ideal positional matrices.
+        moduleMatrices = {}
+        for path in modulePaths:
+            moduleMatrices[path] = np.linalg.inv(np.array(self.reader.detectorMatrices[path]).reshape(4,4))
         
-        # 3a: get trackPositions, recoPositions from newTracks that you got from trackFitter
+        # print(allTracks[0])
 
-        # 3b: get alignment matrices, just like above
+        # transform all recos to their respective module
+        # actually, don't. get filtered tracks by module and transform there
+        # allTracks = self.transformRecos(allTracks, moduleMatrices)
+        
+        for path in modulePaths:
+            print(f'path: {path}')
+            # get tracks and recos in two arrays
+            filteredTracks = self.getTracksOnModule(allTracks, path)
 
+            # transform all three to local module
+            for track in filteredTracks:
+                trkPos = track['trkPos']
+                trkMomPos = trkPos + track['trkMom']
+                recoPos = track['recoPos']
 
-        # 4: go to 1 until max_iter is reached
+                trkPos = self.transformRecoHit(trkPos, moduleMatrices[path])
+                trkMomPos = self.transformRecoHit(trkMomPos, moduleMatrices[path])
+                recoPos = self.transformRecoHit(recoPos, moduleMatrices[path])
+
+                trkMom = trkMomPos - trkPos
+                trkMom /= np.linalg.norm(trkMom)
+
+                track['trkPos'] = trkPos
+                track['trkMom'] = trkMom
+                track['recoPos'] = recoPos
+
+            trackPos, recoPos = self.getTrackPosFromTracksAndRecos(filteredTracks)            
+
+            # get final alignment matrix
+            T0 = self.getMatrix(trackPos, recoPos)
+            matrices[path] = np.linalg.inv(T0)
+            
+            print(f'final matrix:\n{T0*1e4}')
+
 
 
         return
@@ -286,13 +411,8 @@ class alignerModules:
         # print(f'len(recos[1]): {len(recos[1])}')
         # print(f'recos[1]:\n{recos[1]}')
 
-        print(f'attempting fit!')
-        corrFitter = CorridorFitter(recos)
-        corrFitter.fitTracksSVD()
-        # corrFitter.fitTracks()
-        results = corrFitter.fittedTracks
 
-        print(f'results:\n{results[:10]}')
+        print(f'results:\n{resultTracks[:10]}')
 
 
         return
@@ -310,9 +430,9 @@ class alignerModules:
         print(f'attempting fit!')
         corrFitter = CorridorFitter(recos)
         corrFitter.fitTracks()
-        results = corrFitter.fittedTracks
+        resultTracks = corrFitter.fittedTracks
 
-        print(f'results:\n{results[0]}')
+        print(f'results:\n{resultTracks[0]}')
 
     def getTracksAndRecoHitsByModule(self, module):
         trackPositions = []
@@ -425,9 +545,3 @@ class alignerModules:
         T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
 
         return T
-
-    def trackToEquation(self, trackO, trackD):
-        return [0,0,0]
-
-    def equationToTrack(self, equation):
-        return [0,0,0], [0,0,0]

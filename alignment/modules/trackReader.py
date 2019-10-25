@@ -41,6 +41,11 @@ class trackReader():
         # find sector crossing tracks
         print('removing sector-crossing tracks...')
         for track in self.trks:
+            # discard tracks that have only three recos, they screw up my indices
+            if len(track['recoHits']) != 4:
+                track['valid'] = False
+                continue
+
             # check if all recos are in the same sector
             firstSen = track['recoHits'][0]['sensorID']
             firstPath = self.getPathModuleFromSensorID(firstSen)
@@ -111,6 +116,7 @@ class trackReader():
     def getModulePathsInSector(self, sector):
         return self.sectorDict[sector]
 
+    # TODO: deprecate, this is now done vectorized in moduleAligner
     def transformPoint(self, point, matrix):
 
         # vector must be row-major 3 vector
@@ -134,6 +140,7 @@ class trackReader():
 
         return vecNew
 
+    # TODO: deprecate, this is now in moduleAligner!
     # for module aligner, intermediate matrices
     def getTrackAndRecoPos(self, modulePath):
 

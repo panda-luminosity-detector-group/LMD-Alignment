@@ -49,14 +49,9 @@ class TrackFitter:
         return np.sum( dists )
 
 class CorridorFitter():
-    """
-    tracks is a tuple of tuples of tuples
-    outer tuple: all tracks (of this sector)
-    second layer tuples: all recoHits for this track (3 or 4)
-    third layer tuples: 3 tuple for (rx, ry, rz)
-    """
     def __init__(self, tracks):
         self.tracks = tracks
+        self.nTrks = len(tracks)
 
     def fitTracks(self):
         print(f'fitting tracks...')
@@ -73,31 +68,23 @@ class CorridorFitter():
 
     def fitTracksSVD(self):
 
-        """
-        you'll get a dict with path -> list of these:
+        self.fittedTrackArr = np.zeros((self.nTrks, 2, 3))
 
-        {'trkMom': [0.6, 0.1, 14.9], 'trkPos': [31.2, 3.93, 1096.98], 'sector': 0, 'valid': True, 'recoPos': [31.2, 3.9, 1096.98]}
-        
-        fit tracks over all four modules but sort the reco hits and the track to the correct dict position (tracks will be saved 4 times, that is okay!)
-        """
+        for i in range(self.nTrks):
 
+            trackRecos = self.tracks[i]
+            meanPoint = trackRecos.mean(axis=0)
 
-        self.fittedTracks = []
-        self.trackRecos = []
+            _, _, vv = np.linalg.svd(trackRecos - meanPoint)
 
-        for trackRecos in self.tracks:
-            pass
+            trkO = meanPoint
+            trkD = vv[0]
+            self.fittedTrackArr[i][0] = trkO
+            self.fittedTrackArr[i][1] = trkD
 
-        """
-        return something like 
-        {'trkOri': [0,0,0], 'trkDir' : [0,0,0], 'recoHits' : [ [0,0,0], [0,0,0], [0,0,0], [0,0,0] ]}
-        nah...
+        return self.fittedTrackArr
 
-        return a dict with path -> list of these:
-        {'trkOri' : [0,0,0], 'trkDir' : [0,0,0], 'recoPos' : [0,0,0]}
-        I think this is the format the moduleAligner can handle
-        """
-
+    # TODO: deprecate
     def fitTracksSVDold(self):
         
         self.fittedTracks = []
