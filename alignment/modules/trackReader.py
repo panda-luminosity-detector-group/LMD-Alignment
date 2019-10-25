@@ -146,7 +146,7 @@ class trackReader():
 
         # first: filter tracks that are not even in the same sector, that should remove 90%
         _, _, _, thisSector = self.getParamsFromModulePath(modulePath)
-        tracks = self.getAllRecosInSector(thisSector)
+        tracks = self.getAllTracksInSector(thisSector)
 
         newTracks = []
 
@@ -204,11 +204,10 @@ class trackReader():
         # pIntersection = recoPosArr+dVec
         # return pIntersection, recoPosArr
 
-    # TODO: deprecate! the track fitter gets its tracks from the moduleAligner! 
     # for trackFitter
-    def getAllRecosInSector(self, sector):
-        return [ x for x in self.trks if x['sector'] == sector ]
-
+    def getAllTracksInSector(self, sector):
+        result = copy.deepcopy([ x for x in self.trks if x['sector'] == sector ])
+        return result
     # TODO: deprecate! the track reader will always have the immutable REAL info
     # after track fitter worked, the tracks need to be set anew
     # the format should be identical to the format already in this class!
