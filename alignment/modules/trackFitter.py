@@ -84,26 +84,3 @@ class CorridorFitter():
 
         return self.fittedTrackArr
 
-    # TODO: deprecate
-    def fitTracksSVDold(self):
-        
-        self.fittedTracks = []
-        self.trackRecos = []
-
-        for trackRecos in self.tracks:
-
-            # TODO: this is so ugly, all of this needs to be rewritten
-            trackRecos = np.array([np.array(line) for line in trackRecos])
-
-            meanPoint = trackRecos.mean(axis=0)
-
-            _, _, vv = np.linalg.svd(trackRecos - meanPoint)
-
-            trkO = meanPoint
-            trkD = vv[0]
-
-            # TODO: re-parametrize so that this track originates in plane0... 
-            # you can use this: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
-            # or not actually, shouldn't really matter 
-            self.fittedTracks.append([trkO, trkD])
-            self.trackRecos.append(trackRecos)

@@ -204,10 +204,11 @@ class trackReader():
         # pIntersection = recoPosArr+dVec
         # return pIntersection, recoPosArr
 
-    # for trackFitter
+    # get (a deep copy of) all tracks in a given sector
     def getAllTracksInSector(self, sector):
         result = copy.deepcopy([ x for x in self.trks if x['sector'] == sector ])
         return result
+
     # TODO: deprecate! the track reader will always have the immutable REAL info
     # after track fitter worked, the tracks need to be set anew
     # the format should be identical to the format already in this class!

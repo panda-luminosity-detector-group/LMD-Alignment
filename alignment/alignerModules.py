@@ -320,17 +320,11 @@ class alignerModules:
             T1 = np.linalg.inv(T0)
             print(f'{path}:\n{T1*1e4}')
 
-
-
         print('\n\n')
         print(f'===================================================================')
         print(f'Fitting for sector {sector}! {len(allTracks)} tracks are available.')
         print(f'===================================================================')
         print('\n\n')
-
-        # TODO: remove, this is not needed, it's only here for debug
-        # temporary helper dicts for the steps between iterations
-        # recos = {}
 
         # this one I need
         matrices = {}
@@ -394,21 +388,12 @@ class alignerModules:
             moduleMatrices[path] = np.linalg.inv(np.array(self.reader.detectorMatrices[path]).reshape(4,4))
         
         # print(allTracks[0])
-
-        # transform all recos to their respective module
-        # actually, don't. get filtered tracks by module and transform there
-        # allTracks = self.transformRecos(allTracks, moduleMatrices)
         
         #! I think this entire block isn't even neccessary
         #! EITHER of these blocks is enough, they compute the same thing different ways
-        # print('\n\n')
-        # print(f'===================================================================')
-        # print(f' Final matrices ready:')
-        # print(f'===================================================================')
-        # print('\n\n')
 
+        # derive matrices another way
         simplyDerivedMatrices = {}
-
         #* now, think easy. all the recos have been moved. try to find the distance between the original recos
         #* and the new recos. this should be the misalignment
         for path in modulePaths:
@@ -437,7 +422,6 @@ class alignerModules:
             T0 = self.getMatrix(originalRecos, newRecos)
             simplyDerivedMatrices[path] = np.linalg.inv(T0)
             
-            # print(f'final matrix:\n{T0*1e4}')
 
         print('\n\n')
         print(f'===================================================================')
@@ -465,57 +449,25 @@ class alignerModules:
 
         return
 
-        #* ------ new code using SVD in track fitter
+    # TODO: delete
+    # def getTracksAndRecoHitsByModule(self, module):
+    #     trackPositions = []
+    #     recoPositions = []
 
-        recos = self.reader.generateICPParametersBySector(0)
+    #     gotems = 0
 
-        print(f'OI OI OI')
-        # print(f'len(recos[0]): {len(recos[0])}')
-        # print(f'recos[0]:\n{recos[0]}')
-        # print(f'len(recos[1]): {len(recos[1])}')
-        # print(f'recos[1]:\n{recos[1]}')
+    #     for line in self.reader.generateICPParameters(module):
+    #         trackPositions.append(np.ndarray.tolist(line[0]))
+    #         recoPositions.append(np.ndarray.tolist(line[1]))
 
+    #         gotems += 1
+    #         if gotems == 1000:
+    #             break
 
-        print(f'results:\n{resultTracks[:10]}')
+    #     trackPositions = np.array(trackPositions)
+    #     recoPositions = np.array(recoPositions)
 
-
-        return
-
-        #! ------ old code after here
-
-        # recos = self.reader.generateICPParametersBySector(0)
-
-        print(f'OI OI OI')
-        # print(f'len(recos[0]): {len(recos[0])}')
-        # print(f'recos[0]:\n{recos[0]}')
-        # print(f'len(recos[1]): {len(recos[1])}')
-        # print(f'recos[1]:\n{recos[1]}')
-
-        print(f'attempting fit!')
-        corrFitter = CorridorFitter(recos)
-        corrFitter.fitTracks()
-        resultTracks = corrFitter.fittedTracks
-
-        print(f'results:\n{resultTracks[0]}')
-
-    def getTracksAndRecoHitsByModule(self, module):
-        trackPositions = []
-        recoPositions = []
-
-        gotems = 0
-
-        for line in self.reader.generateICPParameters(module):
-            trackPositions.append(np.ndarray.tolist(line[0]))
-            recoPositions.append(np.ndarray.tolist(line[1]))
-
-            gotems += 1
-            if gotems == 1000:
-                break
-
-        trackPositions = np.array(trackPositions)
-        recoPositions = np.array(recoPositions)
-
-        return trackPositions, recoPositions
+    #     return trackPositions, recoPositions
 
     def getMatrix(self, trackPositions, recoPositions):
         arrayOne = np.array(trackPositions)
@@ -545,67 +497,68 @@ class alignerModules:
 
         return resultMat
     
-    def justFuckingRefactorMe(self, module):
+    # TODO: copy histogram code somewhere else, delte the rest
+    # def justFuckingRefactorMe(self, module):
 
-        arrayOne = []
-        arrayTwo = []
+    #     arrayOne = []
+    #     arrayTwo = []
 
-        gotems = 0
+    #     gotems = 0
 
-        for line in self.reader.generateICPParameters(module):
-            # if True:
-            arrayOne.append(np.ndarray.tolist(line[0]))
-            arrayTwo.append(np.ndarray.tolist(line[1]))
+    #     for line in self.reader.generateICPParameters(module):
+    #         # if True:
+    #         arrayOne.append(np.ndarray.tolist(line[0]))
+    #         arrayTwo.append(np.ndarray.tolist(line[1]))
 
-            gotems += 1
+    #         gotems += 1
 
-            if gotems == 2000:
-                break
+    #         if gotems == 2000:
+    #             break
 
-        arrayOne = np.array(arrayOne)
-        arrayTwo = np.array(arrayTwo)
+    #     arrayOne = np.array(arrayOne)
+    #     arrayTwo = np.array(arrayTwo)
 
-        if True:
-            arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 5)
+    #     if True:
+    #         arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 5)
 
-        if False:
+    #     if False:
 
-            # print(f'Average Distances for {module}:')
-            dVec = arrayOne-arrayTwo
-            # print(f'{np.average(dVec, axis=0)*1e4}')
+    #         # print(f'Average Distances for {module}:')
+    #         dVec = arrayOne-arrayTwo
+    #         # print(f'{np.average(dVec, axis=0)*1e4}')
 
-            #! begin hist
+    #         #! begin hist
 
-            # print(dVec.shape)
+    #         # print(dVec.shape)
 
-            import matplotlib
-            import matplotlib.pyplot as plt
-            from matplotlib.colors import LogNorm
+    #         import matplotlib
+    #         import matplotlib.pyplot as plt
+    #         from matplotlib.colors import LogNorm
             
-            # plot difference hit array
-            fig = plt.figure(figsize=(16/2.54, 16/2.54))
+    #         # plot difference hit array
+    #         fig = plt.figure(figsize=(16/2.54, 16/2.54))
             
-            axis = fig.add_subplot(1,1,1)
-            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')
-            axis.set_title(f'2D Distance\n{module}')
-            axis.yaxis.tick_right()
-            axis.yaxis.set_ticks_position('both')
-            axis.set_xlabel('dx [µm]')
-            axis.set_ylabel('dy [µm]')
-            axis.tick_params(direction='out')
-            axis.yaxis.set_label_position("right")
+    #         axis = fig.add_subplot(1,1,1)
+    #         axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')
+    #         axis.set_title(f'2D Distance\n{module}')
+    #         axis.yaxis.tick_right()
+    #         axis.yaxis.set_ticks_position('both')
+    #         axis.set_xlabel('dx [µm]')
+    #         axis.set_ylabel('dy [µm]')
+    #         axis.tick_params(direction='out')
+    #         axis.yaxis.set_label_position("right")
 
-            module = module.replace('/', '-')
+    #         module = module.replace('/', '-')
 
-            # fig.show()
-            fig.savefig(f'output/alignmentModules/{module}.png')
-            plt.close(fig)
-            #! end hist
+    #         # fig.show()
+    #         fig.savefig(f'output/alignmentModules/{module}.png')
+    #         plt.close(fig)
+    #         #! end hist
 
-        # use 2D values
-        arrayOne = arrayOne[..., :2]
-        arrayTwo = arrayTwo[..., :2]
+    #     # use 2D values
+    #     arrayOne = arrayOne[..., :2]
+    #     arrayTwo = arrayTwo[..., :2]
 
-        T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
+    #     T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
 
-        return T
+    #     return T
