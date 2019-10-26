@@ -120,16 +120,22 @@ void histFittedToRecos() {
 
                 thisEvent["recoHits"].push_back({{"index", hitIndex}, {"sensorID", sensorID}, {"pos", {xhit, yhit, zhit}}, {"err", {errxhit, erryhit, errzhit}}});
                 
-                if(!(sensorID >= 150 && sensorID < 200)){
-                // if(sensorID != 140){
-                    continue;
-                }
+                // if(!(sensorID >= 150 && sensorID < 200)){
+                // // if(sensorID != 140){
+                //     continue;
+                // }
                 
+                cout << "\n ------------ \nattention!\n";
+                trkO.Print();
+                trkD.Print();
+                thisLMDPoint.Print();
+
+
                 // cald distance
                 auto tVec1 = trkO - thisLMDPoint;
                 auto dVec = ( tVec1 ) - ((( tVec1 )*trkD ) * trkD);
                 hist.Fill(dVec.Mag()*1e4);
-
+                dVec.Print();
 
             }
             // outJson["events"].push_back(thisEvent);
@@ -137,10 +143,10 @@ void histFittedToRecos() {
             //*** skip remaining tracks, they are copies of the first
             break;
         }
-        // break;
-        // if (runIndex++ > 0) {
-        //     break;
-        // }
+        break;
+        if (runIndex++ > 0) {
+            break;
+        }
     }
     //! dump to json here!
 
