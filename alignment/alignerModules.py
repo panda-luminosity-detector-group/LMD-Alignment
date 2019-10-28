@@ -338,11 +338,8 @@ class alignerModules:
         
         moduleMatrices = {}
         for path in misalignmatrices:
-            moduleMatrices[path] = np.linalg.inv(np.array(self.reader.detectorMatrices[path]).reshape(4,4))
-
-        # make 4 matrix        
-        for path in misalignmatrices:
-            misalignmatrices[path] = np.array(misalignmatrices[path]).reshape(4,4)
+            moduleMatrices[path] = np.array(self.reader.detectorMatrices[path]).reshape(4,4)
+            misalignmatrices[path] = np.array(misalignmatrices[path]).reshape((4,4))
 
         # transform accoring to calculations
         for path in misalignmatrices:
@@ -352,17 +349,17 @@ class alignerModules:
             misalignmatrices[path] = mis
 
         #! ====================  apply misalignment
-        print(allTracks[0])
+        # print(allTracks[0]['recoHits'][0]['pos'])
         allTracks = self.transformRecos(allTracks, misalignmatrices)
-        print(allTracks[0])
-        #! yeah, there is still some bug here, the shifted recos are waaaaaay off
+        # print(allTracks[0]['recoHits'][0]['pos'])
+        #* okay, reco shift seems fine now 
 
         # do a first track fit, otherwise we have no starting tracks
         corrFitter = CorridorFitter(sector0)
         resultTracks = corrFitter.fitTracksSVD()
         allTracks = self.updateTracks(allTracks, resultTracks)
 
-        #* allTracks now looks just like real data (once I fix the remaining bug)
+        #* allTracks now looks just like real data
 
         modulePaths = self.reader.getModulePathsInSector(0)
         originalTracks = copy.deepcopy(allTracks)
@@ -392,7 +389,7 @@ class alignerModules:
         
         #* okay, fantastic, the matrices are identiy matrices. that means at least distance LMDPoint to mc track works 
 
-        if True:
+        if False:
             print('we cancel early, the matrices above should be near identity matrices!')
             return
 
@@ -508,6 +505,8 @@ class alignerModules:
         with open('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json') as f:
             misalignmatrices = json.load(f)
 
+        #! WAIT! There is one last bug here! The misalignment matrix you provided was module-local, but
+        #! the matrix you get here is PANDA-global! transform it, and you should have it!
         for path in modulePaths:
             matrix = np.linalg.inv(completeMatrices[path])
             toModMat = moduleMatrices[path]
