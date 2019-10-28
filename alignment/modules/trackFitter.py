@@ -72,7 +72,8 @@ class CorridorFitter():
 
         for i in range(self.nTrks):
 
-            trackRecos = self.tracks[i]
+            # cut fourth entry, sometimes this is the sensorID
+            trackRecos = self.tracks[i][:, :3]
             meanPoint = trackRecos.mean(axis=0)
 
             _, _, vv = np.linalg.svd(trackRecos - meanPoint)

@@ -1,6 +1,5 @@
 #!usr/bin/env python3
 
-from alignment.modules.sectorContainer import sectorContainer
 import copy
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
@@ -28,6 +27,15 @@ class trackReader():
         Currently not working, please use the json method
         """
         pass
+
+    def readSyntheticDate(self, filename):
+        with open(filename, 'r') as f:
+            synthData = json.load(f)
+        return synthData
+    
+        # print(len(synthData))
+        # print(len(synthData[0]))
+        # print(synthData[0])
 
     def readTracksFromJson(self, filename, sector=-1):
         with open(filename, 'r') as infile:

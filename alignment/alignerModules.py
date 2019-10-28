@@ -289,6 +289,241 @@ class alignerModules:
         pIntersection = recoPosArr+dVec
         return pIntersection, recoPosArr
 
+    def prepareSynthData(self):
+        synthData = self.reader.readSyntheticDate('testscripts/LMDPoints_processed.json')
+
+        nMCtrks = len(synthData)
+
+        # filter by sector 0
+        sector0 = []
+        print(f'starting to sort {nMCtrks} tracks...')
+
+        # select only corridor 0
+        for event in synthData:
+            tempPoints = []
+            for point in event:
+                path = self.reader.getPathModuleFromSensorID( point[3] )
+                _, _, _, sector = self.reader.getParamsFromModulePath(path)
+                
+                if sector == 0:
+                    tempPoints.append(point)
+            
+            if len(tempPoints) == 4:
+                temparray = np.array(tempPoints)
+                # print(temparray)
+                sector0.append(temparray)
+
+        print(f'done, {len(sector0)} left.')
+
+        # prepare empty allTracks list
+        allTracks = []
+        for i in range(len(sector0)):
+            thisTrack = {}
+            thisTrack['recoHits'] = []
+
+            for point in sector0[i]:
+                recoPoint = {}
+                recoPoint['pos'] = point[:3]
+                recoPoint['sensorID'] = int(point[3])
+                thisTrack['recoHits'].append(recoPoint)
+
+            allTracks.append(thisTrack)
+
+        # apply 23mu noise
+        # TODO
+
+        #! cheat hard here for now:
+        with open('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json') as f:
+            misalignmatrices = json.load(f)
+        
+        moduleMatrices = {}
+        for path in misalignmatrices:
+            moduleMatrices[path] = np.linalg.inv(np.array(self.reader.detectorMatrices[path]).reshape(4,4))
+
+        # make 4 matrix        
+        for path in misalignmatrices:
+            misalignmatrices[path] = np.array(misalignmatrices[path]).reshape(4,4)
+
+        # transform accoring to calculations
+        for path in misalignmatrices:
+            mis = misalignmatrices[path]
+            modMat = moduleMatrices[path]
+            mis = modMat @ mis @ np.linalg.inv(modMat)
+            misalignmatrices[path] = mis
+
+        #! ====================  apply misalignment
+        print(allTracks[0])
+        allTracks = self.transformRecos(allTracks, misalignmatrices)
+        print(allTracks[0])
+        #! yeah, there is still some bug here, the shifted recos are waaaaaay off
+
+        # do a first track fit, otherwise we have no starting tracks
+        corrFitter = CorridorFitter(sector0)
+        resultTracks = corrFitter.fitTracksSVD()
+        allTracks = self.updateTracks(allTracks, resultTracks)
+
+        #* allTracks now looks just like real data (once I fix the remaining bug)
+
+        modulePaths = self.reader.getModulePathsInSector(0)
+        originalTracks = copy.deepcopy(allTracks)
+
+        # these are the ideal positional matrices.
+        moduleMatrices = {}
+        for path in modulePaths:
+            moduleMatrices[path] = np.linalg.inv(np.array(self.reader.detectorMatrices[path]).reshape(4,4))
+
+        print('\n\n')
+        print(f'===================================================================')
+        print(f'Inital misalignment:')
+        print(f'===================================================================')
+        print('\n\n')
+
+        for path in modulePaths:
+            filteredTracks = self.getTracksOnModule(allTracks, path)
+            # print(newTracks[0])
+            trackPos, recoPos = self.getTrackPosFromTracksAndRecos(filteredTracks)
+
+            # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
+
+            #? 1: get initial align matrices for 4 modules
+            T0 = self.getMatrix(trackPos, recoPos)
+            T1 = np.linalg.inv(T0)
+            print(f'{path}:\n{T1*1e4}')
+        
+        #* okay, fantastic, the matrices are identiy matrices. that means at least distance LMDPoint to mc track works 
+
+        if True:
+            print('we cancel early, the matrices above should be near identity matrices!')
+            return
+
+        print('\n\n')
+        print(f'===================================================================')
+        print(f'Fitting for sector {sector}! {len(allTracks)} tracks are available.')
+        print(f'===================================================================')
+        print('\n\n')
+
+        # this one I need
+        matrices = {}
+        for path in modulePaths:
+            matrices[path] = np.identity(4)
+
+        completeMatrices = {}
+        for path in modulePaths:
+            completeMatrices[path] = np.identity(4)
+
+        iterations = 10
+        #* ------------------------ begin iteration loop
+        for _ in tqdm(range(iterations), desc='Iterating'):
+
+            for path in modulePaths:
+                # print(f'path: {path}')
+                # get tracks and recos in two arrays
+                filteredTracks = self.getTracksOnModule(allTracks, path)
+                # print(newTracks[0])
+                trackPos, recoPos = self.getTrackPosFromTracksAndRecos(filteredTracks)
+
+                # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
+
+                #? 1: get initial align matrices for 4 modules
+                T0 = self.getMatrix(trackPos, recoPos)
+                T1 = np.linalg.inv(T0)
+                matrices[path] = T1
+                completeMatrices[path] = T1 @ completeMatrices[path]
+                
+                # print(f'recos before:\n{recoPos}')
+
+                # # homogenize
+                # recosH = np.ones((len(recoPos), 4))
+                # recosH[:,:3] = recoPos
+                # # transform
+                # # TODO: is the direction correct? i.e. inv(T0)?
+                # recosH = np.matmul(T0, recosH.T).T
+                # # de-homogenize
+                # recoPos = recosH[:,:3]
+
+
+            #? 2: apply matrices to all recos
+            # print(f'shifting reco hits...')
+            allTracks = self.transformRecos(allTracks, matrices)
+
+            #? 3: fit tracks again
+            # print(f'fitting tracks...')
+            recos = self.getAllRecosFromAllTracks(allTracks)
+            corrFitter = CorridorFitter(recos)
+            resultTracks = corrFitter.fitTracksSVD()
+            allTracks = self.updateTracks(allTracks, resultTracks)
+
+        #* ------------------------ end iteration loop
+
+        # the recos are now shifted to the position of the "ideal" track fits
+        # now, calculate alignment matrices one last time in the f.o.r. of the module
+
+        # these are the ideal positional matrices.
+        moduleMatrices = {}
+        for path in modulePaths:
+            moduleMatrices[path] = np.linalg.inv(np.array(self.reader.detectorMatrices[path]).reshape(4,4))
+        
+        # print(allTracks[0])
+        
+        #! I think this entire block isn't even neccessary
+        #! EITHER of these blocks is enough, they compute the same thing different ways
+
+        # derive matrices another way
+        simplyDerivedMatrices = {}
+        #* now, think easy. all the recos have been moved. try to find the distance between the original recos
+        #* and the new recos. this should be the misalignment
+        for path in modulePaths:
+
+            filteredOriginalTracks = self.getTracksOnModule(originalTracks, path)
+
+            # get tracks and recos in two arrays
+            filteredTracks = self.getTracksOnModule(allTracks, path)
+
+            assert len(filteredTracks) == len(filteredOriginalTracks)
+            nTrks = len(filteredOriginalTracks)
+
+            originalRecos = np.zeros((nTrks, 3))
+            newRecos = np.zeros((nTrks, 3))
+
+            # transform all three to local module
+            for i in range(nTrks):
+                originalRecos[i] = np.array(filteredOriginalTracks[i]['recoPos'])
+                newRecos[i] = np.array(filteredTracks[i]['recoPos'])
+
+                originalRecos[i] = self.transformRecoHit(originalRecos[i], moduleMatrices[path])
+                newRecos[i] = self.transformRecoHit(newRecos[i], moduleMatrices[path])
+
+            # get final alignment matrix
+            T0 = self.getMatrix(originalRecos, newRecos)
+            simplyDerivedMatrices[path] = np.linalg.inv(T0)
+            
+
+        print('\n\n')
+        print(f'===================================================================')
+        print(f' GRAND FINALE:')
+        print(f'===================================================================')
+        print('\n\n')
+
+        #! cheat hard here for now:
+        with open('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json') as f:
+            misalignmatrices = json.load(f)
+
+        for path in modulePaths:
+            matrix = np.linalg.inv(completeMatrices[path])
+            toModMat = moduleMatrices[path]
+            # transform matrix to module?
+            matrix = (toModMat) @ matrix @ np.linalg.inv(toModMat)
+
+            otherMatrix = np.array(misalignmatrices[path]).reshape((4,4))
+            # otherMatrix = (toModMat) @ otherMatrix @ np.linalg.inv(toModMat)
+
+            print(f'accumulated matrix:\n{matrix*1e4}')
+            # print(f'simplyDerivedMatrix:\n{simplyDerivedMatrices[path]*1e4}')
+            # print(f'dMat:\n{(matrix-simplyDerivedMatrices[path])*1e4}')
+            print(f'actual matrix:\n{otherMatrix*1e4}\n\n')
+
+        return
+
     def alignICPiterative(self, sector=0):
 
         assert (sector > -1) and (sector < 10)
@@ -448,26 +683,6 @@ class alignerModules:
             print(f'actual matrix:\n{otherMatrix*1e4}\n\n')
 
         return
-
-    # TODO: delete
-    # def getTracksAndRecoHitsByModule(self, module):
-    #     trackPositions = []
-    #     recoPositions = []
-
-    #     gotems = 0
-
-    #     for line in self.reader.generateICPParameters(module):
-    #         trackPositions.append(np.ndarray.tolist(line[0]))
-    #         recoPositions.append(np.ndarray.tolist(line[1]))
-
-    #         gotems += 1
-    #         if gotems == 1000:
-    #             break
-
-    #     trackPositions = np.array(trackPositions)
-    #     recoPositions = np.array(recoPositions)
-
-    #     return trackPositions, recoPositions
 
     def getMatrix(self, trackPositions, recoPositions):
         arrayOne = np.array(trackPositions)
