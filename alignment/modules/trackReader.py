@@ -32,10 +32,6 @@ class trackReader():
         with open(filename, 'r') as f:
             synthData = json.load(f)
         return synthData
-    
-        # print(len(synthData))
-        # print(len(synthData[0]))
-        # print(synthData[0])
 
     def readTracksFromJson(self, filename, sector=-1):
         with open(filename, 'r') as infile:
@@ -124,224 +120,224 @@ class trackReader():
     def getModulePathsInSector(self, sector):
         return self.sectorDict[sector]
 
-    # TODO: deprecate, this is now done vectorized in moduleAligner
-    def transformPoint(self, point, matrix):
+    # # TODO: deprecate, this is now done vectorized in moduleAligner
+    # def transformPoint(self, point, matrix):
 
-        # vector must be row-major 3 vector
-        assert point.shape == (3,)
+    #     # vector must be row-major 3 vector
+    #     assert point.shape == (3,)
 
-        # homogenize
-        vecH = np.ones(4)
-        vecH[:3] = point
+    #     # homogenize
+    #     vecH = np.ones(4)
+    #     vecH[:3] = point
 
-        # make 2D array, reshape and transpose
-        vecH = vecH.reshape((1,4)).T
+    #     # make 2D array, reshape and transpose
+    #     vecH = vecH.reshape((1,4)).T
 
-        # perform actual transform
-        vecH = matrix @ vecH
+    #     # perform actual transform
+    #     vecH = matrix @ vecH
 
-        # de-homogenize
-        vecNew = vecH[:3] / vecH[3]
+    #     # de-homogenize
+    #     vecNew = vecH[:3] / vecH[3]
         
-        # and re-transpose
-        vecNew = vecNew.T.reshape(3)
+    #     # and re-transpose
+    #     vecNew = vecNew.T.reshape(3)
 
-        return vecNew
+    #     return vecNew
 
-    # TODO: deprecate, this is now in moduleAligner!
-    # for module aligner, intermediate matrices
-    def getTrackAndRecoPos(self, modulePath):
+    # # TODO: deprecate, this is now in moduleAligner!
+    # # for module aligner, intermediate matrices
+    # def getTrackAndRecoPos(self, modulePath):
 
-        # first: filter tracks that are not even in the same sector, that should remove 90%
-        _, _, _, thisSector = self.getParamsFromModulePath(modulePath)
-        tracks = self.getAllTracksInSector(thisSector)
+    #     # first: filter tracks that are not even in the same sector, that should remove 90%
+    #     _, _, _, thisSector = self.getParamsFromModulePath(modulePath)
+    #     tracks = self.getAllTracksInSector(thisSector)
 
-        newTracks = []
+    #     newTracks = []
 
-        # print(f'asking for sector {thisSector} for mod {modulePath}')
-        # print(f'tracks: {len(tracks)}')
-        # print(f'tracks[0]: {tracks[0]}')
+    #     # print(f'asking for sector {thisSector} for mod {modulePath}')
+    #     # print(f'tracks: {len(tracks)}')
+    #     # print(f'tracks[0]: {tracks[0]}')
 
-        # TODO: express the outer loop as list comprehension as well, for speedup
-        for track in tracks:
-            # filter relevant recos
-            # track['recoHits'] = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
-            newtrack = copy.deepcopy(track)
-            goodRecos = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+    #     # TODO: express the outer loop as list comprehension as well, for speedup
+    #     for track in tracks:
+    #         # filter relevant recos
+    #         # track['recoHits'] = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
+    #         newtrack = copy.deepcopy(track)
+    #         goodRecos = [x for x in track['recoHits'] if ( self.getPathModuleFromSensorID(x['sensorID']) == modulePath) ]
             
-            if len(goodRecos) == 1:
-                newtrack['recoPos'] = goodRecos[0]['pos']
-                # this info is not needed anymore
-                newtrack.pop('recoHits', None)
-                newTracks.append(newtrack)
+    #         if len(goodRecos) == 1:
+    #             newtrack['recoPos'] = goodRecos[0]['pos']
+    #             # this info is not needed anymore
+    #             newtrack.pop('recoHits', None)
+    #             newTracks.append(newtrack)
         
-        # return just the newTracks list of dicts, the mouleAligner will take it from here
-        return newTracks
+    #     # return just the newTracks list of dicts, the mouleAligner will take it from here
+    #     return newTracks
 
-        # nTrks = len(newTracks)
+    #     # nTrks = len(newTracks)
                 
-        # trackPosArr = np.zeros((nTrks, 3))
-        # trackDirArr = np.zeros((nTrks, 3))
-        # recoPosArr = np.zeros((nTrks, 3))
-        # # dVecTest = np.zeros((nTrks, 3))
+    #     # trackPosArr = np.zeros((nTrks, 3))
+    #     # trackDirArr = np.zeros((nTrks, 3))
+    #     # recoPosArr = np.zeros((nTrks, 3))
+    #     # # dVecTest = np.zeros((nTrks, 3))
 
-        # for i in range(len(newTracks)):
-        #     trackPosArr[i] = newTracks[i]['trkPos']
-        #     trackDirArr[i] = newTracks[i]['trkMom']
-        #     recoPosArr[i] = newTracks[i]['recoPos']
+    #     # for i in range(len(newTracks)):
+    #     #     trackPosArr[i] = newTracks[i]['trkPos']
+    #     #     trackDirArr[i] = newTracks[i]['trkMom']
+    #     #     recoPosArr[i] = newTracks[i]['recoPos']
 
-        # # compare this with the vectorized version
-        # # for i in range(len(newTracks)):
-        # #     dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
+    #     # # compare this with the vectorized version
+    #     # # for i in range(len(newTracks)):
+    #     # #     dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
 
-        # # norm momentum vectors, this is important for the distance formula!
-        # trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+    #     # # norm momentum vectors, this is important for the distance formula!
+    #     # trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
 
-        # # print(f'trackPosArr: {trackPosArr}')
-        # # print(f'trackDirArr: {trackDirArr}')
-        # # print(f'recoPosArr: {recoPosArr}')
+    #     # # print(f'trackPosArr: {trackPosArr}')
+    #     # # print(f'trackDirArr: {trackDirArr}')
+    #     # # print(f'recoPosArr: {recoPosArr}')
 
-        # # vectorized version, much faster
-        # tempV1 = (trackPosArr - recoPosArr)
-        # tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
-        # dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
+    #     # # vectorized version, much faster
+    #     # tempV1 = (trackPosArr - recoPosArr)
+    #     # tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
+    #     # dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
         
-        # # print(f'dVec: {dVec}')
+    #     # # print(f'dVec: {dVec}')
 
-        # # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
-        # pIntersection = recoPosArr+dVec
-        # return pIntersection, recoPosArr
+    #     # # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+    #     # pIntersection = recoPosArr+dVec
+    #     # return pIntersection, recoPosArr
 
     # get (a deep copy of) all tracks in a given sector
     def getAllTracksInSector(self, sector):
         result = copy.deepcopy([ x for x in self.trks if x['sector'] == sector ])
         return result
 
-    # TODO: deprecate! the track reader will always have the immutable REAL info
-    # after track fitter worked, the tracks need to be set anew
-    # the format should be identical to the format already in this class!
-    def setNewTracks(self, sector, tracks):
+    # # TODO: deprecate! the track reader will always have the immutable REAL info
+    # # after track fitter worked, the tracks need to be set anew
+    # # the format should be identical to the format already in this class!
+    # def setNewTracks(self, sector, tracks):
 
-        # remove sector for current track list (list comprehension)
-        self.trks =  [ x for x in self.trks if x['sector'] != sector ]
+    #     # remove sector for current track list (list comprehension)
+    #     self.trks =  [ x for x in self.trks if x['sector'] != sector ]
 
-        # check if new track list only contains sector
-        tracks = [x for x in tracks if x['sector'] == sector ]
+    #     # check if new track list only contains sector
+    #     tracks = [x for x in tracks if x['sector'] == sector ]
 
-        # simply append new list to old list
-        self.trks.append(tracks)
+    #     # simply append new list to old list
+    #     self.trks.append(tracks)
 
-    # TODO: deprecate
-    def getContainer(self, sector):
+    # # TODO: deprecate
+    # def getContainer(self, sector):
 
-        container = sectorContainer(sector)
+    #     container = sectorContainer(sector)
         
-        for track in self.trks:
+    #     for track in self.trks:
             
-            for reco in track['recoHits']:
+    #         for reco in track['recoHits']:
                 
-                thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
-                (half, _, mod, thisSector) = self.getParamsFromModulePath(thisModulePath)
+    #             thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
+    #             (half, _, mod, thisSector) = self.getParamsFromModulePath(thisModulePath)
 
-                if thisSector == sector:
-                    # get matrix
-                    firstModPath = f'/cave_1/lmd_root_0/half_{half}/plane_0/module_{mod}'
-                    firstModMatrix = np.array(self.detectorMatrices[firstModPath]).reshape(4,4)
+    #             if thisSector == sector:
+    #                 # get matrix
+    #                 firstModPath = f'/cave_1/lmd_root_0/half_{half}/plane_0/module_{mod}'
+    #                 firstModMatrix = np.array(self.detectorMatrices[firstModPath]).reshape(4,4)
 
-                    # transform!
-                    reco = np.array(reco['pos'])
-                    container.addInitialReco(thisModulePath, reco)
+    #                 # transform!
+    #                 reco = np.array(reco['pos'])
+    #                 container.addInitialReco(thisModulePath, reco)
 
-                    recoT = self.transformPoint(reco, inv(firstModMatrix))
-                    container.addReco(thisModulePath, recoT)
+    #                 recoT = self.transformPoint(reco, inv(firstModMatrix))
+    #                 container.addReco(thisModulePath, recoT)
 
-                    # the same track will be added multiple times. this is okay!
-                    container.addTrack(thisModulePath, (track['trkPos'], track['trkMom']))
+    #                 # the same track will be added multiple times. this is okay!
+    #                 container.addTrack(thisModulePath, (track['trkPos'], track['trkMom']))
 
-        container.pathFirstMod = firstModPath
-        container.matrixFirstMod = firstModMatrix
-        container.modulePaths = container.tracks.keys()
+    #     container.pathFirstMod = firstModPath
+    #     container.matrixFirstMod = firstModMatrix
+    #     container.modulePaths = container.tracks.keys()
 
-        return container
+    #     return container
 
-    # TODO: deprecate
-    def generateICPParametersBySector(self, sector):
-        # presorter step
-        allTracks = []
-        for track in self.trks:
-            newTrack = []
-            for reco in track['recoHits']:
-                thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
-                half, _, mod, thisSector = self.getParamsFromModulePath(thisModulePath)
+    # # TODO: deprecate
+    # def generateICPParametersBySector(self, sector):
+    #     # presorter step
+    #     allTracks = []
+    #     for track in self.trks:
+    #         newTrack = []
+    #         for reco in track['recoHits']:
+    #             thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
+    #             half, _, mod, thisSector = self.getParamsFromModulePath(thisModulePath)
 
-                if thisSector == sector:
+    #             if thisSector == sector:
 
-                    # get matrix
-                    firstModPath = f'/cave_1/lmd_root_0/half_{half}/plane_0/module_{mod}'
-                    firstModMatrix = np.array(self.detectorMatrices[firstModPath]).reshape(4,4)
+    #                 # get matrix
+    #                 firstModPath = f'/cave_1/lmd_root_0/half_{half}/plane_0/module_{mod}'
+    #                 firstModMatrix = np.array(self.detectorMatrices[firstModPath]).reshape(4,4)
 
-                    # transform!
-                    reco = np.array(reco['pos'])
-                    reco = self.transformPoint(reco, inv(firstModMatrix))
+    #                 # transform!
+    #                 reco = np.array(reco['pos'])
+    #                 reco = self.transformPoint(reco, inv(firstModMatrix))
 
-                    newTrack.append(reco)
-            if len(newTrack) == 3 or len(newTrack) == 4:
-                allTracks.append(newTrack)
+    #                 newTrack.append(reco)
+    #         if len(newTrack) == 3 or len(newTrack) == 4:
+    #             allTracks.append(newTrack)
 
-        # allTracks should now be a tuple of tuples of tuples. just return it
-        return allTracks
+    #     # allTracks should now be a tuple of tuples of tuples. just return it
+    #     return allTracks
     
-    # TODO: deprecate
-    def generateICPParameters(self, modulePath=''):
+    # # TODO: deprecate
+    # def generateICPParameters(self, modulePath=''):
 
-        # presorter step
-        newTracks = []
-        for track in self.trks:
-            newTrack = {}
-            for reco in track['recoHits']:
+    #     # presorter step
+    #     newTracks = []
+    #     for track in self.trks:
+    #         newTrack = {}
+    #         for reco in track['recoHits']:
 
-                thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
+    #             thisModulePath = self.getPathModuleFromSensorID(reco['sensorID'])
 
-                if thisModulePath == modulePath:
-                    newTrack['recoHit'] = reco['pos']
-                    newTrack['recoErr'] = reco['err']
-                    newTrack['recoSensor'] = reco['sensorID']
-                    newTrack['trkMom'] = track['trkMom'] / np.linalg.norm(track['trkMom'])
-                    newTrack['trkPos'] = track['trkPos'] 
-                    newTracks.append(newTrack)
+    #             if thisModulePath == modulePath:
+    #                 newTrack['recoHit'] = reco['pos']
+    #                 newTrack['recoErr'] = reco['err']
+    #                 newTrack['recoSensor'] = reco['sensorID']
+    #                 newTrack['trkMom'] = track['trkMom'] / np.linalg.norm(track['trkMom'])
+    #                 newTrack['trkPos'] = track['trkPos'] 
+    #                 newTracks.append(newTrack)
         
-        thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
+    #     thisModMatrix = np.array(self.detectorMatrices[modulePath]).reshape(4,4)
 
-        # TODO: now this can use numpy array notation for even greater speedup
-        # return whole np.array instead single lines then
-        for track in newTracks:
+    #     # TODO: now this can use numpy array notation for even greater speedup
+    #     # return whole np.array instead single lines then
+    #     for track in newTracks:
 
-            recoPos = np.array(track['recoHit'])
-            trackOri = np.array(track['trkPos'])
-            trackDir = np.array(track['trkMom'])
+    #         recoPos = np.array(track['recoHit'])
+    #         trackOri = np.array(track['trkPos'])
+    #         trackDir = np.array(track['trkMom'])
 
-            # transform track and reco to module system
-            thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
-            thisReco = self.transformPoint(recoPos, inv(thisModMatrix))
+    #         # transform track and reco to module system
+    #         thisTrackO = self.transformPoint(trackOri, inv(thisModMatrix))
+    #         thisReco = self.transformPoint(recoPos, inv(thisModMatrix))
 
-            # now, several steps are required. we nee the origin a, the point where origin+direction point at b 
-            # then we must transform both, then calculate vector from a to b
-            thisTrackDirectionPoint = self.transformPoint((trackOri+trackDir), inv(thisModMatrix))
-            thisTrackD = thisTrackDirectionPoint - thisTrackO
+    #         # now, several steps are required. we nee the origin a, the point where origin+direction point at b 
+    #         # then we must transform both, then calculate vector from a to b
+    #         thisTrackDirectionPoint = self.transformPoint((trackOri+trackDir), inv(thisModMatrix))
+    #         thisTrackD = thisTrackDirectionPoint - thisTrackO
 
-            # no transformation this time
-            # thisTrackO = trackOri
-            # thisTrackD = trackDir
-            # thisReco = recoPos
+    #         # no transformation this time
+    #         # thisTrackO = trackOri
+    #         # thisTrackD = trackDir
+    #         # thisReco = recoPos
 
-            # get vector from reco hit to line
-            # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-            dVec = ((thisTrackO - thisReco) - ((thisTrackO - thisReco)@thisTrackD) * thisTrackD)
+    #         # get vector from reco hit to line
+    #         # https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+    #         dVec = ((thisTrackO - thisReco) - ((thisTrackO - thisReco)@thisTrackD) * thisTrackD)
 
-            # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
-            pIntersection = thisReco+dVec
+    #         # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+    #         pIntersection = thisReco+dVec
 
-            yield [pIntersection, thisReco]
+    #         yield [pIntersection, thisReco]
 
     def generatorMilleParameters(self):
 
