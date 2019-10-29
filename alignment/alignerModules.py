@@ -477,7 +477,7 @@ class alignerModules:
 
         #* okay, fantastic, the matrices are identiy matrices. that means at least distance LMDPoint to mc track works 
 
-        if False:
+        if True:
             print('we cancel early, the matrices above should be near identity matrices!')
             return
 
@@ -665,7 +665,7 @@ class alignerModules:
             fig = plt.figure(figsize=(16/2.54, 16/2.54))
             
             axis = fig.add_subplot(1,1,1)
-            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')
+            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)', range=((-300,300), (-300,300)))
             axis.set_title(f'2D Distance\n{path}')
             axis.yaxis.tick_right()
             axis.yaxis.set_ticks_position('both')
@@ -696,7 +696,7 @@ class alignerModules:
             print(f'actual:\n{misalignmatricesOriginal[path]*1e4}')
             print(f' ------------- next -------------')
 
-        if False:
+        if True:
             print('we cancel early, the matrices above should be near identity matrices!')
             return
 
