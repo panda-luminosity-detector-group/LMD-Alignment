@@ -13,6 +13,7 @@ import copy
 import json
 import numpy as np
 import pyMille
+import random
 import re
 import sys
 
@@ -39,7 +40,8 @@ class alignerModules:
         self.reader.readDetectorParameters()
         print(f'reading processed tracks file...')
         # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-singlePlane-1.00.json'))
-        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-modules-1.00.json'))
+        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-modules-1.00.json'))
+        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json'))
         # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
 
     def dynamicCut(self, cloud1, cloud2, cutPercent=2):
@@ -274,7 +276,9 @@ class alignerModules:
         # optionally, transform the track to a different frame of reference
 
         # compare this with the vectorized version
-        # for i in range(len(newTracks)):
+        # for i in range(nTrks):
+        #     # normalize fukn direction here, again
+        #     trackDirArr[i] /= np.linalg.norm(trackDirArr[i])
         #     dVecTest[i] = ((trackPosArr[i] - recoPosArr[i]) - np.dot((trackPosArr[i] - recoPosArr[i]), trackDirArr[i]) * trackDirArr[i])
 
         # norm momentum vectors, this is important for the distance formula!
@@ -287,8 +291,36 @@ class alignerModules:
         
         # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
         pIntersection = recoPosArr+dVec
+        # pIntersection = recoPosArr+dVecTest
         return pIntersection, recoPosArr
 
+    def applyNoiseToRecos(self, allTracks, sigma, multipleScattering):
+        
+        mu = 0
+        for track in allTracks:
+            for reco in track['recoHits']:
+                dx = random.gauss(mu, sigma)
+                dy = random.gauss(mu, sigma)
+
+                if multipleScattering:
+                    # get plane
+                    thisRecoPath = self.reader.getPathModuleFromSensorID(reco['sensorID'])
+                    _, plane, _, _ = self.reader.getParamsFromModulePath(thisRecoPath)
+
+                    MSsigma = plane * 25.0*1e-4
+                    dx += random.gauss(mu, MSsigma)
+                    dy += random.gauss(mu, MSsigma)
+
+                # generate matrix
+                matrix = np.identity(4)
+                matrix[0,3] = dx
+                matrix[1,3] = dy
+
+                # transform reco hit using matrix from matrices
+                reco['pos'] = self.transformRecoHit( reco['pos'], matrix)
+
+        return allTracks
+    
     def prepareSynthData(self):
         synthData = self.reader.readSyntheticDate('testscripts/LMDPoints_processed.json')
 
@@ -296,6 +328,7 @@ class alignerModules:
 
         # filter by sector 0
         sector0 = []
+        sector = 0
         print(f'starting to sort {nMCtrks} tracks...')
 
         # select only corridor 0
@@ -303,9 +336,9 @@ class alignerModules:
             tempPoints = []
             for point in event:
                 path = self.reader.getPathModuleFromSensorID( point[3] )
-                _, _, _, sector = self.reader.getParamsFromModulePath(path)
+                _, _, _, thissector = self.reader.getParamsFromModulePath(path)
                 
-                if sector == 0:
+                if thissector == 0:
                     tempPoints.append(point)
             
             if len(tempPoints) == 4:
@@ -329,30 +362,39 @@ class alignerModules:
 
             allTracks.append(thisTrack)
 
-        # apply 23mu noise
-        # TODO
+        #! apply 23mu noise and multiple scattering
+        allTracks = self.applyNoiseToRecos(allTracks, 23.0*1e-4, True)
+
+        misMatPath = '/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json'
 
         #! cheat hard here for now:
-        with open('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json') as f:
+        with open(misMatPath) as f:
             misalignmatrices = json.load(f)
+            
+        with open(misMatPath) as f:
+            misalignmatricesOriginal = json.load(f)
         
+        # make 4x4 matrices
         moduleMatrices = {}
         for path in misalignmatrices:
             moduleMatrices[path] = np.array(self.reader.detectorMatrices[path]).reshape(4,4)
             misalignmatrices[path] = np.array(misalignmatrices[path]).reshape((4,4))
+            misalignmatricesOriginal[path] = np.array(misalignmatricesOriginal[path]).reshape((4,4))
 
         # transform accoring to calculations
         for path in misalignmatrices:
             mis = misalignmatrices[path]
             modMat = moduleMatrices[path]
+            # mis = modMat @ mis @ np.linalg.inv(modMat)
             mis = modMat @ mis @ np.linalg.inv(modMat)
             misalignmatrices[path] = mis
 
         #! ====================  apply misalignment
-        # print(allTracks[0]['recoHits'][0]['pos'])
-        allTracks = self.transformRecos(allTracks, misalignmatrices)
-        # print(allTracks[0]['recoHits'][0]['pos'])
-        #* okay, reco shift seems fine now 
+        allTracks = self.transformRecos(allTracks, (misalignmatrices))
+
+        print(allTracks[0])
+
+        print(f'recos "misaligned". performing first track fit.')
 
         # do a first track fit, otherwise we have no starting tracks
         corrFitter = CorridorFitter(sector0)
@@ -375,18 +417,64 @@ class alignerModules:
         print(f'===================================================================')
         print('\n\n')
 
+        # np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+        np.set_printoptions(precision=3)
+        np.set_printoptions(suppress=True)
+
         for path in modulePaths:
             filteredTracks = self.getTracksOnModule(allTracks, path)
             # print(newTracks[0])
             trackPos, recoPos = self.getTrackPosFromTracksAndRecos(filteredTracks)
 
-            # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
+            trackPos, recoPos = self.dynamicCut(trackPos, recoPos, 5)
+
+            #! begin hist
+            dVec = trackPos - recoPos
+            print(dVec.shape)
+
+            import matplotlib
+            import matplotlib.pyplot as plt
+            from matplotlib.colors import LogNorm
+            
+            # plot difference hit array
+            fig = plt.figure(figsize=(16/2.54, 16/2.54))
+            
+            axis = fig.add_subplot(1,1,1)
+            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)', range=((-300,300), (-300,300)))
+            axis.set_title(f'2D Distance\n{path}')
+            axis.yaxis.tick_right()
+            axis.yaxis.set_ticks_position('both')
+            axis.set_xlabel('dx [µm]')
+            axis.set_ylabel('dy [µm]')
+            axis.tick_params(direction='out')
+            axis.yaxis.set_label_position("right")
+
+            path1 = path.replace('/', '-')
+
+            # fig.show()
+            fig.savefig(f'output/alignmentModules/test/{path1}.png')
+            plt.close(fig)
+            #! end hist
+
+            # print(f'avg distances:\n{np.average(dVec, axis=0)*1e4}')
 
             #? 1: get initial align matrices for 4 modules
             T0 = self.getMatrix(trackPos, recoPos)
             T1 = np.linalg.inv(T0)
-            print(f'{path}:\n{T1*1e4}')
-        
+            # print(f'{path}:\n{T0*1e4}')
+            # print(f'{path} inverted:\n{T1*1e4}')
+
+            print('after transform:')
+            matrix1 = T0
+            toModMat = moduleMatrices[path]
+
+            # transform matrix to module?
+            matrix10 = (toModMat) @ matrix1 @ np.linalg.inv(toModMat)
+            print(f'transformed normal:\n{matrix10*1e4}')
+            print(f'actual:\n{misalignmatricesOriginal[path]*1e4}')
+            print(f'\nDIFF:\n{(matrix10-misalignmatricesOriginal[path])*1e4}\n\n')
+            print(f' ------------- next -------------')
+
         #* okay, fantastic, the matrices are identiy matrices. that means at least distance LMDPoint to mc track works 
 
         if False:
@@ -502,39 +590,54 @@ class alignerModules:
         print('\n\n')
 
         #! cheat hard here for now:
-        with open('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json') as f:
+        with open('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json') as f:
             misalignmatrices = json.load(f)
 
         #! WAIT! There is one last bug here! The misalignment matrix you provided was module-local, but
         #! the matrix you get here is PANDA-global! transform it, and you should have it!
         for path in modulePaths:
             matrix = np.linalg.inv(completeMatrices[path])
+            # matrix0 = completeMatrices[path]
             toModMat = moduleMatrices[path]
+
             # transform matrix to module?
-            matrix = (toModMat) @ matrix @ np.linalg.inv(toModMat)
+            matrix1 = (toModMat) @ matrix @ np.linalg.inv(toModMat)
+            #* matrix1 is the one I get when comparing transformed and original recos.
+
+
+            # matrix10 = (toModMat) @ matrix0 @ np.linalg.inv(toModMat)
 
             otherMatrix = np.array(misalignmatrices[path]).reshape((4,4))
             # otherMatrix = (toModMat) @ otherMatrix @ np.linalg.inv(toModMat)
 
-            print(f'accumulated matrix:\n{matrix*1e4}')
-            # print(f'simplyDerivedMatrix:\n{simplyDerivedMatrices[path]*1e4}')
-            # print(f'dMat:\n{(matrix-simplyDerivedMatrices[path])*1e4}')
-            print(f'actual matrix:\n{otherMatrix*1e4}\n\n')
+            print(f'matrix1:\n{matrix1*1e4}')
+            print(f'simplyDerivedMatrix:\n{simplyDerivedMatrices[path]*1e4}')
+            # print(f'dMat:\n{(matrix1-simplyDerivedMatrices[path])*1e4}')
+            print(f'actual matrix:\n{otherMatrix*1e4}')
+            print(f'\nDIFF:\n{(matrix1-otherMatrix)*1e4}\n\n')
 
         return
 
     def alignICPiterative(self, sector=0):
 
+        np.set_printoptions(precision=3)
+        np.set_printoptions(suppress=True)
+
         assert (sector > -1) and (sector < 10)
 
         modulePaths = self.reader.getModulePathsInSector(sector)
         allTracks = self.reader.getAllTracksInSector(sector)
-        # originalTracks = copy.deepcopy(allTracks)
 
+        misMatPath = '/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json'
+        with open(misMatPath) as f:
+            misalignmatricesOriginal = json.load(f)
+        
         # these are the ideal positional matrices.
         moduleMatrices = {}
         for path in modulePaths:
+            # moduleMatrices[path] = (np.array(self.reader.detectorMatrices[path]).reshape(4,4))
             moduleMatrices[path] = np.linalg.inv(np.array(self.reader.detectorMatrices[path]).reshape(4,4))
+            misalignmatricesOriginal[path] = np.array(misalignmatricesOriginal[path]).reshape((4,4))
 
         print('\n\n')
         print(f'===================================================================')
@@ -545,14 +648,57 @@ class alignerModules:
         for path in modulePaths:
             filteredTracks = self.getTracksOnModule(allTracks, path)
             # print(newTracks[0])
+
             trackPos, recoPos = self.getTrackPosFromTracksAndRecos(filteredTracks)
 
-            # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
+            trackPos, recoPos = self.dynamicCut(trackPos, recoPos, 5)
+
+            #! begin hist
+            dVec = trackPos - recoPos
+            print(dVec.shape)
+
+            import matplotlib
+            import matplotlib.pyplot as plt
+            from matplotlib.colors import LogNorm
+            
+            # plot difference hit array
+            fig = plt.figure(figsize=(16/2.54, 16/2.54))
+            
+            axis = fig.add_subplot(1,1,1)
+            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')
+            axis.set_title(f'2D Distance\n{path}')
+            axis.yaxis.tick_right()
+            axis.yaxis.set_ticks_position('both')
+            axis.set_xlabel('dx [µm]')
+            axis.set_ylabel('dy [µm]')
+            axis.tick_params(direction='out')
+            axis.yaxis.set_label_position("right")
+
+            path1 = path.replace('/', '-')
+
+            # fig.show()
+            fig.savefig(f'output/alignmentModules/test/{path1}.png')
+            plt.close(fig)
+            #! end hist
+
 
             #? 1: get initial align matrices for 4 modules
             T0 = self.getMatrix(trackPos, recoPos)
             T1 = np.linalg.inv(T0)
-            print(f'{path}:\n{T1*1e4}')
+
+            print('after transform:')
+            matrix1 = T0
+            toModMat = moduleMatrices[path]
+
+            # transform matrix to module?
+            matrix10 = (toModMat) @ matrix1 @ np.linalg.inv(toModMat)
+            print(f'transformed normal:\n{matrix10*1e4}')
+            print(f'actual:\n{misalignmatricesOriginal[path]*1e4}')
+            print(f' ------------- next -------------')
+
+        if False:
+            print('we cancel early, the matrices above should be near identity matrices!')
+            return
 
         print('\n\n')
         print(f'===================================================================')
@@ -569,7 +715,7 @@ class alignerModules:
         for path in modulePaths:
             completeMatrices[path] = np.identity(4)
 
-        iterations = 5
+        iterations = 10
         #* ------------------------ begin iteration loop
         for _ in tqdm(range(iterations), desc='Iterating'):
 
@@ -588,18 +734,6 @@ class alignerModules:
                 matrices[path] = T1
                 completeMatrices[path] = T1 @ completeMatrices[path]
                 
-                # print(f'recos before:\n{recoPos}')
-
-                # # homogenize
-                # recosH = np.ones((len(recoPos), 4))
-                # recosH[:,:3] = recoPos
-                # # transform
-                # # TODO: is the direction correct? i.e. inv(T0)?
-                # recosH = np.matmul(T0, recosH.T).T
-                # # de-homogenize
-                # recoPos = recosH[:,:3]
-
-
             #? 2: apply matrices to all recos
             # print(f'shifting reco hits...')
             allTracks = self.transformRecos(allTracks, matrices)
@@ -664,22 +798,32 @@ class alignerModules:
         print('\n\n')
 
         #! cheat hard here for now:
-        with open('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json') as f:
+        with open('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json') as f:
             misalignmatrices = json.load(f)
 
+        #! WAIT! There is one last bug here! The misalignment matrix you provided was module-local, but
+        #! the matrix you get here is PANDA-global! transform it, and you should have it!
         for path in modulePaths:
             matrix = np.linalg.inv(completeMatrices[path])
+            # matrix0 = completeMatrices[path]
             toModMat = moduleMatrices[path]
+
             # transform matrix to module?
-            matrix = (toModMat) @ matrix @ np.linalg.inv(toModMat)
+            matrix1 = (toModMat) @ matrix @ np.linalg.inv(toModMat)
+            #* matrix1 is the one I get when comparing transformed and original recos.
+
+
+            # matrix10 = (toModMat) @ matrix0 @ np.linalg.inv(toModMat)
 
             otherMatrix = np.array(misalignmatrices[path]).reshape((4,4))
             # otherMatrix = (toModMat) @ otherMatrix @ np.linalg.inv(toModMat)
 
-            print(f'accumulated matrix:\n{matrix*1e4}')
+            print(f'matrix1:\n{matrix1*1e4}')
             print(f'simplyDerivedMatrix:\n{simplyDerivedMatrices[path]*1e4}')
-            # print(f'dMat:\n{(matrix-simplyDerivedMatrices[path])*1e4}')
-            print(f'actual matrix:\n{otherMatrix*1e4}\n\n')
+            # print(f'dMat:\n{(matrix1-simplyDerivedMatrices[path])*1e4}')
+            print(f'actual matrix:\n{otherMatrix*1e4}')
+            print(f'\nDIFF:\n{(matrix1-otherMatrix)*1e4}\n\n')
+
 
         return
 
@@ -689,7 +833,7 @@ class alignerModules:
 
         # TODO: somewhere else!
         if False:
-            arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 5)
+            arrayOne, arrayTwo = self.dynamicCut(arrayOne, arrayTwo, 20)
 
         # use 2D
         if False:
