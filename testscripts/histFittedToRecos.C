@@ -4,21 +4,6 @@
 
 using nlohmann::json;
 
-struct recoPoint {
-    int hitIndex;
-    double x, y, z;
-    double ex, ey, ez;
-};
-
-struct track3Dinfo {
-    double tx, ty, tz;
-    double px, py, pz;
-    std::vector<int> hitIndices;
-
-    // this info is only for cross checks if the python library can read the correct reco points
-    std::vector<recoPoint> recoPoints;
-};
-
 void histFittedToRecos() {
     //*** output json
     json outJson;
@@ -120,33 +105,33 @@ void histFittedToRecos() {
 
                 thisEvent["recoHits"].push_back({{"index", hitIndex}, {"sensorID", sensorID}, {"pos", {xhit, yhit, zhit}}, {"err", {errxhit, erryhit, errzhit}}});
                 
-                // if(!(sensorID >= 150 && sensorID < 200)){
-                // // if(sensorID != 140){
-                //     continue;
-                // }
+                if(!(sensorID >= 50 && sensorID < 100)){
+                // if(sensorID != 140){
+                     continue;
+                }
                 
-                cout << "\n ------------ \nattention!\n";
-                trkO.Print();
-                trkD.Print();
-                thisLMDPoint.Print();
+//                 cout << "\n ------------ \nattention!\n";
+//                 trkO.Print();
+//                 trkD.Print();
+//                 thisLMDPoint.Print();
 
 
                 // cald distance
                 auto tVec1 = trkO - thisLMDPoint;
                 auto dVec = ( tVec1 ) - ((( tVec1 )*trkD ) * trkD);
                 hist.Fill(dVec.Mag()*1e4);
-                dVec.Print();
+//                 dVec.Print();
 
             }
             // outJson["events"].push_back(thisEvent);
 
             //*** skip remaining tracks, they are copies of the first
-            break;
+//             break;
         }
-        break;
-        if (runIndex++ > 0) {
-            break;
-        }
+//         break;
+//         if (runIndex++ > 0) {
+//             break;
+//         }
     }
     //! dump to json here!
 

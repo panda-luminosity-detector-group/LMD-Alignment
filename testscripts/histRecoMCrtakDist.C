@@ -4,27 +4,12 @@
 
 using nlohmann::json;
 
-struct recoPoint {
-    int hitIndex;
-    double x, y, z;
-    double ex, ey, ez;
-};
-
-struct track3Dinfo {
-    double tx, ty, tz;
-    double px, py, pz;
-    std::vector<int> hitIndices;
-
-    // this info is only for cross checks if the python library can read the correct reco points
-    std::vector<recoPoint> recoPoints;
-};
-
-void convertRootTracks() {
+void histRecoMCrtakDist() {
     //*** output json
-    json outJson;
+    // json outJson;
 
     // filename
-    TFile *trackFile = new TFile("../../input/modulesAlTest/Lumi_Track_100000.root");
+    TFile *trackFile = new TFile("Lumi_Track_100000.root");
     // TTree name, use TBrowser if the name is unknown
     TTree *trackTree = (TTree *)trackFile->Get("pndsim");
     // the TClonesArray needs to know the class of the objects you want to retrieve
@@ -33,10 +18,16 @@ void convertRootTracks() {
     trackTree->SetBranchAddress("LMDPndTrack", &trackArray);
 
     // same for recoHits
-    TFile *recoFile = new TFile("../../input/modulesAlTest/Lumi_recoMerged_100000.root");
+    TFile *recoFile = new TFile("Lumi_recoMerged_100000.root");
     TTree *recoTree = (TTree *)recoFile->Get("pndsim");
     TClonesArray *recoArray = new TClonesArray("PndSdsMergedHit");
     recoTree->SetBranchAddress("LMDHitsMerged", &recoArray);
+
+    // and for MC tracks
+    TFile *mcFile = new TFile("Lumi_MC_100000.root");
+    TTree *mcTree = (TTree *)mcFile->Get("pndsim");
+    TClonesArray *mcArray = new TClonesArray("PndSdsMCPoint");
+    recoTree->SetBranchAddress("LMDPoint", &mcArray);
 
     // how many events are in the track file?
     Long64_t nEvents = trackTree->GetEntries();
@@ -47,17 +38,22 @@ void convertRootTracks() {
     for (Long64_t event = 0; event < nEvents; event++) {
         trackArray->Clear();
         recoArray->Clear();
+        mcArray->Clear();
         trackTree->GetEntry(event);
         recoTree->GetEntry(event);
+        mcTree->GetEntry(event);
 
-        string evStr = std::to_string(event);
+        Int_t fittedTracksPerEvent = trackArray->GetEntriesFast();
+        Int_t recosPerEvent = recoArray->GetEntriesFast();
+        Int_t mctracksPerEvent = mcTree->GetEntriesFast();
 
-        Int_t tracksPerEvent = trackArray->GetEntriesFast();
-
-        // create empty json object which will hold this event
+        for(int i=0; i<mctracksPerEvent; i++){
+            cout << "feck oi \n";
+        }
+        break;
 
         // tracks loop per event
-        for (Int_t iTrack = 0; iTrack < tracksPerEvent; iTrack++) {
+        for (Int_t iTrack = 0; iTrack < fittedTracksPerEvent; iTrack++) {
             PndTrack *thisTrack = (PndTrack *)trackArray->At(iTrack);
 
             PndTrackCand thisCandidate = thisTrack->GetTrackCand();
@@ -70,6 +66,7 @@ void convertRootTracks() {
             FairTrackParP paramFirst = thisTrack->GetParamFirst();
             // FairTrackParP paramLast = thisTrack->GetParamLast();
 
+            //* fitted track
             double trackX = paramFirst.GetX();
             double trackY = paramFirst.GetY();
             double trackZ = paramFirst.GetZ();
@@ -78,9 +75,6 @@ void convertRootTracks() {
             double trackPY = paramFirst.GetPy();
             double trackPZ = paramFirst.GetPz();
             
-            // can also be done with GetPosition() and GetMomentum(), return TVector3!
-            auto thisEvent = json({});
-
             thisEvent.push_back({"trkPos", {trackX, trackY, trackZ}});
             thisEvent.push_back({"trkMom", {trackPX, trackPY, trackPZ}});
             
@@ -103,28 +97,22 @@ void convertRootTracks() {
 
                 int sensorID = addHit->GetSensorID();
 
-                // cout << "hitIndex: " << hitIndex << "\n";
-                // cout << "Original RecoHit Positions: " << xhit << ", " << yhit << ", " << zhit << "\n";
-                // cout << "-- Errors for this RecoHit: " << errxhit << ", " << erryhit << ", " << errzhit << "\n";
-
-                thisEvent["recoHits"].push_back({{"index", hitIndex}, {"sensorID", sensorID}, {"pos", {xhit, yhit, zhit}}});
+                thisEvent["recoHits"].push_back({{"index", hitIndex}, {"sensorID", sensorID}, {"pos", {xhit, yhit, zhit}}, {"err", {errxhit, erryhit, errzhit}}});
             }
-
-            outJson["events"].push_back(thisEvent);
 
             //*** skip remaining tracks, they are copies of the first
             break;
         }
-        // if (runIndex++ > 20) {
-        //     break;
-        // }
+        if (runIndex++ > 20) {
+            break;
+        }
     }
     //! dump to json here!
 
     // TODO: better target dir!
     // std::ofstream o("../../input/modulesAlTest/tracks_processed.json");
-    std::ofstream o("../../input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json");
-    o << std::setw(2) << outJson << std::endl;
+    // std::ofstream o("../../input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json");
+    // o << std::setw(2) << outJson << std::endl;
 
 
     cout << "all done!\n";

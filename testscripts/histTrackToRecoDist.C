@@ -40,7 +40,7 @@ void histTrackToRecoDist() {
     cout << "nEvents: " << nEvents << "\n";
     // int runIndex = 0;
 
-    TH1D hist("distance LMDPoint - MC track", "distance LMDPoint - MC track", 100, -1, 100);
+    TH1D hist("distance LMDPoint - MC track", "distance LMDPoint - MC track", 100, -1, -1);
 
     // event loop
     for (Long64_t event = 0; event < nEvents; event++) {
@@ -89,9 +89,9 @@ void histTrackToRecoDist() {
             Double_t pz = thisPoint->GetPzOut();
             TVector3 momentumOut(px, py, pz); 
 
-            if(pz < 14){
-                continue;
-            }
+            // if(pz < 14){
+            //     continue;
+            // }
 
             momentumOut *= 1.0/momentumOut.Mag();   // no /= available
             
@@ -123,9 +123,14 @@ void histTrackToRecoDist() {
             }
         }
 
-        // break;
     }
-    //! dump to json here!
+    // //! dump to json here!
+    // // TODO: better target dir!
+    // std::ofstream o("LMDPoints_processed.json");
+    // o << std::setw(2) << outJson << std::endl;
+
+    if(false){
+
 
     TCanvas canvas;
     canvas.cd();
@@ -135,9 +140,7 @@ void histTrackToRecoDist() {
     hist.Draw();
     canvas.SaveAs("dxdy.pdf");
 
-    // TODO: better target dir!
-    // std::ofstream o("../../input/modulesAlTest/tracks_processed.json");
-    // o << std::setw(2) << outJson << std::endl;
+    }
 
 
     cout << "all done!\n";
