@@ -237,6 +237,12 @@ class alignerModules:
             recoPosArr[i] = filteredTracks[i]['recoPos']
         return recoPosArr
     
+    def baseTransformMatrix(self, matrix, basisMatrix, inverse=False):
+        if inverse:
+            return basisMatrix @ matrix @ np.linalg.inv(basisMatrix)
+        else: 
+            return np.linalg.inv(basisMatrix) @ matrix @ basisMatrix
+    
     # one way function, the results are only important for matrix finder and are then discarded
     # filteredTracks are the tracks for a single module with a single reco hit!
     def getTrackPosFromTracksAndRecos(self, filteredTracks):
@@ -364,10 +370,12 @@ class alignerModules:
         for path in misalignmatrices:
             moduleMatrices[path] = np.array(self.reader.detectorMatrices[path]).reshape(4,4)
             misalignmatricesOriginal[path] = np.array(misalignmatricesOriginal[path]).reshape((4,4))
+            misalignmatricesOriginal[path][2,3] = 0.0
 
         # transform accoring to calculations
         for path in misalignmatrices:
             knurz = np.array(misalignmatrices[path]).reshape((4,4))
+            knurz[2,3] = 0.0
             modMat = moduleMatrices[path]
             mis = modMat @ knurz @ np.linalg.inv(modMat)
             misalignmatrices[path] = mis
@@ -382,37 +390,56 @@ class alignerModules:
 
         #! apply 23mu noise and multiple scattering
         allTracks = self.applyNoiseToRecos(allTracks, 23.0*1e-4, True)
-        # misalign 
-        # allTracks = self.transformRecos(allTracks, (misalignmatrices))
         
-        #! ====================  apply misalignment
         with open(misMatPath) as f:
             doot = json.load(f)
         
         for p in doot:
             mork = np.array(doot[p]).reshape((4,4))
+            mork[2,3] = 0.0
             modMat = lmdLocalMatrices[p]
             mis = modMat @ mork @ np.linalg.inv(modMat)
             doot[p] = mis
         
         # misalign 
-        allTracks = self.transformRecos(allTracks, (misalignmatrices))
-        
-        #* ============ This should look like real, MISaligned data now!
+        # pointBefore = allTracks[2]['recoHits'][0]['pos']
+        # print(f"before misalignment: {pointBefore}")
+       
+        # perform initial track finder
+        findTracksBeforeMisalignment = False
 
         modulePaths = self.reader.getModulePathsInSector(sector)
-        print(f'performing first track fit.')
-        for path in modulePaths:
-            recos = self.getAllRecosFromAllTracks(allTracks)
-            corrFitter = CorridorFitter(recos)
-            resultTracks = corrFitter.fitTracksSVD()
-            allTracks = self.updateTracks(allTracks, resultTracks)
+        
+        if findTracksBeforeMisalignment:
+            print(f'performing first track fit.')
+            for path in modulePaths:
+                recos = self.getAllRecosFromAllTracks(allTracks)
+                corrFitter = CorridorFitter(recos)
+                resultTracks = corrFitter.fitTracksSVD()
+                allTracks = self.updateTracks(allTracks, resultTracks)
+        
+        
+        #! ====================  apply misalignment
+        allTracks = self.transformRecos(allTracks, (doot))
+        
+        # pointAfter = allTracks[2]['recoHits'][0]['pos']
+        # print(f"after misalignment: {pointAfter}")
+        # print(f'difference: {(pointBefore-pointAfter)*1e4}')
+        
+        if not findTracksBeforeMisalignment:
+            print(f'performing first track fit.')
+            for path in modulePaths:
+                recos = self.getAllRecosFromAllTracks(allTracks)
+                corrFitter = CorridorFitter(recos)
+                resultTracks = corrFitter.fitTracksSVD()
+                allTracks = self.updateTracks(allTracks, resultTracks)
+
+        #* ============ This should look like real, MISaligned data now!
+
 
         #* allTracks now looks just like real data
 
-
         modulePaths = self.reader.getModulePathsInSector(0)
-        originalTracks = copy.deepcopy(allTracks)
 
         print('\n\n')
         print(f'===================================================================')
@@ -427,6 +454,7 @@ class alignerModules:
 
             print(f'avg trk positions:\n{np.average(trackPos, axis=0)}')
             print(f'avg reco positions:\n{np.average(recoPos, axis=0)}')
+            print(f'distance: {((np.average(trackPos, axis=0))-(np.average(recoPos, axis=0)))*1e4}')
 
             #! begin hist
             dVec = recoPos
@@ -471,22 +499,36 @@ class alignerModules:
             #? 1: get initial align matrices for 4 modules
             T0 = self.getMatrix(trackPos, recoPos)
             T1 = np.linalg.inv(T0)
-            # print(f'{path}:\n{T0*1e4}')
-            # print(f'{path} inverted:\n{T1*1e4}')
+
             print(f'naked T0:\n{T0*1e4}')
             print('after transform:')
-            matrix1 = T0
-            toModMat = moduleMatrices[path]
-            lmdMat = lmdLocalMatrices[path]
+            
+            # new way, T0 is in frame of LMDlocal
+            T0inPnd = self.baseTransformMatrix(T0, lmdLocalMatrices[path], True)
 
-            # transform matrix to module?
-            matrix10 = np.linalg.inv(lmdMat) @ np.linalg.inv(toModMat) @ matrix1 @ (toModMat) @ (lmdMat)
-            print(f'transformed normal:\n{matrix10*1e4}')
-            print(f'actual:\n{misalignmatricesOriginal[path]*1e4}')
-            print(f'\nDIFF:\n{(matrix10-misalignmatricesOriginal[path])*1e4}\n\n')
-            print(f' ------------- next -------------')
+            print(f'effin T0 in pnd:\n{T0inPnd*1e4}')
+            actualInModule = misalignmatricesOriginal[path]
+            actualInPnd = self.baseTransformMatrix(actualInModule, moduleMatrices[path], True)
+            print(f'effin actual in pnd:\n{actualInPnd*1e4}')
+            print(f'effin difference:\n{(actualInPnd-T0inPnd)*1e4}')
 
-        #* okay, fantastic, the matrices are identiy matrices. that means at least distance LMDPoint to mc track works 
+            warning = "\nYOU CAN NOT LOOK AT THE REAL MISALIGNMENT MARTIX ITSELF. the detector only sees the x-y projection, not the z component. if you move along the z axis and the x axis, the z-projection onto x is important! LOOK AT THE XY-PROJECTION OF THE REAL MISALIGNMENT MATRIX!!!\n\n"
+
+            print(warning)
+
+            # # old way
+            # matrix1 = T0
+            # toModMat = moduleMatrices[path]
+            # lmdMat = lmdLocalMatrices[path]
+
+            # # transform matrix to module?
+            # matrix10 = np.linalg.inv(lmdMat) @ np.linalg.inv(toModMat) @ matrix1 @ (toModMat) @ (lmdMat)
+            # print(f'transformed normal:\n{matrix10*1e4}')
+            # print(f'actual for {path}:\n{misalignmatricesOriginal[path]*1e4}')
+            # print(f'\nDIFF:\n{(matrix10-misalignmatricesOriginal[path])*1e4}\n\n')
+            # print(f' ------------- next -------------')
+
+        #* okay, fantastic, the matrices are identity matrices. that means at least distance LMDPoint to mc track works 
 
         if False:
 
