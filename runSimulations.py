@@ -549,7 +549,8 @@ if __name__ == "__main__":
         # alignerMod.alignICPold()
         # alignerMod.alignMillepede()
         alignerMod.prepareSynthData()
-        # alignerMod.alignICPiterative(0)
+        print(f'\n\n====================================================\n\n')
+        alignerMod.alignICPiterative(0)
         # alignerMod.alignICPold()
 
         done()
