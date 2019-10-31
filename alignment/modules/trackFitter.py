@@ -52,6 +52,7 @@ class CorridorFitter():
     def __init__(self, tracks):
         self.tracks = tracks
         self.nTrks = len(tracks)
+        self.useAnchor = False
 
     def fitTracks(self):
         print(f'fitting tracks...')
@@ -66,14 +67,24 @@ class CorridorFitter():
             thisTrackD = [ track.x[2], track.x[3], track.x[4] ]
             self.results.append([thisTrackO, thisTrackD])
 
+    def useAnchorPoint(self, point):
+        assert len(point) == 3
+        self.anchorPoint = point
+        self.useAnchor = True
+
     def fitTracksSVD(self):
 
         self.fittedTrackArr = np.zeros((self.nTrks, 2, 3))
 
         for i in range(self.nTrks):
 
+
             # cut fourth entry, sometimes this is the sensorID
             trackRecos = self.tracks[i][:, :3]
+            
+            if self.useAnchor:
+                trackRecos = np.vstack((self.anchorPoint, trackRecos))
+
             meanPoint = trackRecos.mean(axis=0)
 
             _, _, vv = np.linalg.svd(trackRecos - meanPoint)
