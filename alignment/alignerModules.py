@@ -321,15 +321,17 @@ class alignerModules:
         return allTracks
     
     
-    def prepareSynthDataOLD(self):
+    def prepareSynthDataOLD(self, sector):
+        
         synthData = self.reader.readSyntheticDate('testscripts/LMDPoints_processed.json')
-
         nMCtrks = len(synthData)
 
         # filter by sector 0
         sector0 = []
-        sector = 0
+        # sector = 0
         print(f'starting to sort {nMCtrks} tracks...')
+
+        # for sector in range(10):
 
         # select only corridor 0
         for event in synthData:
@@ -338,7 +340,7 @@ class alignerModules:
                 path = self.reader.getPathModuleFromSensorID( point[3] )
                 _, _, _, thissector = self.reader.getParamsFromModulePath(path)
                 
-                if thissector == 0:
+                if thissector == sector:
                     tempPoints.append(point)
             
             if len(tempPoints) == 4:
@@ -361,6 +363,8 @@ class alignerModules:
                 thisTrack['recoHits'].append(recoPoint)
 
             allTracks.append(thisTrack)
+
+        print(f'=== allTracks is now {len(allTracks)} entries long.')
 
         misMatPath = '/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json'
 
@@ -389,18 +393,10 @@ class alignerModules:
         #! ====================  apply misalignment
         allTracks = self.transformRecos(allTracks, (misalignmatrices))
 
-        print(allTracks[0])
-
         print(f'recos "misaligned". performing first track fit.')
 
 
         #! define anchor point
-        # this anchor point works good for sector 0
-        # anchorPoint = [-19.05, -0.0315, 0.0]
-
-        # anchorPoint = [-18.63243884, 0.0, 10.01077536]
-        
-        # anchorPoint = [-19.033, 0.0, 0.0]
 
         modulePaths = self.reader.getModulePathsInSector(sector)
         
@@ -412,16 +408,8 @@ class alignerModules:
         print(f'average shift of first four modules:')
         averageShift = mat/4.0
 
-        # averageShift = self.baseTransformMatrix(averageShift, np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4,)) )
-
         print(averageShift*1e4)
         
-        #! transform to LMDlocal
-        lmdLocalMatrices = {}
-        for path in misalignmatrices:
-            lmdLocalMatrices[path] = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
-        # allTracks = self.transformRecos(allTracks, lmdLocalMatrices, True)
-
         #! apply 23mu noise and multiple scattering
         # this works only if the points are transformed to LMD local!
         # allTracks = self.applyNoiseToRecos(allTracks, 23.0*1e-4, True)
@@ -430,19 +418,21 @@ class alignerModules:
         print(f'performing first track fit.')
         anchorPoint = [-18.93251088, 0.0, 2.51678065]
         # anchorPoint = [0.0, 0.0, -1107.5]
-        if True:
-            for path in modulePaths:
-                recos = self.getAllRecosFromAllTracks(allTracks)
-                corrFitter = CorridorFitter(recos)
-                corrFitter.useAnchorPoint(anchorPoint)
-                resultTracks = corrFitter.fitTracksSVD()
-                allTracks = self.updateTracks(allTracks, resultTracks)
         
+        for path in modulePaths:
+            recos = self.getAllRecosFromAllTracks(allTracks)
+            corrFitter = CorridorFitter(recos)
+            corrFitter.useAnchorPoint(anchorPoint)
+            resultTracks = corrFitter.fitTracksSVD()
+            allTracks = self.updateTracks(allTracks, resultTracks)
+    
         #* allTracks now look just like real data
+        print(f'track fit complete.')
+        print(f'getting original tracks copy.')
 
-
-        modulePaths = self.reader.getModulePathsInSector(0)
+        modulePaths = self.reader.getModulePathsInSector(sector)
         originalTracks = copy.deepcopy(allTracks)
+        print(f'got copy.')
 
         # these are the ideal positional matrices.
         moduleMatrices = {}
@@ -466,65 +456,17 @@ class alignerModules:
 
             trackPos, recoPos = self.dynamicCut(trackPos, recoPos, 5)
 
-            #! begin hist
-            # dVec = trackPos - recoPos
-            dVec = recoPos
-            # dVec = trackPos
-            print(dVec.shape)
-
-            import matplotlib
-            import matplotlib.pyplot as plt
-            from matplotlib.colors import LogNorm
-            
-            # plot difference hit array
-            fig = plt.figure(figsize=(16/2.54, 9/2.54))
-            
-            axis = fig.add_subplot(1,2,1)
-            axis.hist2d(dVec[:, 0]*1e4, dVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-300,300), (-300,300)))
-            axis.set_title(f'2D Distance\n{path}')
-            axis.yaxis.tick_right()
-            axis.yaxis.set_ticks_position('both')
-            axis.set_xlabel('dx [µm]')
-            axis.set_ylabel('dy [µm]')
-            axis.tick_params(direction='out')
-            axis.yaxis.set_label_position("right")
-
-            axis2 = fig.add_subplot(1,2,2)
-            axis2.hist(dVec[:, 2]*1e1, bins=50)#, range=((-300,300), (-300,300)))
-            axis2.set_title(f'z position\n{path}')
-            axis2.yaxis.tick_right()
-            axis2.yaxis.set_ticks_position('both')
-            axis2.set_xlabel('dx [mm]')
-            axis2.set_ylabel('dy [mm]')
-            axis2.tick_params(direction='out')
-            axis2.yaxis.set_label_position("right")
-
-            path1 = path.replace('/', '-')
-
-            # fig.show()
-            fig.savefig(f'output/alignmentModules/test/synth-old-{path1}.png')
-            plt.close(fig)
-            #! end hist
-
-            # print(f'avg distances:\n{np.average(dVec, axis=0)*1e4}')
-
             #? 1: get initial align matrices for 4 modules
             T0 = self.getMatrix(trackPos, recoPos, use2D)
             T1 = np.linalg.inv(T0)
-            # print(f'{path}:\n{T0*1e4}')
-            # print(f'{path} inverted:\n{T1*1e4}')
 
             print('after transform:')
             matrix1 = T0
-            print(T0*1e4)
+            # print(T0*1e4)
             toModMat = moduleMatrices[path]
 
             # transform matrix to module?
             matrix10 = (toModMat) @ matrix1 @ np.linalg.inv(toModMat)
-
-            # matrix10 = self.baseTransformMatrix(matrix1, np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4)), True)
-            # matrix10 = self.baseTransformMatrix(matrix10, toModMat, False)
-
             matrix10  = matrix10 + averageShift
             # print(f'transformed normal:\n{matrix10*1e4}')
             # print(f'actual:\n{misalignmatricesOriginal[path]*1e4}')
@@ -532,6 +474,13 @@ class alignerModules:
             print(f' ------------- next -------------')
 
         #* okay, fantastic, the matrices are identiy matrices. that means at least distance LMDPoint to mc track works 
+
+        print(f'\n\n\n')
+        print(f'===================================================================')
+        print(f'===================================================================')
+        print(f'===================================================================')
+        print(f'===================================================================')
+        print(f'\n\n\n')
 
         if True:
             print('we cancel early, the matrices above should be near identity matrices!')
@@ -1023,6 +972,88 @@ class alignerModules:
                 print(f'\nDIFF:\n{(matrix1-otherMatrix)*1e4}\n\n')
 
             return
+
+    def alignICPnew(self, sector=0):
+        np.set_printoptions(precision=3)
+        np.set_printoptions(suppress=True)
+
+
+        assert (sector > -1) and (sector < 10)
+
+        # get relevant module paths
+        modulePaths = self.reader.getModulePathsInSector(sector)
+
+        # make 4x4 matrices
+        moduleMatrices = {}
+        for path in modulePaths:
+            moduleMatrices[path] = np.array(self.reader.detectorMatrices[path]).reshape(4,4)
+
+        # get Reco Points from reader
+        allTracks = self.reader.getAllTracksInSector(sector)
+
+        anchorPoint = [-18.93251088, 0.0, 2.51678065]
+        # anchorPoint = [-18.93251088, 0.075, 2.51678065]
+
+        # do a first track fit, otherwise we have no starting tracks
+        print(f'performing first track fit.')
+        for path in modulePaths:
+            recos = self.getAllRecosFromAllTracks(allTracks)
+            corrFitter = CorridorFitter(recos)
+            corrFitter.useAnchorPoint(anchorPoint)
+            resultTracks = corrFitter.fitTracksSVD()
+            allTracks = self.updateTracks(allTracks, resultTracks)
+
+        #* -----------------  compute actual matrices
+        misMatPath = '/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json'
+        with open(misMatPath) as f:
+            misalignmatrices = json.load(f)
+        for p in misalignmatrices:
+            misalignmatrices[p] = np.array(misalignmatrices[p]).reshape((4,4))
+
+        mat = np.zeros((4,4))
+        for path in modulePaths:
+            thisMat = misalignmatrices[path]
+            mat = mat + thisMat
+        
+        print(f'average shift of first four modules:')
+        averageShift = mat/4.0
+        print(averageShift*1e4)
+
+        #* -----------------  end compute actual matrices
+
+        print('\n\n')
+        print(f'===================================================================')
+        print(f'Inital misalignment:')
+        print(f'===================================================================')
+        print('\n\n')
+
+        for path in modulePaths:
+            filteredTracks = self.getTracksOnModule(allTracks, path)
+            trackPos, recoPos = self.getTrackPosFromTracksAndRecos(filteredTracks)
+            trackPos, recoPos = self.dynamicCut(trackPos, recoPos, 5)
+
+            #? 1: get initial align matrices for 4 modules
+            T0 = self.getMatrix(trackPos, recoPos)
+
+            print('after transform:')
+            matrix1 = T0
+            toModMat = moduleMatrices[path]
+
+            # transform matrix to module?
+            matrix10 = (toModMat) @ matrix1 @ np.linalg.inv(toModMat)
+            # print(f'matrix (without avg. shift):\n{matrix10*1e4}')
+            matrix10 = matrix10 + averageShift
+            # print(f'actual:\n{misalignmatrices[path]*1e4}')
+            print(f'diff:\n{(matrix10 - misalignmatrices[path])*1e4}')
+            print(f' ------------- next -------------')
+
+        print(f'\n\n\n')
+        print(f'===================================================================')
+        print(f'===================================================================')
+        print(f'===================================================================')
+        print(f'===================================================================')
+        print(f'\n\n\n')
+
 
     def alignICPiterative(self, sector=0):
 

@@ -548,10 +548,14 @@ if __name__ == "__main__":
         alignerMod = alignerModules()
         # alignerMod.alignICPold()
         # alignerMod.alignMillepede()
-        # alignerMod.prepareSynthDataOLD()
+
+        for i in range(10):
+            alignerMod.prepareSynthDataOLD(i)
         # alignerMod.prepareSynthData()
         print(f'\n\n====================================================\n\n')
-        alignerMod.alignICPiterative(0)
+        # for i in range(10):
+            # alignerMod.alignICPnew(i)
+        # alignerMod.alignICPiterative(0)
         # alignerMod.alignICPold()
 
         done()

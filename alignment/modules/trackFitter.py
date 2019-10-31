@@ -50,9 +50,11 @@ class TrackFitter:
 
 class CorridorFitter():
     def __init__(self, tracks):
+        self.tracks = None
         self.tracks = tracks
-        self.nTrks = len(tracks)
+        self.nTrks = len(self.tracks)
         self.useAnchor = False
+        print(f'fitter called with {self.nTrks} tracks!')
 
     def fitTracks(self):
         print(f'fitting tracks...')
