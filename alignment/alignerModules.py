@@ -362,10 +362,6 @@ class alignerModules:
 
             allTracks.append(thisTrack)
 
-        #! apply 23mu noise and multiple scattering
-        # this works only if the points are transformed to LMD local!
-        # allTracks = self.applyNoiseToRecos(allTracks, 23.0*1e-4, True)
-
         misMatPath = '/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json'
 
         #! cheat hard here for now:
@@ -402,7 +398,9 @@ class alignerModules:
         # this anchor point works good for sector 0
         # anchorPoint = [-19.05, -0.0315, 0.0]
 
-        anchorPoint = [-18.63243884, 0.0, 10.01077536]
+        # anchorPoint = [-18.63243884, 0.0, 10.01077536]
+        
+        # anchorPoint = [-19.033, 0.0, 0.0]
 
         modulePaths = self.reader.getModulePathsInSector(sector)
         
@@ -413,9 +411,25 @@ class alignerModules:
         
         print(f'average shift of first four modules:')
         averageShift = mat/4.0
+
+        # averageShift = self.baseTransformMatrix(averageShift, np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4,)) )
+
         print(averageShift*1e4)
         
+        #! transform to LMDlocal
+        lmdLocalMatrices = {}
+        for path in misalignmatrices:
+            lmdLocalMatrices[path] = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
+        # allTracks = self.transformRecos(allTracks, lmdLocalMatrices, True)
+
+        #! apply 23mu noise and multiple scattering
+        # this works only if the points are transformed to LMD local!
+        # allTracks = self.applyNoiseToRecos(allTracks, 23.0*1e-4, True)
+        use2D = False
+
         print(f'performing first track fit.')
+        anchorPoint = [-18.93251088, 0.0, 2.51678065]
+        # anchorPoint = [0.0, 0.0, -1107.5]
         if True:
             for path in modulePaths:
                 recos = self.getAllRecosFromAllTracks(allTracks)
@@ -423,8 +437,9 @@ class alignerModules:
                 corrFitter.useAnchorPoint(anchorPoint)
                 resultTracks = corrFitter.fitTracksSVD()
                 allTracks = self.updateTracks(allTracks, resultTracks)
+        
+        #* allTracks now look just like real data
 
-        #* allTracks now looks just like real data
 
         modulePaths = self.reader.getModulePathsInSector(0)
         originalTracks = copy.deepcopy(allTracks)
@@ -494,17 +509,21 @@ class alignerModules:
             # print(f'avg distances:\n{np.average(dVec, axis=0)*1e4}')
 
             #? 1: get initial align matrices for 4 modules
-            T0 = self.getMatrix(trackPos, recoPos)
+            T0 = self.getMatrix(trackPos, recoPos, use2D)
             T1 = np.linalg.inv(T0)
             # print(f'{path}:\n{T0*1e4}')
             # print(f'{path} inverted:\n{T1*1e4}')
 
             print('after transform:')
             matrix1 = T0
+            print(T0*1e4)
             toModMat = moduleMatrices[path]
 
             # transform matrix to module?
             matrix10 = (toModMat) @ matrix1 @ np.linalg.inv(toModMat)
+
+            # matrix10 = self.baseTransformMatrix(matrix1, np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4)), True)
+            # matrix10 = self.baseTransformMatrix(matrix10, toModMat, False)
 
             matrix10  = matrix10 + averageShift
             # print(f'transformed normal:\n{matrix10*1e4}')
@@ -514,7 +533,7 @@ class alignerModules:
 
         #* okay, fantastic, the matrices are identiy matrices. that means at least distance LMDPoint to mc track works 
 
-        if False:
+        if True:
             print('we cancel early, the matrices above should be near identity matrices!')
             return
 
@@ -533,7 +552,7 @@ class alignerModules:
         for path in modulePaths:
             completeMatrices[path] = np.identity(4)
 
-        iterations = 10
+        iterations = 30
         #* ------------------------ begin iteration loop
         for _ in tqdm(range(iterations), desc='Iterating'):
 
@@ -547,7 +566,7 @@ class alignerModules:
                 # print(f'trackpos:\n{trackPos}\nrecopos:\n{recoPos}')
 
                 #? 1: get initial align matrices for 4 modules
-                T0 = self.getMatrix(trackPos, recoPos)
+                T0 = self.getMatrix(trackPos, recoPos, use2D)
                 T1 = np.linalg.inv(T0)
                 matrices[path] = T1
                 completeMatrices[path] = T1 @ completeMatrices[path]
@@ -598,7 +617,7 @@ class alignerModules:
                 newRecos[i] = self.transformRecoHit(newRecos[i], moduleMatrices[path])
 
             # get final alignment matrix
-            T0 = self.getMatrix(originalRecos, newRecos)
+            T0 = self.getMatrix(originalRecos, newRecos, True)
             simplyDerivedMatrices[path] = np.linalg.inv(T0)
             
 
@@ -1052,7 +1071,7 @@ class alignerModules:
         lmdLocalMatrices = {}
         for path in misalignmatrices:
             lmdLocalMatrices[path] = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
-        allTracks = self.transformRecos(allTracks, lmdLocalMatrices, True)
+        # allTracks = self.transformRecos(allTracks, lmdLocalMatrices, True)
 
         # #! ====================  apply misalignment
         # with open(misMatPath) as f:
@@ -1067,11 +1086,23 @@ class alignerModules:
         # # return 
         # allTracks = self.transformRecos(allTracks, (doot))
 
+        mat = np.zeros((4,4))
+        for path in modulePaths:
+            thisMat = misalignmatricesOriginal[path]
+            mat = mat + thisMat
+        
+        print(f'average shift of first four modules:')
+        averageShift = mat/4.0
+        print(averageShift*1e4)
+
+        anchorPoint = [-18.93251088, 0.075, 2.51678065]
+
         # do a first track fit, otherwise we have no starting tracks
         print(f'performing first track fit.')
         for path in modulePaths:
             recos = self.getAllRecosFromAllTracks(allTracks)
             corrFitter = CorridorFitter(recos)
+            corrFitter.useAnchorPoint(anchorPoint)
             resultTracks = corrFitter.fitTracksSVD()
             allTracks = self.updateTracks(allTracks, resultTracks)
 
@@ -1085,9 +1116,6 @@ class alignerModules:
             filteredTracks = self.getTracksOnModule(allTracks, path)
             trackPos, recoPos = self.getTrackPosFromTracksAndRecos(filteredTracks)
             trackPos, recoPos = self.dynamicCut(trackPos, recoPos, 5)
-
-            print(f'avg trk positions:\n{np.average(trackPos, axis=0)}')
-            print(f'avg reco positions:\n{np.average(recoPos, axis=0)}')
 
             #! begin hist
             dVec = recoPos
@@ -1136,15 +1164,16 @@ class alignerModules:
             # print(f'{path}:\n{T0*1e4}')
             # print(f'{path} inverted:\n{T1*1e4}')
 
-            print(f'naked T0:\n{T1*1e4}')
+            # print(f'naked T0:\n{T0*1e4}')
             print('after transform:')
-            matrix1 = T1
+            matrix1 = T0
             toModMat = moduleMatrices[path]
 
             # transform matrix to module?
             matrix10 = (toModMat) @ matrix1 @ np.linalg.inv(toModMat)
-            print(f'transformed normal:\n{matrix10*1e4}')
-            print(f'actual:\n{misalignmatricesOriginal[path]*1e4}')
+            matrix10 = matrix10 + averageShift
+            # print(f'transformed normal:\n{matrix10*1e4}')
+            # print(f'actual:\n{misalignmatricesOriginal[path]*1e4}')
             print(f'\nDIFF:\n{(matrix10-misalignmatricesOriginal[path])*1e4}\n\n')
             print(f' ------------- next -------------')
 
