@@ -8,6 +8,9 @@ import numpy as np
 import re
 import sys
 
+import matplotlib
+matplotlib.use('TkAgg')
+
 def getParamsFromModulePath(modulePath):
     # "/cave_1/lmd_root_0/half_1/plane_0/module_3"
     regex = r"/cave_(\d+)/lmd_root_(\d+)/half_(\d+)/plane_(\d+)/module_(\d+)"
@@ -58,5 +61,7 @@ if __name__ == "__main__":
     plt.legend()
 
     print(f'Entries total: {len(values)}')
-    fig.show()
-    input()
+    # fig.show()
+    fig.savefig(f'tempHistogram.png')
+    print(f'saved!')
+    # input()

@@ -125,9 +125,21 @@ class trackReader():
         result = copy.deepcopy([ x for x in self.trks if x['sector'] == sector ])
         return result
 
+    def transformPoint(self, point, matrix):
+        newPoint = np.ones(4)
+        newPoint[:3] = point
+        # print(newPoint)
+        newPoint = matrix @ newPoint
+        # print(newPoint)
+        return newPoint[:3]
+    
     def generatorMilleParameters(self):
 
         print(f'no of events: {len(self.trks)}')
+
+
+        # we transform to LMDlocal
+        matToLMD = np.array(self.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
 
         # TODO: use vectorized version to use numpy!
         # loop over all events
@@ -150,17 +162,27 @@ class trackReader():
                 half, plane, module, sector = self.getParamsFromModulePath(modulePath)
 
                 # create path to first module in this sector
-                pathFirstMod = f"/cave_1/lmd_root_0/half_{half}/plane_0/module_{module}"
+                # pathFirstMod = f"/cave_1/lmd_root_0/half_{half}/plane_0/module_{module}"
 
-                # get matrix to first module
-                matrixFirstMod = np.array(self.detectorMatrices[pathFirstMod]).reshape(4,4)
+                #* get matrix to first module
+                # matrixFirstMod = np.array(self.detectorMatrices[pathFirstMod]).reshape(4,4)
 
                 # transform recoHit and track origin
-                recoNew = self.transformPoint(recoPos, inv(matrixFirstMod))
-                trackOriNew = self.transformPoint(trackOri, inv(matrixFirstMod))
+                # recoNew = self.transformPoint(recoPos, inv(matrixFirstMod))
+                # trackOriNew = self.transformPoint(trackOri, inv(matrixFirstMod))
 
                 # track direction requires more work
-                trackDirPoint = self.transformPoint(trackOri + trackDir, inv(matrixFirstMod))
+                # trackDirPoint = self.transformPoint(trackOri + trackDir, inv(matrixFirstMod))
+                # trackDirNew = trackDirPoint - trackOriNew
+
+                #* transform all reco points and tracks to lmd local here
+
+                # transform recoHit and track origin
+                recoNew = self.transformPoint(recoPos, inv(matToLMD))
+                trackOriNew = self.transformPoint(trackOri, inv(matToLMD))
+
+                # track direction requires more work
+                trackDirPoint = self.transformPoint(trackOri + trackDir, inv(matToLMD))
                 trackDirNew = trackDirPoint - trackOriNew
 
                 # print(f'recoNew: {recoNew}')

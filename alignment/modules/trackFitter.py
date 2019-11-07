@@ -54,7 +54,7 @@ class CorridorFitter():
         self.tracks = tracks
         self.nTrks = len(self.tracks)
         self.useAnchor = False
-        print(f'fitter called with {self.nTrks} tracks!')
+        # print(f'fitter called with {self.nTrks} tracks!')
 
     def fitTracks(self):
         print(f'fitting tracks...')
@@ -79,7 +79,6 @@ class CorridorFitter():
         self.fittedTrackArr = np.zeros((self.nTrks, 2, 3))
 
         for i in range(self.nTrks):
-
 
             # cut fourth entry, sometimes this is the sensorID
             trackRecos = self.tracks[i][:, :3]
