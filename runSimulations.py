@@ -554,8 +554,10 @@ if __name__ == "__main__":
         
         # print(f'\n\n====================================================\n\n')
         
-        for i in range(1):
-            alignerMod.alignICP(i)
+        alignerMod.testICPalignWithOutlierDiscard()
+
+        # for i in range(1):
+            # alignerMod.alignICP(i)
         
         # alignerMod.alignICPiterative(0)
         # alignerMod.alignICPold()
