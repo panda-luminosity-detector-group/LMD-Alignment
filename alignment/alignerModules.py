@@ -45,6 +45,40 @@ class alignerModules:
         # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-noTrks.json'))
         # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
 
+    
+    #? cuts on track x,y direction
+    def dynamicTrackCut(self, newTracks, cutPercent=2, matrixToFoR=None):
+        
+        # transform them, if needed, to matrixToFoR
+
+        com = np.average(newTracks[:,1,:3], axis=0)
+
+        # shift newhit2 by com of differences
+        newhit2 = newTracks[:,1,:3] - com
+        newDist = np.power(newhit2[:, 0], 2) + np.power(newhit2[:, 1], 2)
+
+        cut = int(len(newhit2) * cutPercent/100.0)
+        newTracks = newTracks[newDist.argsort()]
+        newTracks = newTracks[:-cut]
+        return newTracks
+    
+    def dynamicCutOne(self, cloud, cutPercent=2, matrixToFoR=None):
+        
+        if matrixToFoR is not None:
+            # transform cloud hits here
+            pass
+        
+        com = np.average(cloud, axis=0)
+
+        # shift newhit2 by com of differences
+        newhit2 = cloud - com
+        newDist = np.power(newhit2[:, 0], 2) + np.power(newhit2[:, 1], 2)
+
+        cut = int(len(newhit2) * cutPercent/100.0)
+        cloud = cloud[newDist.argsort()]
+        cloud = cloud[:-cut]
+        return cloud
+    
     def dynamicCut(self, cloud1, cloud2, cutPercent=2):
 
         assert cloud1.shape == cloud2.shape
@@ -453,13 +487,201 @@ class alignerModules:
         # get relevant module paths
         modulePaths = self.reader.getModulePathsInSector(sector)
 
-        # make 4x4 matrices
-        moduleMatrices = {}
+        # make 4x4 matrices to module positions
+        moduleMatrices = np.zeros((4,4,4))
+        for i in range(len(modulePaths)):
+            path = modulePaths[i]
+            moduleMatrices[i] = np.array(self.reader.detectorMatrices[path]).reshape(4,4)
+
+        # calc average misalignment
+        #* -----------------  compute actual matrices
+        misMatPath = '/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json'
+        # misMatPath = '/media/DataEnc2TBRaid1/Arbeit/LMDscripts/input/misMat-aligned-1.00.json'
+        # misMatPath = '/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-singlePlane-1.00.json'
+        with open(misMatPath) as f:
+            misalignmatrices = json.load(f)
+        for p in misalignmatrices:
+            misalignmatrices[p] = np.array(misalignmatrices[p]).reshape((4,4))
+
+        mat = np.zeros((4,4))
         for path in modulePaths:
-            moduleMatrices[path] = np.array(self.reader.detectorMatrices[path]).reshape(4,4)
+            thisMat = misalignmatrices[path]
+            mat = mat + thisMat
+        
+        print(f'average shift of first four modules:')
+        averageShift = mat/4.0
+        print(averageShift*1e4)
+        #* -----------------  end compute actual matrices
 
         # get Reco Points from reader
         allTracks = self.reader.getAllTracksInSector(sector)
+
+        #! new format! np array with track oris, track dirs, and recos
+
+        nTrks = len(allTracks)
+        newTracks = np.ones((nTrks, 6, 4))
+
+        for i in range(nTrks):
+            newTracks[i, 0, :3] = allTracks[i]['trkPos']
+            newTracks[i, 1, :3] = allTracks[i]['trkMom']
+            newTracks[i, 2, :3] = allTracks[i]['recoHits'][0]['pos']
+            newTracks[i, 3, :3] = allTracks[i]['recoHits'][1]['pos']
+            newTracks[i, 4, :3] = allTracks[i]['recoHits'][2]['pos']
+            newTracks[i, 5, :3] = allTracks[i]['recoHits'][3]['pos']
+
+        # print(newTracks)
+
+        # transform all recos, ignore tracks
+
+        preTransform = True
+
+        if preTransform:
+            matToLMD = np.linalg.inv(np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4)))
+            for i in range(4):
+                newTracks[:,i + 2] = (matToLMD @ newTracks[:,i + 2].T).T
+
+        # do a first track fit, otherwise we have no starting tracks
+        recos = newTracks[:,2:6]
+
+        anchorPoint = [0.0, 0.0, -1110.5, 1.0]
+        if not preTransform:
+            matToLMD = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
+            anchorPoint = (matToLMD @ anchorPoint)
+
+        corrFitter = CorridorFitter(recos)
+        # corrFitter.useAnchorPoint(anchorPoint[:3])
+        resultTracks = corrFitter.fitTracksSVD()
+        
+        # update current tracks
+        newTracks[:,0,:3] = resultTracks[:,0]
+        newTracks[:,1,:3] = resultTracks[:,1]
+
+        newTracks = self.dynamicTrackCut(newTracks, 4)
+        
+        if True:
+            #! begin hist
+            import matplotlib
+            import matplotlib.pyplot as plt
+            from matplotlib.colors import LogNorm
+            
+            # plot difference hit array
+            fig = plt.figure(figsize=(16/2.54, 9/2.54))
+            
+            axis = fig.add_subplot(1,2,1)
+            axis.hist2d(newTracks[:, 1, 0]*1e4, newTracks[:, 1, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-300,300), (-300,300)))
+            axis.set_title(f'px vs py')
+            axis.yaxis.tick_left()
+            # axis.yaxis.set_ticks_position('both')
+            axis.set_xlabel('px [µm]')
+            axis.set_ylabel('py [µm]')
+            axis.tick_params(direction='out')
+            axis.yaxis.set_label_position("left")
+
+            axis2 = fig.add_subplot(1,2,2)
+            axis2.hist(newTracks[:, 1, 2]*1e4, bins=50)#, range=((-300,300), (-300,300)))
+            axis2.set_title(f'pz')
+            axis2.yaxis.tick_right()
+            # axis2.yaxis.set_ticks_position('both')
+            axis2.set_xlabel('pz [µm]')
+            axis2.set_ylabel('count')
+            # axis2.tick_params(direction='out')
+            axis2.yaxis.set_label_position("right")
+
+            fig.tight_layout()
+            fig.savefig(f'output/alignmentModules/test/trackDirections.png')
+            plt.close(fig)
+            #! end hist
+        
+        
+        iterations = 10
+        for iIteration in tqdm(range(iterations)):
+
+            # newTracks = self.dynamicTrackCut(newTracks, 4)
+
+            # 4 planes per sector
+            for i in range(4):
+                trackPosArr = newTracks[:, 0, :3]
+                trackDirArr = newTracks[:, 1, :3]
+                recoPosArr = newTracks[:, 2+i, :3]
+
+                # norm momentum vectors, this is important for the distance formula!
+                trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+
+                # vectorized distance calculation
+                tempV1 = (trackPosArr - recoPosArr)
+                tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
+                dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
+                
+                # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+                pIntersection = recoPosArr+dVec
+                
+                T0 = self.getMatrix(pIntersection, recoPosArr, True)
+
+                # print('after transform:')
+                T0inv = np.linalg.inv(T0)
+
+                # transform recos
+                newTracks[:, i + 2] = (T0inv @ newTracks[:, i + 2].T).T
+
+            # do track fit
+            recos = newTracks[:,2:6]
+            
+            corrFitter = CorridorFitter(recos)
+            resultTracks = corrFitter.fitTracksSVD()
+            
+            # update current tracks
+            newTracks[:,0,:3] = resultTracks[:,0]
+            newTracks[:,1,:3] = resultTracks[:,1]
+
+
+        # 4 planes per sector
+        for i in range(4):
+            trackPosArr = newTracks[:, 0, :3]
+            trackDirArr = newTracks[:, 1, :3]
+            recoPosArr = newTracks[:, 2+i, :3]
+
+            # norm momentum vectors, this is important for the distance formula!
+            trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+
+            # vectorized distance calculation
+            tempV1 = (trackPosArr - recoPosArr)
+            tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
+            dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
+            
+            # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
+            pIntersection = recoPosArr+dVec
+            
+            T0 = self.getMatrix(pIntersection, recoPosArr, True)
+
+            # print('after transform:')
+            T0inv = np.linalg.inv(T0)
+
+            toModMat = moduleMatrices[i]
+
+            # print(f'matrix:')
+            # print(T0inPnd*1e4)
+            # print(f'diff:\n{(T0inPnd - misalignmatrices[path])*1e4}')
+            # print(f'total matrix:\n{totalInPnd*1e4}')
+            # print(f'actual matrix:\n{misalignmatrices[path]*1e4}')
+
+            if preTransform:
+                T0inv = T0inv + averageShift
+                print(f'\nWITH previous trafo, better diff:\n{(T0inv - misalignmatrices[modulePaths[i]])*1e4}')
+            else:
+                T0inPnd = np.linalg.inv(toModMat) @ T0inv @ (toModMat)
+                T0inPnd = T0inPnd + averageShift
+                print(f'\nno previous trafo, better diff:\n{(T0inPnd - misalignmatrices[modulePaths[i]])*1e4}')
+            # print(f' ------------- next -------------')
+            
+        
+        return
+
+
+        #! ============================================
+        #! ============================================
+        #! ============= OLD FORMAT BELOW =============
+        #! ============================================
+        #! ============================================
 
         # this one works, but I prefer to go a different way
         # anchorPoint = [-18.93251088, 0.0, 2.51678065]
@@ -478,7 +700,7 @@ class alignerModules:
         resultTracks = corrFitter.fitTracksSVD()
         allTracks = self.updateTracks(allTracks, resultTracks)
 
-        # first track fit is done, I have basic tracks and recos now 
+        #* first track fit is done, I have basic tracks and recos now 
 
         # TODO: move this to the comparator, it's the only one who is allowed to cheat. same goes for the stuff down below
         #* -----------------  compute actual matrices
@@ -498,7 +720,6 @@ class alignerModules:
         print(f'average shift of first four modules:')
         averageShift = mat/4.0
         print(averageShift*1e4)
-
         #* -----------------  end compute actual matrices
 
         print('\n\n')
@@ -542,21 +763,12 @@ class alignerModules:
         print(f'===================================================================')
         print(f'\n\n\n')
 
-        #! now, introduce some real magic: discard outliers!
-
-        # first: hist tracks somehow, what ARE the outliers?
-        # tracks all have a starting point and a direction, and the easiest way would be to hist px and py for tracks (tracks are normalized, so I can ignore pz for now)
-
-        # okay, that was dump. I must do this in a frame of reference I know, like LMDlocal
-
-        #! begin hist
+        #* now, introduce some real magic: discard outliers!
 
         nTrks = len(allTracks)
 
         trkPosVec = np.ones((len(allTracks), 4))
         trkMomVec = np.ones((len(allTracks), 4))
-
-        print(allTracks[0])
 
         for i in range(len(allTracks)):
             trkPosVec[i, 0] = allTracks[i]['trkPos'][0]
@@ -572,21 +784,21 @@ class alignerModules:
 
         matToLMD = np.linalg.inv(np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape(4,4))
 
-        print('trkPosVec:')
-        print(trkPosVec)
-        print('trkMomVec:')
-        print(trkMomVec)
-        print('matToLMD:')
-        print(matToLMD)
+        # print('trkPosVec:')
+        # print(trkPosVec)
+        # print('trkMomVec:')
+        # print(trkMomVec)
+        # print('matToLMD:')
+        # print(matToLMD)
         
-        print('transformed:')
+        # print('transformed:')
 
         trackDirPoint = np.ones((nTrks, 4))
         # ignore homogenous coordinate!
         trackDirPoint[:, :3] = trkPosVec[:, :3] + trkMomVec[:, :3]
 
-        print('trackDirPoint:')
-        print(trackDirPoint)
+        # print('trackDirPoint:')
+        # print(trackDirPoint)
 
         # transform track origins
         newtrkPosVec = (matToLMD @ trkPosVec.T).T
@@ -596,12 +808,20 @@ class alignerModules:
         # ignore homogenous coordinate!
         newTrackDirVec[:, :3] = newtrackDirPoint[:, :3] - newtrkPosVec[:, :3]
         
-        print('newtrkPosVec')
-        print(newtrkPosVec)
-        print('newtrackDirPoint')
-        print(newtrackDirPoint)
-        print('newTrackDirVec')
-        print(newTrackDirVec)
+        # apply dynamic cut
+        # newTrackDirVec = self.dynamicCutOne(newTrackDirVec, 5)
+        
+        # apply forward momentum cut
+        # newTrackDirVec = newTrackDirVec[newTrackDirVec[:,2] > 0.99996]
+        
+        # print('newtrkPosVec')
+        # print(newtrkPosVec)
+        # print('newtrackDirPoint')
+        # print(newtrackDirPoint)
+        # print('newTrackDirVec')
+        # print(newTrackDirVec)
+        
+        #! begin hist
 
         import matplotlib
         import matplotlib.pyplot as plt
@@ -611,28 +831,25 @@ class alignerModules:
         fig = plt.figure(figsize=(16/2.54, 9/2.54))
         
         axis = fig.add_subplot(1,2,1)
-        axis.hist2d(trkMomVec[:, 0]*1e4, trkMomVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-300,300), (-300,300)))
+        axis.hist2d(newTrackDirVec[:, 0]*1e4, newTrackDirVec[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-300,300), (-300,300)))
         axis.set_title(f'px vs py')
-        axis.yaxis.tick_right()
-        axis.yaxis.set_ticks_position('both')
-        axis.set_xlabel('dx [µm]')
-        axis.set_ylabel('dy [µm]')
+        axis.yaxis.tick_left()
+        # axis.yaxis.set_ticks_position('both')
+        axis.set_xlabel('px [µm]')
+        axis.set_ylabel('py [µm]')
         axis.tick_params(direction='out')
-        axis.yaxis.set_label_position("right")
+        axis.yaxis.set_label_position("left")
 
         axis2 = fig.add_subplot(1,2,2)
-        axis2.hist(trkMomVec[:, 2]*1e4, bins=50)#, range=((-300,300), (-300,300)))
+        axis2.hist(newTrackDirVec[:, 2]*1e4, bins=50)#, range=((-300,300), (-300,300)))
         axis2.set_title(f'pz')
         axis2.yaxis.tick_right()
-        axis2.yaxis.set_ticks_position('both')
-        axis2.set_xlabel('dx [µm]')
-        axis2.set_ylabel('dy [µm]')
-        axis2.tick_params(direction='out')
+        # axis2.yaxis.set_ticks_position('both')
+        axis2.set_xlabel('pz [µm]')
+        axis2.set_ylabel('count')
+        # axis2.tick_params(direction='out')
         axis2.yaxis.set_label_position("right")
 
-        path1 = path.replace('/', '-')
-
-        # fig.show()
         fig.tight_layout()
         fig.savefig(f'output/alignmentModules/test/trackDirections.png')
         plt.close(fig)
