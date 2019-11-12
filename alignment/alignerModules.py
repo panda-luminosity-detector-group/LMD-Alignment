@@ -445,7 +445,7 @@ class alignerModules:
         print('\n\n')
 
         # np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
-        np.set_printoptions(precision=3)
+        np.set_printoptions(precision=6)
         np.set_printoptions(suppress=True)
 
         for path in modulePaths:
@@ -479,7 +479,7 @@ class alignerModules:
         return
 
     def testICPalignWithOutlierDiscard(self, sector=0):
-        np.set_printoptions(precision=3)
+        np.set_printoptions(precision=6)
         np.set_printoptions(suppress=True)
 
         assert (sector > -1) and (sector < 10)
@@ -508,9 +508,9 @@ class alignerModules:
             thisMat = misalignmatrices[path]
             mat = mat + thisMat
         
-        print(f'average shift of first four modules:')
+        # print(f'average shift of first four modules:')
         averageShift = mat/4.0
-        print(averageShift*1e4)
+        # print(averageShift*1e4)
         #* -----------------  end compute actual matrices
 
         # get Reco Points from reader
@@ -558,45 +558,46 @@ class alignerModules:
 
         newTracks = self.dynamicTrackCut(newTracks, 4)
         
-        if True:
-            #! begin hist
-            import matplotlib
-            import matplotlib.pyplot as plt
-            from matplotlib.colors import LogNorm
-            
-            # plot difference hit array
-            fig = plt.figure(figsize=(16/2.54, 9/2.54))
-            
-            axis = fig.add_subplot(1,2,1)
-            axis.hist2d(newTracks[:, 1, 0]*1e4, newTracks[:, 1, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-300,300), (-300,300)))
-            axis.set_title(f'px vs py')
-            axis.yaxis.tick_left()
-            # axis.yaxis.set_ticks_position('both')
-            axis.set_xlabel('px [µm]')
-            axis.set_ylabel('py [µm]')
-            axis.tick_params(direction='out')
-            axis.yaxis.set_label_position("left")
-
-            axis2 = fig.add_subplot(1,2,2)
-            axis2.hist(newTracks[:, 1, 2]*1e4, bins=50)#, range=((-300,300), (-300,300)))
-            axis2.set_title(f'pz')
-            axis2.yaxis.tick_right()
-            # axis2.yaxis.set_ticks_position('both')
-            axis2.set_xlabel('pz [µm]')
-            axis2.set_ylabel('count')
-            # axis2.tick_params(direction='out')
-            axis2.yaxis.set_label_position("right")
-
-            fig.tight_layout()
-            fig.savefig(f'output/alignmentModules/test/trackDirections.png')
-            plt.close(fig)
-            #! end hist
-        
-        
         iterations = 10
-        for iIteration in tqdm(range(iterations)):
+        for iIteration in (range(iterations)):
 
-            # newTracks = self.dynamicTrackCut(newTracks, 4)
+            if True:
+                #! begin hist
+                import matplotlib
+                import matplotlib.pyplot as plt
+                from matplotlib.colors import LogNorm
+                
+                # plot difference hit array
+                fig = plt.figure(figsize=(16/2.54, 9/2.54))
+                
+                axis = fig.add_subplot(1,2,1)
+                axis.hist2d(newTracks[:, 1, 0]*1e4, newTracks[:, 1, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-300,300), (-300,300)))
+                axis.set_title(f'px vs py')
+                axis.yaxis.tick_left()
+                # axis.yaxis.set_ticks_position('both')
+                axis.set_xlabel('px [µm]')
+                axis.set_ylabel('py [µm]')
+                axis.tick_params(direction='out')
+                axis.yaxis.set_label_position("left")
+
+                axis2 = fig.add_subplot(1,2,2)
+                axis2.hist(newTracks[:, 1, 2]*1e4, bins=50)#, range=((-300,300), (-300,300)))
+                axis2.set_title(f'pz')
+                axis2.yaxis.tick_right()
+                # axis2.yaxis.set_ticks_position('both')
+                axis2.set_xlabel('pz [µm]')
+                axis2.set_ylabel('count')
+                # axis2.tick_params(direction='out')
+                axis2.yaxis.set_label_position("right")
+
+                fig.tight_layout()
+                fig.savefig(f'output/alignmentModules/test/trackDirections-it{iIteration}.png')
+                plt.close(fig)
+                #! end hist
+
+            # newTracks = self.dynamicTrackCut(newTracks, 1)
+            print(f'iteration {iIteration} entry:')
+            print(newTracks[0])
 
             # 4 planes per sector
             for i in range(4):
@@ -620,19 +621,22 @@ class alignerModules:
                 # print('after transform:')
                 T0inv = np.linalg.inv(T0)
 
+                print(f'got matrix:\n{T0inv*1e4}')
+
                 # transform recos
                 newTracks[:, i + 2] = (T0inv @ newTracks[:, i + 2].T).T
 
             # do track fit
-            recos = newTracks[:,2:6]
-            
-            corrFitter = CorridorFitter(recos)
+            corrFitter = CorridorFitter(newTracks[:,2:6])
             resultTracks = corrFitter.fitTracksSVD()
             
+            print(f'fitted tracks:\n{resultTracks[:2]}')
+
             # update current tracks
             newTracks[:,0,:3] = resultTracks[:,0]
             newTracks[:,1,:3] = resultTracks[:,1]
-
+            
+            
 
         # 4 planes per sector
         for i in range(4):
@@ -1361,26 +1365,17 @@ class alignerModules:
             return
 
     def getMatrix(self, trackPositions, recoPositions, use2D=False):
-        arrayOne = np.array(trackPositions)
-        arrayTwo = np.array(recoPositions)
 
         # use 2D, use only in LMD local!
         if use2D:
-
-            # use 2D values
-            arrayOne = arrayOne[..., :2]
-            arrayTwo = arrayTwo[..., :2]
-
-            T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
+            T, _, _ = icp.best_fit_transform(trackPositions[..., :2], recoPositions[..., :2])
 
             # homogenize
             resultMat = np.identity(4)
             resultMat[:2, :2] = T[:2, :2]
             resultMat[:2, 3] = T[:2, 2]
+            return resultMat
 
         else:
-            T, _, _ = icp.best_fit_transform(arrayOne, arrayTwo)
-            resultMat = T
-
-        return resultMat
-    
+            T, _, _ = icp.best_fit_transform(trackPositions, recoPositions)
+            return T
