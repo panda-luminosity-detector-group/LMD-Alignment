@@ -12,7 +12,6 @@ import copy
 import json
 import numpy as np
 import pyMille
-import random
 import re
 import sys
 
@@ -96,55 +95,6 @@ class alignerModules:
         
         return tempTracks
 
-
-    def dynamicCutOne(self, cloud, cutPercent=2, matrixToFoR=None):
-        
-        if matrixToFoR is not None:
-            # transform cloud hits here
-            pass
-        
-        com = np.average(cloud, axis=0)
-
-        # shift newhit2 by com of differences
-        newhit2 = cloud - com
-        newDist = np.power(newhit2[:, 0], 2) + np.power(newhit2[:, 1], 2)
-
-        cut = int(len(newhit2) * cutPercent/100.0)
-        cloud = cloud[newDist.argsort()]
-        cloud = cloud[:-cut]
-        return cloud
-    
-    # def dynamicCut(self, cloud1, cloud2, cutPercent=2):
-
-    #     assert cloud1.shape == cloud2.shape
-
-    #     if cutPercent == 0:
-    #         return cloud1, cloud2
-
-    #     # calculate center of mass of differences
-    #     dRaw = cloud2 - cloud1
-    #     com = np.average(dRaw, axis=0)
-
-    #     # shift newhit2 by com of differences
-    #     newhit2 = cloud2 - com
-
-    #     # calculate new distance for cut
-    #     dRaw = newhit2 - cloud1
-    #     newDist = np.power(dRaw[:, 0], 2) + np.power(dRaw[:, 1], 2)
-
-    #     # sort by distance and cut some percent from start and end (discard outliers)
-    #     cut = int(len(cloud1) * cutPercent/100.0)
-        
-    #     # sort by new distance
-    #     cloud1 = cloud1[newDist.argsort()]
-    #     cloud2 = cloud2[newDist.argsort()]
-        
-    #     # cut off largest distances, NOT lowest
-    #     cloud1 = cloud1[:-cut]
-    #     cloud2 = cloud2[:-cut]
-
-    #     return cloud1, cloud2
-
     #* this is the best one yet. out-source the histogram stuff to the comparator and calculate anchor points, then you are done!
     # FIXME: oh and preTransform only works for sector 0, fix that
     def testICPalignWithOutlierDiscard(self, sector=0):
@@ -212,7 +162,6 @@ class alignerModules:
         # newTracks = newTracks[:10000]
 
         # transform all recos, ignore tracks
-
         if preTransform:
             matToLMD = np.linalg.inv(np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4)))
             for i in range(4):
@@ -302,12 +251,16 @@ class alignerModules:
         for i in range(4):
             toModMat = moduleMatrices[i]
             if preTransform:
-                totalMatrices[i] = totalMatrices[i] + averageShift
-                print(f'\nWITH previous trafo, total diff:\n{(totalMatrices[i] - misalignmatrices[modulePaths[i]])*1e4}')
+                # totalMatrices[i] = totalMatrices[i] + averageShift
+                dMat = totalMatrices[i] - misalignmatrices[modulePaths[i]]
+                print(f'\nWITH previous trafo, total diff:\n{(dMat)*1e4}')
+                yield modulePaths[i], dMat
             else:
                 totalMatrices[i] = np.linalg.inv(toModMat) @ totalMatrices[i] @ (toModMat)
-                totalMatrices[i] = totalMatrices[i] + averageShift
-                print(f'\nno previous trafo, better diff:\n{(totalMatrices[i] - misalignmatrices[modulePaths[i]])*1e4}')
+                # totalMatrices[i] = totalMatrices[i] + averageShift
+                dMat = totalMatrices[i] - misalignmatrices[modulePaths[i]]
+                print(f'\nno previous trafo, better diff:\n{(dMat)*1e4}')
+                yield modulePaths[i], dMat
             print(f' ------------- next -------------')
         
         return

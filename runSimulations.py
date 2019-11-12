@@ -547,8 +547,20 @@ if __name__ == "__main__":
         print(f'Testing...')
         alignerMod = alignerModules()
 
+        results = {}
+
         for i in range(10):
-            alignerMod.testICPalignWithOutlierDiscard(i)
+            for i, j in alignerMod.testICPalignWithOutlierDiscard(i):
+                results[i] = j
+
+        print('good heckins! just look at the time!')
+        print(results)
+
+        for i in results:
+            results[i] = np.ndarray.tolist(np.ndarray.flatten(results[i]))
+
+        with open('results-modAlign-avgNotKnown.json', 'w') as f:
+            json.dump(results, f, indent=2)
 
         done()
 

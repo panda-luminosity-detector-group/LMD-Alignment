@@ -33,6 +33,7 @@ class trackReader():
             synthData = json.load(f)
         return synthData
 
+    # TODO: deprecate and simplify reco format
     def readTracksFromJson(self, filename, sector=-1):
         with open(filename, 'r') as infile:
             self.trks = json.load(infile)['events']
