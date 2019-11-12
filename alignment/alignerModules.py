@@ -516,6 +516,8 @@ class alignerModules:
         print(f'\n\n\n')
         return
 
+    #* this is the best one yet. out-source the histogram stuff to the comparator and calculate anchor points, then you are done!
+    # FIXME: oh and preTransform only works for sector 0, fix that
     def testICPalignWithOutlierDiscard(self, sector=0):
 
         print(f'==========================================')
@@ -524,8 +526,8 @@ class alignerModules:
         print(f'')
         print(f'==========================================')
 
-        preTransform = True
-        histDat = True
+        preTransform = False
+        histDat = False
 
         np.set_printoptions(precision=6)
         np.set_printoptions(suppress=True)
@@ -578,7 +580,7 @@ class alignerModules:
             newTracks[i, 5, :3] = allTracks[i]['recoHits'][3]['pos']
 
         # use only N tracks:
-        newTracks = newTracks[:10000]
+        # newTracks = newTracks[:10000]
 
         # transform all recos, ignore tracks
 
@@ -590,12 +592,38 @@ class alignerModules:
         # do a first track fit, otherwise we have no starting tracks
         recos = newTracks[:,2:6]
 
-        # anchor for sector0
+        # anchor for sector0 - DONE
         # anchorPoint = [0.0, 0.0, -1110.5, 1.0]
         
-        # anchor for sector1
-        anchorPoint = [0.0, 0.0, -1110.5, 1.0]
+        # anchor for sector1 - DONE
+        # anchorPoint = [0.0, 0.0, -1111.0, 1.0]
         
+        # anchor for sector2 - DONE
+        # anchorPoint = [0.0, 0.0, -1116.0, 1.0]
+        
+        # anchor for sector3 - DONE
+        # anchorPoint = [0.0, 0.0, -1125.0, 1.0]
+        
+        # anchor for sector4 - DONE
+        #anchorPoint = [0.0, 0.0, -1124.0, 1.0]
+        
+        # anchor for sector5 - DONE
+        # anchorPoint = [0.0, 0.0, -1115.0, 1.0]
+        
+        # anchor for sector6 - DONE
+        # anchorPoint = [0.0, 0.0, -1116.0, 1.0]
+        
+        # anchor for sector7 - DONE
+        # anchorPoint = [0.0, 0.0, -1122.0, 1.0]
+        
+        # anchor for sector8 - DONE
+        # anchorPoint = [0.0, 0.0, -1121.0, 1.0]
+        
+        # anchor for sector9 - DONE
+        # anchorPoint = [0.0, 0.0, -1116.0, 1.0]
+        
+
+        #* =========== preapare raw data
         
         if not preTransform:
             matToLMD = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
@@ -616,6 +644,7 @@ class alignerModules:
 
         newTracks = self.dynamicTrackCut(newTracks, 5)
         
+        #* =========== iterate cuts and calculation
         iterations = 5
         for iIteration in tqdm(range(iterations)):
 
@@ -699,7 +728,6 @@ class alignerModules:
 
                     #! end hist
 
-
                 # switch point cloud order, we want FROM tracks TO recos
                 T0inv = self.getMatrix(recoPosArr, pIntersection, True)
 
@@ -720,6 +748,7 @@ class alignerModules:
             newTracks[:,0,:3] = resultTracks[:,0]
             newTracks[:,1,:3] = resultTracks[:,1]
             
+        #* =========== store matrices
         # 4 planes per sector
         for i in range(4):
             toModMat = moduleMatrices[i]
