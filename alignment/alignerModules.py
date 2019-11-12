@@ -592,45 +592,26 @@ class alignerModules:
         # do a first track fit, otherwise we have no starting tracks
         recos = newTracks[:,2:6]
 
-        # anchor for sector0 - DONE
-        # anchorPoint = [0.0, 0.0, -1110.5, 1.0]
-        
-        # anchor for sector1 - DONE
-        # anchorPoint = [0.0, 0.0, -1111.0, 1.0]
-        
-        # anchor for sector2 - DONE
-        # anchorPoint = [0.0, 0.0, -1116.0, 1.0]
-        
-        # anchor for sector3 - DONE
-        # anchorPoint = [0.0, 0.0, -1125.0, 1.0]
-        
-        # anchor for sector4 - DONE
-        #anchorPoint = [0.0, 0.0, -1124.0, 1.0]
-        
-        # anchor for sector5 - DONE
-        # anchorPoint = [0.0, 0.0, -1115.0, 1.0]
-        
-        # anchor for sector6 - DONE
-        # anchorPoint = [0.0, 0.0, -1116.0, 1.0]
-        
-        # anchor for sector7 - DONE
-        # anchorPoint = [0.0, 0.0, -1122.0, 1.0]
-        
-        # anchor for sector8 - DONE
-        # anchorPoint = [0.0, 0.0, -1121.0, 1.0]
-        
-        # anchor for sector9 - DONE
-        # anchorPoint = [0.0, 0.0, -1116.0, 1.0]
-        
+        anchorPoints = np.zeros((10,4))
+        anchorPoints[0] = [0.0, 0.0, -1110.5, 1.0]
+        anchorPoints[1] = [0.0, 0.0, -1111.0, 1.0]
+        anchorPoints[2] = [0.0, 0.0, -1116.0, 1.0]
+        anchorPoints[3] = [0.0, 0.0, -1125.0, 1.0]
+        anchorPoints[4] = [0.0, 0.0, -1124.0, 1.0]
+        anchorPoints[5] = [0.0, 0.0, -1115.0, 1.0]
+        anchorPoints[6] = [0.0, 0.0, -1116.0, 1.0]
+        anchorPoints[7] = [0.0, 0.0, -1122.0, 1.0]
+        anchorPoints[8] = [0.0, 0.0, -1121.0, 1.0]
+        anchorPoints[9] = [0.0, 0.0, -1116.0, 1.0]
 
         #* =========== preapare raw data
-        
+
         if not preTransform:
             matToLMD = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
-            anchorPoint = (matToLMD @ anchorPoint)
+            anchorPoints[sector] = (matToLMD @ anchorPoints[sector])
 
         corrFitter = CorridorFitter(recos)
-        corrFitter.useAnchorPoint(anchorPoint[:3])
+        corrFitter.useAnchorPoint(anchorPoints[sector][:3])
         resultTracks = corrFitter.fitTracksSVD()
         
         # update current tracks

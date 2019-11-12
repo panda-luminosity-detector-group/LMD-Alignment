@@ -553,8 +553,8 @@ if __name__ == "__main__":
             # alignerMod.prepareSynthDataOLD(i)
         
         # print(f'\n\n====================================================\n\n')
-        # for i in range(10):
-        alignerMod.testICPalignWithOutlierDiscard(9)
+        for i in range(10):
+            alignerMod.testICPalignWithOutlierDiscard(i)
 
         # for i in range(1):
             # alignerMod.alignICP(i)
