@@ -546,21 +546,9 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         alignerMod = alignerModules()
-        # alignerMod.alignICPold()
-        # alignerMod.alignMillepede()
 
-        # for i in range(1):
-            # alignerMod.prepareSynthDataOLD(i)
-        
-        # print(f'\n\n====================================================\n\n')
         for i in range(10):
             alignerMod.testICPalignWithOutlierDiscard(i)
-
-        # for i in range(1):
-            # alignerMod.alignICP(i)
-        
-        # alignerMod.alignICPiterative(0)
-        # alignerMod.alignICPold()
 
         done()
 

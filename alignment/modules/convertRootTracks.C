@@ -4,21 +4,6 @@
 
 using nlohmann::json;
 
-struct recoPoint {
-    int hitIndex;
-    double x, y, z;
-    double ex, ey, ez;
-};
-
-struct track3Dinfo {
-    double tx, ty, tz;
-    double px, py, pz;
-    std::vector<int> hitIndices;
-
-    // this info is only for cross checks if the python library can read the correct reco points
-    std::vector<recoPoint> recoPoints;
-};
-
 void convertRootTracks() {
     //*** output json
     json outJson;

@@ -9,19 +9,41 @@ void convertMergedHits() {
     json outJson;
 
     // same for recoHits
-    TFile *recoFile = new TFile("../../input/modulesAlTest/Lumi_recoMerged_100000.root");
-    TTree *recoTree = (TTree *)recoFile->Get("pndsim");
+    // TFile *recoFile = new TFile("../../input/modulesAlTest/Lumi_recoMerged_200000.root");
+    // TTree *recoTree = (TTree *)recoFile->Get("pndsim");
+
+
+    // TChain* chainPairs = new TChain("pndsim");
+	// for (size_t i = 0; i < fileNames.size(); i++) {
+	// 	//cout << files[i] << endl;
+	// 	if (fileNames[i].find("Lumi_Pairs") != std::string::npos) {
+	// 		chainPairs->Add(fileNames[i].c_str());
+	// 	}
+	// }
+
+	// TClonesArray* hitPairs = new TClonesArray("PndLmdHitPair");
+	// chainPairs->SetBranchAddress("PndLmdHitPair", &hitPairs);
+
+
+
+
+
+    // TChain Version
+    TChain *chain = new TChain("pndsim");
+    chain->Add("../../input/modulesAlTest/Lumi_recoMerged_*.root");
+
     TClonesArray *recoArray = new TClonesArray("PndSdsMergedHit");
-    recoTree->SetBranchAddress("LMDHitsMerged", &recoArray);
+    // recoTree->SetBranchAddress("LMDHitsMerged", &recoArray);
+    chain->SetBranchAddress("LMDHitsMerged", &recoArray);
 
     // how many events are in the track file?
-    Long64_t nEvents = recoTree->GetEntries();
+    Long64_t nEvents = chain->GetEntries();
     cout << "nEvents: " << nEvents << "\n";
 
     // event loop
     for (Long64_t event = 0; event < nEvents; event++) {
         recoArray->Clear();
-        recoTree->GetEntry(event);
+        chain->GetEntry(event);
 
         int mergedHitsPerEvent = recoArray->GetEntriesFast();
 
@@ -58,7 +80,7 @@ void convertMergedHits() {
     }
     //! dump to json here!
     // TODO: better target dir!
-    std::ofstream o("../../input/modulesAlTest/tracks_processed-noTrks.json");
+    std::ofstream o("../../input/modulesAlTest/tracks_processed-noTrks-chain.json");
     // std::ofstream o("../../input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json");
     o << std::setw(2) << outJson << std::endl;
 
