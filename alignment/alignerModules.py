@@ -7,7 +7,6 @@ from alignment.sensors import icp
 
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
-from tqdm import tqdm
 
 import copy
 import json
@@ -115,36 +114,36 @@ class alignerModules:
         cloud = cloud[:-cut]
         return cloud
     
-    def dynamicCut(self, cloud1, cloud2, cutPercent=2):
+    # def dynamicCut(self, cloud1, cloud2, cutPercent=2):
 
-        assert cloud1.shape == cloud2.shape
+    #     assert cloud1.shape == cloud2.shape
 
-        if cutPercent == 0:
-            return cloud1, cloud2
+    #     if cutPercent == 0:
+    #         return cloud1, cloud2
 
-        # calculate center of mass of differences
-        dRaw = cloud2 - cloud1
-        com = np.average(dRaw, axis=0)
+    #     # calculate center of mass of differences
+    #     dRaw = cloud2 - cloud1
+    #     com = np.average(dRaw, axis=0)
 
-        # shift newhit2 by com of differences
-        newhit2 = cloud2 - com
+    #     # shift newhit2 by com of differences
+    #     newhit2 = cloud2 - com
 
-        # calculate new distance for cut
-        dRaw = newhit2 - cloud1
-        newDist = np.power(dRaw[:, 0], 2) + np.power(dRaw[:, 1], 2)
+    #     # calculate new distance for cut
+    #     dRaw = newhit2 - cloud1
+    #     newDist = np.power(dRaw[:, 0], 2) + np.power(dRaw[:, 1], 2)
 
-        # sort by distance and cut some percent from start and end (discard outliers)
-        cut = int(len(cloud1) * cutPercent/100.0)
+    #     # sort by distance and cut some percent from start and end (discard outliers)
+    #     cut = int(len(cloud1) * cutPercent/100.0)
         
-        # sort by new distance
-        cloud1 = cloud1[newDist.argsort()]
-        cloud2 = cloud2[newDist.argsort()]
+    #     # sort by new distance
+    #     cloud1 = cloud1[newDist.argsort()]
+    #     cloud2 = cloud2[newDist.argsort()]
         
-        # cut off largest distances, NOT lowest
-        cloud1 = cloud1[:-cut]
-        cloud2 = cloud2[:-cut]
+    #     # cut off largest distances, NOT lowest
+    #     cloud1 = cloud1[:-cut]
+    #     cloud2 = cloud2[:-cut]
 
-        return cloud1, cloud2
+    #     return cloud1, cloud2
 
     #* this is the best one yet. out-source the histogram stuff to the comparator and calculate anchor points, then you are done!
     # FIXME: oh and preTransform only works for sector 0, fix that
@@ -258,7 +257,7 @@ class alignerModules:
         
         #* =========== iterate cuts and calculation
         iterations = 3
-        for _ in tqdm(range(iterations)):
+        for _ in range(iterations):
 
             newTracks = self.dynamicRecoTrackDistanceCut(newTracks)
             
