@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from numpy.linalg import inv
-from scipy.optimize import minimize
 
 """
 Fits a single track to exactly 4 reco hits
@@ -13,13 +11,12 @@ params:
 
 class CorridorFitter():
     def __init__(self, tracks):
-        self.tracks = None
         self.tracks = tracks
         self.nTrks = len(self.tracks)
         self.useAnchor = False
 
     def useAnchorPoint(self, point):
-        assert len(point) == 3
+        assert (len(point) == 3 or len(point) == 4)
         self.anchorPoint = point
         self.useAnchor = True
 
@@ -28,21 +25,16 @@ class CorridorFitter():
         self.fittedTrackArr = np.zeros((self.nTrks, 2, 3))
 
         for i in range(self.nTrks):
-
-            # cut fourth entry, sometimes this is the sensorID
+            # cut fourth entry, sometimes this is the sensorID or homogenous coordinate
             trackRecos = self.tracks[i][:, :3]
             
             if self.useAnchor:
-                trackRecos = np.vstack((self.anchorPoint, trackRecos))
+                trackRecos = np.vstack((self.anchorPoint[:3], trackRecos))
 
             meanPoint = trackRecos.mean(axis=0)
-
             _, _, vv = np.linalg.svd(trackRecos - meanPoint)
 
-            trkO = meanPoint
-            trkD = vv[0]
-            self.fittedTrackArr[i][0] = trkO
-            self.fittedTrackArr[i][1] = trkD
+            self.fittedTrackArr[i][0] = meanPoint
+            self.fittedTrackArr[i][1] = vv[0]
 
         return self.fittedTrackArr
-
