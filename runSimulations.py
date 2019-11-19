@@ -549,7 +549,7 @@ if __name__ == "__main__":
         alignerMod.readAnchorPoints('input/moduleAlignment-anchorPoints.json')
         alignerMod.alignModules()
         # print(alignerMod.alignMatrices)
-        # TODO: save matrices!
+        alignerMod.saveMatrices('output/alMat-modules-TEST.json')
         done()
 
         comp = moduleComparator()
