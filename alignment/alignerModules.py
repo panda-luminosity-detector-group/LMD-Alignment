@@ -5,6 +5,8 @@ from alignment.modules.trackFitter import CorridorFitter
 from alignment.modules.trackReader import trackReader
 from alignment.sensors import icp
 
+import detail.matrixInterface as mi
+
 from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
 
@@ -47,19 +49,11 @@ class alignerModules:
         with open(fileName, 'r') as f:
             self.anchorPoints = json.load(f)
 
-    # TODO: externalize, this function is needed everywhere in the alignment framework!
     def readAverageMisalignments(self, fileName):
-        with open(fileName, 'r') as f:
-            self.avgMisalignments = json.load(f)
-
-        for sector in self.avgMisalignments:
-            self.avgMisalignments[sector] = np.array(self.avgMisalignments[sector]).reshape((4,4))
+        self.avgMisalignments = mi.loadMatrices(fileName)
     
     #? cuts on track x,y direction
-    def dynamicTrackCut(self, newTracks, cutPercent=2, matrixToFoR=None):
-        
-        # TODO: transform them, if needed, to matrixToFoR
-        
+    def dynamicTrackCut(self, newTracks, cutPercent=2):
         com = np.average(newTracks[:,1,:3], axis=0)
 
         # shift newhit2 by com of differences
@@ -104,7 +98,7 @@ class alignerModules:
 
         for sector in range(10):
             for path, matrix in self.alignSectorICP(sector):
-                self.alignMatrices[path] = np.ndarray.tolist(np.ndarray.flatten(matrix))
+                self.alignMatrices[path] = matrix
 
         return
 
@@ -121,8 +115,7 @@ class alignerModules:
         # executor.shutdown(wait=True)
 
     def saveMatrices(self, fileName):
-        with open(fileName, 'w') as f:
-            json.dump(self.alignMatrices, f, indent=2)
+        mi.saveMatrices(self.alignMatrices, fileName)
 
     def alignSectorICP(self, sector=0):
         # check if anchor points were set
@@ -252,6 +245,7 @@ class alignerModules:
             # ideal module matrices!
             toModMat = np.linalg.inv(moduleMatrices[i])
             
+            # TODO: use baseTransform from matrix interface here
             if preTransform:
                 totalMatrices[i] = np.linalg.inv(matToLMD) @ totalMatrices[i] @ (matToLMD)
                 totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
