@@ -9,6 +9,7 @@ from collections import defaultdict  # to concatenate dictionaries
 from pathlib import Path
 
 import copy
+import concurrent
 import json
 import numpy as np
 import pyMille
@@ -32,29 +33,28 @@ steps:
 
 class alignerModules:
     def __init__(self):
-
         self.alignMatrices = {}
-
         self.reader = trackReader()
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
+        
+    def readTracks(self, fileName):
         print(f'reading processed tracks file...')
-        
-        # from good-ish tracks
-        self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json'))
-        
-        # merged Tracks from modulesNoRot-1.00
-        # WARNING! there is something wrong on layers 1&2 here!
-        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-noTrks-chain.json'))
-       
-       
-        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-noTrks.json'))
-        # self.reader.readTracksFromJson(Path('input/modulesAlTest/tracks_processed-aligned.json'))
+        self.reader.readTracksFromJson(fileName)
+        # TODO: read from root file directly and use new track format from the start
 
     def readAnchorPoints(self, fileName):
         with open(fileName, 'r') as f:
             self.anchorPoints = json.load(f)
 
+    # TODO: externalize, this function is needed everywhere in the alignment framework!
+    def readAverageMisalignments(self, fileName):
+        with open(fileName, 'r') as f:
+            self.avgMisalignments = json.load(f)
+
+        for sector in self.avgMisalignments:
+            self.avgMisalignments[sector] = np.array(self.avgMisalignments[sector]).reshape((4,4))
+    
     #? cuts on track x,y direction
     def dynamicTrackCut(self, newTracks, cutPercent=2, matrixToFoR=None):
         
@@ -99,31 +99,44 @@ class alignerModules:
         return tempTracks
 
     def alignModules(self):
-        # TODO: multi-thread sectors
+
+        # self.avgMisalignments = {}
+
         for sector in range(10):
-            for path, matrix in self.testICPalignWithOutlierDiscard(sector):
+            for path, matrix in self.alignSectorICP(sector):
                 self.alignMatrices[path] = np.ndarray.tolist(np.ndarray.flatten(matrix))
-    
+
+        return
+
+        # TODO: multi-thread sectors
+        # maxThreads = 10
+        # print(f'running in {maxThreads} threads.')
+        
+        # with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
+        #     # Start the load operations and mark each future with its URL
+        #     for sector in range(10):
+        #         executor.submit(self.alignSectorICP, sector)
+
+        # print('waiting for all jobs...')
+        # executor.shutdown(wait=True)
+
     def saveMatrices(self, fileName):
         with open(fileName, 'w') as f:
             json.dump(self.alignMatrices, f, indent=2)
 
-    #* this is the best one yet. out-source the histogram stuff to the comparator and calculate anchor points, then you are done!
-    # FIXME: oh and preTransform only works for sector 0, fix that
-    # TODO: after that, rename function, this is the main aligner now
-    def testICPalignWithOutlierDiscard(self, sector=0):
-
-        # check if anchor points were set and sector is valid
+    def alignSectorICP(self, sector=0):
+        # check if anchor points were set
         assert hasattr(self, 'anchorPoints') 
-        assert (sector > -1) and (sector < 10)
 
+        # TODO: remove
         print(f'==========================================')
         print(f'')
         print(f'    Running for sector {sector}!')
         print(f'')
         print(f'==========================================')
 
-        preTransform = False
+        preTransform = True
+        useOldFormat = True
         np.set_printoptions(precision=6)
         np.set_printoptions(suppress=True)
 
@@ -136,43 +149,25 @@ class alignerModules:
             path = modulePaths[i]
             moduleMatrices[i] = np.array(self.reader.detectorMatrices[path]).reshape(4,4)
 
-        # calc average misalignment
-        #* -----------------  compute actual matrices
-        misMatPath = '/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json'
-        # misMatPath = '/media/DataEnc2TBRaid1/Arbeit/LMDscripts/input/misMat-aligned-1.00.json'
-        with open(misMatPath) as f:
-            misalignmatrices = json.load(f)
-        for p in misalignmatrices:
-            misalignmatrices[p] = np.array(misalignmatrices[p]).reshape((4,4))
-
-        mat = np.zeros((4,4))
-        for path in modulePaths:
-            thisMat = misalignmatrices[path]
-            mat = mat + thisMat
-        
-        # print(f'average shift of first four modules:')
-        averageShift = mat/4.0
-        # print(averageShift*1e4)
-        #* -----------------  end compute actual matrices
+        #* use average misalignment
+        averageShift = self.avgMisalignments[str(sector)]
 
         # get Reco Points from reader
         # TODO: update format or read with uproot directly!
-        allTracks = self.reader.getAllTracksInSector(sector)
+        if useOldFormat:
+            allTracks = self.reader.getAllTracksInSector(sector)
+            #? new format! np array with track oris, track dirs, and recos
+            nTrks = len(allTracks)
+            newTracks = np.ones((nTrks, 6, 4))
 
-        #? new format! np array with track oris, track dirs, and recos
-        nTrks = len(allTracks)
-        newTracks = np.ones((nTrks, 6, 4))
-
-        for i in range(nTrks):
-            newTracks[i, 0, :3] = allTracks[i]['trkPos']
-            newTracks[i, 1, :3] = allTracks[i]['trkMom']
-            newTracks[i, 2, :3] = allTracks[i]['recoHits'][0]['pos']
-            newTracks[i, 3, :3] = allTracks[i]['recoHits'][1]['pos']
-            newTracks[i, 4, :3] = allTracks[i]['recoHits'][2]['pos']
-            newTracks[i, 5, :3] = allTracks[i]['recoHits'][3]['pos']
-
-
-        #? end new format! np array with track oris, track dirs, and recos
+            for i in range(nTrks):
+                newTracks[i, 0, :3] = allTracks[i]['trkPos']
+                newTracks[i, 1, :3] = allTracks[i]['trkMom']
+                newTracks[i, 2, :3] = allTracks[i]['recoHits'][0]['pos']
+                newTracks[i, 3, :3] = allTracks[i]['recoHits'][1]['pos']
+                newTracks[i, 4, :3] = allTracks[i]['recoHits'][2]['pos']
+                newTracks[i, 5, :3] = allTracks[i]['recoHits'][3]['pos']
+            #? end new format! np array with track oris, track dirs, and recos
 
         # use only N tracks:
         # newTracks = newTracks[:10000]
@@ -192,7 +187,6 @@ class alignerModules:
             matFromLMD = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
             self.anchorPoints[sectorString] = (matFromLMD @ self.anchorPoints[sectorString])
         
-
         # do a first track fit, otherwise we have no starting tracks
         recos = newTracks[:,2:6]
         corrFitter = CorridorFitter(recos)
@@ -234,7 +228,7 @@ class alignerModules:
                 pIntersection = recoPosArr+dVec
                 
                 # we want FROM tracks TO recos
-                T0inv = self.getMatrix(recoPosArr, pIntersection, False)
+                T0inv = self.getMatrix(recoPosArr, pIntersection, preTransform)
 
                 totalMatrices[i] = T0inv @ totalMatrices[i]
 
@@ -259,28 +253,18 @@ class alignerModules:
             toModMat = np.linalg.inv(moduleMatrices[i])
             
             if preTransform:
-
-                # so yeah, transform matrices from LMD to PANDA then to module, that should do it
                 totalMatrices[i] = np.linalg.inv(matToLMD) @ totalMatrices[i] @ (matToLMD)
                 totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
-
-                totalMatrices[i] = totalMatrices[i] + averageShift
-                dMat = totalMatrices[i] - misalignmatrices[modulePaths[i]]
-                print(f'\nWITH previous trafo, total diff:\n{(dMat)*1e4}')
-                yield modulePaths[i], totalMatrices[i]
-            
             else:
-                # transform to module
                 totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
        
-                totalMatrices[i] = totalMatrices[i] + averageShift
-                dMat = totalMatrices[i] - misalignmatrices[modulePaths[i]]
-                print(f'\nno previous trafo, better diff:\n{(dMat)*1e4}')
-                yield modulePaths[i], totalMatrices[i]
-            print(f' ------------- next -------------')
+            # add average shift
+            totalMatrices[i] = totalMatrices[i] + averageShift
+            yield modulePaths[i], totalMatrices[i]
         
         return
 
+    # TODO externalize, same as for sensor aligner!
     def getMatrix(self, trackPositions, recoPositions, use2D=False):
 
         # use 2D, use only in LMD local!

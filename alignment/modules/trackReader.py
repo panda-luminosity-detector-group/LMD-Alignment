@@ -22,7 +22,7 @@ It then gives those values to millepede, obtains the alignment parameters back a
 
 class trackReader():
 
-    def readTracksFromRoot(self, path, sector=-1):
+    def readTracksFromRoot(self, path):
         """
         Currently not working, please use the json method
         """
@@ -34,7 +34,7 @@ class trackReader():
         return synthData
 
     # TODO: deprecate and simplify reco format
-    def readTracksFromJson(self, filename, sector=-1):
+    def readTracksFromJson(self, filename):
         with open(filename, 'r') as infile:
             self.trks = json.load(infile)['events']
             print('file successfully read!')

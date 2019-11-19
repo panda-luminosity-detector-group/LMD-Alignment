@@ -14,7 +14,7 @@ from detail.matrixComparator import *
 from detail.LumiValLaTeXTable import LumiValLaTeXTable
 from detail.logger import LMDrunLogger
 from detail.LMDRunConfig import LMDRunConfig
-from concurrent.futures import ThreadPoolExecutor
+#from concurrent.futures import ThreadPoolExecutor
 from alignment.alignerSensors import alignerSensors
 from alignment.alignerIP import alignerIP
 from alignment.alignerModules import alignerModules
@@ -545,17 +545,26 @@ if __name__ == "__main__":
 
     if args.test:
         print(f'Testing...')
+        
+        # from good-ish tracks
+        trackFile = Path('input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json')
+        # trackFile = Path('input/modulesAlTest/tracks_processed-noTrks.json')
+        # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
+        
         alignerMod = alignerModules()
         alignerMod.readAnchorPoints('input/moduleAlignment-anchorPoints.json')
+        alignerMod.readAverageMisalignments('input/avgMisalign-modules-1.00.json')
+        alignerMod.readTracks(trackFile)
         alignerMod.alignModules()
         # print(alignerMod.alignMatrices)
         alignerMod.saveMatrices('output/alMat-modules-TEST.json')
-        done()
 
+        #! run comparator
         comp = moduleComparator()
         comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        comp.loadDesignMisalignments('input/misMat-identity-1.00.json')
-        comp.loadAlignerMatrices('output/alignmentModules/alMat-modules-1.0.json')
+        comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json')
+
+        comp.loadAlignerMatrices('output/alMat-modules-TEST.json')
         comp.saveHistogram('output/alignmentModules/lawl.pdf')
 
         done()
