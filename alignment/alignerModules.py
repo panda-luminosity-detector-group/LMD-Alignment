@@ -7,36 +7,28 @@ from alignment.sensors import icp
 
 import detail.matrixInterface as mi
 
-from collections import defaultdict  # to concatenate dictionaries
-from pathlib import Path
-
-import copy
 import concurrent
-import json
 import numpy as np
-import pyMille
-import re
-import sys
+#import pyMille
 
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
-TODO: Implement corridor alignment
-
 steps:
 - read tracks and reco files
 - extract tracks and corresponding reco hits
-- separate by x and y
-- give to millepede
-- obtain alignment parameters from millepede
-- convert to alignment matrices
+- determine distance from recos to tracks
+- move recos with this matrix
+- iteratively repeat
 
+#TODO: maybe also do with millepede
 """
 
 class alignerModules:
     def __init__(self):
         self.alignMatrices = {}
         self.reader = trackReader()
+        self.iterations = 3
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
         
@@ -46,11 +38,13 @@ class alignerModules:
         # TODO: read from root file directly and use new track format from the start
 
     def readAnchorPoints(self, fileName):
-        with open(fileName, 'r') as f:
-            self.anchorPoints = json.load(f)
+        self.anchorPoints = mi.loadMatrices(fileName, False)
 
     def readAverageMisalignments(self, fileName):
         self.avgMisalignments = mi.loadMatrices(fileName)
+
+    def setIterations(self, iterations):
+        self.iterations = iterations
     
     #? cuts on track x,y direction
     def dynamicTrackCut(self, newTracks, cutPercent=2):
@@ -94,8 +88,6 @@ class alignerModules:
 
     def alignModules(self):
 
-        # self.avgMisalignments = {}
-
         for sector in range(10):
             for path, matrix in self.alignSectorICP(sector):
                 self.alignMatrices[path] = matrix
@@ -121,17 +113,8 @@ class alignerModules:
         # check if anchor points were set
         assert hasattr(self, 'anchorPoints') 
 
-        # TODO: remove
-        print(f'==========================================')
-        print(f'')
-        print(f'    Running for sector {sector}!')
-        print(f'')
-        print(f'==========================================')
-
         preTransform = True
         useOldFormat = True
-        np.set_printoptions(precision=6)
-        np.set_printoptions(suppress=True)
 
         # get relevant module paths
         modulePaths = self.reader.getModulePathsInSector(sector)
@@ -165,10 +148,7 @@ class alignerModules:
         # use only N tracks:
         # newTracks = newTracks[:10000]
 
-        #* =========== preapare raw data
-
         sectorString = str(sector)
-
         # transform all recos to LMD local
         if preTransform:
             matToLMD = np.linalg.inv(np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4)))
@@ -198,8 +178,7 @@ class alignerModules:
         newTracks = self.dynamicTrackCut(newTracks, 5)
         
         #* =========== iterate cuts and calculation
-        iterations = 3
-        for _ in range(iterations):
+        for _ in range(self.iterations):
 
             newTracks = self.dynamicRecoTrackDistanceCut(newTracks)
             
