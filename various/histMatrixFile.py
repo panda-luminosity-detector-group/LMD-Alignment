@@ -36,9 +36,9 @@ if __name__ == "__main__":
     values = []
 
     for m in matrices:
-        _, plane, _ , _ = getParamsFromModulePath(m)
-        if plane == 3:
-            values.append([matrices[m][3], matrices[m][7]])
+        # _, plane, _ , _ = getParamsFromModulePath(m)
+        # if plane == 3:
+        values.append([matrices[m][3], matrices[m][7]])
 
     values = np.array(values)
 
@@ -61,6 +61,7 @@ if __name__ == "__main__":
     plt.legend()
 
     print(f'Entries total: {len(values)}')
+    print(values)
     # fig.show()
     fig.savefig(f'tempHistogram.png')
     print(f'saved!')

@@ -546,34 +546,16 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         alignerMod = alignerModules()
-
-        results = {}
-
-        for i in range(10):
-            for i, j in alignerMod.testICPalignWithOutlierDiscard(i):
-                results[i] = j
-
-        print('good heckins! just look at the time!')
-        print(results)
-
-        for i in results:
-            results[i] = np.ndarray.tolist(np.ndarray.flatten(results[i]))
-
-        with open('results-modAlign-avgNotKnown.json', 'w') as f:
-            json.dump(results, f, indent=2)
-
+        alignerMod.readAnchorPoints('input/moduleAlignment-anchorPoints.json')
+        alignerMod.alignModules()
+        # print(alignerMod.alignMatrices)
+        # TODO: save matrices!
         done()
 
         comp = moduleComparator()
         comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        
         comp.loadDesignMisalignments('input/misMat-identity-1.00.json')
-        # comp.loadDesignMisalignments(f'input/allDetectorMatrices-singlePlane-2.00.json')
-        # comp.loadDesignMisalignments('input/misMat-modules-1.00.json')
-
         comp.loadAlignerMatrices('output/alignmentModules/alMat-modules-1.0.json')
-        # comp.loadAlignerMatrices('output/alignmentModules/alMat-aligned.json')
-        # comp.loadAlignerMatrices('output/alignmentModules/alMat-modules-singlePlane.json')
         comp.saveHistogram('output/alignmentModules/lawl.pdf')
 
         done()

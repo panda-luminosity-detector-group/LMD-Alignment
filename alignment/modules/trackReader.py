@@ -122,10 +122,12 @@ class trackReader():
         return self.sectorDict[sector]
 
     # get (a deep copy of) all tracks in a given sector
+    # TODO: deprecate once SynthDataTest is no longer needed
     def getAllTracksInSector(self, sector):
         result = copy.deepcopy([ x for x in self.trks if x['sector'] == sector ])
         return result
 
+    # TODO: deprecate once SynthDataTest is no longer needed
     def transformPoint(self, point, matrix):
         newPoint = np.ones(4)
         newPoint[:3] = point
