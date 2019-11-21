@@ -4,7 +4,8 @@ lustre/
 TrksQA/
 plab*/
 LumiPairsTest/*
-modulesAlTest/*
+modulesAlTest/
+misMatrices/
 
 # But never these files...
 !.gitignore
