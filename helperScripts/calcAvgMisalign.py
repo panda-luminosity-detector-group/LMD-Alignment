@@ -89,8 +89,6 @@ def calc(inFile, outFile):
         for path in paths[i]:
             avgMisMats[str(i)] += inMats[path] / 4
 
-        print(f'\nsector {str(i)}:\n{avgMisMats[str(i)]}\n')
-
     # store to output as dict ( sectorString -> matrix )
     saveMatrices = {}
     outFile.parent.mkdir(exist_ok=True, parents=True)
@@ -115,5 +113,6 @@ if __name__ == "__main__":
     if outFile.exists():
         print(f'Error! File {outFile} already exists.')
         sys.exit(1)
-
+    print(f'Calculating average misalignments...')
     calc(inFile, outFile)
+    print(f'all done!')
