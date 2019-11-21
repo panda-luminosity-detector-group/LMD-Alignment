@@ -31,7 +31,15 @@ class alignerModules:
         self.iterations = 3
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
-        
+
+    @classmethod
+    def fromRunConfig(cls, runConfig):
+        temp = cls()
+        temp.config = runConfig
+        temp.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)
+        temp.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)
+        return temp    
+
     def readTracks(self, fileName):
         print(f'reading processed tracks file...')
         self.reader.readTracksFromJson(fileName)

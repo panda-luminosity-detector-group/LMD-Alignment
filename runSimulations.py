@@ -117,6 +117,7 @@ def runAligners(runConfig, threadID=None):
 
     sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
+    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
     mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
 
@@ -132,6 +133,11 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
     sensorAligner.combineAlignmentMatrices()
     sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+
+    # create alignerModules, run
+    moduleAligner = alignerModules.fromRunConfig(runConfig)
+
+    sensorAligner.saveAlignmentMatrices(moduleAlignerResultName)
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
@@ -447,13 +453,18 @@ def createMultipleDefaultConfigs():
                         #config.trksNum = '1000000'
                         config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
 
+                    if misType == 'modules' or misType == 'modulesNoRot':
+                        config.moduleAlignAnchorPointFile = f'input/moduleAlignment/anchorPoints.json'
+                        config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
+
                     # ? ----- special cases here
                     # aligned case has no misalignment
                     if misType == 'aligned':
                         config.misaligned = False
 
                     if Path(dest).exists():
-                        continue
+                        pass
+                        # continue
 
                     config.toJSON(dest)
 
