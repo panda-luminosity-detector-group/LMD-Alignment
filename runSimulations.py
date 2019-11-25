@@ -563,8 +563,8 @@ if __name__ == "__main__":
         # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
         
         alignerMod = alignerModules()
-        alignerMod.readAnchorPoints('input/moduleAlignment-anchorPoints.json')
-        alignerMod.readAverageMisalignments('input/avgMisalign-modules-1.00.json')
+        alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
+        alignerMod.readAverageMisalignments('input/avgMisalign/modules-1.00.json')
         alignerMod.readTracks(trackFile)
         alignerMod.alignModules()
         # print(alignerMod.alignMatrices)
