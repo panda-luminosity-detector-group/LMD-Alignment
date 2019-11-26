@@ -564,7 +564,7 @@ if __name__ == "__main__":
         
         alignerMod = alignerModules()
         alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
-        alignerMod.readAverageMisalignments('input/avgMisalign/modules-1.00.json')
+        alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-1.0.json')
         alignerMod.readTracks(trackFile)
         alignerMod.alignModules()
         # print(alignerMod.alignMatrices)

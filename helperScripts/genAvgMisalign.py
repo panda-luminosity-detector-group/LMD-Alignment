@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-#import detail.matrixInterface as mi
+"""
+This script reads the artificial misalignment matrices from the simulations to generate
+the "average misalignment matrices"  for all sectors. For the final detector,
+these matrices will of course really be measured, but for now, we need to cheat a little.
+"""
 
 from pathlib import Path
 import json
