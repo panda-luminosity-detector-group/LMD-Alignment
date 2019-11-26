@@ -53,9 +53,9 @@ def extractIP(cleanArray, module, half):
     # apply a mask to remove outliers
     recMask = (np.abs(recX) < 5000) & (np.abs(recY) < 5000)
 
-    if module > 0:
+    if module >= 0:
         recMask = recMask & (module == tmod)
-    if half > 0:
+    if half >= 0:
         recMask = recMask & (half == thalf)
 
     # this is the position of the interaction point!

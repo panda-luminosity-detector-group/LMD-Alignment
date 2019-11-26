@@ -58,6 +58,8 @@ class LMDRunConfig:
         self.__useIdentityAlignment = False
         self.__mergeAlignmentMatrices = False
         self.__SensorAlignerExternalMatrices = 'input/alMat-identity-all.json'
+        self.__moduleAlignAnchorPointFile = None
+        self.__moduleAlignAvgMisalignFile = None
 
     #! --------------------- for sortability
     def __lt__(self, other):
@@ -98,6 +100,20 @@ class LMDRunConfig:
     misMatFile = property(__getMisMatFile, None)
 
     #! --------------------- getters and setters
+
+    def __getAvgMisPath(self):
+        return self.__moduleAlignAvgMisalignFile
+
+    def __setAvgMisPath(self, val):
+        self.__moduleAlignAvgMisalignFile = val
+    moduleAlignAvgMisalignFile = property(__getAvgMisPath, __setAvgMisPath)
+
+    def __getAnchorPath(self):
+        return self.__moduleAlignAnchorPointFile
+
+    def __setAnchorPath(self, val):
+        self.__moduleAlignAnchorPointFile = val
+    moduleAlignAnchorPointFile = property(__getAnchorPath, __setAnchorPath)
 
     def __getExMatPath(self):
         return self.__SensorAlignerExternalMatrices
@@ -424,7 +440,7 @@ class LMDRunConfig:
                 return self.pathAlMatrixPath() / Path(f'alMat-IPalignment-{self.__misalignFactor}.json')
             elif self.__misalignType == 'sensors':
                 return self.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{self.__misalignFactor}.json')
-            elif self.__misalignType == 'singlePlane':
+            elif self.__misalignType == 'singlePlane' or self.__misalignType == 'modules' or self.__misalignType == 'modulesNoRot':
                 return self.pathAlMatrixPath() / Path(f'alMat-modules-{self.__misalignFactor}.json')
             # TODO: add more cases for modules etc
 
@@ -475,7 +491,3 @@ class LMDRunConfig:
         result += (f'\n\n')
         # print(result)
         return result
-
-
-if __name__ == "__main__":
-    print("Sorry, this module can't be run directly")

@@ -22,7 +22,7 @@ It then gives those values to millepede, obtains the alignment parameters back a
 
 class trackReader():
 
-    def readTracksFromRoot(self, path, sector=-1):
+    def readTracksFromRoot(self, path):
         """
         Currently not working, please use the json method
         """
@@ -33,7 +33,8 @@ class trackReader():
             synthData = json.load(f)
         return synthData
 
-    def readTracksFromJson(self, filename, sector=-1):
+    # TODO: deprecate and simplify reco format
+    def readTracksFromJson(self, filename):
         with open(filename, 'r') as infile:
             self.trks = json.load(infile)['events']
             print('file successfully read!')
@@ -121,13 +122,27 @@ class trackReader():
         return self.sectorDict[sector]
 
     # get (a deep copy of) all tracks in a given sector
+    # TODO: deprecate once SynthDataTest is no longer needed
     def getAllTracksInSector(self, sector):
         result = copy.deepcopy([ x for x in self.trks if x['sector'] == sector ])
         return result
 
+    # TODO: deprecate once SynthDataTest is no longer needed
+    def transformPoint(self, point, matrix):
+        newPoint = np.ones(4)
+        newPoint[:3] = point
+        # print(newPoint)
+        newPoint = matrix @ newPoint
+        # print(newPoint)
+        return newPoint[:3]
+    
     def generatorMilleParameters(self):
 
         print(f'no of events: {len(self.trks)}')
+
+
+        # we transform to LMDlocal
+        matToLMD = np.array(self.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
 
         # TODO: use vectorized version to use numpy!
         # loop over all events
@@ -150,17 +165,27 @@ class trackReader():
                 half, plane, module, sector = self.getParamsFromModulePath(modulePath)
 
                 # create path to first module in this sector
-                pathFirstMod = f"/cave_1/lmd_root_0/half_{half}/plane_0/module_{module}"
+                # pathFirstMod = f"/cave_1/lmd_root_0/half_{half}/plane_0/module_{module}"
 
-                # get matrix to first module
-                matrixFirstMod = np.array(self.detectorMatrices[pathFirstMod]).reshape(4,4)
+                #* get matrix to first module
+                # matrixFirstMod = np.array(self.detectorMatrices[pathFirstMod]).reshape(4,4)
 
                 # transform recoHit and track origin
-                recoNew = self.transformPoint(recoPos, inv(matrixFirstMod))
-                trackOriNew = self.transformPoint(trackOri, inv(matrixFirstMod))
+                # recoNew = self.transformPoint(recoPos, inv(matrixFirstMod))
+                # trackOriNew = self.transformPoint(trackOri, inv(matrixFirstMod))
 
                 # track direction requires more work
-                trackDirPoint = self.transformPoint(trackOri + trackDir, inv(matrixFirstMod))
+                # trackDirPoint = self.transformPoint(trackOri + trackDir, inv(matrixFirstMod))
+                # trackDirNew = trackDirPoint - trackOriNew
+
+                #* transform all reco points and tracks to lmd local here
+
+                # transform recoHit and track origin
+                recoNew = self.transformPoint(recoPos, inv(matToLMD))
+                trackOriNew = self.transformPoint(trackOri, inv(matToLMD))
+
+                # track direction requires more work
+                trackDirPoint = self.transformPoint(trackOri + trackDir, inv(matToLMD))
                 trackDirNew = trackDirPoint - trackOriNew
 
                 # print(f'recoNew: {recoNew}')

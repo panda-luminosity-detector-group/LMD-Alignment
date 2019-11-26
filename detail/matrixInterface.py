@@ -51,7 +51,7 @@ def saveMatrices(matrices, fileName):
         json.dump(saveMatrices, f, indent=2)
 
 
-def baseTransform(mat, matFromAtoB):
+def baseTransform(mat, matFromAtoB, inverse=False):
     """
     Reminder: the way this works is that the matrix pointing from pnd to sen0 transforms a matrix IN sen0 back to Pnd
     If you want to transform a matrix from Pnd to sen0, and you have the matrix to sen0, then you need to give
@@ -59,12 +59,13 @@ def baseTransform(mat, matFromAtoB):
 
     Example 1: matrixInPanda = baseTransform(matrixInSensor, matrixPandaToSensor)
     Example 2: matrixInSensor = baseTransform(matrixInPanda, inv(matrixPandaToSensor))
+
+    You can set inverse to True if matFromAtoB points in the wrong direction
     """
     return matFromAtoB @ mat @ inv(matFromAtoB)
 
 # from https://www.learnopencv.com/rotation-matrix-to-euler-angles/
 # Calculates rotation matrix to euler angles
-
 
 def rotationMatrixToEulerAngles(R):
 

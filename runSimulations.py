@@ -14,7 +14,7 @@ from detail.matrixComparator import *
 from detail.LumiValLaTeXTable import LumiValLaTeXTable
 from detail.logger import LMDrunLogger
 from detail.LMDRunConfig import LMDRunConfig
-from concurrent.futures import ThreadPoolExecutor
+#from concurrent.futures import ThreadPoolExecutor
 from alignment.alignerSensors import alignerSensors
 from alignment.alignerIP import alignerIP
 from alignment.alignerModules import alignerModules
@@ -117,6 +117,7 @@ def runAligners(runConfig, threadID=None):
 
     sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
+    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
     mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
 
@@ -132,6 +133,11 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
     sensorAligner.combineAlignmentMatrices()
     sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+
+    # create alignerModules, run
+    moduleAligner = alignerModules.fromRunConfig(runConfig)
+
+    sensorAligner.saveAlignmentMatrices(moduleAlignerResultName)
 
     # create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
@@ -447,13 +453,18 @@ def createMultipleDefaultConfigs():
                         #config.trksNum = '1000000'
                         config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
 
+                    if misType == 'modules' or misType == 'modulesNoRot':
+                        config.moduleAlignAnchorPointFile = f'input/moduleAlignment/anchorPoints.json'
+                        config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
+
                     # ? ----- special cases here
                     # aligned case has no misalignment
                     if misType == 'aligned':
                         config.misaligned = False
 
                     if Path(dest).exists():
-                        continue
+                        pass
+                        # continue
 
                     config.toJSON(dest)
 
@@ -545,33 +556,26 @@ if __name__ == "__main__":
 
     if args.test:
         print(f'Testing...')
+        
+        # from good-ish tracks
+        trackFile = Path('input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json')
+        # trackFile = Path('input/modulesAlTest/tracks_processed-noTrks.json')
+        # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
+        
         alignerMod = alignerModules()
-        # alignerMod.alignICPold()
-        # alignerMod.alignMillepede()
+        alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
+        alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-1.0.json')
+        alignerMod.readTracks(trackFile)
+        alignerMod.alignModules()
+        # print(alignerMod.alignMatrices)
+        alignerMod.saveMatrices('output/alMat-modules-TEST.json')
 
-        # for i in range(10):
-            # alignerMod.prepareSynthDataOLD(i)
-        
-        print(f'\n\n====================================================\n\n')
-        
-        for i in range(10):
-            alignerMod.alignICP(i)
-        
-        # alignerMod.alignICPiterative(0)
-        # alignerMod.alignICPold()
-
-        done()
-
+        #! run comparator
         comp = moduleComparator()
         comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        
-        comp.loadDesignMisalignments('input/misMat-identity-1.00.json')
-        # comp.loadDesignMisalignments(f'input/allDetectorMatrices-singlePlane-2.00.json')
-        # comp.loadDesignMisalignments('input/misMat-modules-1.00.json')
+        comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json')
 
-        comp.loadAlignerMatrices('output/alignmentModules/alMat-modules-1.0.json')
-        # comp.loadAlignerMatrices('output/alignmentModules/alMat-aligned.json')
-        # comp.loadAlignerMatrices('output/alignmentModules/alMat-modules-singlePlane.json')
+        comp.loadAlignerMatrices('output/alMat-modules-TEST.json')
         comp.saveHistogram('output/alignmentModules/lawl.pdf')
 
         done()
