@@ -20,77 +20,16 @@ def calc(inFile, outFile):
     for p in inMats:
         inMats[p] = np.array(inMats[p]).reshape((4,4))
 
-    # find 4 modules per sector
-
     # calc avg misalign
     avgMisMats = {}
 
-    paths = [
-        [
-            "/cave_1/lmd_root_0/half_0/plane_0/module_0",
-            "/cave_1/lmd_root_0/half_0/plane_1/module_0",
-            "/cave_1/lmd_root_0/half_0/plane_2/module_0",
-            "/cave_1/lmd_root_0/half_0/plane_3/module_0"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_0/plane_0/module_1",
-            "/cave_1/lmd_root_0/half_0/plane_1/module_1",
-            "/cave_1/lmd_root_0/half_0/plane_2/module_1",
-            "/cave_1/lmd_root_0/half_0/plane_3/module_1"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_0/plane_0/module_2",
-            "/cave_1/lmd_root_0/half_0/plane_1/module_2",
-            "/cave_1/lmd_root_0/half_0/plane_2/module_2",
-            "/cave_1/lmd_root_0/half_0/plane_3/module_2"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_0/plane_0/module_3",
-            "/cave_1/lmd_root_0/half_0/plane_1/module_3",
-            "/cave_1/lmd_root_0/half_0/plane_2/module_3",
-            "/cave_1/lmd_root_0/half_0/plane_3/module_3"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_0/plane_0/module_4",
-            "/cave_1/lmd_root_0/half_0/plane_1/module_4",
-            "/cave_1/lmd_root_0/half_0/plane_2/module_4",
-            "/cave_1/lmd_root_0/half_0/plane_3/module_4"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_1/plane_0/module_0",
-            "/cave_1/lmd_root_0/half_1/plane_1/module_0",
-            "/cave_1/lmd_root_0/half_1/plane_2/module_0",
-            "/cave_1/lmd_root_0/half_1/plane_3/module_0"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_1/plane_0/module_1",
-            "/cave_1/lmd_root_0/half_1/plane_1/module_1",
-            "/cave_1/lmd_root_0/half_1/plane_2/module_1",
-            "/cave_1/lmd_root_0/half_1/plane_3/module_1"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_1/plane_0/module_2",
-            "/cave_1/lmd_root_0/half_1/plane_1/module_2",
-            "/cave_1/lmd_root_0/half_1/plane_2/module_2",
-            "/cave_1/lmd_root_0/half_1/plane_3/module_2"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_1/plane_0/module_3",
-            "/cave_1/lmd_root_0/half_1/plane_1/module_3",
-            "/cave_1/lmd_root_0/half_1/plane_2/module_3",
-            "/cave_1/lmd_root_0/half_1/plane_3/module_3"
-        ],
-        [
-            "/cave_1/lmd_root_0/half_1/plane_0/module_4",
-            "/cave_1/lmd_root_0/half_1/plane_1/module_4",
-            "/cave_1/lmd_root_0/half_1/plane_2/module_4",
-            "/cave_1/lmd_root_0/half_1/plane_3/module_4"
-        ]
-    ]
+    # find 4 modules per sector
+    with open('input/moduleAlignment/sectorPaths.json') as f:
+        paths = json.load(f)
 
     for i in range(10):
         avgMisMats[str(i)] = np.zeros((4,4))
-        for path in paths[i]:
+        for path in paths[str(i)]:
             avgMisMats[str(i)] += inMats[path] / 4
 
     # store to output as dict ( sectorString -> matrix )
@@ -102,8 +41,8 @@ def calc(inFile, outFile):
     with open(outFile, 'w') as f:
         json.dump(saveMatrices, f, indent=2)
 
-
 if __name__ == "__main__":
+
     if len(sys.argv) != 3:
         print(f'usage: {sys.argv[0]} inFile outFile')
         sys.exit(1)
