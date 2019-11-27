@@ -12,7 +12,7 @@ void convertRootTracks(std::string dataPath, std::string outJsonFile) {
     json outJson;
 
     // filename
-    TFile *trackFile = new TFile(dataPath.c_str() + "/Lumi_Track_100000.root");
+    TFile *trackFile = new TFile((dataPath + "/Lumi_Track_100000.root").c_str());
     // TTree name, use TBrowser if the name is unknown
     TTree *trackTree = (TTree *)trackFile->Get("pndsim");
     // the TClonesArray needs to know the class of the objects you want to retrieve
@@ -21,7 +21,7 @@ void convertRootTracks(std::string dataPath, std::string outJsonFile) {
     trackTree->SetBranchAddress("LMDPndTrack", &trackArray);
 
     // same for recoHits
-    TFile *recoFile = new TFile(dataPath.c_str() + "/Lumi_recoMerged_100000.root");
+    TFile *recoFile = new TFile((dataPath + "/Lumi_recoMerged_100000.root").c_str());
     TTree *recoTree = (TTree *)recoFile->Get("pndsim");
     TClonesArray *recoArray = new TClonesArray("PndSdsMergedHit");
     recoTree->SetBranchAddress("LMDHitsMerged", &recoArray);
