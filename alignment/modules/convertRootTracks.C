@@ -7,7 +7,7 @@
 
 using nlohmann::json;
 
-void convertRootTracks(std::string dataPath="../../input/modulesAlTest/", std::string outJsonFile="../../input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json") {
+void convertRootTracks(std::string dataPath, std::string outJsonFile) {
     //*** output json
     json outJson;
 
