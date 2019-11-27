@@ -35,6 +35,7 @@ class trackReader():
 
     # TODO: deprecate and simplify reco format
     def readTracksFromJson(self, filename):
+        print(f'reading from {filename}...')
         with open(filename, 'r') as infile:
             self.trks = json.load(infile)['events']
             print('file successfully read!')

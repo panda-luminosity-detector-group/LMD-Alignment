@@ -12,6 +12,7 @@ import numpy as np
 #import pyMille
 import random
 import re
+import subprocess
 import sys
 
 """
@@ -42,6 +43,12 @@ class alignerModules:
         temp.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)
         temp.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)
         return temp    
+
+    # words cannot describe how ugly this is, but I'm pressed for time and aesthetics wont get me my phd
+    def convertRootTracks(self, dataPath, outJsonFile):
+        rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(dataPath + outJsonFile)}")'
+        subprocess.run(['pwd'])
+        subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules')
 
     def readTracks(self, fileName):
         print(f'reading processed tracks file...')

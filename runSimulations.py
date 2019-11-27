@@ -563,6 +563,8 @@ if __name__ == "__main__":
         # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
         
         alignerMod = alignerModules()
+        alignerMod.convertRootTracks('../../input/modulesAlTest/', 'kort.json')
+        done()
         alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
         alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-1.0.json')
         alignerMod.readTracks(trackFile)
