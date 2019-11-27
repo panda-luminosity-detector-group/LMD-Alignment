@@ -1,15 +1,18 @@
 #include "../../json/single_include/nlohmann/json.hpp"
 
-// call with root -l -q convertRootTracks.C
+//* call with root -l -q convertRootTracks.C
+
+// TODO: dump result to binary file with 6*3 values: trkOri, trkDir, reco1 - reco4, each having (x,y,z) 
+// also, the python stuff must be able to read that
 
 using nlohmann::json;
 
-void convertRootTracks() {
+void convertRootTracks(std::string dataPath="../../input/modulesAlTest/", std::string outJsonFile="../../input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json") {
     //*** output json
     json outJson;
 
     // filename
-    TFile *trackFile = new TFile("../../input/modulesAlTest/Lumi_Track_100000.root");
+    TFile *trackFile = new TFile(dataPath.c_str() + "/Lumi_Track_100000.root");
     // TTree name, use TBrowser if the name is unknown
     TTree *trackTree = (TTree *)trackFile->Get("pndsim");
     // the TClonesArray needs to know the class of the objects you want to retrieve
@@ -18,7 +21,7 @@ void convertRootTracks() {
     trackTree->SetBranchAddress("LMDPndTrack", &trackArray);
 
     // same for recoHits
-    TFile *recoFile = new TFile("../../input/modulesAlTest/Lumi_recoMerged_100000.root");
+    TFile *recoFile = new TFile(dataPath.c_str() + "/Lumi_recoMerged_100000.root");
     TTree *recoTree = (TTree *)recoFile->Get("pndsim");
     TClonesArray *recoArray = new TClonesArray("PndSdsMergedHit");
     recoTree->SetBranchAddress("LMDHitsMerged", &recoArray);
@@ -35,11 +38,7 @@ void convertRootTracks() {
         trackTree->GetEntry(event);
         recoTree->GetEntry(event);
 
-        string evStr = std::to_string(event);
-
         Int_t tracksPerEvent = trackArray->GetEntriesFast();
-
-        // create empty json object which will hold this event
 
         // tracks loop per event
         for (Int_t iTrack = 0; iTrack < tracksPerEvent; iTrack++) {
@@ -53,7 +52,6 @@ void convertRootTracks() {
             //* Okay, now I have the track and all RecoHits that led to it. Now, all I need is the residuals from the track to the reco position on each plane!
 
             FairTrackParP paramFirst = thisTrack->GetParamFirst();
-            // FairTrackParP paramLast = thisTrack->GetParamLast();
 
             double trackX = paramFirst.GetX();
             double trackY = paramFirst.GetY();
@@ -76,21 +74,11 @@ void convertRootTracks() {
 
                 // get mergedHit
                 PndSdsMergedHit *addHit = (PndSdsMergedHit *)recoArray->At(hitIndex);
-
                 TVector3 addPos = addHit->GetPosition();
                 double xhit = addPos.X();
                 double yhit = addPos.Y();
                 double zhit = addPos.Z();
-
-                double errxhit = addHit->GetDx();
-                double erryhit = addHit->GetDy();
-                double errzhit = addHit->GetDz();
-
                 int sensorID = addHit->GetSensorID();
-
-                // cout << "hitIndex: " << hitIndex << "\n";
-                // cout << "Original RecoHit Positions: " << xhit << ", " << yhit << ", " << zhit << "\n";
-                // cout << "-- Errors for this RecoHit: " << errxhit << ", " << erryhit << ", " << errzhit << "\n";
 
                 thisEvent["recoHits"].push_back({{"index", hitIndex}, {"sensorID", sensorID}, {"pos", {xhit, yhit, zhit}}});
             }
@@ -100,17 +88,9 @@ void convertRootTracks() {
             //*** skip remaining tracks, they are copies of the first
             break;
         }
-        // if (runIndex++ > 20) {
-        //     break;
-        // }
     }
     //! dump to json here!
-
-    // TODO: better target dir!
-    // std::ofstream o("../../input/modulesAlTest/tracks_processed.json");
-    std::ofstream o("../../input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json");
+    std::ofstream o(outJsonFile);
     o << std::setw(2) << outJson << std::endl;
-
-
     cout << "all done!\n";
 }
