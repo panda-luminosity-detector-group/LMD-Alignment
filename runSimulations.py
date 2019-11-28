@@ -579,8 +579,8 @@ if __name__ == "__main__":
         comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
         comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json')
 
-        comp.loadAlignerMatrices('output/alMat-modules-TEST.json')
-        comp.saveHistogram('output/alignmentModules/lawl.pdf')
+        comp.loadAlignerMatrices('output/alMat-modules-TEST-28-11-2019.json')
+        comp.saveHistogram('output/alignmentModules/lawl-28-11-2019.pdf')
 
         done()
 

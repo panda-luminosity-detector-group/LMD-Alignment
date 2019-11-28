@@ -71,7 +71,9 @@
         "convertLMDPoints.C": "cpp",
         "histRecoMCrtakDist.C": "cpp",
         "convertRootTracks copy.C": "cpp",
-        "convertMergedHits.C": "cpp"
+        "convertMergedHits.C": "cpp",
+        "bit": "cpp",
+        "shared_mutex": "cpp"
     },
     "restructuredtext.confPath": "${workspaceFolder}/pybind11/docs"
 }
