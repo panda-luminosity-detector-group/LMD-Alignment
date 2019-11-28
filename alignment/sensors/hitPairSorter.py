@@ -25,7 +25,6 @@ class hitPairSorter:
         self.overlapsDone = {}
         self.maxPairs = 6e5
         self.sortInMemory = True
-        # self.seed = np.random.randint(1e6)
         cryptogen = SystemRandom()
         self.seed = cryptogen.randrange(1000000000)
 
