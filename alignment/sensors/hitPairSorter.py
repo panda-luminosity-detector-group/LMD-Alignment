@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from random import SystemRandom
 import uproot
 import numpy as np
 import concurrent.futures
@@ -24,7 +25,9 @@ class hitPairSorter:
         self.overlapsDone = {}
         self.maxPairs = 6e5
         self.sortInMemory = True
-        self.seed = np.random.randint(1e6)
+        # self.seed = np.random.randint(1e6)
+        cryptogen = SystemRandom()
+        self.seed = cryptogen.randrange(10000000)
 
     def sortPairs(self, arrays, fileContents):
         # use just the overlaps for indexes, this tells us how many pairs there are in a given event
