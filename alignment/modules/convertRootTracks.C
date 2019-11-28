@@ -3,6 +3,7 @@
 //* call with root -l -q convertRootTracks.C(dataPath, jsonFile)
 
 // TODO: dump result to binary file with 6*3 values: trkOri, trkDir, reco1 - reco4, each having (x,y,z) 
+// TODO: don't hard-code 100k events! use TChains and multiple root files, and cut after n tracks have been processed
 // also, the python stuff must be able to read that
 
 using nlohmann::json;
