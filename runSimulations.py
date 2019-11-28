@@ -89,7 +89,7 @@ def startLogToFile(functionName=None):
 
     # redirect stdout/stderr to log files
     print(f'+++ starting new run and forking to background! this script will write all output to {runSimLog}\n')
-    Path(runSimLog).parent.mkdir(exist_ok=True)
+    Path(runSimLog).parent.mkdir(exist_ok=True, parents=True)
     sys.stdout = open(runSimLog, 'a+')
     sys.stderr = open(runSimLogErr, 'a+')
     print(f'+++ starting new run at {datetime.datetime.now()}:\n')
@@ -172,21 +172,11 @@ def runAligners(runConfig, threadID=None):
 
     mergedResult = {**resOne, **resTwo, **resThree}
 
-    # for p in resOne:
-    #     mergedResult[p] = resOne[p]
-
-    # for p in resTwo:
-    #     mergedResult[p] = resTwo[p]
-
     with open(mergedAlignerResultName, 'w') as f:
         json.dump(mergedResult, f, indent=2)
 
     print(f'Wrote merged alignment matrices to {mergedAlignerResultName}')
     print(f'Thread {threadID} done!')
-
-
-def runComparators():
-    pass
 
 
 def runExtractLumi(runConfig, threadID=None):
@@ -591,12 +581,12 @@ if __name__ == "__main__":
         # alignerMod.saveMatrices('output/alMat-modules-TEST-28-11-2019.json')
 
         #! run comparator
-        comp = moduleComparator()
-        comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json')
+        # comp = moduleComparator()
+        # comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+        # comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json')
 
-        comp.loadAlignerMatrices('output/alMat-modules-TEST-28-11-2019.json')
-        comp.saveHistogram('output/alignmentModules/lawl-28-11-2019.pdf')
+        # comp.loadAlignerMatrices('output/alMat-modules-TEST-28-11-2019.json')
+        # comp.saveHistogram('output/alignmentModules/lawl-28-11-2019.pdf')
 
         done()
 
