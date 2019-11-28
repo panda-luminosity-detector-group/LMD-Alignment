@@ -17,7 +17,9 @@ from numpy.linalg import inv
 
 
 def loadMatrices(fileName, reshape=True):
-
+    if fileName is None:
+        print(f'ERROR! Filename is None, something went wrong!')
+        raise Exception('bad runConfig contents.')
     if not Path(fileName).exists():
         print(f'ERROR! File not found: {fileName}!')
         return

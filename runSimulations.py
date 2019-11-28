@@ -131,13 +131,13 @@ def runAligners(runConfig, threadID=None):
     print(f'\n====================================\n')
     print(f'        running sensor aligner')
     print(f'\n====================================\n')
-    sensorAligner = alignerSensors.fromRunConfig(runConfig)
-    sensorAligner.loadExternalMatrices(externalMatPath)
-    sensorAligner.sortPairs()
-    sensorAligner.findMatrices()
-    sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
-    sensorAligner.combineAlignmentMatrices()
-    sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+    # sensorAligner = alignerSensors.fromRunConfig(runConfig)
+    # sensorAligner.loadExternalMatrices(externalMatPath)
+    # sensorAligner.sortPairs()
+    # sensorAligner.findMatrices()
+    # sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
+    # sensorAligner.combineAlignmentMatrices()
+    # sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
 
     #* create alignerModules, run
     print(f'\n====================================\n')
@@ -646,15 +646,21 @@ if __name__ == "__main__":
 
     # ? =========== align, multiple configs
     if args.alignConfigPath:
-        startLogToFile('AlignMulti')
+        if args.debug:
+            pass
+        else:
+            startLogToFile('AlignMulti')
         args.configPath = args.alignConfigPath
         runConfigsMT(args, runAligners)
         done()
 
     # ? =========== lumiFit, single config
     if args.lumifitConfig:
-        startLogToFile('LumiFit')
         config = LMDRunConfig.fromJSON(args.lumifitConfig)
+        if args.debug:
+            config.useDebug = True
+        else:
+            startLogToFile('LumiFit')
         if args.debug:
             config.useDebug = True
         runLumifit(config, 99)
@@ -669,8 +675,11 @@ if __name__ == "__main__":
 
     # ? =========== extract Lumi, single config
     if args.extractLumiConfig:
-        startLogToFile('ExtractLumi')
         config = LMDRunConfig.fromJSON(args.extractLumiConfig)
+        if args.debug:
+            config.useDebug = True
+        else:
+            startLogToFile('ExtractLumi')
         if args.debug:
             config.useDebug = True
         runExtractLumi(config, 99)
@@ -685,8 +694,11 @@ if __name__ == "__main__":
 
     # ? =========== simReco, single config
     if args.simulationConfig:
-        startLogToFile('SimReco')
         config = LMDRunConfig.fromJSON(args.simulationConfig)
+        if args.debug:
+            config.useDebug = True
+        else:
+            startLogToFile('SimReco')
         if args.debug:
             config.useDebug = True
         runSimRecoLumi(config, 99)
@@ -701,7 +713,10 @@ if __name__ == "__main__":
 
     # ? =========== full job, single config
     if args.fullRunConfig:
-        startLogToFile('FullRun')
+        if args.debug:
+            config.useDebug = True
+        else:
+            startLogToFile('FullRun')
         config = LMDRunConfig.fromJSON(args.fullRunConfig)
         if args.debug:
             config.useDebug = True

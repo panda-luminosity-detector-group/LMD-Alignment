@@ -57,7 +57,7 @@ class LMDRunConfig:
         self.__useDevQueue = False
         self.__useIdentityAlignment = False
         self.__mergeAlignmentMatrices = False
-        self.__SensorAlignerExternalMatrices = None
+        self.__sensorAlignerExternalMatrices = None
         self.__moduleAlignAnchorPointFile = None
         self.__moduleAlignAvgMisalignFile = None
 
@@ -116,10 +116,10 @@ class LMDRunConfig:
     moduleAlignAnchorPointFile = property(__getAnchorPath, __setAnchorPath)
 
     def __getExMatPath(self):
-        return self.__SensorAlignerExternalMatrices
+        return self.__sensorAlignerExternalMatrices
 
     def __setExMatPath(self, value):
-        self.__SensorAlignerExternalMatrices = value
+        self.__sensorAlignerExternalMatrices = value
     sensorAlignExternalMatrixPath = property(__getExMatPath, __setExMatPath)
 
     def __getMisalignFactor(self):
