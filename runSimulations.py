@@ -128,6 +128,9 @@ def runAligners(runConfig, threadID=None):
     thislogger.log(runConfig.dump())
 
     #* create alignerSensors, run
+    thislogger.log(f'\n====================================\n')
+    thislogger.log(f'        running sensor aligner')
+    thislogger.log(f'\n====================================\n')
     sensorAligner = alignerSensors.fromRunConfig(runConfig)
     sensorAligner.loadExternalMatrices(externalMatPath)
     sensorAligner.sortPairs()
@@ -137,6 +140,9 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
 
     #* create alignerModules, run
+    thislogger.log(f'\n====================================\n')
+    thislogger.log(f'        running module aligner')
+    thislogger.log(f'\n====================================\n')
     moduleAligner = alignerModules.fromRunConfig(runConfig)
     moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
     moduleAligner.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
@@ -146,6 +152,9 @@ def runAligners(runConfig, threadID=None):
     moduleAligner.saveMatrices(moduleAlignerResultName)
 
     #* create alignerIP, run
+    thislogger.log(f'\n====================================\n')
+    thislogger.log(f'        running box rotation aligner')
+    thislogger.log(f'\n====================================\n')
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
