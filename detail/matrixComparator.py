@@ -44,12 +44,15 @@ class comparator:
         plt.rcParams["legend.loc"] = 'upper left'
 
     def loadIdealDetectorMatrices(self, filename):
+        print(f'loading ideal detector matrices from:\n{filename}')
         self.idealDetectorMatrices = mi.loadMatrices(filename)
 
     def loadDesignMisalignments(self, filename):
+        print(f'loading design misalignments from:\n{filename}')
         self.misalignMatrices = mi.loadMatrices(filename)
 
     def loadAlignerMatrices(self, filename):
+        print(f'loading align matrices from:\n{filename}')
         self.alignerResults = mi.loadMatrices(filename)
 
     def getOverlapMisalignLikeICP(self, p1, p2):
