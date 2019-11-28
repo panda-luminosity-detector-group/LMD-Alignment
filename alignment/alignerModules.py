@@ -46,7 +46,7 @@ class alignerModules:
 
     # words cannot describe how ugly this is, but I'm pressed for time and aesthetics wont get me my phd
     def convertRootTracks(self, dataPath, outJsonFile):
-        rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(dataPath + outJsonFile)}")'
+        rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
         subprocess.run(['pwd'])
         subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules')
 
