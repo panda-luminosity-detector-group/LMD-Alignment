@@ -462,7 +462,7 @@ def createMultipleDefaultConfigs():
                     config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
                     
                     if misType == 'modulesNoRot':
-                        config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-NoRot-{fac}.json'
+                        config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-noRot-{fac}.json'
                     else:
                         config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
                     
