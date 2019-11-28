@@ -417,7 +417,7 @@ class LMDRunConfig:
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
 
-    # TODO: actually, this is pretty pointless, do this during CREATION of the runConfigs
+    # TODO: actually, this is pretty pointless here, do this during CREATION of the runConfigs
     def pathAlMatrix(self):
         self.__checkMinimum__()
 
@@ -489,5 +489,4 @@ class LMDRunConfig:
         result += (f'Num Jobs: {self.__jobsNum}\n')
         result += (f'------------------------------\n')
         result += (f'\n\n')
-        # print(result)
         return result

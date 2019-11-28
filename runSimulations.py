@@ -131,13 +131,13 @@ def runAligners(runConfig, threadID=None):
     print(f'\n====================================\n')
     print(f'        running sensor aligner')
     print(f'\n====================================\n')
-    # sensorAligner = alignerSensors.fromRunConfig(runConfig)
-    # sensorAligner.loadExternalMatrices(externalMatPath)
-    # sensorAligner.sortPairs()
-    # sensorAligner.findMatrices()
-    # sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
-    # sensorAligner.combineAlignmentMatrices()
-    # sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+    sensorAligner = alignerSensors.fromRunConfig(runConfig)
+    sensorAligner.loadExternalMatrices(externalMatPath)
+    sensorAligner.sortPairs()
+    sensorAligner.findMatrices()
+    sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
+    sensorAligner.combineAlignmentMatrices()
+    sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
 
     #* create alignerModules, run
     print(f'\n====================================\n')
@@ -329,6 +329,8 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.loadSensorAlignerOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
     comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
+
+    # module comparator
 
     # combined comparator
     comparator = combinedComparator()
