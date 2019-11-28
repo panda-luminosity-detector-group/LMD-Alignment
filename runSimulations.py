@@ -562,8 +562,10 @@ if __name__ == "__main__":
         # trackFile = Path('input/modulesAlTest/tracks_processed-noTrks.json')
         # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
         
+        dataPath = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-modulesNoRot-1.00/100000/1-100_uncut/no_alignment_correction'
+
         alignerMod = alignerModules()
-        alignerMod.convertRootTracks('../../input/modulesAlTest/', 'kort.json')
+        alignerMod.convertRootTracks(dataPath, 'testTracks.json')
         done()
         alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
         alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-1.0.json')

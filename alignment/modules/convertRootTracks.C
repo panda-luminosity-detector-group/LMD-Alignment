@@ -1,6 +1,6 @@
 #include "../../json/single_include/nlohmann/json.hpp"
 
-//* call with root -l -q convertRootTracks.C
+//* call with root -l -q convertRootTracks.C(dataPath, jsonFile)
 
 // TODO: dump result to binary file with 6*3 values: trkOri, trkDir, reco1 - reco4, each having (x,y,z) 
 // also, the python stuff must be able to read that
