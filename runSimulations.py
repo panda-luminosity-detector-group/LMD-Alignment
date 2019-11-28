@@ -456,20 +456,25 @@ def createMultipleDefaultConfigs():
                     # identity and aligned don't get factors, only momenta and need fewer pairs
                     if misType == 'aligned' or misType == 'identity':
                         config.useIdentityMisalignment = True
-                        config.jobsNum = '100'
-                        config.trksNum = '100000'
+                        # config.jobsNum = '100'
+                        # config.trksNum = '100000'
 
                     # sensors need more FOR NOW. later, all misalignments are combined and ALL need more
                     # they also need the actual external matrices path
-                    if misType == 'sensors':
+                    # if misType == 'sensors':
                         #config.jobsNum = '500'
                         #config.trksNum = '1000000'
-                        config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
+                    #     config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
 
-                    if misType == 'modules' or misType == 'modulesNoRot':
-                        config.moduleAlignAnchorPointFile = f'input/moduleAlignment/anchorPoints.json'
-                        config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
+                    # if misType == 'modules' or misType == 'modulesNoRot':
+                    #     config.moduleAlignAnchorPointFile = f'input/moduleAlignment/anchorPoints.json'
+                    #     config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
 
+                    # supply all external parameters to all cases!
+                    config.moduleAlignAnchorPointFile = f'input/moduleAlignment/anchorPoints.json'
+                    config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
+                    config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
+                    
                     # ? ----- special cases here
                     # aligned case has no misalignment
                     if misType == 'aligned':
