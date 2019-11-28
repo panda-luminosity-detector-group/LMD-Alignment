@@ -28,8 +28,8 @@ class comparator:
         self.idealDetectorMatrices = {}
         self.misalignMatrices = {}
         goodColors = ['xkcd:coral', 'xkcd:pale orange', 'xkcd:dark lilac', 'xkcd:teal green', 'xkcd:bluish grey', 'xkcd:dark sky blue']
-        self.colors = ['xkcd:pale orange', 'xkcd:teal green', 'xkcd:dark sky blue']
-        self.latexsigma = r'\textsigma '
+        self.colors = [goodColors[1], goodColors[3], goodColors[5]]
+        self.latexsigma = r'\textsigma{} '
         self.latexmu = r'\textmu '
         plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':11})
         plt.rc('text', usetex=True)
@@ -153,27 +153,35 @@ class moduleComparator(comparator):
 
     def histValues(self, values):
 
-        muX = np.average(values)
-        sigX = np.std(values)
-
-        # plot difference hit array
+        # prepare figure
         fig = plt.figure(figsize=(6, 4))
-
-        # TODO: better title
-        fig.suptitle('Module Misalignment')
-
+        fig.suptitle('Module Misalignment Residuals')
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
+        
+        # statistics
+        mu = np.average(values, axis=0)
+        sigX = np.std(values, axis=0)
 
-        bucketLabels = ['dx', 'dy', 'rot z']
-
+        # prepare args, labels
+        bucketLabels = [f'{self.latexsigma} dx={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma} dy={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
         kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
+
+        # histogram
         histA.hist(values[...,:2], **kwargs)  # this is only the z distance
-        histA.set_title('distance alignment result - generated')   # change to mm!
-        histA.set_xlabel(f'd [{self.latexmu}rad]')
+
+        # names, titles
+        # histA.set_title('distance alignment result - generated')   # change to mm!
+        histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
-        plt.legend()
+
+        # manually set legend order
+        handles,labels = histA.get_legend_handles_labels()
+        handles = [handles[1], handles[0]]
+        labels = [labels[1], labels[0]]
+        histA.legend(handles,labels,loc=2)
+
         return fig
 
     def saveHistogram(self, outputFileName):
