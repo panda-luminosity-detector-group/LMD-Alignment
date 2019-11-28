@@ -86,7 +86,7 @@ class hitPairSorter:
 
         if self.sortInMemory:
             self.npyOutputDir = self.shmDir / Path(f'pairSorter/{self.seed}')
-            self.npyOutputDir.mkdir(exist_ok=True)
+            self.npyOutputDir.mkdir(exist_ok=True, parents=True)
             print(f'sorting in memory, using {str(self.npyOutputDir)}...')
             
         else:

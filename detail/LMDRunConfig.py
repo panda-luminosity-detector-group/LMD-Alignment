@@ -57,7 +57,7 @@ class LMDRunConfig:
         self.__useDevQueue = False
         self.__useIdentityAlignment = False
         self.__mergeAlignmentMatrices = False
-        self.__SensorAlignerExternalMatrices = 'input/alMat-identity-all.json'
+        self.__SensorAlignerExternalMatrices = None
         self.__moduleAlignAnchorPointFile = None
         self.__moduleAlignAvgMisalignFile = None
 

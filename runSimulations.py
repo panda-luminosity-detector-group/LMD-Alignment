@@ -128,9 +128,9 @@ def runAligners(runConfig, threadID=None):
     thislogger.log(runConfig.dump())
 
     #* create alignerSensors, run
-    thislogger.log(f'\n====================================\n')
-    thislogger.log(f'        running sensor aligner')
-    thislogger.log(f'\n====================================\n')
+    print(f'\n====================================\n')
+    print(f'        running sensor aligner')
+    print(f'\n====================================\n')
     sensorAligner = alignerSensors.fromRunConfig(runConfig)
     sensorAligner.loadExternalMatrices(externalMatPath)
     sensorAligner.sortPairs()
@@ -140,21 +140,21 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
 
     #* create alignerModules, run
-    thislogger.log(f'\n====================================\n')
-    thislogger.log(f'        running module aligner')
-    thislogger.log(f'\n====================================\n')
+    print(f'\n====================================\n')
+    print(f'        running module aligner')
+    print(f'\n====================================\n')
     moduleAligner = alignerModules.fromRunConfig(runConfig)
-    moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
     moduleAligner.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
-    moduleAligner.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-{runConfig.misalignFactor}.json')       # TODO: doesn't have to be noRot!
+    moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)
+    moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
     moduleAligner.readTracks(moduleAlignTrackFile)
     moduleAligner.alignModules()
     moduleAligner.saveMatrices(moduleAlignerResultName)
 
     #* create alignerIP, run
-    thislogger.log(f'\n====================================\n')
-    thislogger.log(f'        running box rotation aligner')
-    thislogger.log(f'\n====================================\n')
+    print(f'\n====================================\n')
+    print(f'        running box rotation aligner')
+    print(f'\n====================================\n')
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
@@ -636,10 +636,11 @@ if __name__ == "__main__":
 
     # ? =========== align, single config
     if args.alignConfig:
-        startLogToFile('Align')
         config = LMDRunConfig.fromJSON(args.alignConfig)
         if args.debug:
             config.useDebug = True
+        else:
+            startLogToFile('Align')
         runAligners(config, 99)
         done()
 
