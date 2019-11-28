@@ -31,7 +31,7 @@ class sensorMatrixFinder:
         try:
             self.PairData = np.load(fileName)
         except:
-            print(f'ERROR! Can not read {fileName}!')
+            raise Exception(f'ERROR! Can not read {fileName}!')
 
         # reduce to maxPairs
         if self.PairData.shape > (7, int(self.maxPairs)):
@@ -71,11 +71,10 @@ class sensorMatrixFinder:
     def findMatrix(self):
 
         if self.idealOverlapInfos is None or self.PairData is None:
-            print(f'Error! Please load ideal detector matrices and numpy pairs!')
-            return
+            raise Exception(f'Error! Please load ideal detector matrices and numpy pairs!')
 
         if len(self.idealDetectorMatrices) < 1:
-            print('ERROR! Please set ideal detector matrices!')
+            raise Exception('ERROR! Please set ideal detector matrices!')
 
         # Make C a homogeneous representation of hits1 and hits2
         hit1H = np.ones((len(self.PairData), 4))

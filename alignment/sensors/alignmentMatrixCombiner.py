@@ -440,12 +440,10 @@ class alignmentMatrixCombiner:
     def combineMatrices(self):
         # checks here
         if self.overlapMatrices is None or self.idealDetectorMatrices is None:
-            print(f'ERROR! Please set overlaps, overlap matrices and ideal detector matrices first!')
-            return
+            raise Exception(f'ERROR! Please set overlaps, overlap matrices and ideal detector matrices first!')
 
         if self.externalMatrices is None:
-            print(f'ERROR! Please set the externally measured matrices for sensor 0 and 1 for module {self.modulePath}!')
-            return
+            raise Exception(f'ERROR! Please set the externally measured matrices for sensor 0 and 1 for module {self.modulePath}!')
 
         # the overlap matrices from the matrix finders still have their entire overlapID, but we need only the smallOverlap
         self.sortOverlapMatrices()

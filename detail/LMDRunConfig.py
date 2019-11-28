@@ -243,8 +243,7 @@ class LMDRunConfig:
         # 5: aligned or something else
 
         if len(pathParts) < 3:
-            print(f'ERROR! path doesn\'t go deep enough, can not extract all information!')
-            sys.exit(1)
+            raise Exception(f'ERROR! path doesn\'t go deep enough, can not extract all information!')
 
         if pathParts[2] == 'no_geo_misalignment':
             self.__misalignType = 'aligned'
@@ -299,21 +298,17 @@ class LMDRunConfig:
         try:
             self.__alignmentDir = os.environ[alignmentDir]
         except:
-            print(f"ERROR! Can't find LMDAlignment installation installation, please set {alignmentDir}!")
-            sys.exit(1)
+            raise Exception(f"ERROR! Can't find LMDAlignment installation installation, please set {alignmentDir}!")
 
         try:
             self.__pandaRootDir = os.environ[pndRootDir]
         except:
-            print(f"ERROR! Can't find PandaRoot installation, please set {pndRootDir}!")
-            sys.exit(1)
+            raise Exception(f"ERROR! Can't find PandaRoot installation, please set {pndRootDir}!")
         
         try:
             self.__simDataPath = os.environ[simDirEnv]
         except:
-            print(f"ERROR! Can't find, please set {simDirEnv}!")
-            sys.exit(1)
-        
+            raise Exception(f"ERROR! Can't find $SIMDATA, please set {simDirEnv}!")
 
     #! --------------------- generate matrix name after minimal initialization
 
@@ -334,8 +329,7 @@ class LMDRunConfig:
     @classmethod
     def fromJSON(cls, filename):
         if not Path(filename).exists():
-            print(f'ERROR! File {filename} can\'t be read!')
-            sys.exit(1)
+            raise Exception(f'ERROR! File {filename} can\'t be read!')
         temp = cls()
         with open(filename, 'r') as inFile:
             data = json.load(inFile)
@@ -354,20 +348,16 @@ class LMDRunConfig:
     #! --------------------- these define the path structure! ---------------------
     def __checkMinimum__(self):
         if self.__misalignFactor is None:
-            print('ERROR! Align factor not set!')
-            sys.exit(1)
+            raise Exception('ERROR! Align factor not set!')
         if self.__misalignType is None:
-            print('ERROR! Align type not set!')
-            sys.exit(1)
+            raise Exception('ERROR! Align type not set!')
         if self.__momentum is None:
-            print('ERROR! Beam Momentum not set!')
-            sys.exit(1)
+            raise Exception('ERROR! Beam Momentum not set!')
 
     def __checkIfNoneAreNone__(self):
         for val in self.__dict__.values():
             if val is None:
-                print(f'ERROR in LMDRunConfig: some values are not set!')
-                sys.exit(1)
+                raise Exception(f'ERROR in LMDRunConfig: some values are not set!')
 
     def __pathMom__(self):
         return Path(f'plab_{self.__momentum}GeV')

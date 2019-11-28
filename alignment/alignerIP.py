@@ -165,7 +165,3 @@ class alignerIP:
             Path(outFileName).parent.mkdir()
 
         mi.saveMatrices(self.resultJson, outFileName)
-
-
-if __name__ == "__main__":
-    print(f'Error! Can not be run individually!')

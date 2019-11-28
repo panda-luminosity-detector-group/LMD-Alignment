@@ -51,11 +51,10 @@ if __name__ == "__main__":
     outFile = Path(sys.argv[2])
 
     if not inFile.exists():
-        print(f'File {inFile} can not be read!')
-        sys.exit(1)
+        raise Exception(f'File {inFile} can not be read!')
     if outFile.exists():
-        print(f'Error! File {outFile} already exists.')
-        sys.exit(1)
+        raise Exception(f'Error! File {outFile} already exists.')
+    
     print(f'Calculating average misalignments...')
     calc(inFile, outFile)
     print(f'all done!')
