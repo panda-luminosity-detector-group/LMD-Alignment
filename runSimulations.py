@@ -120,12 +120,14 @@ def runAligners(runConfig, threadID=None):
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
     mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
+    moduleAlignDataPath = runConfig.pathJobBase() / Path('1-100_uncut/no_alignment_correction')     # TODO: make more robust (no of jobs doesn't have to be 100)
+    moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
 
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
-    # create alignerSensors, run
+    #* create alignerSensors, run
     sensorAligner = alignerSensors.fromRunConfig(runConfig)
     sensorAligner.loadExternalMatrices(externalMatPath)
     sensorAligner.sortPairs()
@@ -134,18 +136,20 @@ def runAligners(runConfig, threadID=None):
     sensorAligner.combineAlignmentMatrices()
     sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
 
-    # create alignerModules, run
+    #* create alignerModules, run
     moduleAligner = alignerModules.fromRunConfig(runConfig)
+    moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
+    moduleAligner.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
+    moduleAligner.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-{runConfig.misalignFactor}.json')       # TODO: doesn't have to be noRot!
+    moduleAligner.readTracks(moduleAlignTrackFile)
+    moduleAligner.alignModules()
+    moduleAligner.saveMatrices(moduleAlignerResultName)
 
-    sensorAligner.saveAlignmentMatrices(moduleAlignerResultName)
-
-    # create alignerIP, run
+    #* create alignerIP, run
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
     IPaligner.saveAlignmentMatrix(IPalignerResultName)
-
-    # create alignerCorridors, run
 
     # combine all alignment matrices to one single json File
     with open(sensorAlignerResultName, 'r') as f:
@@ -164,8 +168,8 @@ def runAligners(runConfig, threadID=None):
 
     with open(mergedAlignerResultName, 'w') as f:
         json.dump(mergedResult, f, indent=2)
-    print(f'Wrote merged alignment matrices to {mergedAlignerResultName}')
 
+    print(f'Wrote merged alignment matrices to {mergedAlignerResultName}')
     print(f'Thread {threadID} done!')
 
 
