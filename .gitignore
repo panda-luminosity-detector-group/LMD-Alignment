@@ -5,5 +5,4 @@ runLogs/*
 .testscripts/
 .vscode/*
 .vscode
-*.json
 *.png
