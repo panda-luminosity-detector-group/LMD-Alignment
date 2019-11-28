@@ -417,22 +417,32 @@ class LMDRunConfig:
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
 
+    # TODO: actually, this is pretty pointless, do this during CREATION of the runConfigs
     def pathAlMatrix(self):
         self.__checkMinimum__()
 
         if self.__useIdentityAlignment:
             return Path(self.__alignmentDir) / Path('input') / Path('alMat-identity-all.json')
-
+        
         elif self.__mergeAlignmentMatrices:
             return self.pathAlMatrixPath() / Path(f'alMat-merged.json')
+        
         else:
             if self.__misalignType == 'box' or self.__misalignType == 'boxRotZ':
                 return self.pathAlMatrixPath() / Path(f'alMat-IPalignment-{self.__misalignFactor}.json')
+            
             elif self.__misalignType == 'sensors':
                 return self.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{self.__misalignFactor}.json')
-            elif self.__misalignType == 'singlePlane' or self.__misalignType == 'modules' or self.__misalignType == 'modulesNoRot':
+            
+            elif self.__misalignType == 'singlePlane' :
+                return self.pathAlMatrixPath() / Path(f'alMat-modulesSinglePlane-{self.__misalignFactor}.json')
+            
+            elif self.__misalignType == 'modules':
                 return self.pathAlMatrixPath() / Path(f'alMat-modules-{self.__misalignFactor}.json')
-            # TODO: add more cases for modules etc
+            
+            elif self.__misalignType == 'modulesNoRot':
+                return self.pathAlMatrixPath() / Path(f'alMat-modulesNoRot-{self.__misalignFactor}.json')
+            # TODO: add for combined
 
     def pathMisMatrix(self):
         self.__checkMinimum__()

@@ -115,15 +115,14 @@ class alignerSensors:
     def combineAlignmentMatrices(self):
 
         if self.externalMatrices == None:
-            print('Error! Please set externally measured matrices!')
+            raise Exception('Error! Please set externally measured matrices!')
 
         # these are important! the combiner MUST only get the overlap matrices
         sortedMatrices = collections.defaultdict(dict)
         sortedOverlaps = collections.defaultdict(dict)
 
         if len(self.overlapMatrices) < 360:
-            print(f'ERROR! Not all overlap matrices could be found!')
-            return
+            raise Exception(f'Error! Not all overlap matrices could be found!')
 
         # sort overlap matrices by module they are on
         for overlapID in self.availableOverlapIDs:

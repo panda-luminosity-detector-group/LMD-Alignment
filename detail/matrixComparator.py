@@ -56,7 +56,7 @@ class comparator:
         """Returns a 4x4 matrix that looks just like the one found by the ICP, but infinitely precise (well, double precision)."""
 
         if len(self.idealDetectorMatrices) < 400 or len(self.misalignMatrices) < 1:
-            print('ERROR! Please load ideal and misalignment matrices first!')
+            raise Exception('ERROR! Please load ideal and misalignment matrices first!')
 
         # TODO: include a filter for overlapping sensors!
         # this code works for any sensor pair (which is good),

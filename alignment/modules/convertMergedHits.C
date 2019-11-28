@@ -8,26 +8,6 @@ void convertMergedHits() {
     //*** output json
     json outJson;
 
-    // same for recoHits
-    // TFile *recoFile = new TFile("../../input/modulesAlTest/Lumi_recoMerged_200000.root");
-    // TTree *recoTree = (TTree *)recoFile->Get("pndsim");
-
-
-    // TChain* chainPairs = new TChain("pndsim");
-	// for (size_t i = 0; i < fileNames.size(); i++) {
-	// 	//cout << files[i] << endl;
-	// 	if (fileNames[i].find("Lumi_Pairs") != std::string::npos) {
-	// 		chainPairs->Add(fileNames[i].c_str());
-	// 	}
-	// }
-
-	// TClonesArray* hitPairs = new TClonesArray("PndLmdHitPair");
-	// chainPairs->SetBranchAddress("PndLmdHitPair", &hitPairs);
-
-
-
-
-
     // TChain Version
     TChain *chain = new TChain("pndsim");
     chain->Add("../../input/modulesAlTest/Lumi_recoMerged_*.root");
@@ -74,9 +54,6 @@ void convertMergedHits() {
             thisEvent["recoHits"].push_back({{"sensorID", sensorID}, {"pos", {fx, fy, fz}}});
         }
         outJson["events"].push_back(thisEvent);
-        // if (event++ >= 0) {
-        //     break;
-        // }
     }
     //! dump to json here!
     // TODO: better target dir!
