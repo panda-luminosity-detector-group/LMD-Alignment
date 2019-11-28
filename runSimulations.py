@@ -167,13 +167,16 @@ def runAligners(runConfig, threadID=None):
     with open(IPalignerResultName, 'r') as f:
         resTwo = json.load(f)
 
-    mergedResult = {}
+    with open(moduleAlignerResultName, 'r') as f:
+        resThree = json.load(f)
 
-    for p in resOne:
-        mergedResult[p] = resOne[p]
+    mergedResult = {**resOne, **resTwo, **resThree}
 
-    for p in resTwo:
-        mergedResult[p] = resTwo[p]
+    # for p in resOne:
+    #     mergedResult[p] = resOne[p]
+
+    # for p in resTwo:
+    #     mergedResult[p] = resTwo[p]
 
     with open(mergedAlignerResultName, 'w') as f:
         json.dump(mergedResult, f, indent=2)
@@ -331,6 +334,11 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
 
     # module comparator
+    comparator = moduleComparator()
+    comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+    comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+    comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
+    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/modules-{runConfig.misalignFactor}.pdf')
 
     # combined comparator
     comparator = combinedComparator()
@@ -565,22 +573,22 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         
-        # from good-ish tracks
-        trackFile = Path('input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json')
-        # trackFile = Path('input/modulesAlTest/tracks_processed-noTrks.json')
-        # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
+        # # from good-ish tracks
+        # trackFile = Path('input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json')
+        # # trackFile = Path('input/modulesAlTest/tracks_processed-noTrks.json')
+        # # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
         
-        dataPath = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-modulesNoRot-1.00/100000/1-100_uncut/no_alignment_correction'
-        trackFile = dataPath + '/testTracks.json'
+        # dataPath = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-modulesNoRot-1.00/100000/1-100_uncut/no_alignment_correction'
+        # trackFile = dataPath + '/testTracks.json'
 
-        alignerMod = alignerModules()
-        alignerMod.convertRootTracks(dataPath, trackFile)
-        alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
-        alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-1.0.json')
-        alignerMod.readTracks(trackFile)
-        alignerMod.alignModules()
-        # print(alignerMod.alignMatrices)
-        alignerMod.saveMatrices('output/alMat-modules-TEST-28-11-2019.json')
+        # alignerMod = alignerModules()
+        # alignerMod.convertRootTracks(dataPath, trackFile)
+        # alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
+        # alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-1.0.json')
+        # alignerMod.readTracks(trackFile)
+        # alignerMod.alignModules()
+        # # print(alignerMod.alignMatrices)
+        # alignerMod.saveMatrices('output/alMat-modules-TEST-28-11-2019.json')
 
         #! run comparator
         comp = moduleComparator()
