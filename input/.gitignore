@@ -6,6 +6,8 @@ plab*/
 LumiPairsTest/*
 modulesAlTest/
 misMatrices/
+LumiFit/*
+LumiFit/
 
 # But never these files...
 !.gitignore
