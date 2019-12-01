@@ -114,14 +114,11 @@ class boxComparator(comparator):
     def saveHistogram(self, outputFileName):
 
         if self.alignerResults is None:
-            print(f'Aligner results not found! Skipping...')
-            return
+            raise Exception(f'Aligner results not found! Skipping...')
         if self.idealDetectorMatrices is None:
-            print(f'Ideal Detector Matrices not found! Skipping...')
-            return
+            raise Exception(f'Ideal Detector Matrices not found! Skipping...')
         if self.misalignMatrices is None:
-            print(f'Design Misalignments not found! Skipping...')
-            return
+            raise Exception(f'Design Misalignments not found! Skipping...')
 
         Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
 
@@ -190,14 +187,11 @@ class moduleComparator(comparator):
     def saveHistogram(self, outputFileName):
 
         if self.alignerResults is None:
-            print(f'Aligner results not found! Skipping...')
-            return
+            raise Exception(f'Aligner results not found! Skipping...')
         if self.idealDetectorMatrices is None:
-            print(f'Ideal Detector Matrices not found! Skipping...')
-            return
+            raise Exception(f'Ideal Detector Matrices not found! Skipping...')
         if self.misalignMatrices is None:
-            print(f'Design Misalignments not found! Skipping...')
-            return
+            raise Exception(f'Design Misalignments not found! Skipping...')
 
         Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
 
@@ -215,7 +209,7 @@ class moduleComparator(comparator):
                     modules.append(m.group(0))
         
         results = {}
-        # jesus what are you doing here
+
         for mod in modules:
             alMat = self.alignerResults[mod]
             actualMat = self.misalignMatrices[mod]
@@ -223,26 +217,16 @@ class moduleComparator(comparator):
             diffMat = alMat-actualMat
             dAlpha = mi.rotationMatrixToEulerAngles(diffMat)
 
-            # print(f'OI MAT: {diffMat}')
             values = [diffMat[0,3]*1e4, diffMat[1,3]*1e4, dAlpha[2]]
-
-            if abs(values[0]) > 0.5*1e3 or abs(values[1]) > 0.5*1e3:
-
-                print(f'\nOI PATH: {mod}')
-                print(f'OI VALUES: {values}')
-            
             resValues.append(values)
         
         resValues = np.array(resValues)
-        # print(f'these are all values:\n{resValues}\nthese were all values')
 
         self.histValues(resValues)
         plt.savefig(outputFileName, dpi=300)
         plt.close()
 
         return
-
-    pass
 
 class overlapComparator(comparator):
 
@@ -379,14 +363,11 @@ class combinedComparator(comparator):
     def saveHistogram(self, outputFileName):
 
         if self.alignerResults is None:
-            print(f'Aligner results not found! Skipping...')
-            return
+            raise Exception(f'Aligner results not found! Skipping...')
         if self.idealDetectorMatrices is None:
-            print(f'Ideal Detector Matrices not found! Skipping...')
-            return
+            raise Exception(f'Ideal Detector Matrices not found! Skipping...')
         if self.misalignMatrices is None:
-            print(f'Design Misalignments not found! Skipping...')
-            return
+            raise Exception(f'Design Misalignments not found! Skipping...')
 
         Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
 
@@ -395,7 +376,6 @@ class combinedComparator(comparator):
         for p in self.alignerResults:
             # check if this path is for a sensor!
             if 'sensor' not in p:
-                print(f'sensor not in {p}')
                 continue
             try:
                 matResult = self.alignerResults[p]

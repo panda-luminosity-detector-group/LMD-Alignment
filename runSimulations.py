@@ -305,8 +305,6 @@ def showLumiFitResults(runConfigPath, threadID=None):
 
 
 def histogramRunConfig(runConfig, threadId=0):
-    # ? comparator starts here
-
 
     # box rotation comparator
     comparator = boxComparator()
@@ -338,7 +336,6 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.pdf')
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
-
 
 def runConfigsMT(args, function):
 
