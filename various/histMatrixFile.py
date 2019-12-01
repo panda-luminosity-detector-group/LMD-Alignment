@@ -9,7 +9,7 @@ import re
 import sys
 
 import matplotlib
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 
 def getParamsFromModulePath(modulePath):
     # "/cave_1/lmd_root_0/half_1/plane_0/module_3"
@@ -25,8 +25,8 @@ def getParamsFromModulePath(modulePath):
 
 if __name__ == "__main__":
     
-    if len(sys.argv) != 2:
-        print('usage: ./histMatrixFile.py matrices.json')
+    if len(sys.argv) != 3:
+        print('usage: ./histMatrixFile.py matrices.json outfile.png')
         sys.exit(1)
 
     filename = str(sys.argv[1])
@@ -63,6 +63,6 @@ if __name__ == "__main__":
     print(f'Entries total: {len(values)}')
     print(values)
     # fig.show()
-    fig.savefig(f'tempHistogram.png')
+    fig.savefig(f'{sys.argv[2]}')
     print(f'saved!')
     # input()
