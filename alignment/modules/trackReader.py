@@ -44,12 +44,15 @@ class trackReader():
         print('removing empty tracks...')
         self.trks = [ x for x in self.trks if np.linalg.norm(x['trkMom']) != 0 ]
         
+        notEnoughRecos = 0
+
         # find sector crossing tracks
         print('removing sector-crossing tracks...')
         for track in self.trks:
             # discard tracks that have only three recos, they screw up my indices
             if len(track['recoHits']) != 4:
                 track['valid'] = False
+                notEnoughRecos += 1
                 continue
 
             # check if all recos are in the same sector
@@ -72,8 +75,9 @@ class trackReader():
                     break
         
         # actually remove
+        print(f'all tracks: {len(self.trks)}')
         self.trks = [ x for x in self.trks if x['valid'] ]
-        print(f'pre-processing done, got {len(self.trks)} tracks!')
+        print(f'pre-processing done, discarded {notEnoughRecos}, {len(self.trks)} tracks remaining!')
                 
     # this reads detector parameters and sets up several dicts for fast loop ups
     def readDetectorParameters(self):
@@ -125,8 +129,9 @@ class trackReader():
     # get (a deep copy of) all tracks in a given sector
     # TODO: deprecate once SynthDataTest is no longer needed
     def getAllTracksInSector(self, sector):
-        result = copy.deepcopy([ x for x in self.trks if x['sector'] == sector ])
-        return result
+        # result = copy.deepcopy([ x for x in self.trks if x['sector'] == sector ])
+        # return result
+        return [ x for x in self.trks if x['sector'] == sector ]
 
     # TODO: deprecate once SynthDataTest is no longer needed
     def transformPoint(self, point, matrix):

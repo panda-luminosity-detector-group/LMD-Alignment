@@ -131,7 +131,7 @@ class alignerModules:
         assert hasattr(self, 'anchorPoints') 
 
         preTransform = True
-        useOldFormat = True
+        useOldFormat = True     # don't change yet, new format is not ready yet!
 
         # get relevant module paths
         modulePaths = self.reader.getModulePathsInSector(sector)
@@ -160,7 +160,8 @@ class alignerModules:
                 newTracks[i, 3, :3] = allTracks[i]['recoHits'][1]['pos']
                 newTracks[i, 4, :3] = allTracks[i]['recoHits'][2]['pos']
                 newTracks[i, 5, :3] = allTracks[i]['recoHits'][3]['pos']
-            #? end new format! np array with track oris, track dirs, and recos
+        else:
+            raise Exception(f'new track format is not implemented yet!')
 
         # use only N tracks:
         # newTracks = newTracks[:10000]
@@ -177,6 +178,13 @@ class alignerModules:
             matFromLMD = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
             self.anchorPoints[sectorString] = (matFromLMD @ self.anchorPoints[sectorString])
         
+        print(f'==================================================')
+        print(f'        module aligner for sector {sector}')
+        print(f'==================================================')
+
+        print(f'number of tracks: {len(newTracks)}')
+        print(f'anchor point: {self.anchorPoints[sectorString]}')
+
         # do a first track fit, otherwise we have no starting tracks
         recos = newTracks[:,2:6]
         corrFitter = CorridorFitter(recos)

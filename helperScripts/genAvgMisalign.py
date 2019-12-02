@@ -11,8 +11,7 @@ import json
 import numpy as np
 import sys
 
-def calc(inFile, outFile):
-    pass
+def calcOld(inFile, outFile):
     # read all input matrices
     with open(inFile, 'r') as f:
         inMats = json.load(f)
@@ -41,6 +40,35 @@ def calc(inFile, outFile):
     with open(outFile, 'w') as f:
         json.dump(saveMatrices, f, indent=2)
 
+def calc(inFile, outFile):
+    # read all input matrices
+    with open(inFile, 'r') as f:
+        inMats = json.load(f)
+
+    for p in inMats:
+        inMats[p] = np.array(inMats[p]).reshape((4,4))
+
+    # calc avg misalign
+    avgMisMats = {}
+
+    # find 4 modules per sector
+    with open('input/moduleAlignment/sectorPaths.json') as f:
+        paths = json.load(f)
+
+    for i in range(10):
+        avgMisMats[str(i)] = np.identity(4)
+        for path in paths[str(i)]:
+            avgMisMats[str(i)] = avgMisMats[str(i)] @ inMats[path]
+
+    # store to output as dict ( sectorString -> matrix )
+    saveMatrices = {}
+    outFile.parent.mkdir(exist_ok=True, parents=True)
+    for p in avgMisMats:
+        saveMatrices[p] = np.ndarray.tolist(np.ndarray.flatten(avgMisMats[p]))
+
+    with open(outFile, 'w') as f:
+        json.dump(saveMatrices, f, indent=2)
+
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
@@ -52,8 +80,8 @@ if __name__ == "__main__":
 
     if not inFile.exists():
         raise Exception(f'File {inFile} can not be read!')
-    if outFile.exists():
-        raise Exception(f'Error! File {outFile} already exists.')
+    # if outFile.exists():
+    #     raise Exception(f'Error! File {outFile} already exists.')
     
     print(f'Calculating average misalignments...')
     calc(inFile, outFile)

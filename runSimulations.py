@@ -560,30 +560,30 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         
-        # # from good-ish tracks
-        # trackFile = Path('input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json')
-        # # trackFile = Path('input/modulesAlTest/tracks_processed-noTrks.json')
-        # # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
+        # from good-ish tracks
+        trackFile = Path('./input/modulesAlTest/processedTracks-modules-1.00.json')
+        # trackFile = Path('input/modulesAlTest/tracks_processed-noTrks.json')
+        # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
         
         # dataPath = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-modulesNoRot-1.00/100000/1-100_uncut/no_alignment_correction'
         # trackFile = dataPath + '/testTracks.json'
 
-        # alignerMod = alignerModules()
+        alignerMod = alignerModules()
         # alignerMod.convertRootTracks(dataPath, trackFile)
-        # alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
-        # alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-noRot-1.0.json')
-        # alignerMod.readTracks(trackFile)
-        # alignerMod.alignModules()
-        # # print(alignerMod.alignMatrices)
-        # alignerMod.saveMatrices('output/alMat-modules-TEST-28-11-2019.json')
+        alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
+        alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-1.00.json')
+        alignerMod.readTracks(trackFile)
+        alignerMod.alignModules()
+        # print(alignerMod.alignMatrices)
+        alignerMod.saveMatrices('output/alMat-modules-1.00-2019-12-01.json')
 
         #! run comparator
-        # comp = moduleComparator()
-        # comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        # comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modulesNoRot-1.00.json')
+        comp = moduleComparator()
+        comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+        comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
 
-        # comp.loadAlignerMatrices('output/alMat-modules-TEST-28-11-2019.json')
-        # comp.saveHistogram('output/alignmentModules/lawl-28-11-2019.pdf')
+        comp.loadAlignerMatrices('output/alMat-modules-1.00-2019-12-01.json')
+        comp.saveHistogram('output/alignmentModules/residuals-modules-2019-12-01.pdf')
 
         done()
 
