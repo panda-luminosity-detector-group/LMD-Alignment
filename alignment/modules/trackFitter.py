@@ -35,6 +35,11 @@ class CorridorFitter():
             _, _, vv = np.linalg.svd(trackRecos - meanPoint)
 
             self.fittedTrackArr[i][0] = meanPoint
-            self.fittedTrackArr[i][1] = vv[0]
+
+            # flip tracks that are fitted backwards
+            if vv[0,2] < 0:
+                self.fittedTrackArr[i][1] = -vv[0]
+            else:
+                self.fittedTrackArr[i][1] = vv[0]
 
         return self.fittedTrackArr
