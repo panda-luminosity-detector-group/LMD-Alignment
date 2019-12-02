@@ -562,8 +562,7 @@ if __name__ == "__main__":
         
         # from good-ish tracks
         trackFile = Path('./input/modulesAlTest/processedTracks-modules-1.00.json')
-        # trackFile = Path('input/modulesAlTest/tracks_processed-noTrks.json')
-        # trackFile = Path('input/modulesAlTest/tracks_processed-aligned.json')
+        # trackFile = Path('./input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json')
         
         # dataPath = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-modulesNoRot-1.00/100000/1-100_uncut/no_alignment_correction'
         # trackFile = dataPath + '/testTracks.json'
@@ -574,7 +573,6 @@ if __name__ == "__main__":
         alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-1.00.json')
         alignerMod.readTracks(trackFile)
         alignerMod.alignModules()
-        # print(alignerMod.alignMatrices)
         alignerMod.saveMatrices('output/alMat-modules-1.00-2019-12-01.json')
 
         #! run comparator
