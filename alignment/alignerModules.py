@@ -212,7 +212,7 @@ class alignerModules:
         
         #* =========== iterate cuts and calculation
         for iIteration in range(self.iterations):
-
+            print(f'running iteration {iIteration}...')
             newTracks = self.dynamicRecoTrackDistanceCut(newTracks)
             
             # 4 planes per sector
@@ -300,6 +300,9 @@ class alignerModules:
             totalMatrices[i] = totalMatrices[i] + averageShift
             yield modulePaths[i], totalMatrices[i]
         
+        print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+        print(f'        module aligner for sector {sector} done!         ')
+        print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         return
 
     # TODO externalize, same as for sensor aligner!
