@@ -35,7 +35,7 @@ class alignerModules:
         self.iterations = 4
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
-        self.__debug = True
+        self.__debug = False
 
     @classmethod
     def fromRunConfig(cls, runConfig):
