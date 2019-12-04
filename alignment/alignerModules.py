@@ -297,7 +297,8 @@ class alignerModules:
                 totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
        
             # add average shift
-            totalMatrices[i] = totalMatrices[i] + averageShift
+            # Attention! You can't just add two matrices, multiply them!
+            totalMatrices[i] = totalMatrices[i] @ averageShift
             yield modulePaths[i], totalMatrices[i]
         
         print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
