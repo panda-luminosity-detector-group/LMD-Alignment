@@ -363,6 +363,8 @@ def runConfigsMT(args, function):
     maxThreads = min(len(simConfigs), threads)
     print(f'INFO: running in {maxThreads} threads!')
 
+    futures = {}
+
     if args.debug:
         maxThreads = 1
 
@@ -377,10 +379,15 @@ def runConfigsMT(args, function):
         with concurrent.futures.ProcessPoolExecutor(max_workers=maxThreads) as executor:
             # Start the load operations and mark each future with its URL
             for index, config in enumerate(simConfigs):
-                executor.submit(function, config, index)
+                futures[index] = executor.submit(function, config, index)
 
         print('waiting for all jobs...')
+        
         executor.shutdown(wait=True)
+        for i in futures:
+            print(f'future with index {i} returned:\n')
+            print(f'{futures[i].result()}')
+            print(f'end of return {i}')
     return
 
 
