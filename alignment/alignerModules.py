@@ -265,7 +265,6 @@ class alignerModules:
         print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         return
 
-    # TODO externalize, same as for sensor aligner!
     def getMatrix(self, trackPositions, recoPositions, use2D=False):
 
         # use 2D, use only in LMD local!
@@ -284,7 +283,6 @@ class alignerModules:
 
     def alignMillepede(self):
 
-        # TODO: sort better by sector!
         sector = 0
 
         milleOut = f'output/millepede/moduleAlignment-sector{sector}-aligned.bin'
@@ -304,12 +302,9 @@ class alignerModules:
         print(f'Running pyMille...')
         for params in self.reader.generatorMilleParameters():
             if params[4] == sector:
-                # TODO: slice here, use only second plane
-                # paramsN = params[0][3:6]
-                # if np.linalg.norm(np.array(paramsN)) == 0:
                 #     continue
 
-                # TODO: this order of parameters does't match the interface!!!
+                # Attention: this order of parameters does't match the reader interface!
                 MyMille.write(params[1], params[0], labels, params[2], params[3]*sigmaScale)
                 # print(f'params: {paramsN}')
                 # print(f'residual: {params[2]}, sigma: {params[3]*sigmaScale} (factor {params[2]/(params[3]*sigmaScale)})')

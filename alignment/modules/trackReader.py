@@ -203,8 +203,6 @@ class trackReader():
                 # attention! this goes FROM reco TO track, so minus is important!
                 dVec = -((trackOriNew - recoNew) - ((trackOriNew - recoNew)@trackDirNew) * trackDirNew)
 
-                # TODO: this is supposed to be the track position in the module, NOT the reco hit position!
-
                 # z position of the plane
                 dz = (recoNew[2] / trackDirNew[2])
 
