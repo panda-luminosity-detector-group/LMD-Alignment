@@ -442,6 +442,9 @@ class LMDRunConfig:
             
             elif self.__misalignType == 'modulesNoRot':
                 return self.pathAlMatrixPath() / Path(f'alMat-modulesNoRot-{self.__misalignFactor}.json')
+            
+            elif self.__misalignType == 'modulesOnlyRot':
+                return self.pathAlMatrixPath() / Path(f'alMat-modulesOnlyRot-{self.__misalignFactor}.json')
             # TODO: add for combined
 
     def pathMisMatrix(self):
