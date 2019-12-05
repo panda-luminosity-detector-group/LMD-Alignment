@@ -32,10 +32,9 @@ class alignerModules:
     def __init__(self):
         self.alignMatrices = {}
         self.reader = trackReader()
-        self.iterations = 4
+        self.iterations = 5
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
-        self.__debug = False
 
     @classmethod
     def fromRunConfig(cls, runConfig):
@@ -105,15 +104,9 @@ class alignerModules:
         return tempTracks
 
     def alignModules(self):
-
-        if not self.__debug:
-            for sector in range(10):
-                for path, matrix in self.alignSectorICP(sector):
-                    self.alignMatrices[path] = matrix
-        else:
-            for path, matrix in self.alignSectorICP(2):
+        for sector in range(10):
+            for path, matrix in self.alignSectorICP(sector):
                 self.alignMatrices[path] = matrix
-
         return
 
         # TODO: multi-thread sectors
@@ -135,7 +128,8 @@ class alignerModules:
         # check if anchor points were set
         assert hasattr(self, 'anchorPoints') 
 
-        preTransform = True
+        # TODO: add to config!
+        preTransform = False
         useOldFormat = True     # don't change yet, new format is not ready yet!
 
         np.set_printoptions(precision=6)
@@ -212,7 +206,7 @@ class alignerModules:
         
         #* =========== iterate cuts and calculation
         for iIteration in range(self.iterations):
-            print(f'running iteration {iIteration}...')
+            print(f'running iteration {iIteration}, {len(newTracks)} tracks remaining...')
             newTracks = self.dynamicRecoTrackDistanceCut(newTracks)
             
             # 4 planes per sector
@@ -229,39 +223,6 @@ class alignerModules:
                 tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
                 dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
 
-                # print(f'{newTracks[0]}\n\n')
-                if self.__debug:
-                    #* ----------------- begin hist here
-                    import matplotlib
-                    import matplotlib.pyplot as plt
-                    from matplotlib.colors import LogNorm
-
-                    # dTest = dVec
-                    dTest = dVec
-
-                    fig = plt.figure(figsize=(16/2.54, 9/2.54))
-                    axis2 = fig.add_subplot(1,2,1)
-                    axis2.hist2d(dTest[:, 0]*1e4, dTest[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-150,150), (-150,150)))
-                    axis2.set_title(f'track/reco dx vs dy, nTrks: {len(dVec)}')
-                    axis2.yaxis.tick_left()
-                    axis2.set_xlabel('dx [µm]')
-                    axis2.set_ylabel('dy [µm]')
-                    axis2.tick_params(direction='out')
-                    axis2.yaxis.set_label_position("left")
-
-                    axis3 = fig.add_subplot(1,2,2)
-                    axis3.hist(dTest[:, 2]*1e4, bins=50)#, range=((-300,300), (-300,300)))
-                    axis3.set_title(f'dz')
-                    axis3.yaxis.tick_right()
-                    axis3.set_xlabel('dz [µm]')
-                    axis3.set_ylabel('count')
-                    axis3.yaxis.set_label_position("right")
-
-                    fig.tight_layout()
-                    fig.savefig(f'output/alignmentModules/test/trackDirections/sec{sector}-it{iIteration}-plane{i}.png')
-                    plt.close(fig)
-                    #* ----------------- end hist here
-
                 # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
                 pIntersection = recoPosArr+dVec
                 
@@ -273,7 +234,8 @@ class alignerModules:
                 newTracks[:, i + 2] = (T0inv @ newTracks[:, i + 2].T).T
             
             # direction cut again
-            newTracks = self.dynamicTrackCut(newTracks, 1)
+            if iIteration < 5:
+                newTracks = self.dynamicTrackCut(newTracks, 1)
                        
             # do track fit
             corrFitter = CorridorFitter(newTracks[:,2:6])
@@ -297,7 +259,6 @@ class alignerModules:
                 totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
        
             # add average shift
-            # Attention! You can't just add two matrices, multiply them!
             totalMatrices[i] = totalMatrices[i] @ averageShift
             yield modulePaths[i], totalMatrices[i]
         
