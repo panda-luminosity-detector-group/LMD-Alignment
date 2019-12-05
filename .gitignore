@@ -6,3 +6,4 @@ runLogs/*
 .vscode/*
 .vscode
 *.png
+*.pdf
