@@ -11,35 +11,6 @@ import json
 import numpy as np
 import sys
 
-def calcOld(inFile, outFile):
-    # read all input matrices
-    with open(inFile, 'r') as f:
-        inMats = json.load(f)
-
-    for p in inMats:
-        inMats[p] = np.array(inMats[p]).reshape((4,4))
-
-    # calc avg misalign
-    avgMisMats = {}
-
-    # find 4 modules per sector
-    with open('input/moduleAlignment/sectorPaths.json') as f:
-        paths = json.load(f)
-
-    for i in range(10):
-        avgMisMats[str(i)] = np.zeros((4,4))
-        for path in paths[str(i)]:
-            avgMisMats[str(i)] += inMats[path] / 4
-
-    # store to output as dict ( sectorString -> matrix )
-    saveMatrices = {}
-    outFile.parent.mkdir(exist_ok=True, parents=True)
-    for p in avgMisMats:
-        saveMatrices[p] = np.ndarray.tolist(np.ndarray.flatten(avgMisMats[p]))
-
-    with open(outFile, 'w') as f:
-        json.dump(saveMatrices, f, indent=2)
-
 def calc(inFile, outFile):
     # read all input matrices
     with open(inFile, 'r') as f:
