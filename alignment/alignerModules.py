@@ -35,7 +35,6 @@ class alignerModules:
         self.iterations = 5
         print(f'reading detector parameters...')
         self.reader.readDetectorParameters()
-        self.__debug = False
 
     @classmethod
     def fromRunConfig(cls, runConfig):
@@ -105,15 +104,9 @@ class alignerModules:
         return tempTracks
 
     def alignModules(self):
-
-        if not self.__debug:
-            for sector in range(10):
-                for path, matrix in self.alignSectorICP(sector):
-                    self.alignMatrices[path] = matrix
-        else:
-            for path, matrix in self.alignSectorICP(2):
+        for sector in range(10):
+            for path, matrix in self.alignSectorICP(sector):
                 self.alignMatrices[path] = matrix
-
         return
 
         # TODO: multi-thread sectors
@@ -135,7 +128,8 @@ class alignerModules:
         # check if anchor points were set
         assert hasattr(self, 'anchorPoints') 
 
-        preTransform = True
+        # TODO: add to config!
+        preTransform = False
         useOldFormat = True     # don't change yet, new format is not ready yet!
 
         np.set_printoptions(precision=6)
@@ -203,7 +197,6 @@ class alignerModules:
         newTracks[:,0,:3] = resultTracks[:,0]
         newTracks[:,1,:3] = resultTracks[:,1]
 
-        
         # prepare total matrices
         totalMatrices = np.zeros((4,4,4))
         for i in range(4):
@@ -230,82 +223,12 @@ class alignerModules:
                 tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
                 dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
 
-                # print(f'{newTracks[0]}\n\n')
-                if self.__debug and i == 0:
-                    #* ----------------- begin hist here
-                    import matplotlib
-                    import matplotlib.pyplot as plt
-                    from matplotlib.colors import LogNorm
-
-                    # dTest = dVec
-                    dTest1 = trackPosArr
-                    dTest2 = trackDirArr
-                    dTest3 = recoPosArr
-                    dTest4 = dVec
-
-                    # fig = plt.figure(figsize=(16/2.54, 9/2.54))
-                    fig = plt.figure(figsize=(16/2.54, 16/2.54))
-
-                    axis2 = fig.add_subplot(2,2,1)
-                    axis2.hist2d(dTest1[:, 0]*1e4, dTest1[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-150,150), (-150,150)))
-                    axis2.set_title(f'trackPos dx vs dy, nTrks: {len(dVec)}')
-                    axis2.yaxis.tick_left()
-                    axis2.set_xlabel('dx [µm]')
-                    axis2.set_ylabel('dy [µm]')
-                    axis2.tick_params(direction='out')
-                    axis2.yaxis.set_label_position("left")
-
-                    axis3 = fig.add_subplot(2,2,2)
-                    axis3.hist2d(dTest2[:, 0]*1e4, dTest2[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-150,150), (-150,150)))
-                    axis3.set_title(f'trackDir dx vs dy, nTrks: {len(dVec)}')
-                    axis3.yaxis.tick_right()
-                    axis3.set_xlabel('dx [µm]')
-                    axis3.set_ylabel('dy [µm]')
-                    axis3.tick_params(direction='out')
-                    axis3.yaxis.set_label_position("right")
-
-                    axis4 = fig.add_subplot(2,2,3)
-                    axis4.hist2d(dTest3[:, 0]*1e4, dTest3[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-150,150), (-150,150)))
-                    axis4.set_title(f'recoPos dx vs dy, nTrks: {len(dVec)}')
-                    axis4.yaxis.tick_left()
-                    axis4.set_xlabel('dx [µm]')
-                    axis4.set_ylabel('dy [µm]')
-                    axis4.tick_params(direction='out')
-                    axis4.yaxis.set_label_position("left")
-
-                    axis5 = fig.add_subplot(2,2,4)
-                    axis5.hist2d(dTest4[:, 0]*1e4, dTest4[:, 1]*1e4, bins=50, norm=LogNorm(), label='Count (log)')#, range=((-150,150), (-150,150)))
-                    axis5.set_title(f'dVec dx vs dy, nTrks: {len(dVec)}')
-                    axis5.yaxis.tick_right()
-                    axis5.set_xlabel('dx [µm]')
-                    axis5.set_ylabel('dy [µm]')
-                    axis5.tick_params(direction='out')
-                    axis5.yaxis.set_label_position("right")
-
-
-                    # axisZ = fig.add_subplot(1,2,2)
-                    # axisZ.hist(dTest1[:, 2]*1e4, bins=50)#, range=((-300,300), (-300,300)))
-                    # axisZ.set_title(f'dz')
-                    # axisZ.yaxis.tick_right()
-                    # axisZ.set_xlabel('dz [µm]')
-                    # axisZ.set_ylabel('count')
-                    # axisZ.yaxis.set_label_position("right")
-
-                    fig.tight_layout()
-                    fig.savefig(f'output/alignmentModules/test/trackDirections/sec{sector}-it{iIteration}-plane{i}.png')
-                    plt.close(fig)
-                    #* ----------------- end hist here
-
                 # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
                 pIntersection = recoPosArr+dVec
                 
                 # we want FROM tracks TO recos
                 T0inv = self.getMatrix(recoPosArr, pIntersection, preTransform)
-                # T0inv = self.getMatrix(recoPosArr, pIntersection)
                 totalMatrices[i] = T0inv @ totalMatrices[i]
-
-                if self.__debug and i == 0:
-                    print(f'current Matrix:\n{T0inv}\ntotal matrix:\n{totalMatrices[i]}')
 
                 # transform recos
                 newTracks[:, i + 2] = (T0inv @ newTracks[:, i + 2].T).T
@@ -321,47 +244,23 @@ class alignerModules:
             # update current tracks
             newTracks[:,0,:3] = resultTracks[:,0]
             newTracks[:,1,:3] = resultTracks[:,1]
-            print(f'\nnewTracks[0]:\n{newTracks[0]}\n')
             
-        #! ------------ cheat here. for now
-        actualMats = mi.loadMatrices('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
-        print(f'mats loaded')
-        #! ------------ end cheat here.
-        
         #* =========== store matrices
         # 4 planes per sector
-        totalMatricesTransformed = {}
-        totalMatricesTransformedPlusAvg = {}
         for i in range(4):
             # ideal module matrices!
             toModMat = np.linalg.inv(moduleMatrices[i])
             
             # TODO: use baseTransform from matrix interface here
             if preTransform:
-                totalMatricesTransformed[i] = np.linalg.inv(matToLMD) @ totalMatrices[i] @ (matToLMD)
-                totalMatricesTransformed[i] = (toModMat) @ totalMatricesTransformed[i] @ np.linalg.inv(toModMat)
+                totalMatrices[i] = np.linalg.inv(matToLMD) @ totalMatrices[i] @ (matToLMD)
+                totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
             else:
-                totalMatricesTransformed[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
+                totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
        
             # add average shift
-            # Attention! You can't just add two matrices, multiply them!
-            totalMatricesTransformedPlusAvg[i] = totalMatricesTransformed[i] @ averageShift
-
-            #! ------------ cheat here. for now
-            print(f'\n\n======================')
-            print(f'big cheat here:')
-            print(f'path: {modulePaths[i]}')
-            print(f'averageShift:\n{averageShift}')
-            print(f'totalMatrices[i]:\n{totalMatrices[i]}')
-            print(f'totalMatricesTransformed[i]:\n{totalMatricesTransformed[i]}')
-            print(f'totalMatricesTransformedPlusAvg[i]:\n{totalMatricesTransformedPlusAvg[i]}')
-            print(f'actualMats[i]:\n{actualMats[modulePaths[i]]}')
-            print(f'DIFFERENCE (1e4):\n{(actualMats[modulePaths[i]]-totalMatricesTransformedPlusAvg[i])*1e4}')
-            print(f'======================\n\n')
-            #! ------------ end cheat here.
-
-
-            yield modulePaths[i], totalMatricesTransformedPlusAvg[i]
+            totalMatrices[i] = totalMatrices[i] @ averageShift
+            yield modulePaths[i], totalMatrices[i]
         
         print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         print(f'        module aligner for sector {sector} done!         ')
