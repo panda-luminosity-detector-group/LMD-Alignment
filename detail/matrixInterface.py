@@ -62,7 +62,10 @@ def baseTransform(mat, matFromAtoB, inverse=False):
 
     You can set inverse to True if matFromAtoB points in the wrong direction
     """
-    return matFromAtoB @ mat @ inv(matFromAtoB)
+    if inverse:
+        return inv(matFromAtoB) @ mat @ matFromAtoB
+    else:
+        return matFromAtoB @ mat @ inv(matFromAtoB)
 
 # from https://www.learnopencv.com/rotation-matrix-to-euler-angles/
 # Calculates rotation matrix to euler angles

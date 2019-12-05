@@ -52,7 +52,6 @@ class alignerModules:
     def readTracks(self, fileName):
         print(f'reading processed tracks file...')
         self.reader.readTracksFromJson(fileName)
-        # TODO: read from root file directly and use new track format from the start
 
     def readAnchorPoints(self, fileName):
         self.anchorPoints = mi.loadMatrices(fileName, False)
@@ -249,14 +248,13 @@ class alignerModules:
         # 4 planes per sector
         for i in range(4):
             # ideal module matrices!
-            toModMat = np.linalg.inv(moduleMatrices[i])
-            
-            # TODO: use baseTransform from matrix interface here
+            toModMat = moduleMatrices[i]
             if preTransform:
-                totalMatrices[i] = np.linalg.inv(matToLMD) @ totalMatrices[i] @ (matToLMD)
-                totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
+                # totalMatrices[i] = np.linalg.inv(matToLMD) @ totalMatrices[i] @ (matToLMD)
+                totalMatrices[i] = mi.baseTransform(totalMatrices[i], matToLMD, True)
+                totalMatrices[i] = mi.baseTransform(totalMatrices[i], toModMat, True)
             else:
-                totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
+                totalMatrices[i] = mi.baseTransform(totalMatrices[i], toModMat, True)
        
             # add average shift
             totalMatrices[i] = totalMatrices[i] @ averageShift

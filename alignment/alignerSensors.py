@@ -101,7 +101,6 @@ class alignerSensors:
                 self.findSingleMatrix(overlapID, numpyPath)
 
         else:
-            # TODO: automatically set to something reasonable
             maxThreads = 16
             print('Waiting for all Sensor Aligners...')
 
