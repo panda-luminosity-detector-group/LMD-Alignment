@@ -3,32 +3,31 @@
 //* call with root -l -q convertRootTracks.C(dataPath, jsonFile)
 
 // TODO: dump result to binary file with 6*3 values: trkOri, trkDir, reco1 - reco4, each having (x,y,z) 
-// TODO: don't hard-code 100k events! use TChains and multiple root files, and cut after n tracks have been processed
 // also, the python stuff must be able to read that
 
 using nlohmann::json;
+
+void convertRootTracks(){
+    cout << "\n\nUsage: convertRootTracks.C(dataPath, outJsonFile)\n\n";
+}
 
 void convertRootTracks(std::string dataPath, std::string outJsonFile) {
     //*** output json
     json outJson;
 
-    // filename
-    TFile *trackFile = new TFile((dataPath + "/Lumi_Track_100000.root").c_str());
-    // TTree name, use TBrowser if the name is unknown
-    TTree *trackTree = (TTree *)trackFile->Get("pndsim");
-    // the TClonesArray needs to know the class of the objects you want to retrieve
+    // TChain Version
+    TChain *trackChain = new TChain("pndsim");
+    trackChain->Add((dataPath + "/Lumi_Track_*.root").c_str());
     TClonesArray *trackArray = new TClonesArray("PndTrack");
-    // and the TBranch name, use TBrowser if the name is unknown
-    trackTree->SetBranchAddress("LMDPndTrack", &trackArray);
+    trackChain->SetBranchAddress("LMDPndTrack", &trackArray);
 
-    // same for recoHits
-    TFile *recoFile = new TFile((dataPath + "/Lumi_recoMerged_100000.root").c_str());
-    TTree *recoTree = (TTree *)recoFile->Get("pndsim");
+    TChain *recoChain = new TChain("pndsim");
+    recoChain->Add((dataPath + "/Lumi_recoMerged_*.root").c_str());
     TClonesArray *recoArray = new TClonesArray("PndSdsMergedHit");
-    recoTree->SetBranchAddress("LMDHitsMerged", &recoArray);
+    recoChain->SetBranchAddress("LMDHitsMerged", &recoArray);
 
     // how many events are in the track file?
-    Long64_t nEvents = trackTree->GetEntries();
+    Long64_t nEvents = trackChain->GetEntries();
     cout << "nEvents: " << nEvents << "\n";
     int runIndex = 0;
 
@@ -36,8 +35,8 @@ void convertRootTracks(std::string dataPath, std::string outJsonFile) {
     for (Long64_t event = 0; event < nEvents; event++) {
         trackArray->Clear();
         recoArray->Clear();
-        trackTree->GetEntry(event);
-        recoTree->GetEntry(event);
+        trackChain->GetEntry(event);
+        recoChain->GetEntry(event);
 
         Int_t tracksPerEvent = trackArray->GetEntriesFast();
 
@@ -87,6 +86,9 @@ void convertRootTracks(std::string dataPath, std::string outJsonFile) {
             outJson["events"].push_back(thisEvent);
 
             //*** skip remaining tracks, they are copies of the first
+            break;
+        }
+        if(event == 2000000){
             break;
         }
     }
