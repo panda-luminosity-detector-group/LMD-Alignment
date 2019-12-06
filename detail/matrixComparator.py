@@ -31,7 +31,7 @@ class comparator:
         self.colors = [goodColors[1], goodColors[3], goodColors[5]]
         self.latexsigma = r'\textsigma{} '
         self.latexmu = r'\textmu '
-        plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':11})
+        plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':10})
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
@@ -96,7 +96,7 @@ class boxComparator(comparator):
         fig = plt.figure(figsize=(6, 4))
 
         # TODO: better title
-        fig.suptitle('Box Rotation Alignment Result, all axes')
+        fig.suptitle('Box Rotation Alignment Residuals')
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -154,10 +154,14 @@ class moduleComparator(comparator):
     def histValues(self, values):
 
         # prepare figure
-        fig = plt.figure(figsize=(6, 4))
+        fig = plt.figure()
+
+        fig.set_size_inches(8/2.54, 5/2.54)
+
         fig.suptitle('Module Misalignment Residuals')
         fig.subplots_adjust(wspace=0.05)
-        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        # fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        # fig.tight_layout()
         histA = fig.add_subplot(1, 1, 1)
         
         # statistics
@@ -223,7 +227,11 @@ class moduleComparator(comparator):
         resValues = np.array(resValues)
 
         self.histValues(resValues)
-        plt.savefig(outputFileName, dpi=300)
+        plt.savefig(outputFileName,
+                    #This is simple recomendation for publication plots
+                    dpi=1000, 
+                    # Plot will be occupy a maximum of available space
+                    bbox_inches='tight')
         plt.close()
 
         return
@@ -347,7 +355,7 @@ class combinedComparator(comparator):
         kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:2])
         histA.hist(values[...,:2], **kwargs)
 
-        histA.set_title('Distance Alignment Matrix dx (Result-Generated)')
+        histA.set_title('Sensor Alignment Residuals')
         histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
 
