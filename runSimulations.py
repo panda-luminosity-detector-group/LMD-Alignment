@@ -307,14 +307,14 @@ def showLumiFitResults(runConfigPath, threadID=None):
 def histogramRunConfig(runConfig, threadId=0):
 
     # box rotation comparator
-    comparator = boxComparator()
+    comparator = boxComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.pdf')
 
     # # overlap comparator
-    comparator = overlapComparator()
+    comparator = overlapComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadSensorAlignerOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
@@ -322,14 +322,14 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
 
     # module comparator
-    comparator = moduleComparator()
+    comparator = moduleComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/modules-{runConfig.misalignFactor}.pdf')
 
     # combined comparator
-    comparator = combinedComparator()
+    comparator = combinedComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))

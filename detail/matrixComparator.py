@@ -20,11 +20,16 @@ Comapre ICP matrices from sensor overlap with actual misalignment matrices from 
 
 This is obviously not possible with the actual, physical geometry, but can be used during simulations
 to estimate the remaining errors of the misalignment.
+
+TODO: use single histogram function for ALL comparators, and merely change the difference calculation functions. Then all histograms will look the same.
+TODO: also, check comparison for the matrices that were not aligned, ie sensor matrices during module alignment. something seems off there.
+
 """
 
 
 class comparator:
-    def __init__(self):
+    def __init__(self, runConfig):
+        self.config = runConfig
         self.idealDetectorMatrices = {}
         self.misalignMatrices = {}
         goodColors = ['xkcd:coral', 'xkcd:pale orange', 'xkcd:dark lilac', 'xkcd:teal green', 'xkcd:bluish grey', 'xkcd:dark sky blue']
@@ -217,9 +222,10 @@ class moduleComparator(comparator):
 
         for mod in modules:
             alMat = self.alignerResults[mod]
-            try:
+            
+            if self.config.misalignType == 'modules':
                 actualMat = self.misalignMatrices[mod]
-            except:
+            else:
                 actualMat = np.identity(4)
 
             diffMat = alMat-actualMat
