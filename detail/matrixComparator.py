@@ -216,7 +216,10 @@ class moduleComparator(comparator):
 
         for mod in modules:
             alMat = self.alignerResults[mod]
-            actualMat = self.misalignMatrices[mod]
+            try:
+                actualMat = self.misalignMatrices[mod]
+            except:
+                actualMat = np.identity(4)
 
             diffMat = alMat-actualMat
             dAlpha = mi.rotationMatrixToEulerAngles(diffMat)
