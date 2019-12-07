@@ -120,7 +120,7 @@ def runAligners(runConfig, threadID=None):
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
     mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
-    moduleAlignDataPath = runConfig.pathJobBase() / Path('1-*_uncut/no_alignment_correction')
+    moduleAlignDataPath = runConfig.pathJobBase() / Path(f'1-{runConfig.jobsNum}_uncut/no_alignment_correction')
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
 
     # create logger
