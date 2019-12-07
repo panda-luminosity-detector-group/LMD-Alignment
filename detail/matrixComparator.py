@@ -29,8 +29,8 @@ class comparator:
         self.misalignMatrices = {}
         goodColors = ['xkcd:coral', 'xkcd:pale orange', 'xkcd:dark lilac', 'xkcd:teal green', 'xkcd:bluish grey', 'xkcd:dark sky blue']
         self.colors = [goodColors[1], goodColors[3], goodColors[5]]
-        self.latexsigma = r'\textsigma{} '
-        self.latexmu = r'\textmu '
+        self.latexsigma = r'\textsigma{}'
+        self.latexmu = r'\textmu{}'
         plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':10})
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
@@ -169,7 +169,8 @@ class moduleComparator(comparator):
         sigX = np.std(values, axis=0)
 
         # prepare args, labels
-        bucketLabels = [f'{self.latexsigma} dx={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma} dy={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
+        # bucketLabels = [f'{self.latexsigma} dx={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma} dy={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
+        bucketLabels = [f'{self.latexsigma}x={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma}y={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
         kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
 
         # histogram
@@ -348,12 +349,14 @@ class combinedComparator(comparator):
 
         # plot difference hit array
         fig = plt.figure()
+        fig.set_size_inches(8/2.54, 5/2.54) 
 
         #fig.subplots_adjust(wspace=0.05)
         #fig.tight_layout(rect=[0.5, 0.03, 1, 0.45])
         histA = fig.add_subplot(1, 1, 1)
         
-        bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
+        # bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
+        bucketLabels = [f'{self.latexsigma}x={sigX}{self.latexmu}m', f'{self.latexsigma}y={sigY}{self.latexmu}m', f'{self.latexsigma} z={sigZ}']
 
         kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:2])
         histA.hist(values[...,:2], **kwargs)
@@ -367,7 +370,6 @@ class combinedComparator(comparator):
         plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order])
 
         #You must select the correct size of the plot in advance
-        fig.set_size_inches(16/2.54, 9/2.54) 
 
         return fig
 
@@ -386,7 +388,7 @@ class combinedComparator(comparator):
 
         for p in self.alignerResults:
             # check if this path is for a sensor!
-            if 'sensor' not in p:
+            if 'sensor' not in p or 'sensor_0' in p or 'sensor_1' in p:
                 continue
             try:
                 matResult = self.alignerResults[p]
