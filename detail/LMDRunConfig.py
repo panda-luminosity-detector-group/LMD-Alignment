@@ -405,7 +405,6 @@ class LMDRunConfig:
         result = glob.glob(str(globbedPath))
         if len(result) > 0:
             return Path(result[0])
-        # TODO: don't return anything on failure!
         else:
             if self.useDebug:
                 print(f'DEBUG: can\'t find resolve path on file system, returning globbed path!')

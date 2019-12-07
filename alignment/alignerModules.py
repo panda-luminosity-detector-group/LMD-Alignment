@@ -52,7 +52,6 @@ class alignerModules:
     def readTracks(self, fileName):
         print(f'reading processed tracks file...')
         self.reader.readTracksFromJson(fileName)
-        # TODO: read from root file directly and use new track format from the start
 
     def readAnchorPoints(self, fileName):
         self.anchorPoints = mi.loadMatrices(fileName, False)
@@ -249,14 +248,13 @@ class alignerModules:
         # 4 planes per sector
         for i in range(4):
             # ideal module matrices!
-            toModMat = np.linalg.inv(moduleMatrices[i])
-            
-            # TODO: use baseTransform from matrix interface here
+            toModMat = moduleMatrices[i]
             if preTransform:
-                totalMatrices[i] = np.linalg.inv(matToLMD) @ totalMatrices[i] @ (matToLMD)
-                totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
+                # totalMatrices[i] = np.linalg.inv(matToLMD) @ totalMatrices[i] @ (matToLMD)
+                totalMatrices[i] = mi.baseTransform(totalMatrices[i], matToLMD, True)
+                totalMatrices[i] = mi.baseTransform(totalMatrices[i], toModMat, True)
             else:
-                totalMatrices[i] = (toModMat) @ totalMatrices[i] @ np.linalg.inv(toModMat)
+                totalMatrices[i] = mi.baseTransform(totalMatrices[i], toModMat, True)
        
             # add average shift
             totalMatrices[i] = totalMatrices[i] @ averageShift
@@ -267,7 +265,6 @@ class alignerModules:
         print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         return
 
-    # TODO externalize, same as for sensor aligner!
     def getMatrix(self, trackPositions, recoPositions, use2D=False):
 
         # use 2D, use only in LMD local!
@@ -286,7 +283,6 @@ class alignerModules:
 
     def alignMillepede(self):
 
-        # TODO: sort better by sector!
         sector = 0
 
         milleOut = f'output/millepede/moduleAlignment-sector{sector}-aligned.bin'
@@ -306,12 +302,9 @@ class alignerModules:
         print(f'Running pyMille...')
         for params in self.reader.generatorMilleParameters():
             if params[4] == sector:
-                # TODO: slice here, use only second plane
-                # paramsN = params[0][3:6]
-                # if np.linalg.norm(np.array(paramsN)) == 0:
                 #     continue
 
-                # TODO: this order of parameters does't match the interface!!!
+                # Attention: this order of parameters does't match the reader interface!
                 MyMille.write(params[1], params[0], labels, params[2], params[3]*sigmaScale)
                 # print(f'params: {paramsN}')
                 # print(f'residual: {params[2]}, sigma: {params[3]*sigmaScale} (factor {params[2]/(params[3]*sigmaScale)})')

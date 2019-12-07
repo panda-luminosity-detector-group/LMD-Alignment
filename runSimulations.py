@@ -120,7 +120,7 @@ def runAligners(runConfig, threadID=None):
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
     mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
-    moduleAlignDataPath = runConfig.pathJobBase() / Path('1-100_uncut/no_alignment_correction')     # TODO: make more robust (no of jobs doesn't have to be 100)
+    moduleAlignDataPath = runConfig.pathJobBase() / Path(f'1-{runConfig.jobsNum}_uncut/no_alignment_correction')
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
 
     # create logger
@@ -424,13 +424,13 @@ def createMultipleDefaultConfigs():
     momenta = ['1.5', '15.0']
     # momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
     misFactors = {}
-    misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules', 'modulesNoRot', 'singlePlane', 'modulesOnlyRot']
+    misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot']
     
     misFactors['aligned'] =         ['1.00']
     misFactors['identity'] =        ['1.00']
-    misFactors['sensors'] =         ['0.10', '0.50', '1.00', '2.00', '5.00']
+    misFactors['sensors'] =         ['0.50', '1.00', '2.00']
     misFactors['box'] =             ['0.50', '1.00', '2.00']
-    misFactors['singlePlane'] =     ['0.50', '1.00', '2.00']
+    #misFactors['singlePlane'] =     ['0.50', '1.00', '2.00']
     misFactors['boxRotZ'] =         ['1.00', '2.00', '3.00', '5.00', '10.00']
     misFactors['modules'] =         ['0.50', '1.00', '2.00']
     misFactors['modulesNoRot'] =    ['0.50', '1.00', '2.00']
