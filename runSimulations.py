@@ -21,6 +21,7 @@ from alignment.alignerModules import alignerModules
 from argparse import RawTextHelpFormatter
 
 import os
+import subprocess
 os.environ.update(
     OMP_NUM_THREADS='8',
     OPENBLAS_NUM_THREADS='8',
@@ -305,6 +306,15 @@ def showLumiFitResults(runConfigPath, threadID=None):
 
 
 def histogramRunConfig(runConfig, threadId=0):
+
+    # copy matrices from himster to local folder
+    targetDir = Path(runConfig.pathAlMatrixPath())
+    remotePrefix = Path('/lustre/miifs05/scratch/him-specf/paluma/roklasen')
+    targetDir.mkdir(exist_ok=True, parents=True)
+    # compose remote dir from local dir
+    remoteDir = 'm22:' + str(remotePrefix / Path(*targetDir.parts[6:]) / Path('*'))
+    print(f'copying:\n{remoteDir}\nto:\n{targetDir}')
+    subprocess.run(['scp', remoteDir, targetDir])
 
     # box rotation comparator
     comparator = boxComparator(runConfig)
