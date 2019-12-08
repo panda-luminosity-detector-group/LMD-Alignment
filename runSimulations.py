@@ -316,9 +316,9 @@ def histogramRunConfig(runConfig, threadId=0):
     # # overlap comparator
     comparator = overlapComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+    comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadSensorAlignerOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
-    comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
     comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
 
     # module comparator
@@ -435,8 +435,6 @@ def createMultipleDefaultConfigs():
     misFactors['modules'] =         ['0.50', '1.00', '2.00']
     misFactors['modulesNoRot'] =    ['0.50', '1.00', '2.00']
     misFactors['modulesOnlyRot'] =  ['0.50', '1.00', '2.00']
-    # misFactors['modules'] =     ['0.01', '0.10', '0.15', '0.25', '0.50', '1.00']
-
 
     for misType in misTypes:
         for mom in momenta:
@@ -462,16 +460,24 @@ def createMultipleDefaultConfigs():
                     if misType == 'aligned' or misType == 'identity':
                         config.useIdentityMisalignment = True
 
-                    # supply all external parameters to all cases!
+                    # supply anchor ppoints to all cases
                     config.moduleAlignAnchorPointFile = f'input/moduleAlignment/anchorPoints.json'
-                    config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
-                    
+
+                    # supply external matrices accordingly
+                    if misType == 'sensors':
+                        config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
+                    else:
+                        config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-aligned.json'
+
+                    # supply avg misalignments accordingly
                     if misType == 'modulesNoRot':
                         config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-noRot-{fac}.json'
                     elif misType == 'modulesOnlyRot':
                         config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-onlyRot-{fac}.json'
-                    else:
+                    elif misType == 'modules':
                         config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
+                    else:
+                        config.moduleAlignAvgMisalignFile  = f'input/moduleAlignment/avgMisalign-aligned.json'
                     
                     # ? ----- special cases here
                     # aligned case has no misalignment
@@ -586,7 +592,7 @@ if __name__ == "__main__":
         alignerMod.saveMatrices('output/alMat-modules-1.00-2019-12-01.json')
 
         #! run comparator
-        comp = moduleComparator()
+        comp = moduleComparator(None)
         comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
         comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
 
