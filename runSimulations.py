@@ -314,7 +314,15 @@ def histogramRunConfig(runConfig, threadId=0):
     # compose remote dir from local dir
     remoteDir = 'm22:' + str(remotePrefix / Path(*targetDir.parts[6:]) / Path('*'))
     print(f'copying:\n{remoteDir}\nto:\n{targetDir}')
-    subprocess.run(['scp', remoteDir, targetDir])
+    success = subprocess.run(['scp', remoteDir, targetDir]).returncode
+
+    if success > 0:
+        print(f'\n\n')
+        print(f'-------------------------------------------------')
+        print(f'file could not be copied, skipping this scenario.')
+        print(f'-------------------------------------------------')
+        print(f'\n\n')
+        return
 
     # box rotation comparator
     comparator = boxComparator(runConfig)

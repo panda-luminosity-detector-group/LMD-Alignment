@@ -32,6 +32,7 @@ class comparator:
         self.config = runConfig
         self.idealDetectorMatrices = {}
         self.misalignMatrices = {}
+        self.resultArray = np.zeros(1)
         goodColors = ['xkcd:coral', 'xkcd:pale orange', 'xkcd:dark lilac', 'xkcd:teal green', 'xkcd:bluish grey', 'xkcd:dark sky blue']
         self.colors = [goodColors[1], goodColors[3], goodColors[5]]
         self.latexsigma = r'\textsigma{}'
@@ -88,6 +89,52 @@ class comparator:
             mat0to5MisInPnd = np.identity(4)
 
         return mat0to5MisInPnd
+
+    def makeHist(self, title, xlabel, ylabel):
+        theseValues = self.resultArray
+
+         # prepare figure
+        fig = plt.figure()
+
+        fig.set_size_inches(8/2.54, 5/2.54)
+
+        fig.suptitle(title)
+        fig.subplots_adjust(wspace=0.05)
+        # fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        # fig.tight_layout()
+        histA = fig.add_subplot(1, 1, 1)
+        
+        # statistics
+        mu = np.average(theseValues, axis=0)
+        sigX = np.std(theseValues, axis=0)
+
+        # prepare args, labels
+        # bucketLabels = [f'{self.latexsigma} dx={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma} dy={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
+        bucketLabels = [f'{self.latexsigma}x={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma}y={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
+        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
+
+        # histogram
+        histA.hist(theseValues[...,:2], **kwargs)  # this is only the z distance
+
+        # names, titles
+        # histA.set_title('distance alignment result - generated')   # change to mm!
+        histA.set_xlabel(title)
+        histA.set_ylabel(ylabel)
+
+        # manually set legend order
+        handles,labels = histA.get_legend_handles_labels()
+        handles = [handles[1], handles[0]]
+        labels = [labels[1], labels[0]]
+        histA.legend(handles,labels,loc=2)
+        return fig
+
+    def saveHist(self, outputFileName):
+        plt.savefig(outputFileName,
+                    #This is simple recomendation for publication plots
+                    dpi=1000, 
+                    # Plot will be occupy a maximum of available space
+                    bbox_inches='tight')
+        plt.close()
 
 
 class boxComparator(comparator):
@@ -339,6 +386,56 @@ class overlapComparator(comparator):
 
         return
 
+class cycleComparator(comparator):
+
+    def loadPerfectDetectorOverlaps(self, fileName):
+        self.overlaps = mi.loadMatrices(fileName, False)
+
+    def loadSensorAlignerOverlapMatrices(self, filename):
+        self.overlapMatrices = mi.loadMatrices(filename)
+
+    def calcCyclicMatrix(self, overlapIDs):
+        result = np.identity(4)
+        for overlapID in overlapIDs:
+            result = result @ self.overlapMatrices[overlapID]
+        return result
+
+    # use dictionary for now, loead from config file later!
+    def getCycleTuple(self, smallOverlap):
+        masterDict = {
+            '0': [0,1,2],       # 0to5
+            '1': [0,1,2],       # 3to8
+            
+            '2': [0,1,2],       # 4to9
+            '3': [0,1,2],       # 3to6
+            '4': [0,1,2],       # 1to8
+            '5': [0,1,2],       # 2to8
+            '6': [0,1,2],       # 2to9
+            '7': [0,1,2],       # 3to7  
+            '8': [0,1,2],       # 4to7
+        }
+        return masterDict[smallOverlap]
+
+
+    # TODO: implement cyclic matrices check!
+    def prepareValues(self):
+        # TODO: read misalign matrices, calculate cyclic matrices for all modules (10 per Module, 40 Modules), store result matrices  
+        self.resultArray = np.array((400,3))
+
+        #TODO: for all modules:
+            # for 10 cyclic cases
+                # get corresponding overlapIDs as tuple
+                # give tuple to function and get matrix
+
+        for path in self.overlapMatrices:
+            print(f'self.overlapMatrices[path]')
+
+
+    def histValues(self, fileName):
+        # call function from base class
+        self.makeHist('Cyclic Residuals', 'x label', 'y label')
+        self.saveHist('testFile.pdf')
+    pass
 
 class combinedComparator(comparator):
 
