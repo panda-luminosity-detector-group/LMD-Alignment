@@ -136,7 +136,6 @@ class comparator:
                     bbox_inches='tight')
         plt.close()
 
-
 class boxComparator(comparator):
 
     def histValues(self, values):
@@ -199,7 +198,6 @@ class boxComparator(comparator):
         plt.close()
 
         return
-
 
 class moduleComparator(comparator):
 
@@ -386,56 +384,50 @@ class overlapComparator(comparator):
 
         return
 
-class cycleComparator(comparator):
+# class cycleComparator(comparator):
 
-    def loadPerfectDetectorOverlaps(self, fileName):
-        self.overlaps = mi.loadMatrices(fileName, False)
+#     def loadPerfectDetectorOverlaps(self, fileName):
+#         self.overlaps = mi.loadMatrices(fileName, False)
 
-    def loadSensorAlignerOverlapMatrices(self, filename):
-        self.overlapMatrices = mi.loadMatrices(filename)
+#     def loadSensorAlignerOverlapMatrices(self, filename):
+#         self.overlapMatrices = mi.loadMatrices(filename)
 
-    def calcCyclicMatrix(self, overlapIDs):
-        result = np.identity(4)
-        for overlapID in overlapIDs:
-            result = result @ self.overlapMatrices[overlapID]
-        return result
+#     def calcCyclicMatrix(self, overlapIDs):
+#         result = np.identity(4)
+#         for overlapID in overlapIDs:
+#             result = result @ self.overlapMatrices[overlapID]
+#         return result
 
-    # use dictionary for now, loead from config file later!
-    def getCycleTuple(self, smallOverlap):
-        masterDict = {
-            '0': [0,1,2],       # 0to5
-            '1': [0,1,2],       # 3to8
+#     # use dictionary for now, load from config file later!
+#     def getCycleTuple(self, smallOverlap):
+#         masterDict = {
+#             '1': [0,1,2],       # 3to8 -> 1
             
-            '2': [0,1,2],       # 4to9
-            '3': [0,1,2],       # 3to6
-            '4': [0,1,2],       # 1to8
-            '5': [0,1,2],       # 2to8
-            '6': [0,1,2],       # 2to9
-            '7': [0,1,2],       # 3to7  
-            '8': [0,1,2],       # 4to7
-        }
-        return masterDict[smallOverlap]
+#             '2': [82, 38, 73, 47, 94, 29],       # 4to9 -> 2
+#             '3': [0,1,2]       # 3to6 -> 3
+#         }
+#         return masterDict[smallOverlap]
 
 
-    # TODO: implement cyclic matrices check!
-    def prepareValues(self):
-        # TODO: read misalign matrices, calculate cyclic matrices for all modules (10 per Module, 40 Modules), store result matrices  
-        self.resultArray = np.array((400,3))
+#     # TODO: implement cyclic matrices check!
+#     def prepareValues(self):
+#         # TODO: read misalign matrices, calculate cyclic matrices for all modules (10 per Module, 40 Modules), store result matrices  
+#         self.resultArray = np.array((400,3))
 
-        #TODO: for all modules:
-            # for 10 cyclic cases
-                # get corresponding overlapIDs as tuple
-                # give tuple to function and get matrix
+#         #TODO: for all modules:
+#             # for 10 cyclic cases
+#                 # get corresponding overlapIDs as tuple
+#                 # give tuple to function and get matrix
 
-        for path in self.overlapMatrices:
-            print(f'self.overlapMatrices[path]')
+#         for path in self.overlapMatrices:
+#             print(f'self.overlapMatrices[path]')
 
 
-    def histValues(self, fileName):
-        # call function from base class
-        self.makeHist('Cyclic Residuals', 'x label', 'y label')
-        self.saveHist('testFile.pdf')
-    pass
+#     def histValues(self, fileName):
+#         # call function from base class
+#         self.makeHist('Cyclic Residuals', 'x label', 'y label')
+#         self.saveHist('testFile.pdf')
+#     pass
 
 class combinedComparator(comparator):
 
