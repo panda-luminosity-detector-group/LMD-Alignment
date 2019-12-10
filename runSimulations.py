@@ -11,7 +11,7 @@ import argparse
 from pathlib import Path
 from detail.simWrapper import simWrapper
 from detail.matrixComparator import *
-from detail.LumiValLaTeXTable import LumiValLaTeXTable
+from detail.LumiValLaTeXTable import LumiValGraph, LumiValLaTeXTable
 from detail.logger import LMDrunLogger
 from detail.LMDRunConfig import LMDRunConfig
 #from concurrent.futures import ThreadPoolExecutor
@@ -287,7 +287,7 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID} done!')
 
 
-def showLumiFitResults(runConfigPath, threadID=None):
+def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
     # read all configs from path
     runConfigPath = Path(runConfigPath)
@@ -300,9 +300,18 @@ def showLumiFitResults(runConfigPath, threadID=None):
 
     if len(configs) == 0:
         print(f'No runConfig files found in {runConfigPath}!')
+    else:
+        print(f'found {len(configs)} config files.')
 
-    table = LumiValLaTeXTable.fromConfigs(configs)
-    table.show()
+
+    if saveGraph:
+        print(f'saving to graph.')
+        graph = LumiValGraph.fromConfigs(configs)
+        graph.save('test.pdf')
+    else:
+        print(f'printing to stdout:')
+        table = LumiValLaTeXTable.fromConfigs(configs)
+        table.show()
 
 
 def histogramRunConfig(runConfig, threadId=0):
@@ -447,9 +456,9 @@ def createMultipleDefaultConfigs():
     misFactors['aligned'] =         ['1.00']
     misFactors['identity'] =        ['1.00']
     misFactors['sensors'] =         ['0.50', '1.00', '2.00']
-    misFactors['box'] =             ['0.50', '1.00', '2.00']
+    misFactors['box'] =             ['0.25', '0.5', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']
     #misFactors['singlePlane'] =     ['0.50', '1.00', '2.00']
-    misFactors['boxRotZ'] =         ['1.00', '2.00', '3.00', '5.00', '10.00']
+    misFactors['boxRotZ'] =         ['0.25', '0.5', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']
     misFactors['modules'] =         ['0.50', '1.00', '2.00']
     misFactors['modulesNoRot'] =    ['0.50', '1.00', '2.00']
     misFactors['modulesOnlyRot'] =  ['0.50', '1.00', '2.00']
@@ -473,6 +482,10 @@ def createMultipleDefaultConfigs():
                     config.misalignType = misType
                     config.momentum = mom
                     config.alignmentCorrection = corr
+
+                    # boxRot and boxRotZ require fewer jobs
+                    if misType == 'box' or misType == 'boxRotZ':
+                        config.jobsNum = 10
 
                     # identity and aligned don't get factors, only momenta and need fewer pairs
                     if misType == 'aligned' or misType == 'identity':
@@ -647,7 +660,8 @@ if __name__ == "__main__":
     # ? =========== lumi fit results, multiple configs
     if args.fitValuesConfigPath:
         #args.configPath = args.fitValuesConfigPath
-        showLumiFitResults(args.fitValuesConfigPath)
+        print(f'Graphing all Lumi values in {args.fitValuesConfigPath}')
+        showLumiFitResults(args.fitValuesConfigPath, 0, True)
         done()
 
     #! ---------------------- logging goes to file if not in debug mode
