@@ -485,7 +485,7 @@ def createMultipleDefaultConfigs():
 
                     # boxRot and boxRotZ require fewer jobs
                     if misType == 'box' or misType == 'boxRotZ':
-                        config.jobsNum = 10
+                        config.jobsNum = '10'
 
                     # identity and aligned don't get factors, only momenta and need fewer pairs
                     if misType == 'aligned' or misType == 'identity':
@@ -754,8 +754,6 @@ if __name__ == "__main__":
             config.useDebug = True
         else:
             startLogToFile('FullRun')
-        if args.debug:
-            config.useDebug = True
         runSimRecoLumiAlignRecoLumi(config, 99)
         done()
 
