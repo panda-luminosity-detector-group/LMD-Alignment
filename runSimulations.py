@@ -749,11 +749,11 @@ if __name__ == "__main__":
 
     # ? =========== full job, single config
     if args.fullRunConfig:
+        config = LMDRunConfig.fromJSON(args.fullRunConfig)
         if args.debug:
             config.useDebug = True
         else:
             startLogToFile('FullRun')
-        config = LMDRunConfig.fromJSON(args.fullRunConfig)
         if args.debug:
             config.useDebug = True
         runSimRecoLumiAlignRecoLumi(config, 99)
