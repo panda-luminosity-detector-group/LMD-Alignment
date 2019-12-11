@@ -206,9 +206,9 @@ class moduleComparator(comparator):
         # prepare figure
         fig = plt.figure()
 
-        fig.set_size_inches(8/2.54, 5/2.54)
+        fig.set_size_inches(7/2.54, 5/2.54)
 
-        fig.suptitle('Module Misalignment Residuals')
+        fig.suptitle('Module Alignment Residuals')
         fig.subplots_adjust(wspace=0.05)
         # fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         # fig.tight_layout()
@@ -444,7 +444,7 @@ class combinedComparator(comparator):
 
         # plot difference hit array
         fig = plt.figure()
-        fig.set_size_inches(8/2.54, 5/2.54) 
+        fig.set_size_inches(7/2.54, 5/2.54) 
 
         #fig.subplots_adjust(wspace=0.05)
         #fig.tight_layout(rect=[0.5, 0.03, 1, 0.45])

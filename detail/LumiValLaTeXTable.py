@@ -64,8 +64,13 @@ class LumiValGraph(LumiValDisplay):
         values = []
 
         remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen')
+
+        self.corrected = self.configs[0].alignmentCorrection
+
         for conf in self.configs:
-            
+            if conf.alignmentCorrection != self.corrected:
+                raise Exception(f'Error! You cannot mix corrected and uncorrected results!')
+
             # conf.tempDestPath = conf.pathLumiVals().parent
             conf.tempDestPath = Path(f'output/temp/{conf.misalignType}-{conf.misalignFactor}-{conf.alignmentCorrection}')
             conf.tempDestFile = conf.tempDestPath / Path(conf.pathLumiVals().name)
@@ -97,7 +102,7 @@ class LumiValGraph(LumiValDisplay):
         # hist das shizzle
         return np.array(values, float)
 
-    def save(self, outFileName):
+    def save(self, outFileName, corrected=False):
         values = self.getAllValues()
         print(values)
 
@@ -116,9 +121,6 @@ class LumiValGraph(LumiValDisplay):
         #plt.rcParams['axes.spines.bottom'] = False
         plt.rcParams["legend.loc"] = 'upper left'
 
-
-
-
         # Defining the figure and figure size
         fig, ax = plt.subplots(figsize=(16/2.54, 10/2.54))
 
@@ -126,11 +128,13 @@ class LumiValGraph(LumiValDisplay):
         ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='o', ecolor='orangered', color='steelblue', capsize=2)
 
         # Adding plotting parameters
-        ax.set_title('Luminosity Fit Error by Misalignment Factor')
+        if self.corrected:
+            ax.set_title('Luminosity Fit Error, With Alignment')
+        else:
+            ax.set_title('Luminosity Fit Error, Without Alignment')
+
         ax.set_xlabel('Misalign Factor')
         ax.set_ylabel('Lumi Deviation [\%]')
-        
-        
         
         plt.grid(color='lightgrey', which='major', axis='y', linestyle='dotted')
 
@@ -140,5 +144,3 @@ class LumiValGraph(LumiValDisplay):
                     # Plot will be occupy a maximum of available space
                     bbox_inches='tight')
         plt.close()
-
-        pass
