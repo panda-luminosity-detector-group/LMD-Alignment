@@ -63,7 +63,9 @@ def calc(inFile, outFile):
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
-        print(f'usage: {sys.argv[0]} inFile outFile\nor:\nusage: {sys.argv[0]} --aligned outfile')
+        print(f'usage: {sys.argv[0]} inFile outFile\nor:')
+        print(f'usage: {sys.argv[0]} --aligned outfile\nor:')
+        print(f'usage: {sys.argv[0]} --auto targetDir')
         sys.exit(1)
 
     outFile = Path(sys.argv[2])
@@ -71,6 +73,13 @@ if __name__ == "__main__":
 
     if sys.argv[1] == '--aligned':
         calcAligned(outFile)
+
+    if sys.argv[1] == '--auto':
+        for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+            # ../Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-0.25-q.json input/moduleAlignment/avgMisalign-0.25.json
+            inFile = Path(f'../Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-{fac}-q.json')
+            outFile = Path(f'input/moduleAlignment/avgMisalign-{fac}.json')
+            calc(inFile, outFile)
 
     else:
         inFile = Path(sys.argv[1])

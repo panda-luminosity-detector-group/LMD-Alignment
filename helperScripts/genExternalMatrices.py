@@ -20,9 +20,9 @@ describe the deviation from the ideal position)
 if __name__ == "__main__":
     print('greetings, human.')
 
-    factors = ['0.50', '1.00', '2.00']
+    factors = ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']
     for factor in factors:
-        with open(f'input/misMatrices/misMat-sensors-{factor}.json') as f:
+        with open(f'../Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-sensors-{factor}.json') as f:
             matricesMisalign = json.load(f)
         outputFile = f'input/sensorAligner/externalMatrices-sensors-{factor}.json'
         externalMatrices = {}
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         with open(outputFile, 'w') as fp:
             fp.write(json.dumps(externalMatrices, indent=2))
 
-    with open(f'input/misMatrices/misMat-identity-1.00.json') as f:
+    with open(f'../Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-identity-1.00.json') as f:
         matricesMisalign = json.load(f)
     outputFile = f'input/sensorAligner/externalMatrices-sensors-aligned.json'
     externalMatrices = {}

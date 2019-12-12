@@ -104,6 +104,8 @@ class LumiValGraph(LumiValDisplay):
 
     def save(self, outFileName, corrected=False):
         values = self.getAllValues()
+        if len(values) < 1:
+            raise Exception(f'Error! Value array is empty!')
         print(values)
 
         import matplotlib.pyplot as plt
