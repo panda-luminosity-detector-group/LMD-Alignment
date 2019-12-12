@@ -434,16 +434,16 @@ class LMDRunConfig:
                 return self.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'singlePlane' :
-                return self.pathAlMatrixPath() / Path(f'alMat-modulesSinglePlane-{self.__misalignFactor}.json')
+                return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'modules':
-                return self.pathAlMatrixPath() / Path(f'alMat-modules-{self.__misalignFactor}.json')
+                return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'modulesNoRot':
-                return self.pathAlMatrixPath() / Path(f'alMat-modulesNoRot-{self.__misalignFactor}.json')
+                return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'modulesOnlyRot':
-                return self.pathAlMatrixPath() / Path(f'alMat-modulesOnlyRot-{self.__misalignFactor}.json')
+                return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             # TODO: add for combined
 
     def pathMisMatrix(self):
