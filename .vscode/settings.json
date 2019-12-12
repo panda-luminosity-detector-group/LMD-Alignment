@@ -75,5 +75,6 @@
         "bit": "cpp",
         "shared_mutex": "cpp"
     },
-    "restructuredtext.confPath": "${workspaceFolder}/pybind11/docs"
+    "restructuredtext.confPath": "${workspaceFolder}/pybind11/docs",
+    "cmake.configureOnOpen": false
 }

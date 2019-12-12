@@ -4,7 +4,7 @@ runConfigs/*
 runLogs/*
 .testscripts/
 .vscode/*
-.vscode
+.vscode/settings.json
 *.png
 *.pdf
 *.BAK
