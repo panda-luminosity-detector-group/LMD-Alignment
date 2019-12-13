@@ -306,8 +306,16 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
     if saveGraph:
         print(f'saving to graph.')
+
+        if configs[0].alignmentCorrection:
+            corrStr = 'corrected'
+        else:
+            corrStr = 'uncorrected'
+        fileName = Path(f'output/LumiResults/{configs[0].momentum}/{configs[0].misalignType}/LumiFits-{corrStr}')
+        fileName.parent.mkdir(exist_ok=True, parents=True)
+
         graph = LumiValGraph.fromConfigs(configs)
-        graph.save('test.pdf')
+        graph.save(fileName)
     else:
         print(f'printing to stdout:')
         table = LumiValLaTeXTable.fromConfigs(configs)
@@ -451,14 +459,18 @@ def createMultipleDefaultConfigs():
     momenta = ['1.5', '15.0']
     # momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
     misFactors = {}
-    misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot']
+    misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot', 'combi']
     
+    setOne = ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']
+    setTwo = ['0.25', '0.50', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']
+
     misFactors['aligned'] =         ['1.00']
     misFactors['identity'] =        ['1.00']
-    misFactors['sensors'] =         ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']
-    misFactors['box'] =             ['0.25', '0.50', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']
-    misFactors['boxRotZ'] =         ['0.25', '0.50', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']
-    misFactors['modules'] =         ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']
+    misFactors['sensors'] =         setOne
+    misFactors['box'] =             setOne
+    misFactors['boxRotZ'] =         setTwo
+    misFactors['modules'] =         setOne
+    misFactors['combi'] =           setOne
     misFactors['modulesNoRot'] =    ['0.50', '1.00', '2.00']
     misFactors['modulesOnlyRot'] =  ['0.50', '1.00', '2.00']
 

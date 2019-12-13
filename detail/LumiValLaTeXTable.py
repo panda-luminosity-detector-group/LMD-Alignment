@@ -95,9 +95,14 @@ class LumiValGraph(LumiValDisplay):
             with open(conf.tempDestFile) as file:
                 lumiVals = json.load(file)
 
-            lumi = lumiVals["relative_deviation_in_percent"][0]
-            lumiErr = lumiVals["relative_deviation_error_in_percent"][0]
+            try:
+                lumi = lumiVals["relative_deviation_in_percent"][0]
+                lumiErr = lumiVals["relative_deviation_error_in_percent"][0]
+            except:
+                continue
 
+            if float(lumi) > 1e3:
+                continue
 
             # write to np array
             values.append([conf.misalignFactor, lumi, lumiErr])
@@ -111,11 +116,16 @@ class LumiValGraph(LumiValDisplay):
             raise Exception(f'Error! Value array is empty!')
         print(values)
 
+        sizes = [(16/2.54, 8/2.54), (16/2.54, 4/2.54), (6.5/2.54, 4/2.54)]
+        titlesCorr = ['Luminosity Fit Error, With Alignment', 'Luminosity Fit Error, With Alignment', 'Luminosity Fit Error']
+        titlesUncorr = ['Luminosity Fit Error, Without Alignment', 'Luminosity Fit Error, Without Alignment', 'Luminosity Fit Error']
+
         import matplotlib.pyplot as plt
         #import seaborn; seaborn.set_style('whitegrid')
 
         self.latexsigma = r'\textsigma{}'
         self.latexmu = r'\textmu{}'
+        self.latexPercent = r'\%'
         plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':10})
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
@@ -126,26 +136,28 @@ class LumiValGraph(LumiValDisplay):
         #plt.rcParams['axes.spines.bottom'] = False
         plt.rcParams["legend.loc"] = 'upper left'
 
-        # Defining the figure and figure size
-        fig, ax = plt.subplots(figsize=(16/2.54, 10/2.54))
+        for i in range(len(sizes)):
 
-        # Plotting the error bars
-        ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='o', ecolor='orangered', color='steelblue', capsize=2)
+            # Defining the figure and figure size
+            fig, ax = plt.subplots(figsize=sizes[i])
 
-        # Adding plotting parameters
-        if self.corrected:
-            ax.set_title('Luminosity Fit Error, With Alignment')
-        else:
-            ax.set_title('Luminosity Fit Error, Without Alignment')
+            # Plotting the error bars
+            ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='o', ecolor='orangered', color='steelblue', capsize=2)
 
-        ax.set_xlabel('Misalign Factor')
-        ax.set_ylabel('Lumi Deviation [\%]')
-        
-        plt.grid(color='lightgrey', which='major', axis='y', linestyle='dotted')
+            # Adding plotting parameters
+            if self.corrected:
+                ax.set_title(titlesCorr[i])
+            else:
+                ax.set_title(titlesUncorr[i])
 
-        plt.savefig(outFileName,
-                    #This is simple recomendation for publication plots
-                    dpi=1000, 
-                    # Plot will be occupy a maximum of available space
-                    bbox_inches='tight')
-        plt.close()
+            ax.set_xlabel(f'Misalign Factor')
+            ax.set_ylabel(f'Lumi Deviation [{self.latexPercent}]')
+            
+            plt.grid(color='lightgrey', which='major', axis='y', linestyle='dotted')
+
+            plt.savefig(f'{outFileName}-{i}.pdf',
+                        #This is simple recomendation for publication plots
+                        dpi=1000, 
+                        # Plot will be occupy a maximum of available space
+                        bbox_inches='tight')
+            plt.close()
