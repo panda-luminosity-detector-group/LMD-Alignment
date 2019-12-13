@@ -89,6 +89,9 @@ class LumiValGraph(LumiValDisplay):
                     print(f'\n\n')
                     continue
 
+            if not conf.tempDestFile.exists():
+                continue
+
             with open(conf.tempDestFile) as file:
                 lumiVals = json.load(file)
 
