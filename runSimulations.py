@@ -569,8 +569,8 @@ if __name__ == "__main__":
     parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='find all alignment matrices (IP, corridor, sensors) for runConfig')
     parser.add_argument('-A', metavar='--alignConfigPath', type=str, dest='alignConfigPath', help='same as -a, but for all Configs in specified path')
 
-    parser.add_argument('-h', metavar='--halfRunConfig', type=str, dest='halfRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
-    parser.add_argument('-H', metavar='--halfRunConfigPath', type=str, dest='halfRunConfigPath', help='same as -f, but for all Configs in specified path')
+    parser.add_argument('-half', metavar='--halfRunConfig', type=str, dest='halfRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
+    parser.add_argument('-Half', metavar='--halfRunConfigPath', type=str, dest='halfRunConfigPath', help='same as -f, but for all Configs in specified path')
 
     parser.add_argument('-f', metavar='--fullRunConfig', type=str, dest='fullRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
     parser.add_argument('-F', metavar='--fullRunConfigPath', type=str, dest='fullRunConfigPath', help='same as -f, but for all Configs in specified path')
