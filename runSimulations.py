@@ -780,23 +780,22 @@ if __name__ == "__main__":
         runConfigsMT(args, runSimRecoLumi)
         done()
 
-    # ? =========== full job, single config
+    # ? =========== half run, single config
     if args.halfRunConfig:
         config = LMDRunConfig.fromJSON(args.halfRunConfig)
         if args.debug:
             config.useDebug = True
         else:
             startLogToFile('FullRun')
-        runSimRecoLumiAlignRecoLumi(config, 99)
+        halfRun(config, 99)
         done()
 
-    # ? =========== full job, multiple configs
+    # ? =========== half run, multiple configs
     if args.halfRunConfigPath:
         startLogToFile('FullRunMulti')
         args.configPath = args.halfRunConfigPath
-        runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
+        runConfigsMT(args, halfRun)
         done()
-
 
     # ? =========== full job, single config
     if args.fullRunConfig:
