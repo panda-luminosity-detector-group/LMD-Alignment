@@ -111,7 +111,7 @@ class LumiValGraph(LumiValDisplay):
         return np.array(values, float)
 
     def save(self, outFileName, corrected=False):
-        values = self.getAllValues()
+        values = self.getAllValues(False)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
         print(values)
@@ -121,7 +121,6 @@ class LumiValGraph(LumiValDisplay):
         titlesUncorr = ['Luminosity Fit Error, Without Alignment', 'Luminosity Fit Error, Without Alignment', 'Luminosity Fit Error']
 
         import matplotlib.pyplot as plt
-        #import seaborn; seaborn.set_style('whitegrid')
 
         self.latexsigma = r'\textsigma{}'
         self.latexmu = r'\textmu{}'
@@ -154,6 +153,7 @@ class LumiValGraph(LumiValDisplay):
             ax.set_ylabel(f'Lumi Deviation [{self.latexPercent}]')
             
             plt.grid(color='lightgrey', which='major', axis='y', linestyle='dotted')
+            plt.grid(color='lightgrey', which='major', axis='x', linestyle='dotted')
 
             plt.savefig(f'{outFileName}-{i}.pdf',
                         #This is simple recomendation for publication plots

@@ -240,6 +240,25 @@ def runSimRecoLumi(runConfig, threadID=None):
     print(f'Thread {threadID} done!')
 
 
+def halfRun(runConfig, threadID=None):
+    print(f'Thread {threadID}: starting!')
+
+    # create logger
+    thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-FullRun-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadNumber = threadID
+    prealignWrapper.logger = thislogger
+
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+    prealignWrapper.detLumi()                  # not blocking
+    prealignWrapper.waitForJobCompletion()     # waiting
+    prealignWrapper.extractLumi()              # blocking
+    print(f'Thread {threadID} done!')
+
 def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
 
     print(f'Thread {threadID}: starting!')
@@ -550,6 +569,9 @@ if __name__ == "__main__":
     parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='find all alignment matrices (IP, corridor, sensors) for runConfig')
     parser.add_argument('-A', metavar='--alignConfigPath', type=str, dest='alignConfigPath', help='same as -a, but for all Configs in specified path')
 
+    parser.add_argument('-h', metavar='--halfRunConfig', type=str, dest='halfRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
+    parser.add_argument('-H', metavar='--halfRunConfigPath', type=str, dest='halfRunConfigPath', help='same as -f, but for all Configs in specified path')
+
     parser.add_argument('-f', metavar='--fullRunConfig', type=str, dest='fullRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
     parser.add_argument('-F', metavar='--fullRunConfigPath', type=str, dest='fullRunConfigPath', help='same as -f, but for all Configs in specified path')
 
@@ -757,6 +779,24 @@ if __name__ == "__main__":
         args.configPath = args.simulationConfigPath
         runConfigsMT(args, runSimRecoLumi)
         done()
+
+    # ? =========== full job, single config
+    if args.halfRunConfig:
+        config = LMDRunConfig.fromJSON(args.halfRunConfig)
+        if args.debug:
+            config.useDebug = True
+        else:
+            startLogToFile('FullRun')
+        runSimRecoLumiAlignRecoLumi(config, 99)
+        done()
+
+    # ? =========== full job, multiple configs
+    if args.halfRunConfigPath:
+        startLogToFile('FullRunMulti')
+        args.configPath = args.halfRunConfigPath
+        runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
+        done()
+
 
     # ? =========== full job, single config
     if args.fullRunConfig:
