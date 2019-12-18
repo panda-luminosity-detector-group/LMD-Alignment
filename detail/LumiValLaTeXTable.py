@@ -111,7 +111,7 @@ class LumiValGraph(LumiValDisplay):
         return np.array(values, float)
 
     def save(self, outFileName, corrected=False):
-        values = self.getAllValues(False)
+        values = self.getAllValues()
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
         print(values)
