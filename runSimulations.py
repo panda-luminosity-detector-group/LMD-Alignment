@@ -514,8 +514,8 @@ def createMultipleDefaultConfigs():
                     config.alignmentCorrection = corr
 
                     # boxRot and boxRotZ require fewer jobs
-                    if misType == 'box' or misType == 'boxRotZ':
-                        config.jobsNum = '10'
+                    # if misType == 'box' or misType == 'boxRotZ':
+                    #     config.jobsNum = '10'
 
                     # identity and aligned don't get factors, only momenta and need fewer pairs
                     if misType == 'aligned' or misType == 'identity':
