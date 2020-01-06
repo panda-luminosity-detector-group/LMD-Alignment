@@ -111,7 +111,7 @@ class LumiValGraph(LumiValDisplay):
         return np.array(values, float)
 
     def save(self, outFileName, corrected=False):
-        values = self.getAllValues(False)
+        values = self.getAllValues()
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
         print(values)
@@ -129,10 +129,6 @@ class LumiValGraph(LumiValDisplay):
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
-        #plt.rcParams['axes.spines.left'] = False
-        # plt.rcParams['axes.spines.right'] = False
-        # plt.rcParams['axes.spines.top'] = False
-        #plt.rcParams['axes.spines.bottom'] = False
         plt.rcParams["legend.loc"] = 'upper left'
 
         for i in range(len(sizes)):
@@ -141,7 +137,7 @@ class LumiValGraph(LumiValDisplay):
             fig, ax = plt.subplots(figsize=sizes[i])
 
             # Plotting the error bars
-            ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='o', ecolor='orangered', color='steelblue', capsize=2)
+            ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='o', ecolor='grey', color='steelblue', capsize=2)
 
             # Adding plotting parameters
             if self.corrected:
@@ -150,7 +146,7 @@ class LumiValGraph(LumiValDisplay):
                 ax.set_title(titlesUncorr[i])
 
             ax.set_xlabel(f'Misalign Factor')
-            ax.set_ylabel(f'Lumi Deviation [{self.latexPercent}]')
+            ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
             
             plt.grid(color='lightgrey', which='major', axis='y', linestyle='dotted')
             plt.grid(color='lightgrey', which='major', axis='x', linestyle='dotted')
