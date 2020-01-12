@@ -13,7 +13,7 @@ def getTrackEfficiency(inQAname, outfilename):
     try:
         # open the root trees in a TChain-like manner
         print('reading files...')
-        for array in uproot.iterate(inQAname, 'pndsim', [b'LMDTrackQ.fTrkRecStatus', b'LMDTrackQ.fThetarec']):
+        for array in uproot.iterate(str(inQAname), 'pndsim', [b'LMDTrackQ.fTrkRecStatus', b'LMDTrackQ.fThetarec']):
             clean, recStatus = np.array(cleanArray(array))
             print(f'clean: {clean}')
 
