@@ -708,7 +708,16 @@ if __name__ == "__main__":
 
             if len(goodFiles) > 0:
 
-                firstQAfile = goodFiles[0]
+                iFile = 0
+                while True:
+                    firstQAfile = goodFiles[iFile]
+                    size = firstQAfile.stat().st_size
+                    if size > 3000:
+                        break
+                    else:
+                        if iFile == len(goodFiles):
+                            return
+                        iFile += 1
 
                 # plot function here!
                 if con.alignmentCorrection:
