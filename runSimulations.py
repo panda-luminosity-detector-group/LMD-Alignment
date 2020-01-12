@@ -709,8 +709,13 @@ if __name__ == "__main__":
             if len(goodFiles) > 0:
 
                 iFile = 0
-                
+
                 while True:
+
+                    if iFile = len(goodFiles):
+                        print('\n==\nNo more files!\n==')
+                        break
+
                     firstQAfile = goodFiles[iFile]
                     size = firstQAfile.stat().st_size
                     if size > 3000:
