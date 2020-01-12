@@ -712,7 +712,7 @@ if __name__ == "__main__":
 
                 while True:
 
-                    if iFile = len(goodFiles):
+                    if iFile == len(goodFiles):
                         print('\n==\nNo more files!\n==')
                         break
 
