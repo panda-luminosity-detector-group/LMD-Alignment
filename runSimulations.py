@@ -696,19 +696,29 @@ if __name__ == "__main__":
         for fileName in configs:
             runConfs.append(LMDRunConfig.fromJSON(fileName))
 
+        goodFiles = []
+
+        print(f'Running.')
         for con in runConfs:
-            print(f'Oi! Running runConfig: {con.pathTrksQA()}')
+            print(f'.', end='')
             QAfiles = con.pathTrksQA().glob('Lumi_TrksQA_*.root')
-            firstQAfile = next(QAfiles)
 
-            # plot function here!
-            if con.alignmentCorrection:
-                corrStr = 'corr'
-            else:
-                corrStr = 'uncorr'
-            outfile = f'output/thetaRec-{con.misalignType}-{con.misFactors}-{corrStr}.pdf'
-            getTrackEfficiency(firstQAfile, outfile)
+            for file in QAfiles:
+                goodFiles.append(file)
 
+            if len(goodFiles) > 0:
+
+                firstQAfile = goodFiles[0]
+
+                # plot function here!
+                if con.alignmentCorrection:
+                    corrStr = 'corr'
+                else:
+                    corrStr = 'uncorr'
+                outfile = f'output/thetaRec-{con.misalignType}-{con.misFactors}-{corrStr}.pdf'
+                getTrackEfficiency(firstQAfile, outfile)
+
+        done()
 
     # ? =========== lumi fit results, single config
     # if args.fitValuesConfig:
