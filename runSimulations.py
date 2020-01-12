@@ -715,8 +715,6 @@ if __name__ == "__main__":
                     if size > 3000:
                         break
                     else:
-                        if iFile == len(goodFiles):
-                            return
                         iFile += 1
 
                 # plot function here!
