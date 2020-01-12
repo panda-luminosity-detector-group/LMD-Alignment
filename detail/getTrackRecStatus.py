@@ -52,14 +52,15 @@ def cleanArray(arrayDict):
 
 if __name__ == "__main__":
 
-    paths = Path('/home/remus/temp/rootcompare').glob('*')
-    goodfiles = []
-    for path in paths:
-        files = path.glob('*.root')
-        files = [x for x in files if x.is_file()]
-        goodfiles.append(files[0])
+    # paths = Path('/home/remus/temp/rootcompare').glob('*')
+    # goodfiles = []
+    # for path in paths:
+    #     files = path.glob('*.root')
+    #     files = [x for x in files if x.is_file()]
+    #     goodfiles.append(files[0])
 
-    i = 0
-    for file in goodfiles:
-        getTrackEfficiency(str(file), f'{i}.png')
-        i += 1
+    # i = 0
+    # for file in goodfiles:
+    #     getTrackEfficiency(str(file), f'{i}.png')
+    #     i += 1
+    getTrackEfficiency('/home/remus/temp/rootcompare/modules/uncorr.root', f'fnort.png')

@@ -701,7 +701,7 @@ if __name__ == "__main__":
         print(f'Running.')
         for con in runConfs:
             print(f'.', end='')
-            QAfiles = con.pathTrksQA().glob('Lumi_TrksQA_*.root')
+            QAfiles = con.pathDataBaseDir().glob('Lumi_TrksQA_*.root')
 
             for file in QAfiles:
                 goodFiles.append(file)
