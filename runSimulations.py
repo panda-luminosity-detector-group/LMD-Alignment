@@ -718,6 +718,8 @@ if __name__ == "__main__":
                 outfile = f'output/thetaRec-{con.misalignType}-{con.misalignFactor}-{corrStr}.pdf'
                 getTrackEfficiency(firstQAfile, outfile)
 
+                goodFiles = []
+
         done()
 
     # ? =========== lumi fit results, single config

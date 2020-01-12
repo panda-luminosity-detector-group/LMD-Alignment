@@ -12,7 +12,7 @@ def getTrackEfficiency(inQAname, outfilename):
     # uproot.iterate will produce a dict with JaggedArrays, so we can create an empty dict and append each iteration
     try:
         # open the root trees in a TChain-like manner
-        print('reading files...')
+        print(f'reading file {str(inQAname)}')
         for array in uproot.iterate(str(inQAname), 'pndsim', [b'LMDTrackQ.fTrkRecStatus', b'LMDTrackQ.fThetarec']):
             clean, recStatus = np.array(cleanArray(array))
             print(f'clean: {clean}')
