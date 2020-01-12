@@ -715,7 +715,7 @@ if __name__ == "__main__":
                     corrStr = 'corr'
                 else:
                     corrStr = 'uncorr'
-                outfile = f'output/thetaRec-{con.misalignType}-{con.misFactors}-{corrStr}.pdf'
+                outfile = f'output/thetaRec-{con.misalignType}-{con.misalignFactor}-{corrStr}.pdf'
                 getTrackEfficiency(firstQAfile, outfile)
 
         done()
