@@ -709,12 +709,15 @@ if __name__ == "__main__":
             if len(goodFiles) > 0:
 
                 iFile = 0
+                
                 while True:
                     firstQAfile = goodFiles[iFile]
                     size = firstQAfile.stat().st_size
                     if size > 3000:
                         break
                     else:
+                        # TODO: iFile must not get larger than len(goodfiles)!
+                        print(f'file {firstQAfile} is too small, skipping...')
                         iFile += 1
 
                 # plot function here!
