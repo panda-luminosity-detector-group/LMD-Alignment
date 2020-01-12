@@ -694,7 +694,7 @@ if __name__ == "__main__":
     if args.fitValuesConfigPath:
         #args.configPath = args.fitValuesConfigPath
         print(f'Graphing all Lumi values in {args.fitValuesConfigPath}')
-        showLumiFitResults(args.fitValuesConfigPath, 0, True)
+        showLumiFitResults(args.fitValuesConfigPath, 0, False)
         done()
 
     #! ---------------------- logging goes to file if not in debug mode

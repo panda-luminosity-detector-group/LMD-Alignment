@@ -101,7 +101,7 @@ class LumiValGraph(LumiValDisplay):
             except:
                 continue
 
-            if float(lumi) > 1e3:
+            if abs(float(lumi)) > 1e2:
                 continue
 
             # write to np array

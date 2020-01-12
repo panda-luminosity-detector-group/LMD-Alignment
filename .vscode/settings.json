@@ -76,5 +76,7 @@
         "shared_mutex": "cpp"
     },
     "restructuredtext.confPath": "${workspaceFolder}/pybind11/docs",
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }
