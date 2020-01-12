@@ -714,6 +714,7 @@ if __name__ == "__main__":
 
                     if iFile == len(goodFiles):
                         print('\n==\nNo more files!\n==')
+                        firstQAfile = None
                         break
 
                     firstQAfile = goodFiles[iFile]
@@ -724,6 +725,9 @@ if __name__ == "__main__":
                         # TODO: iFile must not get larger than len(goodfiles)!
                         print(f'file {firstQAfile} is too small, skipping...')
                         iFile += 1
+
+                if firstQAfile is None:
+                    continue
 
                 # plot function here!
                 if con.alignmentCorrection:
