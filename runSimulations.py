@@ -9,6 +9,7 @@ import datetime
 import concurrent
 import argparse
 from pathlib import Path
+from detail.getTrackRecStatus import getTrackEfficiency
 from detail.simWrapper import simWrapper
 from detail.matrixComparator import *
 from detail.LumiValLaTeXTable import LumiValGraph, LumiValLaTeXTable
@@ -592,6 +593,8 @@ if __name__ == "__main__":
     parser.add_argument('--hist', type=str, dest='histSensorAligner', help='hist matrix deviations for runConfig')
     parser.add_argument('--histPath', type=str, dest='histSensorAlignerPath', help='hist matrix deviations for all runConfigs in Path, recursively')
 
+    parser.add_argument('--histRecPath', type=str, dest='histRecPath', help='hist theta rec for well resonctructed tracks')
+
     parser.add_argument('-d', action='store_true', dest='makeDefault', help='make a single default LMDRunConfig and save it to runConfigs/identity-1.00.json')
     parser.add_argument('-D', action='store_true', dest='makeMultipleDefaults', help='make multiple example LMDRunConfigs')
     parser.add_argument('--debug', action='store_true', dest='debug', help='run single threaded, more verbose output, submit jobs to devel queue')
@@ -681,6 +684,31 @@ if __name__ == "__main__":
         args.configPath = args.histSensorAlignerPath
         runConfigsST(args, histogramRunConfig)
         done()
+
+    # ? =========== hist thetarec
+    if args.histRecPath:
+
+        print(f'finding configs!')
+        targetDir = Path(args.histRecPath)
+        configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
+
+        runConfs = []
+        for fileName in configs:
+            runConfs.append(LMDRunConfig.fromJSON(fileName))
+
+        for con in runConfs:
+            print(f'Oi! Running runConfig: {con.pathTrksQA()}')
+            QAfiles = con.pathTrksQA().glob('Lumi_TrksQA_*.root')
+            firstQAfile = next(QAfiles)
+
+            # plot function here!
+            if con.alignmentCorrection:
+                corrStr = 'corr'
+            else:
+                corrStr = 'uncorr'
+            outfile = f'output/thetaRec-{con.misalignType}-{con.misFactors}-{corrStr}.pdf'
+            getTrackEfficiency(firstQAfile, outfile)
+
 
     # ? =========== lumi fit results, single config
     # if args.fitValuesConfig:
