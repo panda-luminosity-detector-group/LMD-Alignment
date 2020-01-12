@@ -30,7 +30,7 @@ def getTrackEfficiency(inQAname, outfilename):
     print(f'len: good:{len(good)}, bad:{len(bad)}')
     eff = len(good)*100 / (len(good) + len(bad))
 
-    plt.hist(good, bins=50)
+    plt.hist(good, bins=50, range=(0.002, 0.01))
     plt.suptitle(f'ThetaRec (for RecStatus=0)\nTrack Efficiency: {eff:.1f}%')
     #plt.yscale('log')
     # plt.show()
