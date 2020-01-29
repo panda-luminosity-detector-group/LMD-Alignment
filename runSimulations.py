@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 
-
 # limit openblas's max threads, this must be done BEFORE importing numpy
+import os
+import subprocess
+os.environ.update(
+    OMP_NUM_THREADS='8',
+    OPENBLAS_NUM_THREADS='8',
+    NUMEXPR_NUM_THREADS='8',
+    MKL_NUM_THREADS='8',
+)
+
 import sys
 import random
 import json
@@ -20,15 +28,6 @@ from alignment.alignerSensors import alignerSensors
 from alignment.alignerIP import alignerIP
 from alignment.alignerModules import alignerModules
 from argparse import RawTextHelpFormatter
-
-import os
-import subprocess
-os.environ.update(
-    OMP_NUM_THREADS='8',
-    OPENBLAS_NUM_THREADS='8',
-    NUMEXPR_NUM_THREADS='8',
-    MKL_NUM_THREADS='8',
-)
 
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
@@ -472,7 +471,6 @@ def runConfigsST(args, function):
 
     return
 
-
 def createMultipleDefaultConfigs():
     # for now
     correctedOptions = [False, True]
@@ -575,6 +573,8 @@ if __name__ == "__main__":
 
     parser.add_argument('-f', metavar='--fullRunConfig', type=str, dest='fullRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
     parser.add_argument('-F', metavar='--fullRunConfigPath', type=str, dest='fullRunConfigPath', help='same as -f, but for all Configs in specified path')
+
+    parser.add_argument('-FS', metavar='--fullRunConfigSequencePath', type=str, dest='fullRunConfigSequencePath', help='run multiple runConfigs sequentially (e.g. for multiple types of alignment)')
 
     parser.add_argument('-l', metavar='--lumifitConfig', type=str, dest='lumifitConfig', help='determine Luminosity for runConfig')
     parser.add_argument('-L', metavar='--lumifitConfigPath', type=str, dest='lumifitConfigPath', help='same as -l, but for all Configs in specified path')
@@ -753,7 +753,7 @@ if __name__ == "__main__":
     if args.fitValuesConfigPath:
         #args.configPath = args.fitValuesConfigPath
         print(f'Graphing all Lumi values in {args.fitValuesConfigPath}')
-        showLumiFitResults(args.fitValuesConfigPath, 0, False)
+        showLumiFitResults(args.fitValuesConfigPath, 0, True)
         done()
 
     #! ---------------------- logging goes to file if not in debug mode
@@ -872,3 +872,20 @@ if __name__ == "__main__":
         args.configPath = args.fullRunConfigPath
         runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
         done()
+
+    # ? =========== full job sequence, must be directory
+    # this one uses sequence files, which contain a list of files and the order in which to run them
+    if args.fullRunConfigSequencePath:
+
+        # layer 0: find sequence files
+
+        
+        # layer 1: read sequence files, execute runConfigs from them
+
+        startLogToFile('FullRunSequence')
+        args.configPath = args.fullRunConfigPath
+        runConfigsMT(args, runSimRecoLumiAlignRecoLumi)
+        done()
+
+        # string from command line argument:
+        # args.fullRunConfigSequencePath
