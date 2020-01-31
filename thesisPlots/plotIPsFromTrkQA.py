@@ -90,6 +90,7 @@ if __name__ == "__main__":
             files = f'/home/remus/temp/rootcompare/{box}/Lumi_TrksQA_1000*.root'
             
             array = getIPfromTrksQA(files)
+            print(f'Number of Tracks: {len(array)}')
             
             for cut in [0, 2, 4, 6]:
                 
@@ -123,6 +124,7 @@ if __name__ == "__main__":
             sigmaArr = []
             
             array = getIPfromTrksQA(files)
+            print(f'Number of Tracks: {len(array)}')
             
             for cut in cuts:
                 #print(f'cut: {cut}')
@@ -169,4 +171,54 @@ if __name__ == "__main__":
             plt.close(fig2)
 
     if True:
-        pass
+        for box in ['box-0.0', 'box-1.0', 'box-1.5', 'box-2.0']:
+            files = f'/home/remus/temp/rootcompare/{box}/Lumi_TrksQA_1000*.root'
+            array = getIPfromTrksQA(files)
+            print(f'Number of Tracks: {len(array)}')
+
+            muArr = []
+            sigmaArr = []
+
+            nTracks = np.arange(100, 50001, 100)
+            for number in nTracks:
+                array2 = array[:number]
+                array3 = quantileCut(array2, 4.0)
+                ip = extractIP(array3)
+
+                mus = np.average(ip, axis=0)
+                sigmas = np.std(ip, axis=0)
+                
+                muArr.append(mus)
+                sigmaArr.append(sigmas)
+
+            muArr = np.array(muArr)
+            sigmaArr = np.array(sigmaArr)
+
+            fig, ax = plt.subplots(figsize=(14/2.54 , 5/2.54))
+            fig2, ax2 = plt.subplots(figsize=(14/2.54 , 5/2.54))
+
+            # plot IP x vs y
+            ax.plot(nTracks, muArr[:,0], rasterized=True,marker='1', linestyle='', label=f'{latexmu} x')
+            ax.plot(nTracks, muArr[:,1], rasterized=True,marker='2', linestyle='', label=f'{latexmu} y')
+            ax.set_xlabel(f'Number of Tracks')
+            ax.set_ylabel(f'{latexmu} [cm]')
+
+            ax2.plot(nTracks, sigmaArr[:,0], rasterized=True,marker='3', linestyle='', label=f'{latexsigma} x')
+            ax2.plot(nTracks, sigmaArr[:,1], rasterized=True,marker='4', linestyle='', label=f'{latexsigma} y')
+            ax2.set_xlabel(f'Number of Tracks')
+            ax2.set_ylabel(f'{latexsigma} [cm]')
+            
+            ax.legend()
+            ax2.legend()
+            
+            fig.tight_layout()
+            fig2.tight_layout()
+
+            ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+            ax2.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+            
+            fig.savefig(f'output/ipDistribution/mean-vs-nTrk-{box}.pdf', dpi=1000, bbox_inches='tight')
+            fig2.savefig(f'output/ipDistribution/sigma-vs-nTrk-{box}.pdf', dpi=1000, bbox_inches='tight')
+            
+            plt.close(fig)
+            plt.close(fig2)
