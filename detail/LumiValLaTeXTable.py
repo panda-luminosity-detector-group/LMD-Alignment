@@ -146,7 +146,8 @@ class LumiValGraph(LumiValDisplay):
                 ax.set_title(titlesUncorr[i])
 
             ax.set_xlabel(f'Misalign Factor')
-            ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
+            # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
+            ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
             
             plt.grid(color='lightgrey', which='major', axis='y', linestyle='dotted')
             plt.grid(color='lightgrey', which='major', axis='x', linestyle='dotted')

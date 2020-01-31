@@ -155,6 +155,8 @@ class boxComparator(comparator):
 
         bucketLabels = ['rot x', 'rot y', 'rot z']
         
+        print(f' OI VALUES: {values}')
+
         histA.hist(values, bins=15, histtype='bar', label=bucketLabels, color=self.colors)  # this is only the z distance
         histA.set_title('distance alignment result - generated')   # change to mm!
         histA.set_xlabel(f'd [{self.latexmu}rad]')
