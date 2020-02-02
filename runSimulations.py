@@ -365,7 +365,7 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
-    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.pdf')
+    boxResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.pdf')
 
     # # overlap comparator
     comparator = overlapComparator(runConfig)
@@ -373,21 +373,48 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadSensorAlignerOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
-    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
+    overlapResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
 
     # module comparator
     comparator = moduleComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
-    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/modules-{runConfig.misalignFactor}.pdf')
+    moduleResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/modules-{runConfig.misalignFactor}.pdf')
 
     # combined comparator
     comparator = combinedComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
     comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
-    comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.pdf')
+    sensorResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.pdf')
+
+    # refine
+
+    moduleResultMean = np.average(moduleResult, axis=0)
+    moduleResultSigma = np.std(moduleResult, axis=0)
+
+    overlapResultMean = np.average(overlapResult, axis=0)
+    overlapResultSigma = np.std(overlapResult, axis=0)
+
+    sensorResultMean = np.average(sensorResult, axis=0)
+    sensorResultSigma = np.std(sensorResult, axis=0)
+
+    values = {
+        'box' : np.array(boxResult).tolist(), 
+        'modules' : (np.array(moduleResultMean).tolist(), np.array(moduleResultSigma).tolist()),
+        'overlaps' : (np.array(overlapResultMean).tolist(), np.array(overlapResultSigma).tolist()),
+        'sensors' : (np.array(sensorResultMean).tolist(), np.array(sensorResultSigma).tolist())
+    }
+
+    # print(f'\n\nATTENTION\n\nATTENTION\n\n')
+
+    # for i in values:
+    #     print(f'this line in unrefined:{i}')
+
+    # print(f'\n\nATTENTION\n\nATTENTION\n\n')
+
+    return values
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
@@ -398,9 +425,9 @@ def runConfigsMT(args, function):
     searchDir = Path(args.configPath)
 
     if args.recursive:
-        configs = list(searchDir.glob('**/*.json'))
+        configs = list(searchDir.glob('**/factor*.json'))
     else:
-        configs = list(searchDir.glob('*.json'))
+        configs = list(searchDir.glob('factor*.json'))
 
     if len(configs) == 0:
         print(f'No runConfig files found in {searchDir}. Exiting!')
@@ -451,9 +478,9 @@ def runConfigsST(args, function):
     searchDir = Path(args.configPath)
 
     if args.recursive:
-        configs = list(searchDir.glob('**/*.json'))
+        configs = list(searchDir.glob('**/factor*.json'))
     else:
-        configs = list(searchDir.glob('*.json'))
+        configs = list(searchDir.glob('factor*.json'))
 
     if len(configs) == 0:
         print(f'No runConfig files found in {searchDir}. Exiting!')
@@ -467,9 +494,8 @@ def runConfigsST(args, function):
         simConfigs.append(runConfig)
 
     for con in simConfigs:
-        function(con, 0)
+        yield {con.misalignFactor : function(con, 0)}
 
-    return
 
 def createMultipleDefaultConfigs():
     # for now
@@ -682,7 +708,28 @@ if __name__ == "__main__":
 
     if args.histSensorAlignerPath:
         args.configPath = args.histSensorAlignerPath
-        runConfigsST(args, histogramRunConfig)
+        
+        allVals = []
+        for values in runConfigsST(args, histogramRunConfig):
+            allVals.append(values)
+            print(f'got line! vals:\n{values}')
+        
+
+        # allVals = np.array(allVals).tolist()
+        print(allVals)
+
+        # print(f'\n\n\nATTENTION\n\n\n\n')
+
+        # for i in allVals:
+
+        #     print(f'i: {i}')
+
+        #     i.value = np.array(i.value)
+
+        #     i.value = np.ndarray.tolist(i.value)
+
+        with open(f'{args.configPath}/allMatrixValues.json', 'w') as f:
+            json.dump(allVals, f, sort_keys=True, indent=2)
         done()
 
     # ? =========== hist thetarec

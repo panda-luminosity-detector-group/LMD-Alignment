@@ -199,7 +199,7 @@ class boxComparator(comparator):
         plt.savefig(outputFileName, dpi=300)
         plt.close()
 
-        return
+        return np.array(d)
 
 class moduleComparator(comparator):
 
@@ -291,7 +291,7 @@ class moduleComparator(comparator):
                     bbox_inches='tight')
         plt.close()
 
-        return
+        return np.array(resValues)
 
 class overlapComparator(comparator):
 
@@ -384,7 +384,7 @@ class overlapComparator(comparator):
                     bbox_inches='tight')
         plt.close()
 
-        return
+        return np.array(differences)
 
 # class cycleComparator(comparator):
 
@@ -507,6 +507,7 @@ class combinedComparator(comparator):
                 differences = np.append(differences, values, axis=0)
 
         self.histValues(differences)
+
         plt.savefig(outputFileName,
                     #This is simple recomendation for publication plots
                     dpi=1000, 
@@ -514,4 +515,4 @@ class combinedComparator(comparator):
                     bbox_inches='tight')
         plt.close()
 
-        return
+        return np.array(differences)
