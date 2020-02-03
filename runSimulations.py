@@ -310,7 +310,7 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
     # read all configs from path
     runConfigPath = Path(runConfigPath)
-    configFiles = list(runConfigPath.glob('**/*.json'))
+    configFiles = list(runConfigPath.glob('**/factor*.json'))
 
     configs = []
     for file in configFiles:
@@ -714,19 +714,7 @@ if __name__ == "__main__":
             allVals.append(values)
             print(f'got line! vals:\n{values}')
         
-
-        # allVals = np.array(allVals).tolist()
         print(allVals)
-
-        # print(f'\n\n\nATTENTION\n\n\n\n')
-
-        # for i in allVals:
-
-        #     print(f'i: {i}')
-
-        #     i.value = np.array(i.value)
-
-        #     i.value = np.ndarray.tolist(i.value)
 
         with open(f'{args.configPath}/allMatrixValues.json', 'w') as f:
             json.dump(allVals, f, sort_keys=True, indent=2)

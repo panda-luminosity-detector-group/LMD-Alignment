@@ -137,7 +137,8 @@ class LumiValGraph(LumiValDisplay):
             fig, ax = plt.subplots(figsize=sizes[i])
 
             # Plotting the error bars
-            ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='o', ecolor='grey', color='steelblue', capsize=2)
+            # ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='.', ecolor='grey', color='steelblue', capsize=2)
+            ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='d', ecolor='black', capsize=2, elinewidth=0.6)
 
             # Adding plotting parameters
             if self.corrected:
