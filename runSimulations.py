@@ -503,7 +503,7 @@ def createMultipleDefaultConfigs():
     momenta = ['1.5', '15.0']
     # momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
     misFactors = {}
-    misTypes = ['aligned', 'identity', 'sensors', 'box', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot', 'combi']
+    misTypes = ['aligned', 'identity', 'sensors', 'box', 'box100', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot', 'combi']
     
     setOne = ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']
     setTwo = ['0.25', '0.50', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']
@@ -512,6 +512,7 @@ def createMultipleDefaultConfigs():
     misFactors['identity'] =        ['1.00']
     misFactors['sensors'] =         setOne
     misFactors['box'] =             setOne
+    misFactors['box100'] =          setOne
     misFactors['boxRotZ'] =         setTwo
     misFactors['modules'] =         setOne
     misFactors['combi'] =           setOne
@@ -578,7 +579,7 @@ def createMultipleDefaultConfigs():
 
     # regenerate missing fields
     targetDir = Path('runConfigs')
-    configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
+    configs = [x for x in targetDir.glob('**/factor*.json') if x.is_file()]
     for fileName in configs:
         conf = LMDRunConfig.fromJSON(fileName)
         conf.generateMatrixNames()

@@ -46,7 +46,7 @@ if __name__ == "__main__":
     plt.rc('text', usetex=True)
     plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
-    files = Path('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/').glob('misMat-box-*.json')
+    files = Path('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/').glob('misMat-box100-*.json')
 
     lines = []
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
             matrix = np.array(array).reshape((4,4)) 
             angles = rotationMatrixToEulerAngles(matrix)
         
-        m = re.search(r'misMat-box-(\d?\.\d\d)\.json', str(file))
+        m = re.search(r'misMat-box100-(\d?\.\d\d)\.json', str(file))
 
         if m:
             fac = float(m.group(1))
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     
 
     #* -------------- plot Euler angle residuals
-    misType = 'box'
+    misType = 'box100'
     source = 'box'
     fig, ax = plt.subplots(figsize=(14/2.54 , 5/2.54))
 
