@@ -500,8 +500,8 @@ def runConfigsST(args, function):
 def createMultipleDefaultConfigs():
     # for now
     correctedOptions = [False, True]
-    momenta = ['1.5', '15.0']
-    # momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
+    # momenta = ['1.5', '15.0']
+    momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
     misFactors = {}
     misTypes = ['aligned', 'identity', 'sensors', 'box', 'box100', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot', 'combi']
     

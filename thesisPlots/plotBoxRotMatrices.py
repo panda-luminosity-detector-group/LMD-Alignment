@@ -71,15 +71,15 @@ if __name__ == "__main__":
 
     #* -------------- plot Euler angle residuals
     misType = 'box100'
-    source = 'box'
+    # source = 'box'
     fig, ax = plt.subplots(figsize=(14/2.54 , 5/2.54))
 
-    ax.errorbar(lines[:,0], lines[:,1]*1e3, fmt='3', capsize=4, markersize=10, label=f'{latexPsi}')
-    ax.errorbar(lines[:,0], lines[:,2]*1e3, fmt='4', capsize=4, markersize=10, label=f'{latexTheta}')
-    ax.errorbar(lines[:,0], lines[:,3]*1e3, fmt='.', capsize=4, markersize=5, label=f'{latexPhi}')
+    ax.errorbar(lines[:,0], lines[:,1]*1e6, fmt='3', capsize=4, markersize=10, label=f'{latexPsi}')
+    ax.errorbar(lines[:,0], lines[:,2]*1e6, fmt='4', capsize=4, markersize=10, label=f'{latexTheta}')
+    # ax.errorbar(lines[:,0], lines[:,3]*1e6, fmt='.', capsize=4, markersize=5, label=f'{latexPhi}')
     
     ax.set_xlabel(f'Misalign Factor')
-    ax.set_ylabel(f'Euler Angles [mrad]')
+    ax.set_ylabel(f'Euler Angles [{latexmu}rad]')
     ax.legend()
     ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
 

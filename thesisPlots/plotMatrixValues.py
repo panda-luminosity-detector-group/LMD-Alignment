@@ -109,12 +109,12 @@ if __name__ == "__main__":
 
         fig, ax = plt.subplots(figsize=(14/2.54 , 5/2.54))
 
-        ax.errorbar(lines[:,0], lines[:,1]/1e3, fmt='3', capsize=4, markersize=10, label=f'{latexPsi}')
-        ax.errorbar(lines[:,0], lines[:,2]/1e3, fmt='4', capsize=4, markersize=10, label=f'{latexTheta}')
-        ax.errorbar(lines[:,0], lines[:,3]/1e3, fmt='2', capsize=4, markersize=10, label=f'{latexPhi}')
+        ax.errorbar(lines[:,0], lines[:,1], fmt='3', capsize=4, markersize=10, label=f'{latexPsi}')
+        ax.errorbar(lines[:,0], lines[:,2], fmt='4', capsize=4, markersize=10, label=f'{latexTheta}')
+        # ax.errorbar(lines[:,0], lines[:,3], fmt='2', capsize=4, markersize=10, label=f'{latexPhi}')
         
         ax.set_xlabel(f'Misalign Factor')
-        ax.set_ylabel(f'Euler Residuals [mrad]')
+        ax.set_ylabel(f'Euler Residuals [{latexmu}rad]')
         ax.legend()
         ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
         plt.close(fig)
 
 
-    source = 'box'
+    source = 'box100'
     with open(f'runConfigs/uncorrected/{source}/1.5/allMatrixValues.json', 'r') as f:
         data = json.load(f)
 
@@ -202,7 +202,7 @@ if __name__ == "__main__":
         ax.legend(handles, labels, loc='upper right',numpoints=1)
 
         fig.tight_layout()
-        fig.savefig(f'output/comparison/mom-1.5-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
+        fig.savefig(f'output/comparison/mom-15.0-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
         plt.close(fig)
 
     #* -------------- plot Euler angle residuals
@@ -225,12 +225,12 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(figsize=(14/2.54 , 5/2.54))
 
-    ax.errorbar(lines[:,0], lines[:,1]/1e3, fmt='3', capsize=4, markersize=10, label=f'{latexPsi}')
-    ax.errorbar(lines[:,0], lines[:,2]/1e3, fmt='4', capsize=4, markersize=10, label=f'{latexTheta}')
+    ax.errorbar(lines[:,0], lines[:,1], fmt='3', capsize=4, markersize=10, label=f'{latexPsi}')
+    ax.errorbar(lines[:,0], lines[:,2], fmt='4', capsize=4, markersize=10, label=f'{latexTheta}')
     # ax.errorbar(lines[:,0], lines[:,3]/1e3, fmt='2', capsize=4, markersize=10, label=f'{latexPhi}')
     
     ax.set_xlabel(f'Misalign Factor')
-    ax.set_ylabel(f'Euler Residuals [mrad]')
+    ax.set_ylabel(f'Euler Residuals [{latexmu}rad]')
     ax.legend()
     ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
 
@@ -258,5 +258,5 @@ if __name__ == "__main__":
     ax.legend(handles, labels, loc='upper right',numpoints=1)
 
     fig.tight_layout()
-    fig.savefig(f'output/comparison/mom-1.5-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
+    fig.savefig(f'output/comparison/mom-15.0-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
     plt.close(fig)
