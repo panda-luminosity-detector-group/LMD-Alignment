@@ -322,7 +322,6 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
     else:
         print(f'found {len(configs)} config files.')
 
-
     if saveGraph:
         print(f'saving to graph.')
 
@@ -335,6 +334,11 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
         graph = LumiValGraph.fromConfigs(configs)
         graph.save(fileName)
+
+        fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
+        fileName2.parent.mkdir(exist_ok=True, parents=True)
+        graph.saveAllMomenta(fileName2)
+
     else:
         print(f'printing to stdout:')
         table = LumiValLaTeXTable.fromConfigs(configs)
@@ -658,7 +662,7 @@ if __name__ == "__main__":
         targetDir = Path(args.updateRunConfigs).absolute()
         print(f'reading all files from {targetDir} and regenerating settings...')
 
-        configs = [x for x in targetDir.glob('**/*.json') if x.is_file()]
+        configs = [x for x in targetDir.glob('**/factor*.json') if x.is_file()]
 
         for fileName in configs:
             conf = LMDRunConfig.fromJSON(fileName)
