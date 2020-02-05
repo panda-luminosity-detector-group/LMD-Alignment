@@ -26,13 +26,13 @@ if __name__ == "__main__":
     plt.rc('text', usetex=True)
     plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
-
+    momentum = '15.0'
     sources = ['modules', 'sensors']
     misTypes = ['modules', 'sensors', 'overlaps']
 
     for source in sources:
 
-        with open(f'runConfigs/uncorrected/{source}/15.0/allMatrixValues.json', 'r') as f:
+        with open(f'runConfigs/uncorrected/{source}/{momentum}/allMatrixValues.json', 'r') as f:
             data = json.load(f)
 
         for misType in misTypes:
@@ -86,7 +86,7 @@ if __name__ == "__main__":
             ax.legend(handles, labels, loc='upper right',numpoints=1)
 
             fig.tight_layout()
-            fig.savefig(f'output/comparison/mom-15.0-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
+            fig.savefig(f'output/comparison/mom-{momentum}-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
             plt.close(fig)
 
         #* -------------- plot Euler angle residuals
@@ -142,12 +142,12 @@ if __name__ == "__main__":
         ax.legend(handles, labels, loc='upper right',numpoints=1)
 
         fig.tight_layout()
-        fig.savefig(f'output/comparison/mom-15.0-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
+        fig.savefig(f'output/comparison/mom-{momentum}-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
         plt.close(fig)
 
 
     source = 'box100'
-    with open(f'runConfigs/uncorrected/{source}/1.5/allMatrixValues.json', 'r') as f:
+    with open(f'runConfigs/uncorrected/{source}/{momentum}/allMatrixValues.json', 'r') as f:
         data = json.load(f)
 
     #* -------------- plot matrix residuals
@@ -202,7 +202,7 @@ if __name__ == "__main__":
         ax.legend(handles, labels, loc='upper right',numpoints=1)
 
         fig.tight_layout()
-        fig.savefig(f'output/comparison/mom-15.0-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
+        fig.savefig(f'output/comparison/mom-{momentum}-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
         plt.close(fig)
 
     #* -------------- plot Euler angle residuals
@@ -258,5 +258,5 @@ if __name__ == "__main__":
     ax.legend(handles, labels, loc='upper right',numpoints=1)
 
     fig.tight_layout()
-    fig.savefig(f'output/comparison/mom-15.0-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
+    fig.savefig(f'output/comparison/mom-{momentum}-misalign-{source}-mats-{misType}.pdf', dpi=1000, bbox_inches='tight')
     plt.close(fig)
