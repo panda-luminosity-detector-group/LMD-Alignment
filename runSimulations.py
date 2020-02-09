@@ -333,7 +333,7 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
         fileName.parent.mkdir(exist_ok=True, parents=True)
 
         graph = LumiValGraph.fromConfigs(configs)
-        graph.save(fileName)
+        # graph.save(fileName)
 
         fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
         fileName2.parent.mkdir(exist_ok=True, parents=True)
@@ -674,30 +674,27 @@ if __name__ == "__main__":
     if args.test:
         print(f'Testing...')
         
-        # from good-ish tracks
-        trackFile = Path('./input/modulesAlTest/processedTracks-modules-1.00.json')
-        # trackFile = Path('./input/modulesAlTest/tracks_processed-modulesNoRot-1.00.json')
-        
-        # dataPath = '/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-modulesNoRot-1.00/100000/1-100_uncut/no_alignment_correction'
-        # trackFile = dataPath + '/testTracks.json'
+        # this performs module alignment, stores the matrices to a temp file and runs the matrix comparator against this matrix file
+        if True:
 
-        alignerMod = alignerModules()
-        # alignerMod.convertRootTracks(dataPath, trackFile)
-        alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
-        alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-1.00.json')
-        alignerMod.readTracks(trackFile)
-        alignerMod.alignModules()
-        alignerMod.saveMatrices('output/alMat-modules-1.00-2019-12-01.json')
+            # from good-ish tracks
+            trackFile = Path('./input/modulesAlTest/factor-1.00-large.json')
 
-        #! run comparator
-        comp = moduleComparator(None)
-        comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
+            alignerMod = alignerModules()
+            alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
+            alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-1.00.json')
+            alignerMod.readTracks(trackFile)
+            alignerMod.alignModules()
+            alignerMod.saveMatrices('output/alMat-modules-1.00-2019-12-01.json')
 
-        comp.loadAlignerMatrices('output/alMat-modules-1.00-2019-12-01.json')
-        comp.saveHistogram('output/alignmentModules/residuals-modules-2019-12-01.pdf')
+            #! run comparator
+            comp = moduleComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/modules/15.0/factor-1.00.json'))
+            comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+            comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
+            comp.loadAlignerMatrices('output/alMat-modules-1.00-2019-12-01.json')
+            comp.saveHistogram('output/alignmentModules/residuals-modules-2020-02-09-withAnchors.pdf')
 
-        done()
+            done()
 
     if args.debug:
         print(f'\n\n!!! Running in debug mode !!!\n\n')
@@ -792,6 +789,11 @@ if __name__ == "__main__":
     # ? =========== lumi fit results, multiple configs
     if args.fitValuesConfigPath:
         #args.configPath = args.fitValuesConfigPath
+        print(f'\n\n')
+        print(f'======================================')
+        print(f'  Remember to run --histPath before!')
+        print(f'======================================')
+        print(f'\n\n')
         print(f'Graphing all Lumi values in {args.fitValuesConfigPath}')
         showLumiFitResults(args.fitValuesConfigPath, 0, True)
         done()

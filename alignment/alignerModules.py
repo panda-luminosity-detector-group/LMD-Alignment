@@ -201,7 +201,7 @@ class alignerModules:
         for i in range(4):
             totalMatrices[i] = np.identity(4)
 
-        newTracks = self.dynamicTrackCut(newTracks, 5)
+        newTracks = self.dynamicTrackCut(newTracks, 3)      # TODO really 5% ?! seems awfully much
         
         #* =========== iterate cuts and calculation
         for iIteration in range(self.iterations):

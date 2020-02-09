@@ -171,7 +171,7 @@ class LumiValGraph(LumiValDisplay):
             plt.close()
 
     def saveAllMomenta(self, outFileName):
-        values = self.getAllValues(reallyAll=True)
+        values = self.getAllValues(reallyAll=True, copy=True)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
         # print(values)
@@ -201,7 +201,8 @@ class LumiValGraph(LumiValDisplay):
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
-        plt.rcParams["legend.loc"] = 'upper left'
+        # plt.rcParams["legend.loc"] = 'upper left'
+        plt.rcParams["legend.loc"] = 'upper right'
         
         # Defining the figure and figure size
         
@@ -216,7 +217,7 @@ class LumiValGraph(LumiValDisplay):
 
             for mom in momenta:
                 # print(f'for momentum {mom}, we find:')
-                mask = (values[:,0] == mom)
+                mask = (values[:,0] == mom)# & (values[:, 2] > -2.0)
                 thseVals = values[mask]
 
                 # Plotting the error bars
@@ -238,7 +239,8 @@ class LumiValGraph(LumiValDisplay):
             # remove the errorbars
             handles = [h[0] for h in handles]
             # use them in the legend
-            ax.legend(handles, labels, loc='upper left',numpoints=1)
+            # ax.legend(handles, labels, loc='upper left',numpoints=1)
+            ax.legend(handles, labels, loc='upper right',numpoints=1)
 
             plt.tight_layout()
 
