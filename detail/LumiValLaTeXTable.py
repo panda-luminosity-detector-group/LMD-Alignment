@@ -206,6 +206,9 @@ class LumiValGraph(LumiValDisplay):
         
         # Defining the figure and figure size
         
+        offsetscale = 2
+        offsets = np.arange(-0.02, 0.03, 0.01)
+
         for i in range(len(sizes)):
 
             fig, ax = plt.subplots(figsize=sizes[i])
@@ -217,11 +220,11 @@ class LumiValGraph(LumiValDisplay):
 
             for mom in momenta:
                 # print(f'for momentum {mom}, we find:')
-                mask = (values[:,0] == mom)# & (values[:, 2] > -2.0)
+                mask = (values[:,0] == mom) & (values[:, 2] > -0.3)
                 thseVals = values[mask]
 
                 # Plotting the error bars
-                ax.errorbar(thseVals[:,1], thseVals[:,2], yerr=thseVals[:,3], fmt='d', ecolor='black', color=colors[colorI], capsize=2, elinewidth=0.6, label=f'{mom} GeV')
+                ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale, thseVals[:,2], yerr=thseVals[:,3], fmt='d', ecolor='black', color=colors[colorI], capsize=2, elinewidth=0.6, label=f'{mom} GeV')
                 colorI += 1
 
             # Adding plotting parameters
