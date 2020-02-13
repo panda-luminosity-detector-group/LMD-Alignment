@@ -49,9 +49,12 @@ class alignerModules:
         rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
         subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules')
 
-    def readTracks(self, fileName):
+    def readTracks(self, fileName, isNumpy=False):
         print(f'reading processed tracks file...')
-        self.reader.readTracksFromJson(fileName)
+        if not isNumpy:
+            self.reader.readTracksFromJson(fileName)
+        else:
+            self.reader.readTracksFromNPY(fileName)
 
     def readAnchorPoints(self, fileName):
         self.anchorPoints = mi.loadMatrices(fileName, False)
@@ -102,28 +105,41 @@ class alignerModules:
         
         return tempTracks
 
-    def alignModules(self):
-        for sector in range(10):
-            for path, matrix in self.alignSectorICP(sector):
-                self.alignMatrices[path] = matrix
-        return
+    def alignModules(self, maxNoOfTracks=0, multiThreaded=False):
+        # single thraded
+        if not multiThreaded:
+            for sector in range(10):
+                for result in self.alignSectorICP(sector, maxNoTrks=maxNoOfTracks):
+                    path, matrix = result
+                    self.alignMatrices[path] = matrix
+            return
 
-        # TODO: multi-thread sectors
-        # maxThreads = 10
-        # print(f'running in {maxThreads} threads.')
-        
-        # with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
-        #     # Start the load operations and mark each future with its URL
-        #     for sector in range(10):
-        #         executor.submit(self.alignSectorICP, sector)
+        # multi-threaded version
+        else:
+            maxThreads = 8
+            print(f'running in {maxThreads} threads.')
+            
+            futureList = []
 
-        # print('waiting for all jobs...')
-        # executor.shutdown(wait=True)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
+                # Start the load operations and mark each future with its URL
+                for sector in range(10):
+                    futureList.append(executor.submit(self.alignSectorICP, sector, maxNoOfTracks))
+
+            print('waiting for remaining jobs...')
+            executor.shutdown(wait=True)
+
+            # get all results from the future
+            for f in futureList:
+                for result in f.result():
+                    path, matrix = result
+                    self.alignMatrices[path] = matrix
+            return
 
     def saveMatrices(self, fileName):
         mi.saveMatrices(self.alignMatrices, fileName)
 
-    def alignSectorICP(self, sector=0):
+    def alignSectorICP(self, sector=0, maxNoTrks=0):
         # check if anchor points were set
         assert hasattr(self, 'anchorPoints') 
 
@@ -165,7 +181,8 @@ class alignerModules:
             raise Exception(f'new track format is not implemented yet!')
 
         # use only N tracks:
-        # newTracks = newTracks[:10000]
+        if maxNoTrks > 0:
+            newTracks = newTracks[:maxNoTrks]
 
         sectorString = str(sector)
         # transform all recos to LMD local
@@ -246,6 +263,9 @@ class alignerModules:
             
         #* =========== store matrices
         # 4 planes per sector
+
+        result = []
+
         for i in range(4):
             # ideal module matrices!
             toModMat = moduleMatrices[i]
@@ -258,12 +278,13 @@ class alignerModules:
        
             # add average shift
             totalMatrices[i] = totalMatrices[i] @ averageShift
-            yield modulePaths[i], totalMatrices[i]
+            # yield modulePaths[i], totalMatrices[i]
+            result.append((modulePaths[i], totalMatrices[i]))
         
         print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         print(f'        module aligner for sector {sector} done!         ')
         print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
-        return
+        return result
 
     def getMatrix(self, trackPositions, recoPositions, use2D=False):
 

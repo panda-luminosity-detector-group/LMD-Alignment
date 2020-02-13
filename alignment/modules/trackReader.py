@@ -78,7 +78,15 @@ class trackReader():
         print(f'all tracks: {len(self.trks)}')
         self.trks = [ x for x in self.trks if x['valid'] ]
         print(f'pre-processing done, discarded {notEnoughRecos}, {len(self.trks)} tracks remaining!')
-                
+
+        # dump tracks to disk as np file
+        np.save('output/residualVsTrks/tracks.npy', self.trks, allow_pickle=True)
+
+    def readTracksFromNPY(self, filename):
+        print(f'reading tracks from NPY file {filename}')
+        self.trks = np.load(filename, allow_pickle=True)
+        print(f'done!')
+
     # this reads detector parameters and sets up several dicts for fast loop ups
     def readDetectorParameters(self):
         with open(Path('input/detectorOverlapsIdeal.json')) as inFile:
