@@ -11,6 +11,26 @@ import json
 import numpy as np
 import sys
 
+def calcAligned(outfile):
+    # find 4 modules per sector
+    with open('input/moduleAlignment/sectorPaths.json') as f:
+        paths = json.load(f)
+
+    # calc avg misalign
+    avgMisMats = {}
+
+    for i in range(10):
+        avgMisMats[str(i)] = np.identity(4)
+
+     # store to output as dict ( sectorString -> matrix )
+    saveMatrices = {}
+    outFile.parent.mkdir(exist_ok=True, parents=True)
+    for p in avgMisMats:
+        saveMatrices[p] = np.ndarray.tolist(np.ndarray.flatten(avgMisMats[p]))
+
+    with open(outFile, 'w') as f:
+        json.dump(saveMatrices, f, indent=2)
+
 def calc(inFile, outFile):
     # read all input matrices
     with open(inFile, 'r') as f:
@@ -43,17 +63,28 @@ def calc(inFile, outFile):
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
-        print(f'usage: {sys.argv[0]} inFile outFile')
+        print(f'usage: {sys.argv[0]} inFile outFile\nor:')
+        print(f'usage: {sys.argv[0]} --aligned outfile\nor:')
+        print(f'usage: {sys.argv[0]} --auto targetDir')
         sys.exit(1)
 
-    inFile = Path(sys.argv[1])
     outFile = Path(sys.argv[2])
-
-    if not inFile.exists():
-        raise Exception(f'File {inFile} can not be read!')
-    # if outFile.exists():
-    #     raise Exception(f'Error! File {outFile} already exists.')
-    
     print(f'Calculating average misalignments...')
-    calc(inFile, outFile)
+
+    if sys.argv[1] == '--aligned':
+        calcAligned(outFile)
+
+    if sys.argv[1] == '--auto':
+        for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+            # ../Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-0.25-q.json input/moduleAlignment/avgMisalign-0.25.json
+            inFile = Path(f'../Root/PandaRoot/macro/detectors/lmd/geo/misMatrices/misMat-modules-{fac}-q.json')
+            outFile = Path(f'input/moduleAlignment/avgMisalign-{fac}.json')
+            calc(inFile, outFile)
+
+    else:
+        inFile = Path(sys.argv[1])
+        if not inFile.exists():
+            raise Exception(f'File {inFile} can not be read!')
+        calc(inFile, outFile)
+    
     print(f'all done!')

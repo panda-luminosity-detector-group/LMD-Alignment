@@ -427,23 +427,23 @@ class LMDRunConfig:
             return self.pathAlMatrixPath() / Path(f'alMat-merged.json')
         
         else:
-            if self.__misalignType == 'box' or self.__misalignType == 'boxRotZ':
+            if self.__misalignType == 'box' or self.__misalignType == 'boxRotZ' or self.__misalignType == 'box100':
                 return self.pathAlMatrixPath() / Path(f'alMat-IPalignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'sensors':
                 return self.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'singlePlane' :
-                return self.pathAlMatrixPath() / Path(f'alMat-modulesSinglePlane-{self.__misalignFactor}.json')
+                return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'modules':
-                return self.pathAlMatrixPath() / Path(f'alMat-modules-{self.__misalignFactor}.json')
+                return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'modulesNoRot':
-                return self.pathAlMatrixPath() / Path(f'alMat-modulesNoRot-{self.__misalignFactor}.json')
+                return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             
             elif self.__misalignType == 'modulesOnlyRot':
-                return self.pathAlMatrixPath() / Path(f'alMat-modulesOnlyRot-{self.__misalignFactor}.json')
+                return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             # TODO: add for combined
 
     def pathMisMatrix(self):
