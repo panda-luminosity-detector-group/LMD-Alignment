@@ -12,6 +12,9 @@ np.set_printoptions(precision=3, suppress=True)
 
 if __name__ == "__main__":
 
+    print('DEPRECATED')
+    sys.exit(1)
+
     import matplotlib.pyplot as plt
 
     latexmu = r'\textmu{}'

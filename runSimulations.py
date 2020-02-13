@@ -28,6 +28,7 @@ from alignment.alignerSensors import alignerSensors
 from alignment.alignerIP import alignerIP
 from alignment.alignerModules import alignerModules
 from argparse import RawTextHelpFormatter
+from collections import defaultdict  # to concatenate dictionaries
 
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
@@ -348,27 +349,32 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 def histogramRunConfig(runConfig, threadId=0):
 
     # copy matrices from himster to local folder
-    targetDir = Path(runConfig.pathAlMatrixPath())
+    oldTargetDir = Path(runConfig.pathAlMatrixPath())
+
+
     remotePrefix = Path('/lustre/miifs05/scratch/him-specf/paluma/roklasen')
+    targetDir = Path(f'output/temp/alMats/{runConfig.misalignType}-{runConfig.momentum}-{runConfig.misalignFactor}/')
     targetDir.mkdir(exist_ok=True, parents=True)
     # compose remote dir from local dir
-    remoteDir = 'm22:' + str(remotePrefix / Path(*targetDir.parts[6:]) / Path('*'))
+    remoteDir = 'm22:' + str(remotePrefix / Path(*oldTargetDir.parts[6:]) / Path('*'))
     print(f'copying:\n{remoteDir}\nto:\n{targetDir}')
-    success = subprocess.run(['scp', remoteDir, targetDir]).returncode
+    
+    if True:
+        success = subprocess.run(['scp', remoteDir, targetDir]).returncode
 
-    if success > 0:
-        print(f'\n\n')
-        print(f'-------------------------------------------------')
-        print(f'file could not be copied, skipping this scenario.')
-        print(f'-------------------------------------------------')
-        print(f'\n\n')
-        return
+        if success > 0:
+            print(f'\n\n')
+            print(f'-------------------------------------------------')
+            print(f'file could not be copied, skipping this scenario.')
+            print(f'-------------------------------------------------')
+            print(f'\n\n')
+            return
 
     # box rotation comparator
     comparator = boxComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-    comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
+    comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     boxResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.pdf')
 
     # # overlap comparator
@@ -376,21 +382,21 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-    comparator.loadSensorAlignerOverlapMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
+    comparator.loadSensorAlignerOverlapMatrices(targetDir / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
     overlapResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
 
     # module comparator
     comparator = moduleComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-    comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
+    comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     moduleResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/modules-{runConfig.misalignFactor}.pdf')
 
     # combined comparator
     comparator = combinedComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
-    comparator.loadAlignerMatrices(runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json'))
+    comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     sensorResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.pdf')
 
     # refine
@@ -404,7 +410,10 @@ def histogramRunConfig(runConfig, threadId=0):
     sensorResultMean = np.average(sensorResult, axis=0)
     sensorResultSigma = np.std(sensorResult, axis=0)
 
-    values = {
+    values = {}
+    values[runConfig.momentum] = {}
+    values[runConfig.momentum][runConfig.misalignFactor] = {
+        # 'momentum' : runConfig.momentum,
         'box' : np.array(boxResult).tolist(), 
         'modules' : (np.array(moduleResultMean).tolist(), np.array(moduleResultSigma).tolist()),
         'overlaps' : (np.array(overlapResultMean).tolist(), np.array(overlapResultSigma).tolist()),
@@ -416,8 +425,11 @@ def histogramRunConfig(runConfig, threadId=0):
     # for i in values:
     #     print(f'this line in unrefined:{i}')
 
+    print(values)
+
     # print(f'\n\nATTENTION\n\nATTENTION\n\n')
 
+    # done()
     return values
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
@@ -498,7 +510,7 @@ def runConfigsST(args, function):
         simConfigs.append(runConfig)
 
     for con in simConfigs:
-        yield {con.misalignFactor : function(con, 0)}
+        yield function(con, 0)
 
 
 def createMultipleDefaultConfigs():
@@ -702,7 +714,6 @@ if __name__ == "__main__":
     # ? =========== histogram Aligner results
     if args.histSensorAligner:
         runConfig = LMDRunConfig.fromJSON(args.histSensorAligner)
-
         if args.debug:
             runConfig.useDebug = True
         histogramRunConfig(runConfig)
@@ -710,12 +721,18 @@ if __name__ == "__main__":
 
     if args.histSensorAlignerPath:
         args.configPath = args.histSensorAlignerPath
-        
-        allVals = []
+        allVals = defaultdict(dict)
         for values in runConfigsST(args, histogramRunConfig):
-            allVals.append(values)
-            print(f'got line! vals:\n{values}')
-        
+
+            print(f'I got these values: {values}')
+            for key, value in values.items():
+                mom = key
+                theseValues = value
+                break   # just in case there is more than one, which shoul never be
+
+            # merge dict to current
+            allVals[mom].update(theseValues)
+
         print(allVals)
 
         with open(f'{args.configPath}/allMatrixValues.json', 'w') as f:

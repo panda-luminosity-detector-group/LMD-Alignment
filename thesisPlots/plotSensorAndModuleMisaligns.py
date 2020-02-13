@@ -1,0 +1,262 @@
+#!/usr/bin/env python3
+
+import sys
+
+# so I can import modules
+sys.path.insert(0, '.')
+from detail.LMDRunConfig import LMDRunConfig
+import matplotlib.pyplot as plt
+
+from pathlib import Path
+import sys, subprocess, json
+import numpy as np
+
+np.set_printoptions(precision=3, suppress=True)
+
+latexsigma = r'\textsigma{}'
+latexmu = r'\textmu{}'
+latexPercent = r'\%'
+pipe = r'\textbar{}'
+latexPsi = r'\textPsi{}'
+latexTheta = r'\textTheta{}'
+latexPhi = r'\textPhi{}'
+
+plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':10})
+plt.rc('text', usetex=True)
+plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+
+lineOptions = {'capsize':2, 'elinewidth':0.6, 'linewidth':0.4}
+
+sizes = [(17/2.54, 7/2.54), (15/2.54, 4/2.54), (6.5/2.54, 4/2.54)]
+offsetscale = 2.5
+offsets = np.arange(-0.02, 0.03, 0.01)
+colors = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf']
+
+def plotSensorMatrices(inputJson, outFileName):
+    # now, this contains one misalignment, multiple momenta and for each momentum, multiple factors
+    sensorVals = []
+    momenta = []
+
+    for mom in mainDict.keys():
+        momenta.append(float(mom))
+        for factor in mainDict[mom]:
+            tsenval = np.array(mainDict[mom][factor]['sensors']).flatten()     # this is a 2x3 array with mean and sigma
+            sensorVals.append([float(mom)] + [float(factor)] + np.ndarray.tolist(tsenval))
+    sensorVals = np.array(sensorVals)
+
+    # we only want unique entries
+    momenta = np.array(momenta)
+    momenta = np.sort(momenta)
+    momenta = np.unique(momenta, axis=0)
+
+    # title = f'Matrix Residuals {pipe} Standard Deviation'
+    title = f'Sensor Alignment Matrix Residuals {pipe} Mean'
+    title2 = f'Sensor Alignment Matrix Residuals {pipe} Standard Deviation'
+    
+    for i in range(len(sizes)):
+
+        fig, ax = plt.subplots(figsize=sizes[i])
+        fig2, ax2 = plt.subplots(figsize=sizes[i])
+        colorI = 0
+
+        for mom in momenta:
+
+            mask = (sensorVals[:,0] == float(mom))
+            thseVals = sensorVals[mask]
+
+            # sort 2D array by second column
+            thseVals = thseVals[thseVals[:,1].argsort()]
+
+            # Plotting the error bars
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,2], fmt='3', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,3], fmt='4', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
+            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,5], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
+            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,6], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
+            
+            colorI += 1
+
+        # Adding plotting parameters
+        ax.set_title(title)
+        ax2.set_title(title2)
+
+        ax.set_xlabel(f'Misalign Factor')
+        ax2.set_xlabel(f'Misalign Factor')
+        ax.set_ylabel(f'Residual Value [{latexmu}m]')
+        ax2.set_ylabel(f'Residual Value [{latexmu}m]')
+        
+        # get handles
+        handles, labels = ax.get_legend_handles_labels()
+        handles = [h[0] for h in handles]
+        ax.legend(handles, labels, loc='center left',numpoints=1, bbox_to_anchor=(1, 0.5))
+        handles, labels = ax2.get_legend_handles_labels()
+        handles = [h[0] for h in handles]
+        ax2.legend(handles, labels, loc='center left',numpoints=1, bbox_to_anchor=(1, 0.5))
+        
+        fig.tight_layout()
+        ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+        fig.savefig(f'mis-{sys.argv[2]}-residual-sensors-{i}-mean.pdf', dpi=1000, bbox_inches='tight')
+        plt.close(fig)
+
+        fig2.tight_layout()
+        ax2.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+        fig2.savefig(f'mis-{sys.argv[2]}-residual-sensors-{i}-std.pdf', dpi=1000, bbox_inches='tight')
+        plt.close(fig2)
+
+        break
+
+def plotModuleMatrices(inputJson, outFileName):
+    # now, this contains one misalignment, multiple momenta and for each momentum, multiple factors
+    moduleVals = []
+    momenta = []
+
+    for mom in mainDict.keys():
+        momenta.append(float(mom))
+
+        for factor in mainDict[mom]:
+            tmodval = np.array(mainDict[mom][factor]['modules']).flatten()    # this is a 2x3 array with mean and sigma
+            moduleVals.append([float(mom)] + [float(factor)] + np.ndarray.tolist(tmodval))
+
+    moduleVals = np.array(moduleVals)
+
+    # we only want unique entries
+    momenta = np.array(momenta)
+    momenta = np.sort(momenta)
+    momenta = np.unique(momenta, axis=0)
+
+    print(f'momenta: {momenta}')
+
+    # title = f'Matrix Residuals {pipe} Standard Deviation'
+    title = f'Module Alignment Matrix Residuals {pipe} Mean'
+    title2 = f'Module Alignment Matrix Residuals {pipe} Standard Deviation'
+
+    for i in range(len(sizes)):
+
+        fig, ax = plt.subplots(figsize=sizes[i])
+        fig2, ax2 = plt.subplots(figsize=sizes[i])
+        colorI = 0
+
+        for mom in momenta:
+
+            mask = (moduleVals[:,0] == float(mom))
+            thseVals = moduleVals[mask]
+
+            # sort 2D array by second column
+            thseVals = thseVals[thseVals[:,1].argsort()]
+
+            # Plotting the error bars
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,2], fmt='3', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,3], fmt='4', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
+            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,5], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
+            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,6], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
+            
+            colorI += 1
+
+        # Adding plotting parameters
+        ax.set_title(title)
+        ax2.set_title(title2)
+
+        ax.set_xlabel(f'Misalign Factor')
+        ax2.set_xlabel(f'Misalign Factor')
+        ax.set_ylabel(f'Residual Value [{latexmu}m]')
+        ax2.set_ylabel(f'Residual Value [{latexmu}m]')
+        
+        # get handles
+        handles, labels = ax.get_legend_handles_labels()
+        handles = [h[0] for h in handles]
+        ax.legend(handles, labels, loc='center left',numpoints=1, bbox_to_anchor=(1, 0.5))
+        handles, labels = ax2.get_legend_handles_labels()
+        handles = [h[0] for h in handles]
+        ax2.legend(handles, labels, loc='center left',numpoints=1, bbox_to_anchor=(1, 0.5))
+        
+        fig.tight_layout()
+        ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+        fig.savefig(f'mis-{sys.argv[2]}-residual-modules-{i}-mean.pdf', dpi=1000, bbox_inches='tight')
+        plt.close(fig)
+
+        fig2.tight_layout()
+        ax2.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+        fig2.savefig(f'mis-{sys.argv[2]}-residual-modules-{i}-std.pdf', dpi=1000, bbox_inches='tight')
+        plt.close(fig2)
+        
+        
+        break
+
+def plotBoxMatrices(inputJson, outFileName):
+    # now, this contains one misalignment, multiple momenta and for each momentum, multiple factors
+    boxVals = []
+    momenta = []
+
+    for mom in mainDict.keys():
+        momenta.append(float(mom))
+        for factor in mainDict[mom]:
+            tmodval = np.array(mainDict[mom][factor]['box']).flatten()    # this is a 2x3 array with mean and sigma
+            boxVals.append([float(mom)] + [float(factor)] + np.ndarray.tolist(tmodval))
+
+    boxVals = np.array(boxVals)
+
+    # we only want unique entries
+    momenta = np.array(momenta)
+    momenta = np.sort(momenta)
+    momenta = np.unique(momenta, axis=0)
+    
+    # title = f'Matrix Residuals {pipe} Standard Deviation'
+    title = f'Interaction Point Alignment Matrix Residuals {pipe} Mean'
+    
+    for i in range(len(sizes)):
+
+        _, ax = plt.subplots(figsize=sizes[i])
+        colorI = 0
+
+        for mom in momenta:
+
+            mask = (boxVals[:,0] == float(mom))
+            thseVals = boxVals[mask]
+
+            # sort 2D array by second column
+            thseVals = thseVals[thseVals[:,1].argsort()]
+
+            # Plotting the error bars                                                   , yerr=thseVals[:,3]
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,2], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'{latexPsi} @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,3], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'{latexTheta} @ {mom} GeV', ls='dashed', **lineOptions)
+            
+            colorI += 1
+
+            print(f'values:{thseVals}')
+
+        # Adding plotting parameters
+        ax.set_title(title)
+
+        ax.set_xlabel(f'Misalign Factor')
+        ax.set_ylabel(f'Euler Angle Residual [{latexmu}rad]')
+        
+        # get handles
+        handles, labels = ax.get_legend_handles_labels()
+        # remove the errorbars
+        handles = [h[0] for h in handles]
+        # use them in the legend
+        ax.legend(handles, labels, loc='center left',numpoints=1, bbox_to_anchor=(1, 0.5))
+        plt.tight_layout()
+
+        plt.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+
+        plt.savefig(f'mis-{sys.argv[2]}-residual-box-{i}.pdf',
+                    #This is simple recomendation for publication plots
+                    dpi=1000, 
+                    # Plot will be occupy a maximum of available space
+                    bbox_inches='tight')
+        plt.close()
+        break
+
+if __name__ == "__main__":
+
+    # read configs?
+    if len(sys.argv) != 3:
+        print(f'please specify allVAlues.json and outputfile!')
+        sys.exit(1)
+
+    with open(sys.argv[1], 'r') as f:
+        mainDict = json.load(f)
+
+    plotSensorMatrices(mainDict, sys.argv[2])
+    plotModuleMatrices(mainDict, sys.argv[2])
+    plotBoxMatrices(mainDict, sys.argv[2])
