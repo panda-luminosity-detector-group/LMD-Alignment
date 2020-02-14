@@ -28,7 +28,7 @@ plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 lineOptions = {'capsize':2, 'elinewidth':0.6, 'linewidth':0.4}
 
 sizes = [(17/2.54, 7/2.54), (15/2.54, 4/2.54), (6.5/2.54, 4/2.54)]
-offsetscale = 2.5
+offsetscale = 1.0
 offsets = np.arange(-0.02, 0.03, 0.01)
 colors = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf']
 
@@ -68,10 +68,10 @@ def plotSensorMatrices(inputJson, outFileName):
             thseVals = thseVals[thseVals[:,1].argsort()]
 
             # Plotting the error bars
-            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,2], fmt='3', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
-            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,3], fmt='4', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
-            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,5], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
-            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,6], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.00, thseVals[:,2], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.00, thseVals[:,3], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
+            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.00, thseVals[:,5], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
+            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.00, thseVals[:,6], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
             
             colorI += 1
 
@@ -144,10 +144,10 @@ def plotModuleMatrices(inputJson, outFileName):
             thseVals = thseVals[thseVals[:,1].argsort()]
 
             # Plotting the error bars
-            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,2], fmt='3', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
-            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,3], fmt='4', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
-            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,5], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
-            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,6], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.00, thseVals[:,2], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.00, thseVals[:,3], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
+            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.00, thseVals[:,5], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'x @ {mom} GeV', ls='dashed', **lineOptions)
+            ax2.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.00, thseVals[:,6], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'y @ {mom} GeV', ls='dashed', **lineOptions)
             
             colorI += 1
 
@@ -216,8 +216,8 @@ def plotBoxMatrices(inputJson, outFileName):
             thseVals = thseVals[thseVals[:,1].argsort()]
 
             # Plotting the error bars                                                   , yerr=thseVals[:,3]
-            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.05, thseVals[:,2], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'{latexPsi} @ {mom} GeV', ls='dashed', **lineOptions)
-            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.05, thseVals[:,3], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'{latexTheta} @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale-0.00, thseVals[:,2], fmt='2', ecolor=colors[colorI], color=colors[colorI], label=f'{latexPsi} @ {mom} GeV', ls='dashed', **lineOptions)
+            ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale+0.00, thseVals[:,3], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'{latexTheta} @ {mom} GeV', ls='dashed', **lineOptions)
             
             colorI += 1
 

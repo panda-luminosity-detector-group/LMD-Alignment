@@ -171,7 +171,7 @@ class LumiValGraph(LumiValDisplay):
             plt.close()
 
     def saveAllMomenta(self, outFileName):
-        values = self.getAllValues(reallyAll=True, copy=True)
+        values = self.getAllValues(reallyAll=True, copy=False)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
         # print(values)
@@ -246,9 +246,9 @@ class LumiValGraph(LumiValDisplay):
             # remove the errorbars
             handles = [h[0] for h in handles]
             # use them in the legend
-            ax.legend(handles, labels, loc='upper left',numpoints=1)
+            # ax.legend(handles, labels, loc='upper left',numpoints=1)
             # ax.legend(handles, labels, loc='upper right',numpoints=1)
-            # ax.legend(handles, labels, loc='lower left',numpoints=1)
+            ax.legend(handles, labels, loc='lower left',numpoints=1)
 
             plt.tight_layout()
 

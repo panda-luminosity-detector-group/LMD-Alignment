@@ -73,7 +73,7 @@ class alignerModules:
         newhit2 = newTracks[:,1,:3] - com
         newDist = np.power(newhit2[:, 0], 2) + np.power(newhit2[:, 1], 2)
 
-        cut = int(len(newhit2) * cutPercent/100.0)
+        cut = int(len(newhit2) * (cutPercent/100.0))
         newTracks = newTracks[newDist.argsort()]
         newTracks = newTracks[:-cut]
         return newTracks
@@ -99,7 +99,7 @@ class alignerModules:
             newDist = np.power(dVec[:, 0], 2) + np.power(dVec[:, 1], 2)
             
             # cut
-            cut = int(len(dVec) * cutPercent/100.0)
+            cut = int(len(dVec) * (cutPercent/100.0))
             tempTracks = tempTracks[newDist.argsort()]
             tempTracks = tempTracks[:-cut]
         

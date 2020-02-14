@@ -28,7 +28,7 @@ plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':10})
 plt.rc('text', usetex=True)
 plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
-lineOptions = {'capsize':2, 'elinewidth':0.6, 'linewidth':0.4, 'markersize': 10.0}
+lineOptions = {'capsize':2, 'elinewidth':0.6, 'linewidth':0.4, 'markersize': 5.0, 'ls':'dashed'}
 
 sizes = [(15/2.54, 6/2.54), (15/2.54, 4/2.54), (6.5/2.54, 4/2.54)]
 offsetscale = 2.5
@@ -38,20 +38,19 @@ colors = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b'
 def dummy():
     # from good-ish tracks
 
-    noOftracks = np.arange(1000,50001, 1000)
+    noOftracks = np.arange(150,201, 100)
 
     resultDict = {}
 
     trackNPYFile = Path('output/residualVsTrks/tracks.npy')
-    alignerMod = alignerModules()
-    trackFile = Path('output/residualVsTrks/factor-1.00-huge.json')
+    trackFile = Path('output/residualVsTrks/factor-1.00-large.json')
     # alignerMod.readTracks(trackNPYFile, isNumpy=True)
+    alignerMod = alignerModules()
     alignerMod.readTracks(trackFile, isNumpy=False)
     
     for nTracks in noOftracks:
 
         matrixFile = f'output/residualVsTrks/alMat-modules-1.00.json'
-
 
         alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
         alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-1.00.json')
@@ -73,7 +72,7 @@ def dummy():
 
     print(resultDict)
 
-    with open(f'output/residualVsTrks/nTrksVsResiduals.json', 'w') as f:
+    with open(f'output/residualVsTrks/nTrksVsResiduals-100.json', 'w') as f:
         json.dump(resultDict, f, indent=2, sort_keys=True)
 
 def plot():
@@ -120,44 +119,51 @@ def plot():
         colorI = 0
 
         # Plotting the error bars
-        ax.errorbar(lines[:,0]-10, lines[:,1], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'{latexmu}x', ls='dashed', **lineOptions)
-        ax.errorbar(lines[:,0]+10, lines[:,2], fmt='2', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexmu}y', ls='dashed', **lineOptions)
+        ax.errorbar(lines[:,0]-10, lines[:,1], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexmu}x', **lineOptions)
+        ax.errorbar(lines[:,0]+10, lines[:,2], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexmu}y',**lineOptions)
 
-        ax2.errorbar(lines[:,0]-10, lines[:,4], fmt='1', ecolor=colors[colorI], color=colors[colorI], label=f'{latexsigma}x', ls='dashed', **lineOptions)
-        ax2.errorbar(lines[:,0]+10, lines[:,5], fmt='2', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexsigma}y', ls='dashed', **lineOptions)
+        ax2.errorbar(lines[:,0]-10, lines[:,4], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexsigma}x', **lineOptions)
+        ax2.errorbar(lines[:,0]+10, lines[:,5], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexsigma}y', **lineOptions)
             
         # Adding plotting parameters
         ax.set_title(title)
         ax2.set_title(title2)
 
-        ax.set_xlabel(f'Number of Tracks')
+        ax.set_xlabel(f'Number of Tracks (log scale)')
         ax.set_ylabel(f'Mean [{latexmu}m]')
-        ax2.set_xlabel(f'Number of Tracks')
-        ax2.set_ylabel(f'Standard Deviation [{latexmu}m]')
         
+        ax2.set_ylabel(f'Standard Deviation [{latexmu}m]')
+        ax2.set_xlabel(f'Number of Tracks (log scale)')
         # get handles
         handles, labels = ax.get_legend_handles_labels()
         handles = [h[0] for h in handles]
         ax.legend(handles, labels, loc='center left',numpoints=1)#, bbox_to_anchor=(1, 0.5))
         ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))
+        ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+        ax.set_xscale('log')
+        ax.set_xlim((50, 5e5))
+        # ax.set_yscale('log')
 
         handles, labels = ax2.get_legend_handles_labels()
         handles = [h[0] for h in handles]
-        ax2.legend(handles, labels, loc='center left',numpoints=1)#, bbox_to_anchor=(1, 0.5))
+        ax2.legend(handles, labels, loc='lower left',numpoints=1)#, bbox_to_anchor=(1, 0.5))
         ax2.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))
+        ax2.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
+        ax2.set_xscale('log')
+        ax2.set_xlim((50, 5e5))
+        # ax2.set_yscale('log')
 
         
         fig.tight_layout()
-        ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
         fig.savefig(f'output/residualVsTrks/noOfTrksVsResidual-mean.pdf', dpi=1000, bbox_inches='tight')
         plt.close(fig)
 
         fig2.tight_layout()
-        ax2.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
         fig2.savefig(f'output/residualVsTrks/noOfTrksVsResidual-std.pdf', dpi=1000, bbox_inches='tight')
         plt.close(fig2)
 
         break
 
 if __name__ == "__main__":
+    # dummy()
     plot()
