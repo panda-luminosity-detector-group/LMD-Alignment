@@ -356,7 +356,7 @@ def histogramRunConfig(runConfig, threadId=0):
     targetDir = Path(f'output/temp/alMats/{runConfig.misalignType}-{runConfig.momentum}-{runConfig.misalignFactor}/')
     targetDir.mkdir(exist_ok=True, parents=True)
     # compose remote dir from local dir
-    remoteDir = 'm22:' + str(remotePrefix / Path(*oldTargetDir.parts[6:]) / Path('*'))
+    remoteDir = 'm23:' + str(remotePrefix / Path(*oldTargetDir.parts[6:]) / Path('*'))
     print(f'copying:\n{remoteDir}\nto:\n{targetDir}')
     
     if True:
@@ -377,7 +377,7 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     boxResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.pdf')
 
-    # # overlap comparator
+    # overlap comparator
     comparator = overlapComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')

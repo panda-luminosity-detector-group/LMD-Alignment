@@ -63,7 +63,7 @@ class LumiValGraph(LumiValDisplay):
 
         values = []
 
-        remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen')
+        remotePrefix = Path('m23:/lustre/miifs05/scratch/him-specf/paluma/') # used to be roklasen here too, what was that about?
 
         self.corrected = self.configs[0].alignmentCorrection
         self.misalignType = self.configs[0].misalignType
@@ -171,7 +171,7 @@ class LumiValGraph(LumiValDisplay):
             plt.close()
 
     def saveAllMomenta(self, outFileName):
-        values = self.getAllValues(reallyAll=True, copy=False)
+        values = self.getAllValues(reallyAll=True, copy=True)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
         # print(values)

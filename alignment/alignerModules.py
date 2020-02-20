@@ -109,7 +109,7 @@ class alignerModules:
         # single thraded
         if not multiThreaded:
             for sector in range(10):
-                for result in self.alignSectorICP(sector, maxNoTrks=maxNoOfTracks):
+                for result in self.alignSectorICP(sector, maxNoTrks=int(maxNoOfTracks)):
                     path, matrix = result
                     self.alignMatrices[path] = matrix
             return
@@ -124,7 +124,7 @@ class alignerModules:
             with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
                 # Start the load operations and mark each future with its URL
                 for sector in range(10):
-                    futureList.append(executor.submit(self.alignSectorICP, sector, maxNoOfTracks))
+                    futureList.append(executor.submit(self.alignSectorICP, sector, int(maxNoOfTracks)))
 
             print('waiting for remaining jobs...')
             executor.shutdown(wait=True)

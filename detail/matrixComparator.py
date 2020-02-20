@@ -203,12 +203,18 @@ class boxComparator(comparator):
 
 class moduleComparator(comparator):
 
+    def setSize(self, value):
+        self.sizeExternal = value
+
     def histValues(self, values):
 
         # prepare figure
         fig = plt.figure()
 
-        fig.set_size_inches(7/2.54, 5/2.54)
+        if not hasattr(self, 'sizeExternal'):
+            fig.set_size_inches(7/2.54, 5/2.54)
+        else:
+            fig.set_size_inches(self.sizeExternal)
 
         fig.suptitle('Module Alignment Residuals')
         fig.subplots_adjust(wspace=0.05)
@@ -386,50 +392,142 @@ class overlapComparator(comparator):
 
         return np.array(differences)
 
-# class cycleComparator(comparator):
+class cycleComparator(comparator):
 
-#     def loadPerfectDetectorOverlaps(self, fileName):
-#         self.overlaps = mi.loadMatrices(fileName, False)
+    def loadPerfectDetectorOverlaps(self, fileName):
+        self.overlaps = mi.loadMatrices(fileName, False)
 
-#     def loadSensorAlignerOverlapMatrices(self, filename):
-#         self.overlapMatrices = mi.loadMatrices(filename)
+    def loadSensorAlignerOverlapMatrices(self, filename):
+        self.overlapMatrices = mi.loadMatrices(filename)
 
-#     def calcCyclicMatrix(self, overlapIDs):
-#         result = np.identity(4)
-#         for overlapID in overlapIDs:
-#             result = result @ self.overlapMatrices[overlapID]
-#         return result
+    def calcCyclicMatrix(self, overlapIDs):
+        result = np.identity(4)
+        for overlapID in overlapIDs:
+            result = result @ self.overlapMatrices[overlapID]
+        return result
 
-#     # use dictionary for now, load from config file later!
-#     def getCycleTuple(self, smallOverlap):
-#         masterDict = {
-#             '1': [0,1,2],       # 3to8 -> 1
+    def setSize(self, value):
+        self.sizeExternal = value
+
+    def getValues(self):
+        pass
+
+        # we only plot C2!
+        # path for C2: 29 94 47 73 38 82
+        # overlap IDs: 6 2inv 8 7inv 1 5inv
+
+        # wait no
+        # 49 47i 37 38i 28 29i
+        # 2  8i  7  1i  5  6i
+
+
+        ids = []
+
+        for iHalf in range(2):
+            for iPlane in range(4):
+                for iModule in range(5):
+                    no1 = iHalf*1000 + iPlane*100 + iModule*10 + 2
+                    no2 = iHalf*1000 + iPlane*100 + iModule*10 + 8
+                    no3 = iHalf*1000 + iPlane*100 + iModule*10 + 7
+                    no4 = iHalf*1000 + iPlane*100 + iModule*10 + 1
+                    no5 = iHalf*1000 + iPlane*100 + iModule*10 + 5
+                    no6 = iHalf*1000 + iPlane*100 + iModule*10 + 6
+
+                    line = [no1, no2, no3, no4, no5, no6]
+                    ids.append(line)
+        # I now have all IDs for all C2 matrices
+
+        values = []
+        # compute them!
+        for tIDs in ids:
+            m1 = self.overlapMatrices[str(tIDs[0])]
+            m2 = inv(self.overlapMatrices[str(tIDs[1])])
+            m3 = self.overlapMatrices[str(tIDs[2])]
+            m4 = inv(self.overlapMatrices[str(tIDs[3])])
+            m5 = self.overlapMatrices[str(tIDs[4])]
+            m6 = inv(self.overlapMatrices[str(tIDs[5])])
+
+            # transform to module system so that dz is zero and the matrices are more easily comparable
+            modulePath = self.overlaps[str(tIDs[0])]['pathModule']
+            matModule = self.idealDetectorMatrices[modulePath]
+            m1 = mi.baseTransform(m1, inv(matModule))
             
-#             '2': [82, 38, 73, 47, 94, 29],       # 4to9 -> 2
-#             '3': [0,1,2]       # 3to6 -> 3
-#         }
-#         return masterDict[smallOverlap]
+            modulePath = self.overlaps[str(tIDs[1])]['pathModule']
+            matModule = self.idealDetectorMatrices[modulePath]
+            m2 = mi.baseTransform(m2, inv(matModule))
 
+            modulePath = self.overlaps[str(tIDs[2])]['pathModule']
+            matModule = self.idealDetectorMatrices[modulePath]
+            m3 = mi.baseTransform(m3, inv(matModule))
+            
+            modulePath = self.overlaps[str(tIDs[3])]['pathModule']
+            matModule = self.idealDetectorMatrices[modulePath]
+            m4 = mi.baseTransform(m4, inv(matModule))
 
-#     # TODO: implement cyclic matrices check!
-#     def prepareValues(self):
-#         # TODO: read misalign matrices, calculate cyclic matrices for all modules (10 per Module, 40 Modules), store result matrices  
-#         self.resultArray = np.array((400,3))
+            modulePath = self.overlaps[str(tIDs[4])]['pathModule']
+            matModule = self.idealDetectorMatrices[modulePath]
+            m5 = mi.baseTransform(m5, inv(matModule))
 
-#         #TODO: for all modules:
-#             # for 10 cyclic cases
-#                 # get corresponding overlapIDs as tuple
-#                 # give tuple to function and get matrix
+            modulePath = self.overlaps[str(tIDs[5])]['pathModule']
+            matModule = self.idealDetectorMatrices[modulePath]
+            m6 = mi.baseTransform(m6, inv(matModule))
 
-#         for path in self.overlapMatrices:
-#             print(f'self.overlapMatrices[path]')
+            c2 = m1 @ m2 @ m3 @ m4 @ m5 @ m6
+            values.append([c2[0,3], c2[1,3]])
 
+        values = np.array(values)
 
-#     def histValues(self, fileName):
-#         # call function from base class
-#         self.makeHist('Cyclic Residuals', 'x label', 'y label')
-#         self.saveHist('testFile.pdf')
-#     pass
+        return values
+
+    def histValues(self, values):
+
+        values = values*1e4
+
+        muX = np.round(np.average(values[:,0]), 2)
+        sigX = np.round(np.std(values[:,0]), 2)
+
+        muY = np.round(np.average(values[:,1]), 2)
+        sigY = np.round(np.std(values[:,1]), 2)
+       
+        # muZ = np.round(np.average(values[:,2]), 2)
+        # sigZ = np.round(np.std(values[:,2]), 2)
+
+        # plot difference hit array
+        fig = plt.figure()
+        fig.set_size_inches(16/2.54, 9/2.54) 
+
+        bucketLabels = [f'{self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'{self.latexmu}y={muY}, {self.latexsigma}y={sigY}']
+
+        fig.subplots_adjust(wspace=0.05)
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        histA = fig.add_subplot(1, 1, 1)
+        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
+        # kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, color=self.colors[:2])
+        histA.hist(values[...,:2], **kwargs)
+        # histA.set_title('Cyclic Matrices')   # change to mm!
+        histA.set_xlabel(f'd [{self.latexmu}m]')
+        histA.set_ylabel('count')
+       
+        handles, labels = plt.gca().get_legend_handles_labels()
+        order = [1,0]
+        plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order])
+        
+        return fig
+
+    def saveHistogram(self, outputFileName):
+
+        Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
+
+        values = self.getValues()
+
+        self.histValues(values)
+        
+        plt.savefig(outputFileName,
+                    #This is simple recomendation for publication plots
+                    dpi=1000, 
+                    # Plot will be occupy a maximum of available space
+                    bbox_inches='tight')
+        plt.close()
 
 class combinedComparator(comparator):
 

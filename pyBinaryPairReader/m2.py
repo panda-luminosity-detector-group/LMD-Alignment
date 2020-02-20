@@ -6,20 +6,6 @@ import os
 
 """
 
-1.5:
-/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/box_theta_2.0-12.0mrad_recoil_corrected/misalign_
-
-15:
-/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/box_theta_2.0-12.0mrad_recoil_corrected/misalign_
-
-data:
-data/100000/1-1500_uncut_aligned/Pairs
-data/100000/1-1500_uncut_misalignMatrices-SensorsOnly-10/Pairs
-
-geometry:
-geometry/aligned/100000/1-1500_uncut/Pairs
-geometry/misalignMatrices-SensorsOnly-10/100000/1-1500_uncut/Pairs
-
 copy (if not there):
 cp ../../mc_data/Lumi_MC_1000000.root ../../mc_data/Lumi_Params_1000000.root .
 """
