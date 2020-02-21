@@ -9,6 +9,7 @@ misMatrices/
 LumiFit/*
 LumiFit/
 trackResiduals/
+binaryPairFiles/
 
 # But never these files...
 !.gitignore

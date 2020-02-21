@@ -7,6 +7,7 @@ sys.path.insert(0, '.')
 from detail.LMDRunConfig import LMDRunConfig
 from alignment.alignerModules import alignerModules
 from detail.matrixComparator import moduleComparator
+from detail.matrixComparator import combinedComparator
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 
@@ -37,11 +38,20 @@ colors = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b'
 
 if __name__ == "__main__":
 
-    #! run comparator
-    comp = moduleComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/modules/15.0/factor-1.00.json'))
+    # #! run comparator
+    # comp = moduleComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/modules/15.0/factor-1.00.json'))
+    # comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+    # comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json')
+    # comp.loadAlignerMatrices('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
+    # comp.setSize((12/2.54,8/2.54))
+    # result = comp.saveHistogram(f'modules-1.0.pdf')
+    # result = np.ndarray.tolist(result.flatten())
+
+     #! run comparator
+    comp = combinedComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/modules/15.0/factor-1.00.json'))
     comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json')
-    comp.loadAlignerMatrices('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
-    comp.setSize((12/2.54,8/2.54))
-    result = comp.saveHistogram(f'LAWL.pdf')
+    comp.loadAlignerMatrices('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-sensors-3.00.json')
+    # comp.setSize((12/2.54,8/2.54))
+    result = comp.saveHistogram(f'sensors-1.0.pdf')
     result = np.ndarray.tolist(result.flatten())

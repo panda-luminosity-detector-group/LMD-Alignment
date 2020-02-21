@@ -22,22 +22,25 @@ plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
 
 def dynamicCut(fileUsable, cutPercent=2, use2DCut=True):
-
+    print(f'applying cut...')
     if cutPercent <= 0:
+        print(f'no cut, back to sender')
         return fileUsable
 
     cut = int(len(fileUsable) * cutPercent/100.0)
     
     if not use2DCut:
-        
+        print(f'using 1D')
         newDist = fileUsable[:, 6]
         fileUsable = fileUsable[newDist.argsort()]
         fileUsable = fileUsable[cut:-cut]
         
+        print(f'done!')
         return fileUsable
 
     else:
 
+        print(f'using 2D')
         # calculate center of mass of differences
         dRaw = fileUsable[:, 3:6] - fileUsable[:, :3]
         com = np.average(dRaw, axis=0)
@@ -54,11 +57,13 @@ def dynamicCut(fileUsable, cutPercent=2, use2DCut=True):
         # cut off largest distances, NOT lowest
         fileUsable = fileUsable[:-cut]
 
+        print(f'done!')
         return fileUsable
 
 
 def readBinaryPairFile(filename):
     # read file
+    print(f'reading binary pair file')
     f = open(filename, "r")
     fileRaw = np.fromfile(f, dtype=np.double)
 
@@ -68,10 +73,12 @@ def readBinaryPairFile(filename):
 
     # reshape to array with one pair each line
     fileUsable = fileUsable.reshape(Npairs, 7)
+    print(f'done!')
     return fileUsable
 
 
-def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dcut=True):
+def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dcut=True, noLabels=False):
+    print(f'saving histogram')
     filename = binPairFile
 
     # read binary Pairs
@@ -79,6 +86,8 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
 
     # apply dynmaic cut
     fileUsable = dynamicCut(fileUsable, cutPercent, use2Dcut)
+
+    print(f'slicing and dicing')
 
     # slice to separate vectors
     hit1 = fileUsable[:, :3]
@@ -105,6 +114,7 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
     # invert matrices
     toSen1Inv = np.linalg.inv(toSen1)
 
+    print(f'transforming hits')
     # transform hit1 and hit2 to frame of reference of hit1
     hit1T = np.matmul(toSen1Inv, hit1H.T).T
     hit2T = np.matmul(toSen1Inv, hit2H.T).T
@@ -112,6 +122,7 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
     # make differnce hit array
     dHit = hit2T[:, :3] - hit1T[:, :3]
 
+    print(f'making histogram')
     # plot difference hit array
     fig = plt.figure(figsize=(16/2.54, 8/2.54))
     
@@ -121,14 +132,14 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
     #     fig.suptitle('{}\% 1D cut'.format(cutPercent), fontsize=11)
 
     histA = fig.add_subplot(1, 2, 1)
-    histA.hist(fileUsable[:, 6]*10, bins=150, log=True, range=[0.25, 1.2])  # this is only the z distance
-    histA.set_title('Distance')   # change to mm!
+    histA.hist(fileUsable[:, 6]*10, bins=150, log=True, range=[0.25, 1.2], rasterized=True)  # this is only the z distance
+    # histA.set_title('1D Distance')   # change to mm!
     histA.set_xlabel('d [mm]')
     histA.set_ylabel('Count (log)')
 
     histB = fig.add_subplot(1, 2, 2)
-    histB.hist2d(dHit[:, 0]*10, dHit[:, 1]*10, bins=150, norm=LogNorm(), range=[[-01.3, 01.3], [-01.3, 01.3]], label='Count (log)')
-    histB.set_title('2D Distance')
+    histB.hist2d(dHit[:, 0]*10, dHit[:, 1]*10, bins=150, norm=LogNorm(), range=[[-01.3, 01.3], [-01.3, 01.3]], label='Count (log)', rasterized=True)
+    # histB.set_title('2D Distance')
     histB.yaxis.tick_right()
     histB.yaxis.set_ticks_position('both')
     histB.set_xlabel('dx [mm]')
@@ -140,13 +151,13 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
     #plt.colorbar(img, ax=ax)
 
     fig.subplots_adjust(wspace=0.05)
-
+    print(f'done!')
     return fig
 
 
 def pairDxDyDPG():
 
-    overlap = '1300'
+    overlap = '0'
     #pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
     pathpre = '../input/2018-08-himster2-'
     pathpost = '/binaryPairFiles/pairs-' + overlap + '-cm.bin'
@@ -154,9 +165,13 @@ def pairDxDyDPG():
         'misalign-200u',
     ]
     outpath = Path('../output/forDPG')
-    cuts = [0, 2]
+    cuts = [2]
+    # cuts = [0, 2]
 
-    use2Dcuts = [True, False]
+    # use2Dcuts = [True, False]
+    use2Dcuts = [True]
+
+    noLabels = False
 
     for usage in use2Dcuts:
         for misalign in misaligns:
@@ -166,11 +181,11 @@ def pairDxDyDPG():
 
                 filename = Path(pathpre + misalign + pathpost)
 
-                histBinaryPairDistancesForDPG(filename, cut, overlap, usage)
+                histBinaryPairDistancesForDPG(filename, cut, overlap, usage, noLabels)
                 if usage:
-                    plt.savefig(outpath / Path(f'area-{overlap}-cut-{cut}-2D.pdf'), dpi=1200, bbox_inches='tight')
+                    plt.savefig(outpath / Path(f'area-{overlap}-cut-{cut}-2D.pdf'), dpi=300, bbox_inches='tight', pad_inches = 0)
                 else:
-                    plt.savefig(outpath / Path(f'area-{overlap}-cut-{cut}-1D.pdf'), dpi=1200, bbox_inches='tight')
+                    plt.savefig(outpath / Path(f'area-{overlap}-cut-{cut}-1D.pdf'), dpi=300, bbox_inches='tight', pad_inches = 0)
 
 
 if __name__ == "__main__":

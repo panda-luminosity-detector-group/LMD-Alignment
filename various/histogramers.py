@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import functions.rootInterface as ri
-import functions.pairFinder as finder
 import numpy as np
 from matplotlib.colors import LogNorm
 from mpl_toolkits.mplot3d import Axes3D

@@ -3,23 +3,79 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import rootInterface as ri
-import pairFinder as finder
-import histogramers as hi
+# import rootInterface as ri
+# import pairFinder as finder
+# import histogramers as hi
 from matplotlib.colors import LogNorm
-import os, sys
+import os, sys, json
 from matplotlib.backends.backend_pdf import PdfPages
+sys.path.insert(0, '.')
 
-matrices = ri.readJSON("matricesIdeal.json")
+with open("input/detectorMatricesIdeal.json", "r") as f:
+  matrices = json.load(f)
+
+def dynamicCut(fileUsable, cutPercent=2, use2DCut=True):
+  print(f'applying cut...')
+  if cutPercent <= 0:
+    print(f'no cut, back to sender')
+    return fileUsable
+
+  cut = int(len(fileUsable) * cutPercent/100.0)
+  
+  if not use2DCut:
+    print(f'using 1D')
+    newDist = fileUsable[:, 6]
+    fileUsable = fileUsable[newDist.argsort()]
+    fileUsable = fileUsable[cut:-cut]
+    
+    print(f'done!')
+    return fileUsable
+
+  else:
+
+    print(f'using 2D')
+    # calculate center of mass of differences
+    dRaw = fileUsable[:, 3:6] - fileUsable[:, :3]
+    com = np.average(dRaw, axis=0)
+
+    # shift newhit2 by com of differences
+    newhit2 = fileUsable[:, 3:6] - com
+
+    # calculate new distance for cut
+    dRaw = newhit2 - fileUsable[:, :3]
+    newDist = np.power(dRaw[:, 0], 2) + np.power(dRaw[:, 1], 2)
+
+    # sort by new distance
+    fileUsable = fileUsable[newDist.argsort()]
+    # cut off largest distances, NOT lowest
+    fileUsable = fileUsable[:-cut]
+
+    print(f'done!')
+    return fileUsable
+
+def readBinaryPairFile(filename):
+    # read file
+    print(f'reading binary pair file')
+    f = open(filename, "r")
+    fileRaw = np.fromfile(f, dtype=np.double)
+
+    # ignore header
+    fileUsable = fileRaw[6:]
+    Npairs = int(len(fileUsable)/7)
+
+    # reshape to array with one pair each line
+    fileUsable = fileUsable.reshape(Npairs, 7)
+    print(f'done!')
+    return fileUsable
 
 def histBinaryPairDistances(pathpre, misalign, pathpost, cutPercent=0, overlap = '0'):
   filename = pathpre + misalign + pathpost
   
   # read binary Pairs
-  fileUsable = ri.readBinaryPairFile(filename)
+  fileUsable = readBinaryPairFile(filename)
   
   # apply dynmaic cut
-  fileUsable = finder.dynamicCut(fileUsable, cutPercent)
+  fileUsable = dynamicCut(fileUsable, cutPercent)
   
   # slice to separate vectors
   hit1 = fileUsable[:, :3]
@@ -31,9 +87,15 @@ def histBinaryPairDistances(pathpre, misalign, pathpost, cutPercent=0, overlap =
   hit2H = np.ones((len(fileUsable), 4))
   hit2H[:,0:3] = hit2
   
+  with open("input/detectorOverlapsIdeal.json", "r") as f:
+    overlaps = json.load(f)
+
+  path1 = overlaps[overlap]['path1']
+  path2 = overlaps[overlap]['path2']
+
   # make numpy matrix from JSON info
-  toSen1 = np.array(matrices[overlap]['matrix1']).reshape(4,4)
-  
+  toSen1 = np.array(matrices[path1]).reshape(4, 4)
+
   # invert matrices
   toSen1Inv = np.linalg.inv(toSen1)
   
@@ -74,8 +136,8 @@ def histBinaryPairDistances(pathpre, misalign, pathpost, cutPercent=0, overlap =
 
 def hist2(pathpre, misalign, pathpost, cutPercent=0):
   filename = pathpre + misalign + pathpost
-  fileUsable = ri.readBinaryPairFile(filename)
-  fileUsable = finder.dynamicCut(fileUsable, cutPercent)
+  fileUsable = readBinaryPairFile(filename)
+  fileUsable = dynamicCut(fileUsable, cutPercent)
   
   # slice to separate vectors
   hit1 = fileUsable[:, :3]
@@ -113,9 +175,9 @@ def hist2(pathpre, misalign, pathpost, cutPercent=0):
 
 def getDXDY(path, overlapID):
   filename = path + 'binaryPairFiles/pairs-' + overlapID + '-cm.bin'
-  fileUsable = ri.readBinaryPairFile(filename)
+  fileUsable = readBinaryPairFile(filename)
   
-  fileUsable = finder.dynamicCut(fileUsable, 1)
+  fileUsable = dynamicCut(fileUsable, 1)
 
   # slice to separate vectors
   hit1 = fileUsable[:, :3]
@@ -144,7 +206,7 @@ def getDXDY(path, overlapID):
   return diff
 
 def histCenters():
-  #pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
+  #pathpre = 'input/2018-08-himster2-'
   pathpre = '/mnt/himster2/lmdData/plab_1.5GeV/box_theta_2.0-9.0mrad_recoil_corrected/misalign_geometry/aligned/100000/1-1500_uncut/'
   pathpost = '/'
   misaligns = [
@@ -207,7 +269,7 @@ def histMult():
   # for 10, 50, 100, 150, 200, 250
   
   # plot cut 0, 1, 5, 10
-  pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
+  pathpre = 'input/2018-08-himster2-'
   pathpost = '/binaryPairFiles/pairs-27-cm.bin'
   misaligns = [
             'aligned'
@@ -232,7 +294,7 @@ def histMult():
 def ICPmult():
 
   # todo: percent bar or something
-  pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
+  pathpre = 'input/2018-08-himster2-'
   pathpost = '/'
   misaligns = [
             'aligned'
@@ -270,7 +332,7 @@ def testOID():
 
 def histCvsPythonMatrices():
 
-  prefix = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
+  prefix = 'input/2018-08-himster2-'
 
   alignStr = 'aligned'
   #alignStr = 'misalign-10u'
@@ -334,7 +396,7 @@ def histPairDxDyForOverlap():
 
   overlap = '0'
 
-  pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
+  pathpre = 'input/2018-08-himster2-'
   pathpost = '/binaryPairFiles/pairs-' + overlap + '-cm.bin'
   misaligns = [
             #'aligned'
@@ -349,6 +411,8 @@ def histPairDxDyForOverlap():
   #cuts = [0, 0.5, 1, 3]
   cuts = [0, 2]
   
+  print(f'Am I here?')
+
   for misalign in misaligns:
     if not os.path.isdir(misalign):
       os.mkdir(misalign)
@@ -365,19 +429,16 @@ def histDxDyMisalignByPlane():
   halfs = [0]
   cuts = [0,3]
 
-  # /mnt/himster2/lmdData/plab_1.5GeV/box_theta_2.0-9.0mrad_recoil_corrected/misalign_geometry/aligned/100000/1-1500_uncut/Pairs/binaryPairFiles/
-
-  pathPre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
-  #pathPre = '/mnt/himster2/lmdData/plab_1.5GeV/box_theta_2.0-9.0mrad_recoil_corrected/misalign_geometry/aligned/100000/1-1500_uncut/Pairs/'
+  pathPre = 'input/2018-08-himster2-'
   #pathPre = '/mnt/himster2/lmdData/plab_1.5GeV/box_theta_2.0-9.0mrad_recoil_corrected/misalign_geometry/misalignMatrices-SensorsOnly-10/100000/1-1500_uncut/Pairs/'
   
   # misalignMatrices-SensorsOnly-100
   #paths = [ 'aligned-15/']#,
           #  'misalign-100u/',
           #  'misalign-200u/']
-  paths = ['misalign-100u/']
+  paths = ['misalign-200u/']
 
-  #path = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-aligned/'
+  #path = 'input/2018-08-himster2-aligned/'
   pdfPath = 'planePlots/'
 
   for thisPath in paths:
@@ -391,8 +452,7 @@ def histDxDyMisalignByPlane():
             for plane in range(4):
               ID = '{}'.format(half*1000 + plane*100 + corridor * 10 + area)
               path = pathPre + thisPath
-              hist = hi.histogram(matrices)
-              hist.histBinaryPairFileSingle_x_dx(path, ID, cut, axes[i])
+              histBinaryPairFileSingle_x_dx(path, ID, cut, axes[i])
               axes[i].set_title('Plane ' + str(i+1))
               i += 1
             fig.suptitle('half {}, area {}, corridor {}, cut {}%'.format(half,area,corridor,cut), fontsize=20)
@@ -402,6 +462,61 @@ def histDxDyMisalignByPlane():
             fig.savefig(pdfPath + thisPath + 'h{}area{}corr{}cut{}.pdf'.format(half,area,corridor,cut))
             plt.close()
 
+def histBinaryPairFileSingle_x_dx( path, overlapID, cut, axes):
+
+  filename = path + 'binaryPairFiles/pairs-' + overlapID + '-cm.bin'
+
+  # read binary Pairs
+  fileUsable = readBinaryPairFile(filename)
+
+  # apply dynmaic cut
+  fileUsable = dynamicCut(fileUsable, cut)
+
+  # slice to separate vectors
+  hit1 = fileUsable[:, :3]
+  hit2 = fileUsable[:, 3:6]
+
+  # Make C a homogeneous representation of A and B
+  hit1H = np.ones((len(fileUsable), 4))
+  hit1H[:, 0:3] = hit1
+  hit2H = np.ones((len(fileUsable), 4))
+  hit2H[:, 0:3] = hit2
+
+  # make numpy matrix from JSON info
+  with open("input/detectorOverlapsIdeal.json", "r") as f:
+    overlaps = json.load(f)
+
+  path1 = overlaps[overlapID]['path1']
+
+  # make numpy matrix from JSON info
+  toSen1 = np.array(matrices[path1]).reshape(4, 4)
+
+  # invert matrices
+  toSen1Inv = np.linalg.inv(toSen1)
+
+  # transform hit1 and hit2 to frame of reference of hit1
+  hit1T = np.matmul(toSen1Inv, hit1H.T).T
+  hit2T = np.matmul(toSen1Inv, hit2H.T).T
+
+  # make difference hit array
+  dHit = hit2T[:, :3] - hit1T[:, :3]
+
+  #sigX = np.std(dHit[:,0])*1e4
+  #sigY = np.std(dHit[:,1])*1e4
+  #muX = np.average(dHit[:,0])*1e4
+  #muY = np.average(dHit[:,1])*1e4
+
+  #textStr = 'µx={:1.2f}µm, σx={:1.2f}µm\nµy={:1.2f}µm, σy={:1.2f}µm'.format(muX, sigX, muY, sigY)
+
+  axes.hist2d(hit1T[:, 0], dHit[:, 0]*dHit[:, 0]*1e4 + dHit[:, 1]*dHit[:, 1]
+              * 1e4, bins=250, norm=LogNorm())    # , range=[[-0.12, 0.12], [-0.12, 0.12]]
+
+  # this is currently wrong, change this!
+  axes.set_title('mis: dx: {:1.2f}µm, dy: {:1.2f}µm'.format(
+      toSen1[0][3], toSen1[1][3]))
+  axes.set_xlabel('x1 [cm]')
+  axes.set_ylabel('dy [µm]')
+
 def plotEntireCircle():
   hist = hi.histogram(matrices)
   hist.plotAllhitsonCirlce()
@@ -409,10 +524,10 @@ def plotEntireCircle():
 if __name__ == "__main__":
   print("Running...")
 
-  #plotEntireCircle()
+  plotEntireCircle()
 
-  #histDxDyMisalignByPlane()
-  histPairDxDyForOverlap()
+  # histDxDyMisalignByPlane()
+  # histPairDxDyForOverlap()
 
   #histCvsPythonMatrices()
   #histCenters()
