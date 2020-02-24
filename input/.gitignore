@@ -10,6 +10,6 @@ LumiFit/*
 LumiFit/
 trackResiduals/
 binaryPairFiles/
-
+*.npy
 # But never these files...
 !.gitignore

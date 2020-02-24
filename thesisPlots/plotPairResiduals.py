@@ -335,11 +335,77 @@ def plotMultipleCuts():
     fig.subplots_adjust(hspace = .001)
     fig.savefig('pairs-dxdy-cuts.pdf', dpi=300, bbox_inches='tight', pad_inches = 0)
 
+def plot1Dvs2DCuts():
+    area = '1'
+
+    # read binary Pairs for corridor
+    file1 = f'input/2018-08-himster2-misalign-200u/binaryPairFiles/pairs-30{area}-cm.bin'
+
+    pairs1 = readBinaryFile(file1, '0')
+
+    dHit1 = pairs1[:,3:6] - pairs1[:,:3]
+    Nbins = 150
+    Srasterized = True
+
+    # plot difference hit array
+    fig = plt.figure(figsize=(15/2.54, 10/2.54))
+    
+    ax1 = fig.add_subplot(2, 3, 4)
+    ax1.hist2d(dHit1[:, 0]*10, dHit1[:, 1]*10, bins=Nbins, norm=LogNorm(), rasterized=Srasterized)
+    ax1.yaxis.set_ticks_position('both')
+    ax1.set_xlabel('dx [mm]')
+    ax1.set_ylabel('dy [mm]')
+    ax1.tick_params(direction='in')
+    ax1.yaxis.set_label_position('left')
+    ax1.set_xlim([-01.2, 01.2])
+    ax1.set_ylim([-01.2, 01.2])
+
+    ax4 = fig.add_subplot(2, 3, 1)
+    ax4.hist(pairs1[:, 6]*1e1, bins=150, log=True, range=[0.25, 1.2], rasterized=Srasterized)  # this is only the z distance
+    ax4.set_title('No Cut')
+    ax4.set_ylabel('Count (log)')
+
+    pairsN = dynamicCut(pairs1, 2, False)
+    dHit1 = pairsN[:,3:6] - pairsN[:,:3]
+
+    ax5 = fig.add_subplot(2, 3, 2, sharey=ax4)
+    ax5.hist(pairsN[:, 6]*1e1, bins=150, log=True, range=[0.25, 1.2], rasterized=Srasterized)  # this is only the z distance
+    ax5.set_title('1D Cut')
+    # ax5.set_xlabel('dx [mm]')
+
+    ax2 = fig.add_subplot(2, 3, 5, sharey=ax1)
+    ax2.hist2d(dHit1[:, 0]*10, dHit1[:, 1]*10, bins=Nbins, norm=LogNorm(), rasterized=Srasterized)
+    ax2.yaxis.set_ticks_position('both')
+    ax2.set_xlabel('dx [mm]')
+    ax2.tick_params(direction='in')
+    ax2.set_xlim([-01.2, 01.2])
+    ax2.set_ylim([-01.2, 01.2])
+
+    pairsN = dynamicCut(pairs1, 2)
+    dHit1 = pairsN[:,3:6] - pairsN[:,:3]
+
+    ax6 = fig.add_subplot(2, 3, 3, sharey=ax4, sharex=ax4)
+    ax6.hist(pairsN[:, 6]*1e1, bins=150, log=True, range=[0.25, 1.2], rasterized=Srasterized)  # this is only the z distance
+    ax6.set_title('2D Cut')
+    # ax6.set_xlabel('dx [mm]')
+
+    ax3 = fig.add_subplot(2, 3, 6, sharey=ax1)
+    ax3.hist2d(dHit1[:, 0]*10, dHit1[:, 1]*10, bins=Nbins, norm=LogNorm(), rasterized=Srasterized)
+    ax3.yaxis.set_ticks_position('both')
+    ax3.set_xlabel('dx [mm]')
+    ax3.tick_params(direction='in')
+    ax3.set_xlim([-01.2, 01.2])
+    ax3.set_ylim([-01.2, 01.2])
+
+    fig.tight_layout()
+    fig.subplots_adjust(hspace = .25)
+    fig.savefig('pairs-dxdy-1Dvs2D.pdf', dpi=300, bbox_inches='tight', pad_inches = 0)
+
 if __name__ == "__main__":
     print(f'greetings human.')
     # test()
     # plotFourPlanes()
-
-    plotMultipleCuts()
-
+    # plotMultipleCuts()
+    # plotResiduals1Dand2D()
+    plot1Dvs2DCuts()
     
