@@ -76,45 +76,45 @@ def calcVsPairs():
 
     print(resultDict)
 
-    with open(f'output/residualVsPairs/nTrksVsResiduals-100.json', 'w') as f:
+    with open(f'output/residualVsPairs/nTrksVsResiduals.json', 'w') as f:
         json.dump(resultDict, f, indent=2, sort_keys=True)
 
-def calcVsIterations():
-    noOfIterations = np.arange(0,20, 1)
+def calcVsCut():
     resultDict = {}
 
-    trackNPYFile = Path('output/residualVsPairs/tracks.npy')
-    trackFile = Path('output/residualVsPairs/factor-1.00-large.json')
-    # alignerMod.readTracks(trackNPYFile, isNumpy=True)
-    alignerMod = alignerModules()
-    alignerMod.readTracks(trackFile, isNumpy=False)
+    sensorAligner = alignerSensors.fromRunConfig(LMDRunConfig.fromJSON('runConfigs/uncorrected/sensors/15.0/factor-1.00.json'))
+    sensorAligner.maxPairs = int(1e5)
     
-    for nIterations in noOfIterations:
+    allNumbers = np.arange(0.0, 5.05, 0.2)
 
-        matrixFile = f'output/residualVsIterations/alMat-modules-1.00.json'
+    for dCut in allNumbers:
 
-        alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
-        alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-1.00.json')
-        alignerMod.iterations = nIterations
-        alignerMod.alignModules(maxNoOfTracks=int(50e3))
-        alignerMod.saveMatrices(matrixFile)
+        matrixFile = f'output/residualsVsDCut/alMat-sensorOverlaps-1.00.json'
+        sensorAligner.dCut = dCut
+
+        #! run aligner (find only overlap)
+        sensorAligner.findMatrices('input/npPairsHuge/reduced/')
+        sensorAligner.saveOverlapMatrices(matrixFile)
 
         #! run comparator
-        comp = moduleComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/modules/15.0/factor-1.00.json'))
-        comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-        comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
-        comp.loadAlignerMatrices(matrixFile)
-        result = comp.saveHistogram(f'output/residualVsIterations/{nIterations}-residuals-modules.pdf')
+        comparator = overlapComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/sensors/15.0/factor-1.00.json'))
+        comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
+        comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
+        # comparator.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-sensors-1.00.json')
+        comparator.loadDesignMisalignments('output/residualsVsDCut/misMat-sensors-1.00.json')
+        comparator.loadSensorAlignerOverlapMatrices(matrixFile)
+        
+        result = comparator.saveHistogram(f'output/residualsVsDCut/{dCut}-residuals-modules.pdf')
         result = np.ndarray.tolist(result.flatten())
 
-        with open(f'output/residualVsIterations/{nIterations}-VsResiduals.json', 'w') as f:
+        with open(f'output/residualsVsDCut/cut-{dCut}-VsResiduals.json', 'w') as f:
             json.dump(result, f, indent=2, sort_keys=True)
 
-        resultDict[str(nIterations)] = result
+        resultDict[str(dCut)] = result
 
     print(resultDict)
 
-    with open(f'output/residualVsPairs/nTrksVsResiduals-100.json', 'w') as f:
+    with open(f'output/residualsVsDCut/nTrksVsResiduals-100.json', 'w') as f:
         json.dump(resultDict, f, indent=2, sort_keys=True)
 
 def plotNPairs():
@@ -161,8 +161,8 @@ def plotNPairs():
         colorI = 0
 
         # Plotting the error bars
-        ax.errorbar(lines[:,0], lines[:,1], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexmu}x', **lineOptions)
-        ax.errorbar(lines[:,0], lines[:,2], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexmu}y',**lineOptions)
+        ax.errorbar(lines[:,0]-10, lines[:,1], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexmu}x', **lineOptions)
+        ax.errorbar(lines[:,0]+10, lines[:,2], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexmu}y',**lineOptions)
 
         ax2.errorbar(lines[:,0], lines[:,4], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexsigma}x', **lineOptions)
         ax2.errorbar(lines[:,0], lines[:,5], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexsigma}y', **lineOptions)
@@ -207,14 +207,14 @@ def plotNPairs():
 
         break
 
-def plotNIter():
+def plotPCut():
 
     if True:
-        jsonFiles = Path('output/residualVsPairs/').glob('[0-9]*.json')
+        jsonFiles = Path('output/residualsVsDCut/').glob('cut-[0-9]*.json')
 
         lines = []
         for file in jsonFiles:
-            m = re.search(r'residualVsPairs/(\d+)-VsResiduals.json', str(file))
+            m = re.search(r'residualsVsDCut/cut-(-?\d+(,\d+)*(\.\d+(e\d+)?)?)-VsResiduals.json', str(file))
             if m:
                 nTrk = float(m.group(1))
             else:
@@ -227,7 +227,7 @@ def plotNIter():
                 lines.append(line)
 
     else:
-        with open(f'output/residualVsPairs/nTrksVsResiduals-Hand.json', 'r') as f:
+        with open(f'output/residualsVsDCut/nTrksVsResiduals.json', 'r') as f:
             data = json.load(f)
         lines = []
         for nTrk in data:
@@ -255,20 +255,20 @@ def plotNIter():
         colorI = 0
 
         # Plotting the error bars
-        ax.errorbar(lines[:,0]+1, lines[:,1], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexmu}x', **lineOptions)
-        ax.errorbar(lines[:,0]+1, lines[:,2], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexmu}y',**lineOptions)
+        ax.errorbar(lines[:,0], lines[:,1], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexmu}x', **lineOptions)
+        ax.errorbar(lines[:,0], lines[:,2], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexmu}y',**lineOptions)
 
-        ax2.errorbar(lines[:,0]+1, lines[:,4], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexsigma}x', **lineOptions)
-        ax2.errorbar(lines[:,0]+1, lines[:,5], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexsigma}y', **lineOptions)
+        ax2.errorbar(lines[:,0], lines[:,4], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexsigma}x', **lineOptions)
+        ax2.errorbar(lines[:,0], lines[:,5], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexsigma}y', **lineOptions)
             
         # Adding plotting parameters
         ax.set_title(title)
         ax2.set_title(title2)
 
-        ax.set_xlabel(f'Number of Iterations')
+        ax.set_xlabel(f'Cut Percentage [\%]')
         ax.set_ylabel(f'Mean [{latexmu}m]')
         
-        ax2.set_xlabel(f'Number of Iterations')
+        ax2.set_xlabel(f'Cut Percentage [\%]')
         ax2.set_ylabel(f'Standard Deviation [{latexmu}m]')
         # get handles
         handles, labels = ax.get_legend_handles_labels()
@@ -277,27 +277,27 @@ def plotNIter():
         ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))
         ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
         # ax.set_xscale('log')
-        ax.set_xlim((-1, 21))
+        # ax.set_xlim((-1, 21))
         # ax.set_yscale('log')
         # ax.set_ylim((0, 100))
 
         handles, labels = ax2.get_legend_handles_labels()
         handles = [h[0] for h in handles]
-        ax2.legend(handles, labels, loc='lower left',numpoints=1)#, bbox_to_anchor=(1, 0.5))
+        ax2.legend(handles, labels, loc='best',numpoints=1)#, bbox_to_anchor=(1, 0.5))
         ax2.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))
         ax2.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
         # ax2.set_xscale('log')
-        ax2.set_xlim((-1, 21))
+        # ax2.set_xlim((-1, 21))
         # ax2.set_yscale('log')
         # ax2.set_ylim((0, 100))
 
         
         fig.tight_layout()
-        fig.savefig(f'output/residualVsIterations/noOfIterVsResidual-mean.pdf', dpi=1000, bbox_inches='tight')
+        fig.savefig(f'output/residualsVsDCut/Pcut-VsResidual-mean.pdf', dpi=1000, bbox_inches='tight')
         plt.close(fig)
 
         fig2.tight_layout()
-        fig2.savefig(f'output/residualVsIterations/noOfIterVsResidual-std.pdf', dpi=1000, bbox_inches='tight')
+        fig2.savefig(f'output/residualsVsDCut/Pcut-VsResidual-std.pdf', dpi=1000, bbox_inches='tight')
         plt.close(fig2)
 
         break
@@ -305,4 +305,7 @@ def plotNIter():
 if __name__ == "__main__":
 
     # calcVsPairs()
-    plotNPairs()
+    # plotNPairs()
+
+    # calcVsCut()
+    plotPCut()

@@ -48,7 +48,8 @@ class alignerSensors:
         self.availableOverlapIDs = self.getOverlapsFromJSON()
         self.overlapMatrices = {}
         self.alignmentMatrices = {}          
-        self.maxPairs = 6e5                                            # dictionary overlapID: matrix
+        self.maxPairs = 6e5         
+        self.dCut = 1.0                                   # dictionary overlapID: matrix
         self.lock = Lock()
 
     @classmethod
@@ -84,6 +85,7 @@ class alignerSensors:
         matrixFinder.maxPairs = self.maxPairs
         matrixFinder.idealOverlapInfos = self.idealOverlapInfos
         matrixFinder.idealDetectorMatrices = self.idealDetectorMatrices
+        matrixFinder.dCut = self.dCut
         matrixFinder.readNumpyFiles(numpyPath)
         matrixFinder.findMatrix()
 

@@ -356,6 +356,7 @@ class overlapComparator(comparator):
         
         # return values in {self.latexmu}m
         dMat = (MisalignLikeICP - ICPmatrix)*1e4
+        # dMat = (MisalignLikeICP @ inv(ICPmatrix))*1e4
         returnArray = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
         
         return returnArray
@@ -366,8 +367,7 @@ class overlapComparator(comparator):
             print(f'Overlap ICP Matrices not found! Skipping...')
             return
         if len(self.overlapMatrices) < 360:
-            print(f'not all matrices are in overlap file. something went VERY wrong!')
-            return
+            raise Exception(f'not all matrices are in overlap file. something went VERY wrong!')
         if self.idealDetectorMatrices is None:
             print(f'Ideal Detector Matrices not found! Skipping...')
             return
