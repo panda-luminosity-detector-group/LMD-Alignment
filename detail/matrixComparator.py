@@ -117,7 +117,6 @@ class comparator:
         histA.hist(theseValues[...,:2], **kwargs)  # this is only the z distance
 
         # names, titles
-        # histA.set_title('distance alignment result - generated')   # change to mm!
         histA.set_xlabel(title)
         histA.set_ylabel(ylabel)
 
@@ -158,7 +157,7 @@ class boxComparator(comparator):
         print(f' OI VALUES: {values}')
 
         histA.hist(values, bins=15, histtype='bar', label=bucketLabels, color=self.colors)  # this is only the z distance
-        histA.set_title('distance alignment result - generated')   # change to mm!
+        histA.set_title('Residuals')   # change to mm!
         histA.set_xlabel(f'd [{self.latexmu}rad]')
         histA.set_ylabel('count')
         plt.legend()
@@ -235,7 +234,6 @@ class moduleComparator(comparator):
         histA.hist(values[...,:2], **kwargs)  # this is only the z distance
 
         # names, titles
-        # histA.set_title('distance alignment result - generated')   # change to mm!
         histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
 
@@ -281,7 +279,7 @@ class moduleComparator(comparator):
             else:
                 actualMat = np.identity(4)
 
-            diffMat = alMat-actualMat
+            diffMat = alMat @ inv(actualMat)
             dAlpha = mi.rotationMatrixToEulerAngles(diffMat)
 
             values = [diffMat[0,3]*1e4, diffMat[1,3]*1e4, dAlpha[2]]
@@ -339,7 +337,7 @@ class overlapComparator(comparator):
         
         return fig
 
-    # compute difference ICPmatrix - design overlap misalignment
+    # compute overlap residuals misalignment
     def computeOneICP(self, overlapID):
 
         ICPmatrix = self.overlapMatrices[overlapID]
@@ -355,8 +353,7 @@ class overlapComparator(comparator):
             MisalignLikeICP = mi.baseTransform(MisalignLikeICP, inv(matModule))
         
         # return values in {self.latexmu}m
-        dMat = (MisalignLikeICP - ICPmatrix)*1e4
-        # dMat = (MisalignLikeICP @ inv(ICPmatrix))*1e4
+        dMat = (MisalignLikeICP @ inv(ICPmatrix))*1e4
         returnArray = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
         
         return returnArray
@@ -590,7 +587,7 @@ class combinedComparator(comparator):
                 matMisalign = self.misalignMatrices[p]
 
                 # return values in {self.latexmu}m
-                dMat = (matResult - matMisalign)*1e4
+                dMat = (matResult @ inv(matMisalign))*1e4
                 values = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
 
                 differences = np.append(differences, values, axis=0)
@@ -599,7 +596,7 @@ class combinedComparator(comparator):
                 matMisalign = np.identity(4)
 
                 # return values in {self.latexmu}m
-                dMat = (matResult - matMisalign)*1e4
+                dMat = (matResult @ inv(matMisalign))*1e4
                 values = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
 
                 differences = np.append(differences, values, axis=0)
