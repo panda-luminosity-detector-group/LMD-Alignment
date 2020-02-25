@@ -362,7 +362,7 @@ def histogramRunConfig(runConfig, threadId=0):
     if True:
         success = subprocess.run(['scp', remoteDir, targetDir]).returncode
 
-        if success > 0 and False:
+        if success > 0:
             print(f'\n\n')
             print(f'-------------------------------------------------')
             print(f'file could not be copied, skipping this scenario.')
