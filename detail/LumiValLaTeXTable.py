@@ -63,16 +63,20 @@ class LumiValGraph(LumiValDisplay):
 
         values = []
 
-        remotePrefix = Path('m23:/lustre/miifs05/scratch/him-specf/paluma/') # used to be roklasen here too, what was that about?
+        remotePrefix = Path('m23:/lustre/miifs05/scratch/him-specf/paluma/roklasen/') # used to be roklasen here too, what was that about?
 
         self.corrected = self.configs[0].alignmentCorrection
         self.misalignType = self.configs[0].misalignType
 
         for conf in self.configs:
-            if (conf.alignmentCorrection != self.corrected):
+            if (conf.alignmentCorrection != self.corrected) and (conf.misalignType != 'aligned'):
                 raise Exception(f'Error! You cannot mix corrected and uncorrected results!')
-            if (conf.misalignType != self.misalignType):
+            if (conf.misalignType != self.misalignType) and (conf.misalignType != 'aligned'):
                 raise Exception(f'Please plot misalign types individually.')
+            
+            if conf.misalignType == 'aligned':
+                conf.misalignFactor = 0.0
+                conf.alignmentCorrection = False
 
             # conf.tempDestPath = conf.pathLumiVals().parent
             conf.tempDestPath = Path(f'output/temp/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-{conf.alignmentCorrection}')
@@ -139,7 +143,7 @@ class LumiValGraph(LumiValDisplay):
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
-        plt.rcParams["legend.loc"] = 'upper left'
+        plt.rcParams["legend.loc"] = 'best'
 
         for i in range(len(sizes)):
 
@@ -225,7 +229,6 @@ class LumiValGraph(LumiValDisplay):
 
                 # sort 2D array by second column
                 thseVals = thseVals[thseVals[:,1].argsort()]
-                print(f'mom: {mom}\ndata:\n{thseVals}\n-----------------\n')
 
                 # Plotting the error bars
                 ax.errorbar(thseVals[:,1] + offsets[colorI]*offsetscale, thseVals[:,2], yerr=thseVals[:,3], fmt='d', ecolor='black', color=colors[colorI], capsize=2, elinewidth=0.6, label=f'{mom} GeV', ls='dashed', linewidth=0.4)
@@ -248,7 +251,7 @@ class LumiValGraph(LumiValDisplay):
             # use them in the legend
             # ax.legend(handles, labels, loc='upper left',numpoints=1)
             # ax.legend(handles, labels, loc='upper right',numpoints=1)
-            ax.legend(handles, labels, loc='lower left',numpoints=1)
+            ax.legend(handles, labels, loc='best',numpoints=1)
 
             plt.tight_layout()
 
