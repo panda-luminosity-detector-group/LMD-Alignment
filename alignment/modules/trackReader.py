@@ -46,6 +46,8 @@ class trackReader():
         
         notEnoughRecos = 0
 
+        removeSectorCrossing = False
+
         # find sector crossing tracks
         print('removing sector-crossing tracks...')
         for track in self.trks:
@@ -70,7 +72,7 @@ class trackReader():
                 path = self.getPathModuleFromSensorID(sensor)
                 _, _, _, sector = self.getParamsFromModulePath(path)
                 
-                if sector != firstSec:
+                if (sector != firstSec) and removeSectorCrossing:
                     track['valid'] = False
                     break
         

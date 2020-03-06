@@ -59,7 +59,8 @@ class LMDRunConfig:
         self.__mergeAlignmentMatrices = False
         self.__sensorAlignerExternalMatrices = None
         self.__moduleAlignAnchorPointFile = None
-        self.__moduleAlignAvgMisalignFile = None
+        self.__moduleAlignAvgMisalignFile = None+
+        self.combiMat = ''
 
     #! --------------------- for sortability
     def __lt__(self, other):
@@ -444,7 +445,8 @@ class LMDRunConfig:
             
             elif self.__misalignType == 'modulesOnlyRot':
                 return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
-            # TODO: add for combined
+            elif self.__misalignType == 'combi':
+                return self.combiMat
 
     def pathMisMatrix(self):
         self.__checkMinimum__()

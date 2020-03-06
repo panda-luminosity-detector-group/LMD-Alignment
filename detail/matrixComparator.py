@@ -227,11 +227,13 @@ class moduleComparator(comparator):
 
         # prepare args, labels
         # bucketLabels = [f'{self.latexsigma} dx={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma} dy={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
-        bucketLabels = [f'{self.latexsigma}x={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma}y={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
+        bucketLabels = [f'{self.latexsigma}x={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma}y={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}mrad']
         kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
 
         # histogram
         histA.hist(values[...,:2], **kwargs)  # this is only the z distance
+        # histA.hist(values[...,2]*1e3, label=bucketLabels[2])#, **kwargs)  # this is only the z distance
+        # print(values[:,2])
 
         # names, titles
         histA.set_xlabel(f'd [{self.latexmu}m]')
@@ -242,6 +244,7 @@ class moduleComparator(comparator):
         handles = [handles[1], handles[0]]
         labels = [labels[1], labels[0]]
         histA.legend(handles,labels,loc=2)
+        # histA.legend()
 
         return fig
 
@@ -282,7 +285,7 @@ class moduleComparator(comparator):
             diffMat = alMat @ inv(actualMat)
             dAlpha = mi.rotationMatrixToEulerAngles(diffMat)
 
-            values = [diffMat[0,3]*1e4, diffMat[1,3]*1e4, dAlpha[2]]
+            values = [diffMat[0,3]*1e4, diffMat[1,3]*1e4, dAlpha[2]*1e3]
             resValues.append(values)
         
         resValues = np.array(resValues)

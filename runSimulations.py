@@ -111,6 +111,151 @@ def done():
 
 # ? =========== functions that can be run by runAllConfigsMT
 
+def runCombi(runConfig, threadID=None):
+
+    """
+
+    DO NOT USE THIS CODE YET!
+
+    You need to fix a couple of things.
+
+    - The runConfig must have the useAlignmentcorrection flag, or else it will not load alignment matrices
+    - BUT: if this flag is set, the alignment matrices are chosen automatically from the misalign type
+    - AND WORSE: the lumi fit creates a subdirectory with the name of the alignment matrix file. 
+      You need to use this data during the iterative correction runs.
+
+    """
+
+
+    combiMat = runConfig.pathAlMatrixPath() / Path(f'alMat-combi-{runConfig.misalignFactor}.json')
+
+    print(f'Thread {threadID}: starting!')
+
+    externalMatPath = Path(runConfig.sensorAlignExternalMatrixPath)
+
+    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
+    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
+    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
+    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
+    mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
+    moduleAlignDataPath = runConfig.pathJobBase() / Path(f'1-{runConfig.jobsNum}_uncut/no_alignment_correction')
+    moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
+
+    # create logger
+    thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-runCombi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+    thislogger.log(runConfig.dump())
+
+    #! ------------ perform sensor alignment
+    #* create alignerSensors, run
+    print(f'\n====================================\n')
+    print(f'        running sensor aligner')
+    print(f'\n====================================\n')
+    sensorAligner = alignerSensors.fromRunConfig(runConfig)
+    sensorAligner.loadExternalMatrices(externalMatPath)
+    sensorAligner.sortPairs()
+    sensorAligner.findMatrices()
+    sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
+    sensorAligner.combineAlignmentMatrices()
+    sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+
+    #! ------------ redo sim with sensor alignment matrices
+
+    # set sensor matrices as alignment matrices
+    runConfig.combiMat = sensorAlignerResultName
+    
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadNumber = threadID
+    prealignWrapper.logger = thislogger
+
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+
+    #! ------------ perform module alignment
+    print(f'\n====================================\n')
+    print(f'        running module aligner')
+    print(f'\n====================================\n')
+    moduleAligner = alignerModules.fromRunConfig(runConfig)
+    moduleAligner.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
+    moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)
+    moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
+    moduleAligner.readTracks(moduleAlignTrackFile)
+    moduleAligner.alignModules()
+    moduleAligner.saveMatrices(moduleAlignerResultName)
+
+    #! ------------ merge sensor and modul align matrices
+    # combine all alignment matrices to one single json File
+    with open(sensorAlignerResultName, 'r') as f:
+        resOne = json.load(f)
+
+    with open(moduleAlignerResultName, 'r') as f:
+        resThree = json.load(f)
+
+    mergedResult = {**resOne, **resThree}
+
+    with open(combiMat, 'w') as f:
+        json.dump(mergedResult, f, indent=2)
+
+    #! ------------ redo sim once again
+
+    # set merged matrices as alignment matrices
+    runConfig.combiMat = combiMat
+
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadNumber = threadID
+    prealignWrapper.logger = thislogger
+
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+
+    #! ------------ perform ip alignment
+
+    #* create alignerIP, run
+    print(f'\n====================================\n')
+    print(f'        running box rotation aligner')
+    print(f'\n====================================\n')
+    IPaligner = alignerIP.fromRunConfig(runConfig)
+    IPaligner.logger = thislogger
+    IPaligner.computeAlignmentMatrix()
+    IPaligner.saveAlignmentMatrix(IPalignerResultName)
+    
+    #! ------------ merge all matrices
+    # combine all alignment matrices to one single json File
+    with open(sensorAlignerResultName, 'r') as f:
+        resOne = json.load(f)
+
+    with open(IPalignerResultName, 'r') as f:
+        resTwo = json.load(f)
+
+    with open(moduleAlignerResultName, 'r') as f:
+        resThree = json.load(f)
+
+    mergedResult = {**resOne, **resTwo, **resThree}
+
+    with open(mergedAlignerResultName, 'w') as f:
+        json.dump(mergedResult, f, indent=2)
+
+    #! ------------ redo sim
+    runConfig.combiMat = mergedAlignerResultName
+
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadNumber = threadID
+    prealignWrapper.logger = thislogger
+
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+    
+    #! ------------ do lumi fit this time
+
+    prealignWrapper.detLumi()                  # not blocking
+    prealignWrapper.waitForJobCompletion()     # waiting
+    prealignWrapper.extractLumi()              # blocking
+
 def runAligners(runConfig, threadID=None):
 
     print(f'Thread {threadID}: starting!')
