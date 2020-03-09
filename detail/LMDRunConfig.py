@@ -59,7 +59,7 @@ class LMDRunConfig:
         self.__mergeAlignmentMatrices = False
         self.__sensorAlignerExternalMatrices = None
         self.__moduleAlignAnchorPointFile = None
-        self.__moduleAlignAvgMisalignFile = None+
+        self.__moduleAlignAvgMisalignFile = None
         self.combiMat = ''
 
     #! --------------------- for sortability
