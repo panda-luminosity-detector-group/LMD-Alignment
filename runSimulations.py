@@ -700,32 +700,25 @@ def createMultipleDefaultConfigs():
                     config.momentum = mom
                     config.alignmentCorrection = corr
 
-                    # boxRot and boxRotZ require fewer jobs
-                    # if misType == 'box' or misType == 'boxRotZ':
-                    #     config.jobsNum = '10'
-
                     # identity and aligned don't get factors, only momenta and need fewer pairs
                     if misType == 'aligned' or misType == 'identity':
                         config.useIdentityMisalignment = True
+                        config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-aligned.json'
+                        config.moduleAlignAvgMisalignFile  = f'input/moduleAlignment/avgMisalign-aligned.json'
 
                     # supply anchor ppoints to all cases
                     config.moduleAlignAnchorPointFile = f'input/moduleAlignment/anchorPoints.json'
 
-                    # supply external matrices accordingly
-                    if misType == 'sensors':
-                        config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
-                    else:
-                        config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-aligned.json'
+                    # supply external matrices to all cases
+                    config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-{fac}.json'
 
                     # supply avg misalignments accordingly
                     if misType == 'modulesNoRot':
                         config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-noRot-{fac}.json'
                     elif misType == 'modulesOnlyRot':
                         config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-onlyRot-{fac}.json'
-                    elif misType == 'modules':
-                        config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
                     else:
-                        config.moduleAlignAvgMisalignFile  = f'input/moduleAlignment/avgMisalign-aligned.json'
+                        config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
                     
                     # ? ----- special cases here
                     # aligned case has no misalignment
@@ -733,8 +726,8 @@ def createMultipleDefaultConfigs():
                         config.misaligned = False
 
                     if Path(dest).exists():
+                        # don;t overwrite, just continue
                         pass
-                        # continue
 
                     config.toJSON(dest)
 
