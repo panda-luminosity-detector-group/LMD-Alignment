@@ -128,7 +128,8 @@ def runAligners(runConfig, threadID=None):
     combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi3.json')
 
 
-    moduleAlignDataPath = runConfig.pathJobBase() / Path(f'1-{runConfig.jobsNum}_uncut/no_alignment_correction')
+    # moduleAlignDataPath = runConfig.pathJobBase() / Path(f'1-{runConfig.jobsNum}_uncut/no_alignment_correction')    #! fix this, for combi sims this is the ALIGNED path
+    moduleAlignDataPath = runConfig.pathTrksQA()
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
 
     # create logger
@@ -280,6 +281,9 @@ def halfRun(runConfig, threadID=None):
     prealignWrapper.detLumi()                  # not blocking
     prealignWrapper.waitForJobCompletion()     # waiting
     prealignWrapper.extractLumi()              # blocking
+    
+    # run alignment afterwards
+    runAligners(runConfig, threadID)
     print(f'Thread {threadID} done!')
 
 def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
@@ -442,16 +446,7 @@ def histogramRunConfig(runConfig, threadId=0):
         'sensors' : (np.array(sensorResultMean).tolist(), np.array(sensorResultSigma).tolist())
     }
 
-    # print(f'\n\nATTENTION\n\nATTENTION\n\n')
-
-    # for i in values:
-    #     print(f'this line in unrefined:{i}')
-
     print(values)
-
-    # print(f'\n\nATTENTION\n\nATTENTION\n\n')
-
-    # done()
     return values
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
@@ -540,7 +535,8 @@ def createMultipleDefaultConfigs():
     # momenta = ['1.5', '15.0']
     momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
     misFactors = {}
-    misTypes = ['aligned', 'identity', 'sensors', 'box', 'box100', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot', 'combi']
+    # misTypes = ['aligned', 'identity', 'sensors', 'box', 'box100', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot', 'combi']
+    misTypes = ['aligned', 'identity', 'sensors', 'box100', 'modules', 'combi']
     
     setOne = ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']
     setTwo = ['0.25', '0.50', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']

@@ -381,14 +381,14 @@ class LMDRunConfig:
         return Path(self.__JobBaseDir)
 
     def __uncut__(self):
-        return Path('1-*_uncut')
+        return Path(f'1-{self.__jobsNum}_uncut')
 
     def __cut__(self):
         return Path('1-*_xy_m_cut_real')
 
     def __alignCorrectionSubDir__(self):
         if self.__alignmentCorrection:
-            return Path('aligned*')
+            return Path(f'aligned-{Path(self.__alignMatFile).stem}')
         else:
             return Path('no_alignment_correction')
 
