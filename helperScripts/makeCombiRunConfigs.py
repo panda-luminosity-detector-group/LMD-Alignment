@@ -18,7 +18,7 @@ if __name__ == "__main__":
             for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
 
                 # read old combi runConfig file
-                fileName = f'runConfigs/uncorrected/combi/{mom}/factor-{fac}.json'
+                fileName = f'runConfigs/corrected/combi/{mom}/factor-{fac}.json'
                 config = LMDRunConfig.fromJSON(fileName)
                 alMatPath = config.pathAlMatrixPath()
                 matFile = str(Path(alMatPath) / Path(f'alMat-combi{i}.json'))
