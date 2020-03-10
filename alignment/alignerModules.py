@@ -15,6 +15,8 @@ import re
 import subprocess
 import sys
 
+from pathlib import Path
+
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
@@ -46,8 +48,12 @@ class alignerModules:
 
     # words cannot describe how ugly this is, but I'm pressed for time and aesthetics wont get me my phd
     def convertRootTracks(self, dataPath, outJsonFile):
-        rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
-        subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules')
+
+        if not Path(outJsonFile).exists():
+            rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
+            subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules')
+        else:
+            print(f'processed tracks already aexist, skipping.')
 
     def readTracks(self, fileName, isNumpy=False):
         print(f'reading processed tracks file...')
