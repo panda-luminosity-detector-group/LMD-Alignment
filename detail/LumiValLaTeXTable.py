@@ -63,7 +63,7 @@ class LumiValGraph(LumiValDisplay):
 
         values = []
 
-        remotePrefix = Path('m23:/lustre/miifs05/scratch/him-specf/paluma/roklasen/') # used to be roklasen here too, what was that about?
+        remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/') # used to be roklasen here too, what was that about?
 
         self.corrected = self.configs[0].alignmentCorrection
         self.misalignType = self.configs[0].misalignType
@@ -82,7 +82,7 @@ class LumiValGraph(LumiValDisplay):
             conf.tempDestPath = Path(f'output/temp/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-{conf.alignmentCorrection}')
             conf.tempDestFile = conf.tempDestPath / Path(conf.pathLumiVals().name)
             conf.tempDestPath.mkdir(exist_ok=True, parents=True)
-            conf.tempSourcePath = remotePrefix / Path(*conf.pathLumiVals().parts[6:])
+            conf.tempSourcePath = remotePrefix / Path(*conf.pathLumiVals().parts[7:])
 
             if copy:
                 print(f'copying:\n{conf.tempSourcePath}\nto:\n{conf.tempDestPath}')
@@ -253,10 +253,13 @@ class LumiValGraph(LumiValDisplay):
             # ax.legend(handles, labels, loc='upper right',numpoints=1)
             ax.legend(handles, labels, loc='best',numpoints=1)
 
+            # draw vertical line to separate aligned and misaligned cases
+            plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.75)
+
             plt.tight_layout()
 
-            plt.grid(color='lightgrey', which='major', axis='y', linestyle='dotted')
-            plt.grid(color='lightgrey', which='major', axis='x', linestyle='dotted')
+            plt.grid(color='grey', which='major', axis='y', linestyle=':', linewidth=0.5)
+            plt.grid(color='grey', which='major', axis='x', linestyle=':', linewidth=0.5)
             # plt.legend()
 
             plt.savefig(f'{outFileName}-{i}.pdf',
