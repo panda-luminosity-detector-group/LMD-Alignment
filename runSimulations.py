@@ -456,7 +456,7 @@ def histogramRunConfig(runConfig, threadId=0):
 
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
-def runConfigsMT(args, function):
+def runConfigsMT(args, function, threads = 64):
 
     configs = []
     # read all configs from path
@@ -478,7 +478,6 @@ def runConfigsMT(args, function):
         runConfig = LMDRunConfig.fromJSON(configFile)
         simConfigs.append(runConfig)
 
-    threads = 64
     maxThreads = min(len(simConfigs), threads)
     print(f'INFO: running in {maxThreads} threads!')
 
@@ -853,7 +852,7 @@ if __name__ == "__main__":
         else:
             startLogToFile('AlignMulti')
         args.configPath = args.alignConfigPath
-        runConfigsMT(args, runAligners)
+        runConfigsMT(args, runAligners, 8)
         done()
 
     # ? =========== lumiFit, single config
