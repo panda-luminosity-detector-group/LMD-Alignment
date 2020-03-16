@@ -127,8 +127,6 @@ def runAligners(runConfig, threadID=None):
     combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi2.json')
     combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi3.json')
 
-
-    # moduleAlignDataPath = runConfig.pathJobBase() / Path(f'1-{runConfig.jobsNum}_uncut/no_alignment_correction')    #! fix this, for combi sims this is the ALIGNED path
     moduleAlignDataPath = runConfig.pathTrksQA()
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
 
@@ -700,21 +698,22 @@ if __name__ == "__main__":
         if True:
 
             # from good-ish tracks
-            trackFile = Path('./input/modulesAlTest/factor-1.00-large.json')
+            # trackFile = Path('input/modulesAlTest/combi0/processedTracks.json')
+            trackFile = Path('input/modulesAlTest/combi0/vgl.json')
 
             alignerMod = alignerModules()
             alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
             alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-1.00.json')
             alignerMod.readTracks(trackFile)
             alignerMod.alignModules()
-            alignerMod.saveMatrices('output/alMat-modules-1.00-2019-12-01.json')
+            alignerMod.saveMatrices('input/modulesAlTest/combi0/alMat-modules-1.00-2019-12-01.json')
 
             #! run comparator
             comp = moduleComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/modules/15.0/factor-1.00.json'))
             comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
             comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
-            comp.loadAlignerMatrices('output/alMat-modules-1.00-2019-12-01.json')
-            comp.saveHistogram('output/alignmentModules/residuals-modules-2020-02-09-withAnchors.pdf')
+            comp.loadAlignerMatrices('input/modulesAlTest/combi0/alMat-modules-1.00-2019-12-01.json')
+            comp.saveHistogram('input/modulesAlTest/combi0/residuals-modules-2020-02-09-withAnchors.pdf')
 
             done()
 

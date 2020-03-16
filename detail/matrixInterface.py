@@ -48,7 +48,7 @@ def saveMatrices(matrices, fileName):
         saveMatrices[p] = np.ndarray.tolist(np.ndarray.flatten(matrices[p]))
 
     with open(fileName, 'w') as f:
-        json.dump(saveMatrices, f, indent=2)
+        json.dump(saveMatrices, f, indent=2, sort_keys=True)
 
 
 def baseTransform(mat, matFromAtoB, inverse=False):

@@ -45,6 +45,7 @@ class trackReader():
         self.trks = [ x for x in self.trks if np.linalg.norm(x['trkMom']) != 0 ]
         
         notEnoughRecos = 0
+        sectorCrossing = 0
 
         removeSectorCrossing = False
 
@@ -74,12 +75,13 @@ class trackReader():
                 
                 if (sector != firstSec) and removeSectorCrossing:
                     track['valid'] = False
+                    sectorCrossing += 1
                     break
         
         # actually remove
         print(f'all tracks: {len(self.trks)}')
         self.trks = [ x for x in self.trks if x['valid'] ]
-        print(f'pre-processing done, discarded {notEnoughRecos}, {len(self.trks)} tracks remaining!')
+        print(f'pre-processing done, discarded:\nLess than four recos: {notEnoughRecos}\nSector crosssing: {sectorCrossing}\n==>\n{len(self.trks)} tracks remaining!\n\n')
 
         # dump tracks to disk as np file
         np.save('output/residualVsTrks/tracks.npy', self.trks, allow_pickle=True)
