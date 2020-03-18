@@ -11,6 +11,12 @@ import json
 from detail.LMDRunConfig import LMDRunConfig
 from pathlib import Path
 
+alignerStages = [
+    [True, True, True],
+    [False, True, True],
+    [False, True, True],
+    [False, False, True]
+]
 
 if __name__ == "__main__":
     for i in range(4):
@@ -26,6 +32,7 @@ if __name__ == "__main__":
                 # change alignment matrix
                 config.combiMat = matFile
                 config.generateMatrixNames()
+                config.stages = alignerStages[i]
                 
                 # save to new dir
                 destPath = Path(f'runConfigs/special/combi{i}/{mom}/factor-{fac}.json')

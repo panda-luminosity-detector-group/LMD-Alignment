@@ -113,7 +113,13 @@ def done():
 
 def runAligners(runConfig, threadID=None):
 
+    stages = runConfig.stages
+    
     print(f'Thread {threadID}: starting!')
+    print(f'Stages:')
+    print(f'Sensor Align: {stages[0]}')
+    print(f'Module Align: {stages[1]}')
+    print(f'Target Align: {stages[2]}')
 
     externalMatPath = Path(runConfig.sensorAlignExternalMatrixPath)
 
@@ -134,38 +140,44 @@ def runAligners(runConfig, threadID=None):
     thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
-    #* create alignerSensors, run
-    print(f'\n====================================\n')
-    print(f'        running sensor aligner')
-    print(f'\n====================================\n')
-    sensorAligner = alignerSensors.fromRunConfig(runConfig)
-    sensorAligner.loadExternalMatrices(externalMatPath)
-    sensorAligner.sortPairs()
-    sensorAligner.findMatrices()
-    sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
-    sensorAligner.combineAlignmentMatrices()
-    sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+    if stages[0]:
+        #* create alignerSensors, run
+        print(f'\n====================================\n')
+        print(f'        running sensor aligner')
+        print(f'\n====================================\n')
+        sensorAligner = alignerSensors.fromRunConfig(runConfig)
+        sensorAligner.loadExternalMatrices(externalMatPath)
+        sensorAligner.sortPairs()
+        sensorAligner.findMatrices()
+        sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
+        sensorAligner.combineAlignmentMatrices()
+        sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
 
-    #* create alignerModules, run
-    print(f'\n====================================\n')
-    print(f'        running module aligner')
-    print(f'\n====================================\n')
-    moduleAligner = alignerModules.fromRunConfig(runConfig)
-    moduleAligner.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
-    moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)
-    moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
-    moduleAligner.readTracks(moduleAlignTrackFile)
-    moduleAligner.alignModules()
-    moduleAligner.saveMatrices(moduleAlignerResultName)
+    if stages[1]:
+        #* create alignerModules, run
+        print(f'\n====================================\n')
+        print(f'        running module aligner')
+        print(f'\n====================================\n')
+        moduleAligner = alignerModules.fromRunConfig(runConfig)
+        moduleAligner.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
+        moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)
+        moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
+        moduleAligner.readTracks(moduleAlignTrackFile)
+        moduleAligner.alignModules()
+        moduleAligner.saveMatrices(moduleAlignerResultName)
 
-    #* create alignerIP, run
-    print(f'\n====================================\n')
-    print(f'        running box rotation aligner')
-    print(f'\n====================================\n')
-    IPaligner = alignerIP.fromRunConfig(runConfig)
-    IPaligner.logger = thislogger
-    IPaligner.computeAlignmentMatrix()
-    IPaligner.saveAlignmentMatrix(IPalignerResultName)
+    if stages[2]:
+        #* create alignerIP, run
+        print(f'\n====================================\n')
+        print(f'        running box rotation aligner')
+        print(f'\n====================================\n')
+        IPaligner = alignerIP.fromRunConfig(runConfig)
+        IPaligner.logger = thislogger
+        IPaligner.computeAlignmentMatrix()
+        IPaligner.saveAlignmentMatrix(IPalignerResultName)
+
+    #! ignore stages here for now. only if all stages have run all alignment matrices exist, but since all are run initally, that should be okay.
+    # TODO: handle case when not all stages have run
 
     # combine all alignment matrices to one single json File
     with open(sensorAlignerResultName, 'r') as f:

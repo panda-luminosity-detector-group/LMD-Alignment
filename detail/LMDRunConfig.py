@@ -61,6 +61,7 @@ class LMDRunConfig:
         self.__moduleAlignAnchorPointFile = None
         self.__moduleAlignAvgMisalignFile = None
         self.combiMat = ''
+        self.stages = [True, True, True]
 
     #! --------------------- for sortability
     def __lt__(self, other):
