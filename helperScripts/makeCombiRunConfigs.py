@@ -12,10 +12,10 @@ from detail.LMDRunConfig import LMDRunConfig
 from pathlib import Path
 
 alignerStages = [
-    [True, True, True],
     [False, True, True],
-    [False, True, True],
-    [False, False, True]
+    [False, False, True],
+    [False, True, False],
+    [False, False, False]
 ]
 
 if __name__ == "__main__":
