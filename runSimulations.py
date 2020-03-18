@@ -114,7 +114,7 @@ def done():
 def runAligners(runConfig, threadID=None):
 
     stages = runConfig.stages
-    
+
     print(f'Thread {threadID}: starting!')
     print(f'Stages:')
     print(f'Sensor Align: {stages[0]}')
@@ -306,7 +306,8 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     if runConfig.alignmentCorrection:
         print(f'Thread {threadID}: this runConfig contains a correction, ignoring')
         print(f'Thread {threadID}: done!')
-        return
+        runConfig.alignmentCorrection = False
+        # return
 
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-FullRun-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
