@@ -77,7 +77,7 @@ class simWrapper:
 
         # export force-disable cut (yes I know this is incredibly ugly)
         if self.config.forDisableCut:
-            print(f'Disabling track cuts!')
+            self.logger.log(f'Disabling track cuts!')
             os.environ['force_cut_disable'] = 'True'
 
         self.logger.log(f'\n\n========= Running ./doSimulationReconstruction.\n')
@@ -124,8 +124,8 @@ class simWrapper:
 
         if self.config.useDebug:
             self.logger.log(f'DEBUG: run command tuple is {subProcessCommandTuple}')
-
-        returnVal = subprocess.check_output(subProcessCommandTuple, cwd=scriptsPath).decode(sys.stdout.encoding)
+        my_env = os.environ.copy()
+        returnVal = subprocess.check_output(subProcessCommandTuple, cwd=scriptsPath, env=my_env).decode(sys.stdout.encoding)
 
         self.logger.log(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n')
         self.logger.log(f'\n\n========= Done!.\n')
