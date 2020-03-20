@@ -34,6 +34,9 @@ if __name__ == "__main__":
                 config.generateMatrixNames()
                 config.stages = alignerStages[i]
                 
+                if i < 3:
+                    config.forDisableCut = True
+                
                 # save to new dir
                 destPath = Path(f'runConfigs/special/combi{i}/{mom}/factor-{fac}.json')
                 destPath.parent.mkdir(exist_ok=True, parents=True)
