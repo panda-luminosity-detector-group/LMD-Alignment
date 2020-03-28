@@ -712,21 +712,33 @@ if __name__ == "__main__":
 
             # from good-ish tracks
             # trackFile = Path('input/modulesAlTest/combi0/processedTracks.json')
-            trackFile = Path('input/modulesAlTest/combi0/vgl.json')
+            # trackFile = Path('input/modulesAlTest/combi0/vgl.json')
+
+            #! these are from 23.03.2020, first real combi run
+            # trackFile = Path('input/modulesAlTest/combi0/tracksNoAlignment.json')
+            # trackFile = Path('input/modulesAlTest/combi0/tracksAlignedCombi0.json')     
+            trackFile = Path('input/modulesAlTest/combi0/tracksBroken-2.5.json')     
 
             alignerMod = alignerModules()
             alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
             alignerMod.readAverageMisalignments('input/moduleAlignment/avgMisalign-1.00.json')
             alignerMod.readTracks(trackFile)
             alignerMod.alignModules()
-            alignerMod.saveMatrices('input/modulesAlTest/combi0/alMat-modules-1.00-2019-12-01.json')
+            # alignerMod.saveMatrices('input/modulesAlTest/combi0/alMat-noAlign.json')
+            # alignerMod.saveMatrices('input/modulesAlTest/combi0/alMat-withCombi0.json')
+            alignerMod.saveMatrices('input/modulesAlTest/combi0/alMat-broken.json')
 
             #! run comparator
-            comp = moduleComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/modules/15.0/factor-1.00.json'))
+            # comp = moduleComparator(LMDRunConfig.fromJSON('runConfigs/uncorrected/modules/15.0/factor-1.00.json'))
+            comp = moduleComparator(LMDRunConfig.fromJSON('runConfigs/special/combi0/15.0/factor-1.00.json'))
             comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
             comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-modules-1.00.json')
-            comp.loadAlignerMatrices('input/modulesAlTest/combi0/alMat-modules-1.00-2019-12-01.json')
-            comp.saveHistogram('input/modulesAlTest/combi0/residuals-modules-2020-02-09-withAnchors.pdf')
+            # comp.loadDesignMisalignments('/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json')
+            # comp.loadAlignerMatrices('input/modulesAlTest/combi0/alMat-withCombi0.json')
+            # comp.loadAlignerMatrices('input/modulesAlTest/combi0/alMat-noAlign.json')
+            comp.loadAlignerMatrices('input/modulesAlTest/combi0/almat-broken.json')
+            # comp.saveHistogram('input/modulesAlTest/combi0/residuals-modules-2020-03-23-noAlign.pdf')
+            comp.saveHistogram('input/modulesAlTest/combi0/residuals-modules-2020-03-23-withCombi0-fromHimster.pdf')
 
             done()
 
