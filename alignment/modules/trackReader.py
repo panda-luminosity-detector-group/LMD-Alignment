@@ -38,9 +38,13 @@ class trackReader():
         print(f'reading from {filename}...')
         with open(filename, 'r') as infile:
             self.trks = json.load(infile)['events']
-            print('file successfully read!')
+            print(f'file successfully read, found {len(self.trks)} tracks!')
 
         # list comprehension to filter tracks with no momentum from this dict
+        print('removing broken tracks...')
+        self.trks = [ x for x in self.trks if all(x['trkMom'])]
+        self.trks = [ x for x in self.trks if all(x['trkPos'])]
+
         print('removing empty tracks...')
         self.trks = [ x for x in self.trks if np.linalg.norm(x['trkMom']) != 0 ]
         
