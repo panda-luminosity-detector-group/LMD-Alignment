@@ -190,7 +190,7 @@ class boxComparator(comparator):
 
         print(f'Euler from actual: {eActual}')
         print(f'Euler from found: {eFound}')
-        print(f'Difference: {eActual-eFound}')
+        print(f'Difference: {(eActual-eFound)*1e6} urad')
 
         d = (eActual - eFound).reshape((1,3))*1e6       # reshape, scale to um
 
@@ -277,7 +277,7 @@ class moduleComparator(comparator):
         for mod in modules:
             alMat = self.alignerResults[mod]
             
-            if self.config.misalignType == 'modules':
+            if self.config.misalignType == 'modules' or self.config.misalignType == 'combi':
                 actualMat = self.misalignMatrices[mod]
             else:
                 actualMat = np.identity(4)
