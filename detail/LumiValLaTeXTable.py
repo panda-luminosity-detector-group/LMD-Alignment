@@ -63,7 +63,8 @@ class LumiValGraph(LumiValDisplay):
 
         values = []
 
-        remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/') # used to be roklasen here too, what was that about?
+        # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/') # used to be roklasen here too, what was that about?
+        remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/') # used to be roklasen here too, what was that about?
 
         self.corrected = self.configs[0].alignmentCorrection
         self.misalignType = self.configs[0].misalignType

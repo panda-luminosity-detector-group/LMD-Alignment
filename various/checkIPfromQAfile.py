@@ -23,5 +23,5 @@ if __name__ == "__main__":
     
     for name in filenames:
         print(f'\n\n{name}:')
-        ip = np.array(getIPfromTrksQA(name))*1e1
+        ip = np.array(getIPfromTrksQA(name))#*1e1
         print(ip)
