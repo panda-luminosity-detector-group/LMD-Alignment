@@ -583,6 +583,10 @@ def createMultipleDefaultConfigs():
                     config.momentum = mom
                     config.alignmentCorrection = corr
 
+                    # yet another ugly hack: corrected runs don't usually need another alignment run EXCEPT for combis. But those are generated elsewhere.
+                    if corr:
+                        config.stages = [False, False, False]
+
                     # identity and aligned don't get factors, only momenta and need fewer pairs
                     if misType == 'aligned' or misType == 'identity':
                         config.useIdentityMisalignment = True
