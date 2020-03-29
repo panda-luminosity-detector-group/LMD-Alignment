@@ -78,7 +78,7 @@ class simWrapper:
         # export force-disable cut (yes I know this is incredibly ugly)
         if self.config.forDisableCut:
             self.logger.log(f'Disabling track cuts!')
-            os.environ['force_cut_disable'] = 'True'
+            os.environ['force_cut_disable'] = 'True'    # oh my god this is so ugly
 
         self.logger.log(f'\n\n========= Running ./doSimulationReconstruction.\n')
         print(f'\n\n========= Running ./doSimulationReconstruction, please wait.\n')

@@ -3,6 +3,7 @@
 //* call with root -l -q convertRootTracks.C(dataPath, jsonFile)
 
 // TODO: dump result to binary file with 6*3 values: trkOri, trkDir, reco1 - reco4, each having (x,y,z) 
+// TODO: sometimes some values are null, and those are stored to json as well. Skip them!
 // also, the python stuff must be able to read that
 
 using nlohmann::json;
