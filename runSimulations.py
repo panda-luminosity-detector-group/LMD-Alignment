@@ -373,7 +373,11 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
         graph = LumiValGraph.fromConfigs(configs)
         # graph.save(fileName)
 
-        fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
+        # combi is a special case becasue there are combi0 to combi3
+        if configs[0].misalignType == 'combi':
+            fileName2 = Path(f'output/LumiResults/All/{Path(configs[0].combiMat).stem}-{corrStr}')
+        else:
+            fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
         fileName2.parent.mkdir(exist_ok=True, parents=True)
         graph.saveAllMomenta(fileName2)
 
