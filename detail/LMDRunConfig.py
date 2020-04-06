@@ -460,7 +460,7 @@ class LMDRunConfig:
 
     def pathLumiVals(self):
         self.__checkMinimum__()
-        if self.alignmentCorrection:
+        if self.alignmentCorrection or self.misalignType == 'aligned':
             return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__alignCorrectionSubDir__() / self.__bunches__() / self.__lumiVals__())
         else:
             return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__alignCorrectionSubDir__() / self.__bunches__() / self.__lumiVals__())

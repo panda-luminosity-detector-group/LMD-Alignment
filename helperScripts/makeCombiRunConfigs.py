@@ -21,7 +21,7 @@ alignerStages = [
 if __name__ == "__main__":
     for i in range(4):
         for mom in ['1.5', '4.06', '8.9', '11.91', '15.0']:
-            for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+            for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50']:#, '3.00']:
 
                 # read old combi runConfig file
                 fileName = f'runConfigs/corrected/combi/{mom}/factor-{fac}.json'

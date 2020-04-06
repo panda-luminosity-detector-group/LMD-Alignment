@@ -414,7 +414,8 @@ def histogramRunConfig(runConfig, threadId=0):
     # box rotation comparator
     comparator = boxComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-    comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+    # comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+    comparator.loadDesignMisalignments("/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json")
     comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     boxResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.pdf')
 
@@ -441,6 +442,9 @@ def histogramRunConfig(runConfig, threadId=0):
     sensorResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.pdf')
 
     # refine
+    if runConfig.misalignType == 'aligned':
+        print(f'This one is aligned, not returning data.')
+        return None
 
     moduleResultMean = np.average(moduleResult, axis=0)
     moduleResultSigma = np.std(moduleResult, axis=0)
@@ -765,6 +769,9 @@ if __name__ == "__main__":
         args.configPath = args.histSensorAlignerPath
         allVals = defaultdict(dict)
         for values in runConfigsST(args, histogramRunConfig):
+
+            if values is None:
+                continue
 
             print(f'I got these values: {values}')
             for key, value in values.items():
