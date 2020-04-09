@@ -104,6 +104,9 @@ class LMDRunConfig:
 
     #! --------------------- getters and setters
 
+    def setAlMat(self, matPath):
+        self.__alignMatFile = matPath
+
     def __getAvgMisPath(self):
         return self.__moduleAlignAvgMisalignFile
 
@@ -419,7 +422,7 @@ class LMDRunConfig:
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
 
-    # TODO: actually, this is pretty pointless here, do this during CREATION of the runConfigs
+    # TODO: actually, this is pretty pointless here, do this during CREATION of the runConfigs and DELETE THIS FUNCTION
     def pathAlMatrix(self):
         self.__checkMinimum__()
 
