@@ -121,8 +121,6 @@ def runAligners(runConfig, threadID=None):
     print(f'Module Align: {stages[1]}')
     print(f'Target Align: {stages[2]}')
 
-    externalMatPath = Path(runConfig.sensorAlignExternalMatrixPath)
-
     sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
@@ -146,7 +144,7 @@ def runAligners(runConfig, threadID=None):
         print(f'        running sensor aligner')
         print(f'\n====================================\n')
         sensorAligner = alignerSensors.fromRunConfig(runConfig)
-        sensorAligner.loadExternalMatrices(externalMatPath)
+        sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath) # TODO: do implicitly, aligners always start with a run config
         sensorAligner.sortPairs()
         sensorAligner.findMatrices()
         sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
@@ -159,8 +157,8 @@ def runAligners(runConfig, threadID=None):
         print(f'        running module aligner')
         print(f'\n====================================\n')
         moduleAligner = alignerModules.fromRunConfig(runConfig)
-        moduleAligner.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
-        moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)
+        moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile) # TODO: do implicitly, aligners always start with a run config
+        moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile) # TODO: do implicitly, aligners always start with a run config
         moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
         moduleAligner.readTracks(moduleAlignTrackFile)
         moduleAligner.alignModules()
@@ -213,6 +211,176 @@ def runAligners(runConfig, threadID=None):
     print(f'Wrote merged alignment matrices to {mergedAlignerResultName}')
     print(f'Thread {threadID} done!')
 
+
+def runCombi(runConfig, threadID=None):
+    """ 
+    This function runs the entire simulation chain and perfomrs all three alignments in order. Also fits the luminosity at each intermediate step.
+
+    runConfig: holds MISalign matrix, misalign type and factor
+    """
+
+    #* ---------- prepare config (aligner stages, combi mat names etc)
+    if runConfig.alignmentCorrection or runConfig.misalignType != 'combi':
+        print(f'Please only use UNcorrected combi runConfigs, this run does the rest')
+        return
+
+    # actually, stages should be irrelevant here, they were an ungly hack anyway
+    stages = runConfig.stages
+    print(f'Thread {threadID}: starting!')
+    print(f'Stages:')
+    print(f'Sensor Align: {stages[0]}')
+    print(f'Module Align: {stages[1]}')
+    print(f'Target Align: {stages[2]}')
+
+    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
+    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
+    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
+    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
+    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi0.json')
+    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi1.json')
+    # combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi2.json')
+    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi3.json')
+    moduleAlignDataPath = runConfig.pathTrksQA()
+    moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
+
+    # create logger
+    thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-combi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
+
+    #* ---------- first sim
+    
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadNumber = threadID
+    prealignWrapper.logger = thislogger
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+    # ---------- perform lumi fit
+    prealignWrapper.detLumi()                  # not blocking
+    prealignWrapper.waitForJobCompletion()     # waiting
+    prealignWrapper.extractLumi()              # blocking
+
+
+    #* ---------- align sensors
+    # create alignerSensors, run
+    print(f'\n====================================\n')
+    print(f'        running sensor aligner')
+    print(f'\n====================================\n')
+    sensorAligner = alignerSensors.fromRunConfig(runConfig)
+    sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath) # TODO: do implicitly, aligners always start with a run config
+    sensorAligner.sortPairs()
+    sensorAligner.findMatrices()
+    sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
+    sensorAligner.combineAlignmentMatrices()
+    sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+
+    # make intermediate result 0
+    with open(sensorAlignerResultName, 'r') as f:
+        resSensors = json.load(f)
+    combi0Result = {**resSensors}
+    with open(combi0Name, 'w') as f:
+        json.dump(combi0Result, f, indent=2, sort_keys=True)
+    runConfig.combiMat(combi0Name)
+
+    #! ========== Sensors are now aligned
+
+    #* ---------- half run again, use sensor Align Matrix (combi0)
+    # enable correction this time
+    runConfig.alignmentCorrection = True
+    # force cut off, otherwise too many tracks will be discarded
+    runConfig.forDisableCut = True
+    
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadNumber = threadID
+    prealignWrapper.logger = thislogger
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+    # ---------- don't perform lumi fit
+    # prealignWrapper.detLumi()                  # not blocking
+    # prealignWrapper.waitForJobCompletion()     # waiting
+    # prealignWrapper.extractLumi()              # blocking
+
+    #* ---------- align modules
+    print(f'\n====================================\n')
+    print(f'        running module aligner')
+    print(f'\n====================================\n')
+    moduleAligner = alignerModules.fromRunConfig(runConfig)
+    moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)    # TODO: do implicitly, aligners always start with a run config
+    moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile) # TODO: do implicitly, aligners always start with a run config
+    moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
+    moduleAligner.readTracks(moduleAlignTrackFile)
+    moduleAligner.alignModules()
+    moduleAligner.saveMatrices(moduleAlignerResultName)
+
+    # make intermediate result 1
+    with open(sensorAlignerResultName, 'r') as f:
+        resSensors = json.load(f)
+    with open(moduleAlignerResultName, 'r') as f:
+        resModules = json.load(f)
+    combi1Result = {**resSensors, **resModules}
+    with open(combi1Name, 'w') as f:
+        json.dump(combi1Result, f, indent=2, sort_keys=True)
+    runConfig.combiMat(combi1Name)
+
+    #! ========== Modules are now aligned
+
+    #* ---------- half run again
+    # this thime, we need the cut
+    runConfig.forDisableCut = False
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadNumber = threadID
+    prealignWrapper.logger = thislogger
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+    # ---------- perform lumi fit, for posterity
+    prealignWrapper.detLumi()                  # not blocking
+    prealignWrapper.waitForJobCompletion()     # waiting
+    prealignWrapper.extractLumi()              # blocking
+
+    #* ---------- align IP, last combi result
+    print(f'\n====================================\n')
+    print(f'        running box rotation aligner')
+    print(f'\n====================================\n')
+    IPaligner = alignerIP.fromRunConfig(runConfig)
+    IPaligner.logger = thislogger
+    IPaligner.computeAlignmentMatrix()
+    IPaligner.saveAlignmentMatrix(IPalignerResultName)
+
+    # make intermediate result 3
+    with open(sensorAlignerResultName, 'r') as f:
+        resSensors = json.load(f)
+    with open(moduleAlignerResultName, 'r') as f:
+        resModules = json.load(f)
+    with open(IPalignerResultName, 'r') as f:
+        resIPalign = json.load(f)
+    combi3Result = {**resSensors, **resModules, **resIPalign}
+    with open(combi3Name, 'w') as f:
+        json.dump(combi3Result, f, indent=2, sort_keys=True)
+    runConfig.combiMat(combi3Name)
+
+    #! ========== ALL is now aligned
+
+    #* ---------- FINAL run and lumi fit
+    # this thime, we need the cut
+    runConfig.forDisableCut = False
+    # create simWrapper from config
+    prealignWrapper = simWrapper.fromRunConfig(runConfig)
+    prealignWrapper.threadNumber = threadID
+    prealignWrapper.logger = thislogger
+    # run all
+    prealignWrapper.runSimulations()           # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()     # blocking
+    # ---------- perform lumi fit
+    prealignWrapper.detLumi()                  # not blocking
+    prealignWrapper.waitForJobCompletion()     # waiting
+    prealignWrapper.extractLumi()              # blocking
+    print(f'=================================')
+    print(f'== REJOICE, COMBI RUN IS DONE! ==')
+    print(f'=================================')
 
 def runExtractLumi(runConfig, threadID=None):
 
@@ -644,8 +812,11 @@ if __name__ == "__main__":
     parser.add_argument('-a', metavar='--alignConfig', type=str, dest='alignConfig', help='find all alignment matrices (IP, corridor, sensors) for runConfig')
     parser.add_argument('-A', metavar='--alignConfigPath', type=str, dest='alignConfigPath', help='same as -a, but for all Configs in specified path')
 
-    parser.add_argument('-half', metavar='--halfRunConfig', type=str, dest='halfRunConfig', help='Do a half run (simulate/reconstruct data and determine Luminosity)')
-    parser.add_argument('-HALF', metavar='--halfRunConfigPath', type=str, dest='halfRunConfigPath', help='same as -f, but for all Configs in specified path')
+    parser.add_argument('--combi', metavar='--combiRunConfig', type=str, dest='combiRunConfig', help='Do a combi run (all misalignments, all alignments in sequence)')
+    parser.add_argument('--COMBI', metavar='--combiRunConfigPath', type=str, dest='combiRunConfigPath', help='same as --combi, but for all Configs in specified path')
+
+    parser.add_argument('--half', metavar='--halfRunConfig', type=str, dest='halfRunConfig', help='Do a half run (simulate/reconstruct data and determine Luminosity)')
+    parser.add_argument('--HALF', metavar='--halfRunConfigPath', type=str, dest='halfRunConfigPath', help='same as --half, but for all Configs in specified path')
 
     parser.add_argument('-f', metavar='--fullRunConfig', type=str, dest='fullRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
     parser.add_argument('-F', metavar='--fullRunConfigPath', type=str, dest='fullRunConfigPath', help='same as -f, but for all Configs in specified path')
@@ -945,6 +1116,23 @@ if __name__ == "__main__":
         startLogToFile('SimRecoMulti')
         args.configPath = args.simulationConfigPath
         runConfigsMT(args, runSimRecoLumi)
+        done()
+
+    # ? =========== combi run, single config
+    if args.combiRunConfig:
+        config = LMDRunConfig.fromJSON(args.combiRunConfig)
+        if args.debug:
+            config.useDebug = True
+        else:
+            startLogToFile('Combi')
+        runCombi(config, 99)
+        done()
+
+    # ? =========== combi run, multiple configs
+    if args.combiRunConfigPath:
+        startLogToFile('Combi')
+        args.configPath = args.combiRunConfigPath
+        runConfigsMT(args, runCombi)
         done()
 
     # ? =========== half run, single config
