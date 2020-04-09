@@ -284,6 +284,8 @@ def runCombi(runConfig, threadID=None):
 
     #! ========== Sensors are now aligned
 
+    #TODO: MAYBE the track, reco and recoMerged files have to be deleted befire this step, and again after module alignment. fuck me if I know, but I'll see soon enough.
+
     #* ---------- half run again, use sensor Align Matrix (combi0)
     # enable correction this time
     runConfig.alignmentCorrection = True
