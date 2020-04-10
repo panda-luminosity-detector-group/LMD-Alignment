@@ -280,7 +280,7 @@ def runCombi(runConfig, threadID=None):
     combi0Result = {**resSensors}
     with open(combi0Name, 'w') as f:
         json.dump(combi0Result, f, indent=2, sort_keys=True)
-    runConfig.combiMat(combi0Name)
+    runConfig.combiMat = combi0Name
 
     #! ========== Sensors are now aligned
 
@@ -324,7 +324,7 @@ def runCombi(runConfig, threadID=None):
     combi1Result = {**resSensors, **resModules}
     with open(combi1Name, 'w') as f:
         json.dump(combi1Result, f, indent=2, sort_keys=True)
-    runConfig.combiMat(combi1Name)
+    runConfig.combiMat = combi1Name
 
     #! ========== Modules are now aligned
 
@@ -362,7 +362,7 @@ def runCombi(runConfig, threadID=None):
     combi3Result = {**resSensors, **resModules, **resIPalign}
     with open(combi3Name, 'w') as f:
         json.dump(combi3Result, f, indent=2, sort_keys=True)
-    runConfig.combiMat(combi3Name)
+    runConfig.combiMat = combi3Name
 
     #! ========== ALL is now aligned
 
