@@ -128,7 +128,7 @@ class simWrapper:
         returnVal = subprocess.check_output(subProcessCommandTuple, cwd=scriptsPath, env=my_env).decode(sys.stdout.encoding)
 
         self.logger.log(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n')
-        self.logger.log(f'\n\n========= Done!.\n')
+        self.logger.log(f'\n\n========= Done!\n')
         self.logger.log(f'\n\n========= Jobs submitted, waiting for them to finish...\n')
         self.getJobIDfromSubmitOutput(returnVal)
 

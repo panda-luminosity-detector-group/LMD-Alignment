@@ -351,9 +351,9 @@ def runCombi(runConfig, threadID=None):
     prealignWrapper.extractLumi()              # blocking
 
     #* ---------- align IP, last combi result
-    print(f'\n====================================\n')
-    print(f'        running box rotation aligner')
-    print(f'\n====================================\n')
+    print(f'\n============================================\n')
+    print(f'        running box rotation aligner        ')
+    print(f'\n============================================\n')
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
@@ -370,6 +370,7 @@ def runCombi(runConfig, threadID=None):
     with open(combi3Name, 'w') as f:
         json.dump(combi3Result, f, indent=2, sort_keys=True)
     runConfig.combiMat = combi3Name
+    runConfig.generateMatrixNames()     # this should update to combi0, combi1 etc
 
     #! ========== ALL is now aligned
 

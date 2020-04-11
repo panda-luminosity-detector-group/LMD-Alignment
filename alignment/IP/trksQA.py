@@ -27,6 +27,7 @@ def getIPfromTrksQA(filename, cut=2.0, sensor=-1, module=-1, plane=-1, half=-1):
 
             for key in clean:
                 resultDict[key] = np.append(resultDict[key], clean[key], axis=0)
+        print(f'All files read! Performing IP alignment.')
 
     except Exception as e:
         print('error occured:')
