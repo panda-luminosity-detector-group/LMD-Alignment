@@ -126,10 +126,10 @@ def runAligners(runConfig, threadID=None):
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
     mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
-    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi0.json')
-    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi1.json')
-    combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi2.json')
-    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi3.json')
+    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen.json')
+    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod.json')
+    combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP.json')
+    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP.json')
 
     moduleAlignDataPath = runConfig.pathTrksQA()
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
@@ -236,13 +236,12 @@ def runCombi(runConfig, threadID=None):
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
-    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi0.json')
-    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi1.json')
-    # combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi2.json')
-    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combi3.json')
-    moduleAlignDataPath = runConfig.pathTrksQA()
-    moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
+    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen.json')
+    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod.json')
+    # combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP.json')
+    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP.json')
 
+    
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-combi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
 
@@ -284,13 +283,14 @@ def runCombi(runConfig, threadID=None):
 
     #! ========== Sensors are now aligned
 
-    #TODO: MAYBE the track, reco and recoMerged files have to be deleted befire this step, and again after module alignment. fuck me if I know, but I'll see soon enough.
+    #TODO: MAYBE the track, reco and recoMerged files have to be deleted before this step, and again after module alignment. fuck me if I know, but I'll see soon enough.
 
     #* ---------- half run again, use sensor Align Matrix (combi0)
     # enable correction this time
     runConfig.alignmentCorrection = True
     # force cut off, otherwise too many tracks will be discarded
     runConfig.forDisableCut = True
+    runConfig.generateMatrixNames()     # this should update to combi0, combi1 etc
     
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -308,6 +308,12 @@ def runCombi(runConfig, threadID=None):
     print(f'\n====================================\n')
     print(f'        running module aligner')
     print(f'\n====================================\n')
+
+    # prepare paths, don't do this earlier!
+    runConfig.generateMatrixNames()     # this should update to combi0, combi1 etc
+    moduleAlignDataPath = runConfig.pathTrksQA()
+    moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
+    
     moduleAligner = alignerModules.fromRunConfig(runConfig)
     moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)    # TODO: do implicitly, aligners always start with a run config
     moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile) # TODO: do implicitly, aligners always start with a run config
@@ -325,6 +331,7 @@ def runCombi(runConfig, threadID=None):
     with open(combi1Name, 'w') as f:
         json.dump(combi1Result, f, indent=2, sort_keys=True)
     runConfig.combiMat = combi1Name
+    runConfig.generateMatrixNames()     # this should update to combi0, combi1 etc
 
     #! ========== Modules are now aligned
 

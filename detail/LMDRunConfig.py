@@ -393,7 +393,7 @@ class LMDRunConfig:
 
     def __alignCorrectionSubDir__(self):
         if self.__alignmentCorrection:
-            return Path(f'aligned-{Path(self.__alignMatFile).stem}')
+            return Path(f'aligned-{Path(self.__alignMatFile).stem}')    # TODO: this must also reflect combi case!
         else:
             return Path('no_alignment_correction')
 
