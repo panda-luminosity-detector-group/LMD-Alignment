@@ -18,6 +18,8 @@ alignerStages = [
     [False, False, False]
 ]
 
+combiName = ['combiSen', 'combiSenMod', 'combiSenIP', 'combiSenModIP']
+
 if __name__ == "__main__":
     for i in range(4):
         for mom in ['1.5', '4.06', '8.9', '11.91', '15.0']:
@@ -27,7 +29,7 @@ if __name__ == "__main__":
                 fileName = f'runConfigs/corrected/combi/{mom}/factor-{fac}.json'
                 config = LMDRunConfig.fromJSON(fileName)
                 alMatPath = config.pathAlMatrixPath()
-                matFile = str(Path(alMatPath) / Path(f'alMat-combi{i}.json'))
+                matFile = str(Path(alMatPath) / Path(f'alMat-{combiName[i]}.json'))
                 
                 # change alignment matrix
                 config.combiMat = matFile
@@ -38,6 +40,6 @@ if __name__ == "__main__":
                     config.forDisableCut = True
                 
                 # save to new dir
-                destPath = Path(f'runConfigs/special/combi{i}/{mom}/factor-{fac}.json')
+                destPath = Path(f'runConfigs/special/{combiName[i]}/{mom}/factor-{fac}.json')
                 destPath.parent.mkdir(exist_ok=True, parents=True)
                 config.toJSON(destPath)
