@@ -64,7 +64,8 @@ class LumiValGraph(LumiValDisplay):
         values = []
 
         # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/') # used to be roklasen here too, what was that about?
-        remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/') # used to be roklasen here too, what was that about?
+        #remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/') #! this is the usual path directly after simulations have run
+        remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL') #! this is the hand-picked path (results from different run sets)
 
         self.corrected = self.configs[0].alignmentCorrection
         self.misalignType = self.configs[0].misalignType
@@ -156,10 +157,12 @@ class LumiValGraph(LumiValDisplay):
             ax.errorbar(values[:,0], values[:,1], yerr=values[:,2], fmt='d', ecolor='black', capsize=2, elinewidth=0.6)
 
             # Adding plotting parameters
-            if self.corrected:
-                ax.set_title(titlesCorr[i])
-            else:
-                ax.set_title(titlesUncorr[i])
+            # no titles anymore
+            if False:
+                if self.corrected:
+                    ax.set_title(titlesCorr[i])
+                else:
+                    ax.set_title(titlesUncorr[i])
 
             ax.set_xlabel(f'Misalign Factor')
             # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
@@ -236,10 +239,12 @@ class LumiValGraph(LumiValDisplay):
                 colorI += 1
 
             # Adding plotting parameters
-            if self.corrected:
-                ax.set_title(titlesCorr[i])
-            else:
-                ax.set_title(titlesUncorr[i])
+            # no titles anymore
+            if False:
+                if self.corrected:
+                    ax.set_title(titlesCorr[i])
+                else:
+                    ax.set_title(titlesUncorr[i])
 
             ax.set_xlabel(f'Misalign Factor')
             # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')

@@ -413,7 +413,7 @@ class LMDRunConfig:
             return Path(result[0])
         else:
             if self.useDebug:
-                print(f'DEBUG: can\'t find resolve path on file system, returning globbed path!')
+                print(f'DEBUG: can\'t find resolve path on file system, returning globbed path:\n{globbedPath}\n')
             return globbedPath
 
     #! --------------------- create paths to matrices, json results

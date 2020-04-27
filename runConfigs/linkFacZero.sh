@@ -46,27 +46,27 @@ ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.
 ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/corrected/combi/11.91/factor-0.00.json
 ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/corrected/combi/15.0/factor-0.00.json
 
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi0/1.5/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi1/1.5/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi2/1.5/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi3/1.5/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSen/1.5/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenMod/1.5/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenIP/1.5/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenModIP/1.5/factor-0.00.json
 
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi0/4.06/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi1/4.06/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi2/4.06/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi3/4.06/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSen/4.06/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenMod/4.06/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenIP/4.06/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenModIP/4.06/factor-0.00.json
 
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi0/8.9/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi1/8.9/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi2/8.9/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi3/8.9/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSen/8.9/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenMod/8.9/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenIP/8.9/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenModIP/8.9/factor-0.00.json
 
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi0/11.91/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi1/11.91/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi2/11.91/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi3/11.91/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSen/11.91/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenMod/11.91/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenIP/11.91/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenModIP/11.91/factor-0.00.json
 
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi0/15.0/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi1/15.0/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi2/15.0/factor-0.00.json
-ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combi3/15.0/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSen/15.0/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenMod/15.0/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenIP/15.0/factor-0.00.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenModIP/15.0/factor-0.00.json
