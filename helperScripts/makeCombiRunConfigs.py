@@ -29,7 +29,7 @@ if __name__ == "__main__":
                 fileName = f'runConfigs/corrected/combi/{mom}/factor-{fac}.json'
                 config = LMDRunConfig.fromJSON(fileName)
                 alMatPath = config.pathAlMatrixPath()
-                matFile = str(Path(alMatPath) / Path(f'alMat-{combiName[i]}.json'))
+                matFile = str(Path(alMatPath) / Path(f'alMat-{combiName[i]}-{fac}.json'))
                 
                 # change alignment matrix
                 config.combiMat = matFile

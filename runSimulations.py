@@ -125,11 +125,11 @@ def runAligners(runConfig, threadID=None):
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
-    mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged.json')
-    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen.json')
-    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod.json')
-    combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP.json')
-    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP.json')
+    mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged-{runConfig.misalignFactor}.json')
+    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen-{runConfig.misalignFactor}.json')
+    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod-{runConfig.misalignFactor}.json')
+    combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP-{runConfig.misalignFactor}.json')
+    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-{runConfig.misalignFactor}.json')
 
     moduleAlignDataPath = runConfig.pathTrksQA()
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
@@ -236,10 +236,10 @@ def runCombi(runConfig, threadID=None):
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
     IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
-    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen.json')
-    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod.json')
-    # combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP.json')
-    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP.json')
+    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen-{runConfig.misalignFactor}.json')
+    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod-{runConfig.misalignFactor}.json')
+    # combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP-{runConfig.misalignFactor}.json')
+    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-{runConfig.misalignFactor}.json')
 
     
     # create logger
