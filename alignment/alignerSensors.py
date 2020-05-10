@@ -47,7 +47,9 @@ class alignerSensors:
 
         self.availableOverlapIDs = self.getOverlapsFromJSON()
         self.overlapMatrices = {}
-        self.alignmentMatrices = {}                                                      # dictionary overlapID: matrix
+        self.alignmentMatrices = {}          
+        self.maxPairs = 6e5         
+        self.dCut = 1.0                                   # dictionary overlapID: matrix
         self.lock = Lock()
 
     @classmethod
@@ -80,8 +82,10 @@ class alignerSensors:
     def findSingleMatrix(self, overlapID, numpyPath):
 
         matrixFinder = sensorMatrixFinder(overlapID)
+        matrixFinder.maxPairs = self.maxPairs
         matrixFinder.idealOverlapInfos = self.idealOverlapInfos
         matrixFinder.idealDetectorMatrices = self.idealDetectorMatrices
+        matrixFinder.dCut = self.dCut
         matrixFinder.readNumpyFiles(numpyPath)
         matrixFinder.findMatrix()
 
@@ -91,9 +95,12 @@ class alignerSensors:
         with self.lock:
             self.overlapMatrices[overlapID] = matrix
 
-    def findMatrices(self):
+    def findMatrices(self, pairPath = None, nPairs=0):
         # setup paths
-        numpyPath = self.config.pathTrksQA() / Path('npPairs')
+        if pairPath is None:
+            numpyPath = self.config.pathTrksQA() / Path('npPairs')
+        else:
+            numpyPath = Path(pairPath)
 
         if self.config.useDebug:
             print(f'Finding matrices single-threaded!')
@@ -102,7 +109,7 @@ class alignerSensors:
 
         else:
             maxThreads = 16
-            print('Waiting for all Sensor Aligners...')
+            print(f'Waiting for all Sensor Aligners, using {self.maxPairs} pairs on each sensor...')
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
                 for overlapID in self.availableOverlapIDs:

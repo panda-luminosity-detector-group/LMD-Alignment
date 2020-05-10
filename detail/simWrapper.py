@@ -75,6 +75,11 @@ class simWrapper:
         if self.config is None:
             self.logger.log(f'please set run config first!\n')
 
+        # export force-disable cut (yes I know this is incredibly ugly)
+        if self.config.forDisableCut:
+            self.logger.log(f'Disabling track cuts!')
+            os.environ['force_cut_disable'] = 'True'    # oh my god this is so ugly
+
         self.logger.log(f'\n\n========= Running ./doSimulationReconstruction.\n')
         print(f'\n\n========= Running ./doSimulationReconstruction, please wait.\n')
 
@@ -119,11 +124,11 @@ class simWrapper:
 
         if self.config.useDebug:
             self.logger.log(f'DEBUG: run command tuple is {subProcessCommandTuple}')
-
-        returnVal = subprocess.check_output(subProcessCommandTuple, cwd=scriptsPath).decode(sys.stdout.encoding)
+        my_env = os.environ.copy()
+        returnVal = subprocess.check_output(subProcessCommandTuple, cwd=scriptsPath, env=my_env).decode(sys.stdout.encoding)
 
         self.logger.log(f'\n============ RETURNED:\n{returnVal}\n============ END OF RETURN\n')
-        self.logger.log(f'\n\n========= Done!.\n')
+        self.logger.log(f'\n\n========= Done!\n')
         self.logger.log(f'\n\n========= Jobs submitted, waiting for them to finish...\n')
         self.getJobIDfromSubmitOutput(returnVal)
 

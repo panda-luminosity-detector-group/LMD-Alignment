@@ -58,6 +58,22 @@ You can also create them by hand, which might be useful if you want to add misal
 
 All other neccessary field *should* get be generaterd automatically, but only at run-time. After that, you can read them using any simulation type. Note however that some important values will only reside in memory and are not stored to the run config, like paths for (mis)alignment matrices. If you wnt to store them to the run config as well, execute `./runSimulations.py --updateRunConfigs`.
 
+## Special Case: combi misalignment
+
+Combi misalignment incorporates all three previous misalignments, sensors, modules and box rotation. Software alignment of each individual misalignment type works rathe well, but combinations (such as they will occur on the final detector) are more complicated. The alignment process always performs all three and saves all three matrices. But the order is important: if the sensors are misaligned, module alignment will produce incorrect matrices. Sensor alignment must therefore be done separately, and the sensor alignment matrices must already be in use during module alignment. I don't yet know how IP alignment plays into this, that's why I'm trying all combinations.
+
+They are then merged in various combinations:
+
+- alMat-merged.json | All alignment matrices. After the first run with misaligned sensors AND misaligned modules, only the sensor alignment will have worked.
+- combi0 | this is only the sensor alignment matrices. a second run must be done to perform module alignment.
+- combi1 | sensor + module alignment matrices. 
+- combi2 | sensor + box rot alignment matrices. 
+- combi3 | all matrices, just like alMat-merged. this is for verbosity, to see if the order (after sensor alignment) matters.
+
+So, the runConfigs for those are not created automatically but must be created with `helperScripts/makeCombiRunConfigs.py` for now.
+
+They must also be called in sequence, the combi0 configs *must* be run before any other. I think SLURM supports job dependencies, but I don't know how yet.
+
 # TODO: Add parameters to runConfig
 
 - Add tracks/event to runConfig and simulation, should work with 1 - 10!

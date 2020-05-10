@@ -38,13 +38,20 @@ class trackReader():
         print(f'reading from {filename}...')
         with open(filename, 'r') as infile:
             self.trks = json.load(infile)['events']
-            print('file successfully read!')
+            print(f'file successfully read, found {len(self.trks)} tracks!')
 
         # list comprehension to filter tracks with no momentum from this dict
+        print('removing broken tracks...')
+        self.trks = [ x for x in self.trks if all(x['trkMom'])]
+        self.trks = [ x for x in self.trks if all(x['trkPos'])]
+
         print('removing empty tracks...')
         self.trks = [ x for x in self.trks if np.linalg.norm(x['trkMom']) != 0 ]
         
         notEnoughRecos = 0
+        sectorCrossing = 0
+
+        removeSectorCrossing = False
 
         # find sector crossing tracks
         print('removing sector-crossing tracks...')
@@ -70,15 +77,24 @@ class trackReader():
                 path = self.getPathModuleFromSensorID(sensor)
                 _, _, _, sector = self.getParamsFromModulePath(path)
                 
-                if sector != firstSec:
+                if (sector != firstSec) and removeSectorCrossing:
                     track['valid'] = False
+                    sectorCrossing += 1
                     break
         
         # actually remove
         print(f'all tracks: {len(self.trks)}')
         self.trks = [ x for x in self.trks if x['valid'] ]
-        print(f'pre-processing done, discarded {notEnoughRecos}, {len(self.trks)} tracks remaining!')
-                
+        print(f'pre-processing done, discarded:\nLess than four recos: {notEnoughRecos}\nSector crosssing: {sectorCrossing}\n==>\n{len(self.trks)} tracks remaining!\n\n')
+
+        # dump tracks to disk as np file
+        np.save('output/residualVsTrks/tracks.npy', self.trks, allow_pickle=True)
+
+    def readTracksFromNPY(self, filename):
+        print(f'reading tracks from NPY file {filename}')
+        self.trks = np.load(filename, allow_pickle=True)
+        print(f'done!')
+
     # this reads detector parameters and sets up several dicts for fast loop ups
     def readDetectorParameters(self):
         with open(Path('input/detectorOverlapsIdeal.json')) as inFile:

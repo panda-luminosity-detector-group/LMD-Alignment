@@ -133,7 +133,10 @@ class alignerIP:
         ipApparent = getIPfromTrksQA(str(trksQAfile))
 
         # FIXME later: read from config or PANDA db/survey
-        ipActual = np.array([0.0, 0.0, 0.0, 1.0])
+        # ipActual = np.array([0.0, 0.0, 0.0, 1.0])
+
+        # this is from empirical data
+        ipActual = np.array([-0.023392, 0.00718, 0.004023, 1.0])
 
         self.logger.log(f'IP apparent:\n{ipApparent}\n')
         self.logger.log(f'IP actual:\n{ipActual}\n')

@@ -23,6 +23,7 @@ class sensorMatrixFinder:
         self.overlapMatrix = None
         self.idealDetectorMatrices = {}
         self.maxPairs = 6e5
+        self.dCut = 1.0
 
     def readNumpyFiles(self, path):
 
@@ -41,7 +42,7 @@ class sensorMatrixFinder:
         self.PairData = np.transpose(self.PairData)
 
         # apply dynamic cut
-        self.PairData = self.dynamicCut(self.PairData, 2)
+        self.PairData = self.dynamicCut(self.PairData, self.dCut)
 
     def dynamicCut(self, hitPairs, cutPercent=2):
 

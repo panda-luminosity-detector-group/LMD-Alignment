@@ -8,27 +8,6 @@ from threading import Thread
 
 """
 
-full path data misalignment:
-/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/100000/1-1500_uncut_misalignMatrices-SensorsOnly-100/Pairs
-
-full path no data misalignment:
-/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/100000/1-1500_uncut_no_data_misalignment/Pairs
-
-full path no geo misalignment:
-/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/no_geo_misalignment/100000/1-1500_uncut/Pairs
-
-full path with geo misalignment:
-/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisalignMatrices-SensorsOnly-100/100000/1-1500_uncut/Pairs
-
-hint: use * for some paths like 10000 and 1-1500
-
-copy (if not there):
-cp ../../mc_data/Lumi_MC_1000000.root ../../mc_data/Lumi_Params_1000000.root .
-
-NAY. don't copy, change the macros for that.
-"""
-
-"""
 Minimal Thread Pool implementation from https://www.metachris.com/2016/04/python-threadpool/
 """
 

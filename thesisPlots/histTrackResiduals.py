@@ -73,6 +73,10 @@ def doit():
             newTracks[i, 4, :3] = allTracks[i]['recoHits'][2]['pos']
             newTracks[i, 5, :3] = allTracks[i]['recoHits'][3]['pos']
 
+        newTracks = newTracks[:900000]
+        nTrks = len(newTracks)
+        print(f'I will now plot {len(newTracks)} tracks.')
+
         if useCut and True:
             newTracks = dynamicRecoTrackDistanceCut(newTracks, 0.5)
             nTrks = len(newTracks)
@@ -116,7 +120,7 @@ def doit():
         fig, axs = plt.subplots(1, 4, sharex=True, sharey=True)
 
         scaleFact = 1e4
-        myLimit = 220
+        myLimit = 4200
         myRange = ((-myLimit,myLimit), (-myLimit,myLimit))
         bins = 150
         xunit = f'dx [{latexmu}m]'

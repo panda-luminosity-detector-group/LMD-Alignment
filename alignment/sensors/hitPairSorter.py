@@ -86,6 +86,18 @@ class hitPairSorter:
 
     def sortAll(self):
 
+        # check if all files are already there
+        allThere = True
+        for ID in self.availableOverlapIDs:
+            fileName = self.targetDir / Path(f'pairs-{ID}.npy')
+            if not Path(fileName).exists():
+                allThere = False
+                break
+
+        if allThere:
+            print(f'All npy files already present in {self.targetDir}, skipping sorter!')
+            return
+
         if self.sortInMemory:
             self.npyOutputDir = self.shmDir / Path(f'pairSorter/{self.seed}')
             self.npyOutputDir.mkdir(exist_ok=True, parents=True)
@@ -105,18 +117,6 @@ class hitPairSorter:
 
         for ID in self.availableOverlapIDs:
             fileContents[ID] = np.empty((7, 0))
-
-        # check if all files are already there
-        allThere = True
-        for ID in self.availableOverlapIDs:
-            fileName = self.npyOutputDir / Path(f'pairs-{ID}.npy')
-            if not Path(fileName).exists():
-                allThere = False
-                break
-
-        if allThere:
-            print(f'All npy files already present in {self.npyOutputDir}, skipping sorter!')
-            return
 
         print('Sorting HitPairs .', end='', flush=True)
 
