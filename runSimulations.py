@@ -66,6 +66,8 @@ it:
 - rerun ./determineLuminosity
 - rerun ./extractLuminosity
 
+# TODO: remove combiMat and stages, you don't actually need them. a single runCombi function does this work now.
+
 """
 
 

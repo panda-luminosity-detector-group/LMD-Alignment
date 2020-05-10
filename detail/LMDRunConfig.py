@@ -14,6 +14,12 @@ pathlib wrapper specifically for our LMD case. a config object only hold the par
 
 uses pathlib internally and stores some additional values as well:
 
+# TODO: remove combiMat and stages, you don't actually need them. a single runCombi function does this work now.
+
+# TODO: this thing was a huge mistake. all those hidden variabled don't need to be hidden and getters and setters are so no neccessary. just make everything a dict entry and be done with it.
+
+TODO: oh and ffs don't auto generate matrix names. just set them at creation time and let the user change them. wtf were you thinking.
+
 - alignment matrix used
 - misalignment matrix used
 - alignment factor
@@ -90,18 +96,23 @@ class LMDRunConfig:
     def __eq__(self, other):
         return (not self < other) and (not other < self)
 
-    #! --------------------- getters without setters
+    #! --------------------- getters and setters
 
     def __getAlMatFile(self):
         return self.__alignMatFile
 
+    def __setAlMatFile(self, value):
+        self.__alignMatFile = value
+
+    alMatFile = property(__getAlMatFile, __setAlMatFile)
+
     def __getMisMatFile(self):
         return self.__misalignMatFile
 
-    alMatFile = property(__getAlMatFile, None)
-    misMatFile = property(__getMisMatFile, None)
+    def __setMisMatFile(self, value):
+        self.__misalignMatFile = value
 
-    #! --------------------- getters and setters
+    misMatFile = property(__getMisMatFile, __setMisMatFile)
 
     def setAlMat(self, matPath):
         self.__alignMatFile = matPath
@@ -235,6 +246,7 @@ class LMDRunConfig:
         temp.__misalignType = misalignType
         return temp
 
+    # TODO: you never once used this function. may as well just delete it.
     def parseFromString(self):
         pathParts = Path(self.__fromPath).parts
 
@@ -305,6 +317,7 @@ class LMDRunConfig:
                 self.__alignMatFile = str(self.pathAlMatrix())
 
     #! --------------------- upadte env paths, for example when migrating to a different system
+    # TODO: remove once the whole autogen stuff is gone
     def updateEnvPaths(self):
         alignmentDir = 'LMD_ALIGNMENT_DIR'
         pndRootDir = 'VMCWORKDIR'
@@ -328,6 +341,7 @@ class LMDRunConfig:
 
     #! --------------------- generate matrix name after minimal initialization
 
+    # TODO: nope, just nope. remove and set during creation.
     def generateMatrixNames(self):
         if self.__misalignType is None or self.__misalignFactor is None or self.__momentum is None:
             print(f'ERROR! not enough parameters set!')
@@ -339,6 +353,9 @@ class LMDRunConfig:
 
         self.__misalignMatFile = str(self.pathMisMatrix())
         self.__alignMatFile = str(self.pathAlMatrix())
+        self.generateJobBaseDir()
+
+    def generateJobBaseDir(self):
         self.__JobBaseDir = str(self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()))
 
     #! --------------------- serialization, deserialization
@@ -385,7 +402,8 @@ class LMDRunConfig:
         if self.__misalignType == 'aligned':
             return Path('no_geo_misalignment')
         else:
-            return Path(f'geo_misalignmentmisMat-{self.__misalignType}-{self.__misalignFactor}')
+            # return Path(f'geo_misalignmentmisMat-{self.__misalignType}-{self.__misalignFactor}')
+            return Path(f'geo_misalignment{str(Path(self.__misalignMatFile).stem)}')
 
     def __pathTracksNum__(self):
         return Path(self.__tracksNum)
@@ -433,6 +451,7 @@ class LMDRunConfig:
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
 
+    # TODO: jesus christ just no. no no no no. delete this too.
     # TODO: actually, this is pretty pointless here, do this during CREATION of the runConfigs and DELETE THIS FUNCTION
     def pathAlMatrix(self):
         self.__checkMinimum__()
@@ -464,6 +483,7 @@ class LMDRunConfig:
             elif self.__misalignType == 'combi':
                 return self.combiMat
 
+    # TODO: no, just return stored value
     def pathMisMatrix(self):
         self.__checkMinimum__()
         return self.__resolveActual__(
@@ -494,7 +514,7 @@ class LMDRunConfig:
         return self.__resolveActual__(self.__jobBaseDir__())
 
     #! --------------------- verbose output
-
+    # TODO: this may just be the single useful function here. tidy it up!
     def dump(self):
         result = ''
         result += (f'\n\n')

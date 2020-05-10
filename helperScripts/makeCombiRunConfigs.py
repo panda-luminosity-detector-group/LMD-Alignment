@@ -4,17 +4,19 @@ This script reads the current combi runConfigs and makes three sets with differe
 Combi needs all alignments, but in different orders.
 """
 
+import os
 import sys
 sys.path.insert(0, '.')
 import json
 from detail.LMDRunConfig import LMDRunConfig
 from pathlib import Path
 
-alignerStages = [[False, True, True], [False, False, True], [False, True, False], [False, False, False]]
+# TODO: remove combiMat and stages, you don't actually need them. a single runCombi function does this work now.
 
-combiName = ['combiSen', 'combiSenMod', 'combiSenIP', 'combiSenModIP']
-
-if __name__ == "__main__":
+def copyCombiToSpecial():
+    alignerStages = [[False, True, True], [False, False, True], [False, True, False], [False, False, False]]
+    combiName = ['combiSen', 'combiSenMod', 'combiSenIP', 'combiSenModIP']
+    
     for i in range(4):
         for mom in ['1.5', '4.06', '8.9', '11.91', '15.0']:
             for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50']:  #, '3.00']:
@@ -37,3 +39,37 @@ if __name__ == "__main__":
                 destPath = Path(f'runConfigs/special/{combiName[i]}/{mom}/factor-{fac}.json')
                 destPath.parent.mkdir(exist_ok=True, parents=True)
                 config.toJSON(destPath)
+
+
+def copyCombiToMultiSeed():
+    for mom in ['1.5', '4.06', '8.9', '11.91', '15.0']:
+        for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50']:
+
+            for seedID in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']:
+
+                # read original combi file for mom and fac (not seed obvs)
+                # do this each time so you don't reuse settings on accident
+
+                fileName = f'runConfigs/corrected/combi/{mom}/factor-{fac}.json'
+                config = LMDRunConfig.fromJSON(fileName)
+
+                # change misMat, extMat, avgMat names
+                vmcworkdir = os.environ['VMCWORKDIR'] # points to PandaRoot base dir
+                config.sensorAlignExternalMatrixPath = f'input/sensorAligner/multi/externalMatrices-sensors-seed{seedID}-{fac}.json'
+                config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/multi/avgMisalign-seed{seedID}-{fac}.json'
+                config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/multi/misMat-combiSeed{seedID}-{fac}.json'
+                config.generateJobBaseDir()
+
+                # save to new runConfig
+                destPath = Path(f'runConfigs/special/multiSeed/{mom}/{fac}/factor-{fac}-seed{seedID}.json')
+                destPath.parent.mkdir(exist_ok=True, parents=True)
+                config.toJSON(destPath)
+
+                # you should now have 10 for each fac and seedID (100 total per momentum)
+                pass
+
+
+
+if __name__ == "__main__":
+    # copyCombiToSpecial()
+    copyCombiToMultiSeed()
