@@ -29,7 +29,6 @@ from alignment.alignerIP import alignerIP
 from alignment.alignerModules import alignerModules
 from argparse import RawTextHelpFormatter
 from collections import defaultdict  # to concatenate dictionaries
-
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
@@ -69,6 +68,7 @@ it:
 
 """
 
+
 # to easily copy files, monkey patch
 def _copy(self, target):
     import shutil
@@ -76,8 +76,11 @@ def _copy(self, target):
         assert self.is_file()
     except:
         print(f'ERROR! {self} is not a file!')
-    shutil.copy(self, target) 
+    shutil.copy(self, target)
+
+
 Path.copy = _copy
+
 
 def startLogToFile(functionName=None):
 
@@ -110,6 +113,7 @@ def done():
 # TODO: remove further code duplication in these functions!
 
 # ? =========== functions that can be run by runAllConfigsMT
+
 
 def runAligners(runConfig, threadID=None):
 
@@ -144,7 +148,7 @@ def runAligners(runConfig, threadID=None):
         print(f'        running sensor aligner')
         print(f'\n====================================\n')
         sensorAligner = alignerSensors.fromRunConfig(runConfig)
-        sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath) # TODO: do implicitly, aligners always start with a run config
+        sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath)  # TODO: do implicitly, aligners always start with a run config
         sensorAligner.sortPairs()
         sensorAligner.findMatrices()
         sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
@@ -157,8 +161,8 @@ def runAligners(runConfig, threadID=None):
         print(f'        running module aligner')
         print(f'\n====================================\n')
         moduleAligner = alignerModules.fromRunConfig(runConfig)
-        moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile) # TODO: do implicitly, aligners always start with a run config
-        moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile) # TODO: do implicitly, aligners always start with a run config
+        moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)  # TODO: do implicitly, aligners always start with a run config
+        moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)  # TODO: do implicitly, aligners always start with a run config
         moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
         moduleAligner.readTracks(moduleAlignTrackFile)
         moduleAligner.alignModules()
@@ -195,16 +199,16 @@ def runAligners(runConfig, threadID=None):
 
     with open(mergedAlignerResultName, 'w') as f:
         json.dump(mergedResult, f, indent=2, sort_keys=True)
-    
+
     with open(combi0Name, 'w') as f:
         json.dump(combi0Result, f, indent=2, sort_keys=True)
-    
+
     with open(combi1Name, 'w') as f:
         json.dump(combi1Result, f, indent=2, sort_keys=True)
-    
+
     with open(combi2Name, 'w') as f:
         json.dump(combi2Result, f, indent=2, sort_keys=True)
-    
+
     with open(combi3Name, 'w') as f:
         json.dump(combi3Result, f, indent=2, sort_keys=True)
 
@@ -241,24 +245,22 @@ def runCombi(runConfig, threadID=None):
     # combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP-{runConfig.misalignFactor}.json')
     combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-{runConfig.misalignFactor}.json')
 
-    
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-combi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
 
     #* ---------- first sim
-    
+
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
     prealignWrapper.threadNumber = threadID
     prealignWrapper.logger = thislogger
     # run all
-    prealignWrapper.runSimulations()           # non blocking, so we have to wait
-    prealignWrapper.waitForJobCompletion()     # blocking
+    prealignWrapper.runSimulations()  # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()  # blocking
     # ---------- perform lumi fit
-    prealignWrapper.detLumi()                  # not blocking
-    prealignWrapper.waitForJobCompletion()     # waiting
-    prealignWrapper.extractLumi()              # blocking
-
+    prealignWrapper.detLumi()  # not blocking
+    prealignWrapper.waitForJobCompletion()  # waiting
+    prealignWrapper.extractLumi()  # blocking
 
     #* ---------- align sensors
     # create alignerSensors, run
@@ -266,7 +268,7 @@ def runCombi(runConfig, threadID=None):
     print(f'        running sensor aligner')
     print(f'\n====================================\n')
     sensorAligner = alignerSensors.fromRunConfig(runConfig)
-    sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath) # TODO: do implicitly, aligners always start with a run config
+    sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath)  # TODO: do implicitly, aligners always start with a run config
     sensorAligner.sortPairs()
     sensorAligner.findMatrices()
     sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
@@ -290,15 +292,15 @@ def runCombi(runConfig, threadID=None):
     runConfig.alignmentCorrection = True
     # force cut off, otherwise too many tracks will be discarded
     runConfig.forDisableCut = True
-    runConfig.generateMatrixNames()     # this should update to combi0, combi1 etc
-    
+    runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc
+
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
     prealignWrapper.threadNumber = threadID
     prealignWrapper.logger = thislogger
     # run all
-    prealignWrapper.runSimulations()           # non blocking, so we have to wait
-    prealignWrapper.waitForJobCompletion()     # blocking
+    prealignWrapper.runSimulations()  # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()  # blocking
     # ---------- don't perform lumi fit
     # prealignWrapper.detLumi()                  # not blocking
     # prealignWrapper.waitForJobCompletion()     # waiting
@@ -310,13 +312,13 @@ def runCombi(runConfig, threadID=None):
     print(f'\n====================================\n')
 
     # prepare paths, don't do this earlier!
-    runConfig.generateMatrixNames()     # this should update to combi0, combi1 etc
+    runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc
     moduleAlignDataPath = runConfig.pathTrksQA()
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
-    
+
     moduleAligner = alignerModules.fromRunConfig(runConfig)
-    moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)    # TODO: do implicitly, aligners always start with a run config
-    moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile) # TODO: do implicitly, aligners always start with a run config
+    moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)  # TODO: do implicitly, aligners always start with a run config
+    moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)  # TODO: do implicitly, aligners always start with a run config
     moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
     moduleAligner.readTracks(moduleAlignTrackFile)
     moduleAligner.alignModules()
@@ -331,7 +333,7 @@ def runCombi(runConfig, threadID=None):
     with open(combi1Name, 'w') as f:
         json.dump(combi1Result, f, indent=2, sort_keys=True)
     runConfig.combiMat = combi1Name
-    runConfig.generateMatrixNames()     # this should update to combi0, combi1 etc
+    runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc
 
     #! ========== Modules are now aligned
 
@@ -343,12 +345,12 @@ def runCombi(runConfig, threadID=None):
     prealignWrapper.threadNumber = threadID
     prealignWrapper.logger = thislogger
     # run all
-    prealignWrapper.runSimulations()           # non blocking, so we have to wait
-    prealignWrapper.waitForJobCompletion()     # blocking
+    prealignWrapper.runSimulations()  # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()  # blocking
     # ---------- perform lumi fit, for posterity
-    prealignWrapper.detLumi()                  # not blocking
-    prealignWrapper.waitForJobCompletion()     # waiting
-    prealignWrapper.extractLumi()              # blocking
+    prealignWrapper.detLumi()  # not blocking
+    prealignWrapper.waitForJobCompletion()  # waiting
+    prealignWrapper.extractLumi()  # blocking
 
     #* ---------- align IP, last combi result
     print(f'\n============================================\n')
@@ -370,7 +372,7 @@ def runCombi(runConfig, threadID=None):
     with open(combi3Name, 'w') as f:
         json.dump(combi3Result, f, indent=2, sort_keys=True)
     runConfig.combiMat = combi3Name
-    runConfig.generateMatrixNames()     # this should update to combi0, combi1 etc
+    runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc
 
     #! ========== ALL is now aligned
 
@@ -382,15 +384,16 @@ def runCombi(runConfig, threadID=None):
     prealignWrapper.threadNumber = threadID
     prealignWrapper.logger = thislogger
     # run all
-    prealignWrapper.runSimulations()           # non blocking, so we have to wait
-    prealignWrapper.waitForJobCompletion()     # blocking
+    prealignWrapper.runSimulations()  # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()  # blocking
     # ---------- perform lumi fit
-    prealignWrapper.detLumi()                  # not blocking
-    prealignWrapper.waitForJobCompletion()     # waiting
-    prealignWrapper.extractLumi()              # blocking
+    prealignWrapper.detLumi()  # not blocking
+    prealignWrapper.waitForJobCompletion()  # waiting
+    prealignWrapper.extractLumi()  # blocking
     print(f'=================================')
     print(f'== REJOICE, COMBI RUN IS DONE! ==')
     print(f'=================================')
+
 
 def runExtractLumi(runConfig, threadID=None):
 
@@ -406,7 +409,7 @@ def runExtractLumi(runConfig, threadID=None):
     prealignWrapper.logger = thislogger
 
     # run
-    prealignWrapper.extractLumi()              # blocking
+    prealignWrapper.extractLumi()  # blocking
 
     print(f'Thread {threadID} done!')
 
@@ -425,9 +428,9 @@ def runLumifit(runConfig, threadID=None):
     prealignWrapper.logger = thislogger
 
     # run
-    prealignWrapper.detLumi()                  # not blocking!
-    prealignWrapper.waitForJobCompletion()     # waiting
-    prealignWrapper.extractLumi()              # blocking
+    prealignWrapper.detLumi()  # not blocking!
+    prealignWrapper.waitForJobCompletion()  # waiting
+    prealignWrapper.extractLumi()  # blocking
 
     print(f'Thread {threadID} done!')
 
@@ -446,8 +449,8 @@ def runSimRecoLumi(runConfig, threadID=None):
     prealignWrapper.logger = thislogger
 
     # run all
-    prealignWrapper.runSimulations()           # non blocking, so we have to wait
-    prealignWrapper.waitForJobCompletion()     # blocking
+    prealignWrapper.runSimulations()  # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()  # blocking
 
     print(f'Thread {threadID} done!')
 
@@ -464,15 +467,16 @@ def halfRun(runConfig, threadID=None):
     prealignWrapper.logger = thislogger
 
     # run all
-    prealignWrapper.runSimulations()           # non blocking, so we have to wait
-    prealignWrapper.waitForJobCompletion()     # blocking
-    prealignWrapper.detLumi()                  # not blocking
-    prealignWrapper.waitForJobCompletion()     # waiting
-    prealignWrapper.extractLumi()              # blocking
-    
+    prealignWrapper.runSimulations()  # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()  # blocking
+    prealignWrapper.detLumi()  # not blocking
+    prealignWrapper.waitForJobCompletion()  # waiting
+    prealignWrapper.extractLumi()  # blocking
+
     # run alignment afterwards
     runAligners(runConfig, threadID)
     print(f'Thread {threadID} done!')
+
 
 def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
 
@@ -496,11 +500,11 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     prealignWrapper.logger = thislogger
 
     # run all
-    prealignWrapper.runSimulations()           # non blocking, so we have to wait
-    prealignWrapper.waitForJobCompletion()     # blocking
-    prealignWrapper.detLumi()                  # not blocking
-    prealignWrapper.waitForJobCompletion()     # waiting
-    prealignWrapper.extractLumi()              # blocking
+    prealignWrapper.runSimulations()  # non blocking, so we have to wait
+    prealignWrapper.waitForJobCompletion()  # blocking
+    prealignWrapper.detLumi()  # not blocking
+    prealignWrapper.waitForJobCompletion()  # waiting
+    prealignWrapper.extractLumi()  # blocking
 
     # then run aligner(s)
     runAligners(runConfig, threadID)
@@ -513,11 +517,11 @@ def runSimRecoLumiAlignRecoLumi(runConfig, threadID=None):
     postalignWrapper.logger = thislogger
 
     # re run reco steps and Lumi fit
-    postalignWrapper.runSimulations()           # non blocking, so we have to wait
-    postalignWrapper.waitForJobCompletion()     # blocking
-    postalignWrapper.detLumi()                  # not blocking
-    postalignWrapper.waitForJobCompletion()     # waiting
-    postalignWrapper.extractLumi()              # blocking
+    postalignWrapper.runSimulations()  # non blocking, so we have to wait
+    postalignWrapper.waitForJobCompletion()  # blocking
+    postalignWrapper.detLumi()  # not blocking
+    postalignWrapper.waitForJobCompletion()  # waiting
+    postalignWrapper.extractLumi()  # blocking
 
     print(f'Thread {threadID} done!')
 
@@ -570,14 +574,13 @@ def histogramRunConfig(runConfig, threadId=0):
     # copy matrices from himster to local folder
     oldTargetDir = Path(runConfig.pathAlMatrixPath())
 
-
     remotePrefix = Path('/lustre/miifs05/scratch/him-specf/paluma/roklasen')
     targetDir = Path(f'output/temp/alMats/{runConfig.misalignType}-{runConfig.momentum}-{runConfig.misalignFactor}/')
     targetDir.mkdir(exist_ok=True, parents=True)
     # compose remote dir from local dir
     remoteDir = 'm23:' + str(remotePrefix / Path(*oldTargetDir.parts[6:]) / Path('*'))
     print(f'copying:\n{remoteDir}\nto:\n{targetDir}')
-    
+
     if True:
         success = subprocess.run(['scp', remoteDir, targetDir]).returncode
 
@@ -637,18 +640,20 @@ def histogramRunConfig(runConfig, threadId=0):
     values[runConfig.momentum] = {}
     values[runConfig.momentum][runConfig.misalignFactor] = {
         # 'momentum' : runConfig.momentum,
-        'box' : np.array(boxResult).tolist(), 
-        'modules' : (np.array(moduleResultMean).tolist(), np.array(moduleResultSigma).tolist()),
-        'overlaps' : (np.array(overlapResultMean).tolist(), np.array(overlapResultSigma).tolist()),
-        'sensors' : (np.array(sensorResultMean).tolist(), np.array(sensorResultSigma).tolist())
+        'box': np.array(boxResult).tolist(),
+        'modules': (np.array(moduleResultMean).tolist(), np.array(moduleResultSigma).tolist()),
+        'overlaps': (np.array(overlapResultMean).tolist(), np.array(overlapResultSigma).tolist()),
+        'sensors': (np.array(sensorResultMean).tolist(), np.array(sensorResultSigma).tolist())
     }
 
     print(values)
     return values
 
+
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
-def runConfigsMT(args, function, threads = 64):
+
+def runConfigsMT(args, function, threads=64):
 
     configs = []
     # read all configs from path
@@ -692,7 +697,7 @@ def runConfigsMT(args, function, threads = 64):
                 futures[index] = executor.submit(function, config, index)
 
         print('waiting for all jobs...')
-        
+
         executor.shutdown(wait=True)
         for i in futures:
             print(f'future with index {i} returned:\n')
@@ -734,20 +739,20 @@ def createMultipleDefaultConfigs():
     misFactors = {}
     # misTypes = ['aligned', 'identity', 'sensors', 'box', 'box100', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot', 'combi']
     misTypes = ['aligned', 'identity', 'sensors', 'box100', 'modules', 'combi']
-    
+
     setOne = ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']
     setTwo = ['0.25', '0.50', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']
 
-    misFactors['aligned'] =         ['1.00']
-    misFactors['identity'] =        ['1.00']
-    misFactors['sensors'] =         setOne
-    misFactors['box'] =             setOne
-    misFactors['box100'] =          setOne
-    misFactors['boxRotZ'] =         setTwo
-    misFactors['modules'] =         setOne
-    misFactors['combi'] =           setOne
-    misFactors['modulesNoRot'] =    ['0.50', '1.00', '2.00']
-    misFactors['modulesOnlyRot'] =  ['0.50', '1.00', '2.00']
+    misFactors['aligned'] = ['1.00']
+    misFactors['identity'] = ['1.00']
+    misFactors['sensors'] = setOne
+    misFactors['box'] = setOne
+    misFactors['box100'] = setOne
+    misFactors['boxRotZ'] = setTwo
+    misFactors['modules'] = setOne
+    misFactors['combi'] = setOne
+    misFactors['modulesNoRot'] = ['0.50', '1.00', '2.00']
+    misFactors['modulesOnlyRot'] = ['0.50', '1.00', '2.00']
 
     for misType in misTypes:
         for mom in momenta:
@@ -777,7 +782,7 @@ def createMultipleDefaultConfigs():
                     if misType == 'aligned' or misType == 'identity':
                         config.useIdentityMisalignment = True
                         config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-aligned.json'
-                        config.moduleAlignAvgMisalignFile  = f'input/moduleAlignment/avgMisalign-aligned.json'
+                        config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-aligned.json'
 
                     # supply anchor ppoints to all cases
                     config.moduleAlignAnchorPointFile = f'input/moduleAlignment/anchorPoints.json'
@@ -792,7 +797,7 @@ def createMultipleDefaultConfigs():
                         config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-onlyRot-{fac}.json'
                     else:
                         config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-{fac}.json'
-                    
+
                     # ? ----- special cases here
                     # aligned case has no misalignment
                     if misType == 'aligned':
@@ -831,7 +836,11 @@ if __name__ == "__main__":
     parser.add_argument('-f', metavar='--fullRunConfig', type=str, dest='fullRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
     parser.add_argument('-F', metavar='--fullRunConfigPath', type=str, dest='fullRunConfigPath', help='same as -f, but for all Configs in specified path')
 
-    parser.add_argument('-FS', metavar='--fullRunConfigSequencePath', type=str, dest='fullRunConfigSequencePath', help='run multiple runConfigs sequentially (e.g. for multiple types of alignment)')
+    parser.add_argument('-FS',
+                        metavar='--fullRunConfigSequencePath',
+                        type=str,
+                        dest='fullRunConfigSequencePath',
+                        help='run multiple runConfigs sequentially (e.g. for multiple types of alignment)')
 
     parser.add_argument('-l', metavar='--lumifitConfig', type=str, dest='lumifitConfig', help='determine Luminosity for runConfig')
     parser.add_argument('-L', metavar='--lumifitConfigPath', type=str, dest='lumifitConfigPath', help='same as -l, but for all Configs in specified path')
@@ -899,7 +908,7 @@ if __name__ == "__main__":
 
     if args.test:
         print(f'Testing...')
-        
+
         # this performs module alignment, stores the matrices to a temp file and runs the matrix comparator against this matrix file
         if True:
 
@@ -909,8 +918,8 @@ if __name__ == "__main__":
 
             #! these are from 23.03.2020, first real combi run
             # trackFile = Path('input/modulesAlTest/combi0/tracksNoAlignment.json')
-            # trackFile = Path('input/modulesAlTest/combi0/tracksAlignedCombi0.json')     
-            trackFile = Path('input/modulesAlTest/combi0/tracksBroken-2.5.json')     
+            # trackFile = Path('input/modulesAlTest/combi0/tracksAlignedCombi0.json')
+            trackFile = Path('input/modulesAlTest/combi0/tracksBroken-2.5.json')
 
             alignerMod = alignerModules()
             alignerMod.readAnchorPoints('input/moduleAlignment/anchorPoints.json')
@@ -958,7 +967,7 @@ if __name__ == "__main__":
             for key, value in values.items():
                 mom = key
                 theseValues = value
-                break   # just in case there is more than one, which shoul never be
+                break  # just in case there is more than one, which shoul never be
 
             # merge dict to current
             allVals[mom].update(theseValues)
@@ -1185,7 +1194,6 @@ if __name__ == "__main__":
 
         # layer 0: find sequence files
 
-        
         # layer 1: read sequence files, execute runConfigs from them
 
         startLogToFile('FullRunSequence')

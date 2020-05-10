@@ -7,7 +7,6 @@ import re
 import sys
 import os
 import json
-
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
@@ -35,7 +34,6 @@ most importantly, can also create paths given these parameters:
 
 
 class LMDRunConfig:
-
     def __init__(self):
         # find env variabled
         # paths must be stored as strings internally so they can be serialized to JSON!
@@ -99,6 +97,7 @@ class LMDRunConfig:
 
     def __getMisMatFile(self):
         return self.__misalignMatFile
+
     alMatFile = property(__getAlMatFile, None)
     misMatFile = property(__getMisMatFile, None)
 
@@ -112,6 +111,7 @@ class LMDRunConfig:
 
     def __setAvgMisPath(self, val):
         self.__moduleAlignAvgMisalignFile = val
+
     moduleAlignAvgMisalignFile = property(__getAvgMisPath, __setAvgMisPath)
 
     def __getAnchorPath(self):
@@ -119,6 +119,7 @@ class LMDRunConfig:
 
     def __setAnchorPath(self, val):
         self.__moduleAlignAnchorPointFile = val
+
     moduleAlignAnchorPointFile = property(__getAnchorPath, __setAnchorPath)
 
     def __getExMatPath(self):
@@ -126,6 +127,7 @@ class LMDRunConfig:
 
     def __setExMatPath(self, value):
         self.__sensorAlignerExternalMatrices = value
+
     sensorAlignExternalMatrixPath = property(__getExMatPath, __setExMatPath)
 
     def __getMisalignFactor(self):
@@ -133,6 +135,7 @@ class LMDRunConfig:
 
     def __setMisalignFactor(self, value):
         self.__misalignFactor = value
+
     misalignFactor = property(__getMisalignFactor, __setMisalignFactor)
 
     def __getMisalignType(self):
@@ -164,6 +167,7 @@ class LMDRunConfig:
 
     def __setDebug(self, debug):
         self.__debug = debug
+
     useDebug = property(__getDebug, __setDebug)
 
     def __getDebugQueue(self):
@@ -171,6 +175,7 @@ class LMDRunConfig:
 
     def __setDebugQueue(self, debug):
         self.__useDevQueue = debug
+
     useDevQueue = property(__getDebugQueue, __setDebugQueue)
 
     def __getMisaligned(self):
@@ -178,6 +183,7 @@ class LMDRunConfig:
 
     def __setMisaligned(self, value):
         self.__misalignment = value
+
     misaligned = property(__getMisaligned, __setMisaligned)
 
     def __getAlignmentCorrection(self):
@@ -185,6 +191,7 @@ class LMDRunConfig:
 
     def __setAlignmentCorrection(self, value):
         self.__alignmentCorrection = value
+
     alignmentCorrection = property(__getAlignmentCorrection, __setAlignmentCorrection)
 
     def __getJobsNum(self):
@@ -192,6 +199,7 @@ class LMDRunConfig:
 
     def __setJobsNum(self, value):
         self.__jobsNum = value
+
     jobsNum = property(__getJobsNum, __setJobsNum)
 
     def __getTrksNum(self):
@@ -199,6 +207,7 @@ class LMDRunConfig:
 
     def __setTrksNum(self, value):
         self.__tracksNum = value
+
     trksNum = property(__getTrksNum, __setTrksNum)
 
     def __getMomentum(self):
@@ -206,6 +215,7 @@ class LMDRunConfig:
 
     def __setMomentum(self, value):
         self.__momentum = value
+
     momentum = property(__getMomentum, __setMomentum)
 
     #! --------------------- constructor "overloading"
@@ -300,7 +310,7 @@ class LMDRunConfig:
         pndRootDir = 'VMCWORKDIR'
         simDirEnv = 'LMDFIT_DATA_DIR'
         self.__cwd = str(Path.cwd())
-        
+
         try:
             self.__alignmentDir = os.environ[alignmentDir]
         except:
@@ -310,7 +320,7 @@ class LMDRunConfig:
             self.__pandaRootDir = os.environ[pndRootDir]
         except:
             raise Exception(f"ERROR! Can't find PandaRoot installation, please set {pndRootDir}!")
-        
+
         try:
             self.__simDataPath = os.environ[simDirEnv]
         except:
@@ -382,7 +392,8 @@ class LMDRunConfig:
 
     def __jobBaseDir__(self):
         if self.__JobBaseDir is None:
-            self.__JobBaseDir = str(self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()))
+            self.__JobBaseDir = str(
+                self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()))
         return Path(self.__JobBaseDir)
 
     def __uncut__(self):
@@ -393,7 +404,7 @@ class LMDRunConfig:
 
     def __alignCorrectionSubDir__(self):
         if self.__alignmentCorrection:
-            return Path(f'aligned-{Path(self.__alignMatFile).stem}')    # TODO: this must also reflect combi case!
+            return Path(f'aligned-{Path(self.__alignMatFile).stem}')  # TODO: this must also reflect combi case!
         else:
             return Path('no_alignment_correction')
 
@@ -428,26 +439,26 @@ class LMDRunConfig:
 
         if self.__useIdentityAlignment:
             return Path(self.__alignmentDir) / Path('input') / Path('alMat-identity-all.json')
-        
+
         elif self.__mergeAlignmentMatrices:
             return self.pathAlMatrixPath() / Path(f'alMat-merged.json')
-        
+
         else:
             if self.__misalignType == 'box' or self.__misalignType == 'boxRotZ' or self.__misalignType == 'box100':
                 return self.pathAlMatrixPath() / Path(f'alMat-IPalignment-{self.__misalignFactor}.json')
-            
+
             elif self.__misalignType == 'sensors':
                 return self.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{self.__misalignFactor}.json')
-            
-            elif self.__misalignType == 'singlePlane' :
+
+            elif self.__misalignType == 'singlePlane':
                 return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
-            
+
             elif self.__misalignType == 'modules':
                 return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
-            
+
             elif self.__misalignType == 'modulesNoRot':
                 return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
-            
+
             elif self.__misalignType == 'modulesOnlyRot':
                 return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
             elif self.__misalignType == 'combi':
@@ -455,7 +466,9 @@ class LMDRunConfig:
 
     def pathMisMatrix(self):
         self.__checkMinimum__()
-        return self.__resolveActual__(Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') / Path(f'misMat-{self.__misalignType}-{self.__misalignFactor}.json'))
+        return self.__resolveActual__(
+            Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') /
+            Path(f'misMat-{self.__misalignType}-{self.__misalignFactor}.json'))
 
     def pathRecoIP(self):
         self.__checkMinimum__()

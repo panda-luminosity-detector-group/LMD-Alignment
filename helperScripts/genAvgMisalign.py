@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 This script reads the artificial misalignment matrices from the simulations to generate
 the "average misalignment matrices"  for all sectors. For the final detector,
@@ -10,6 +9,7 @@ from pathlib import Path
 import json
 import numpy as np
 import sys
+
 
 def calcAligned(outfile):
     # find 4 modules per sector
@@ -22,7 +22,7 @@ def calcAligned(outfile):
     for i in range(10):
         avgMisMats[str(i)] = np.identity(4)
 
-     # store to output as dict ( sectorString -> matrix )
+    # store to output as dict ( sectorString -> matrix )
     saveMatrices = {}
     outFile.parent.mkdir(exist_ok=True, parents=True)
     for p in avgMisMats:
@@ -31,13 +31,14 @@ def calcAligned(outfile):
     with open(outFile, 'w') as f:
         json.dump(saveMatrices, f, indent=2)
 
+
 def calc(inFile, outFile):
     # read all input matrices
     with open(inFile, 'r') as f:
         inMats = json.load(f)
 
     for p in inMats:
-        inMats[p] = np.array(inMats[p]).reshape((4,4))
+        inMats[p] = np.array(inMats[p]).reshape((4, 4))
 
     # calc avg misalign
     avgMisMats = {}
@@ -60,8 +61,10 @@ def calc(inFile, outFile):
     with open(outFile, 'w') as f:
         json.dump(saveMatrices, f, indent=2)
 
+
 if __name__ == "__main__":
 
+    print('greetings, human.')
     if len(sys.argv) != 3:
         print(f'usage: {sys.argv[0]} inFile outFile\nor:')
         print(f'usage: {sys.argv[0]} --aligned outfile\nor:')
@@ -86,5 +89,5 @@ if __name__ == "__main__":
         if not inFile.exists():
             raise Exception(f'File {inFile} can not be read!')
         calc(inFile, outFile)
-    
+
     print(f'all done!')
