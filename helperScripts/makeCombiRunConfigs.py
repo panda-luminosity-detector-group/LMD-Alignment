@@ -58,7 +58,7 @@ def copyCombiToMultiSeed():
                 config.sensorAlignExternalMatrixPath = f'input/sensorAligner/multi/externalMatrices-sensors-seed{seedID}-{fac}.json'
                 config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/multi/avgMisalign-seed{seedID}-{fac}.json'
                 config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/multi/misMat-combiSeed{seedID}-{fac}.json'
-
+                config.alignmentCorrection = False
                 # set more events per job
                 config.trksNum = '200000'
 
