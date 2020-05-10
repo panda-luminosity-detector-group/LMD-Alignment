@@ -44,6 +44,8 @@ def runFactors(path, fileName, seedID=None):
         subprocess.run(command, cwd='.')
 
         # calculate extermal matrices
+        command = ('python3', 'helperScripts/genExternalMatrices.py', f'{path}/misMat-sensors-{fac}.json', f'input/sensorAligner/multi/externalMatrices-sensors-seed{seedID}-{fac}.json')
+        subprocess.run(command, cwd='.')
 
 
 def fail():
