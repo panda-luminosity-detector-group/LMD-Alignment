@@ -233,10 +233,10 @@ def runCombi(runConfig, threadID=None):
     # actually, stages should be irrelevant here, they were an ungly hack anyway
     stages = runConfig.stages
     print(f'Thread {threadID}: starting!')
-    print(f'Stages:')
-    print(f'Sensor Align: {stages[0]}')
-    print(f'Module Align: {stages[1]}')
-    print(f'Target Align: {stages[2]}')
+    # print(f'Stages:')
+    # print(f'Sensor Align: {stages[0]}')
+    # print(f'Module Align: {stages[1]}')
+    # print(f'Target Align: {stages[2]}')
 
     sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
