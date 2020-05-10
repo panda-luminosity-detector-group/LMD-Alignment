@@ -41,33 +41,15 @@ most importantly, can also create paths given these parameters:
 
 class LMDRunConfig:
     def __init__(self):
-        # find env variabled
-        # paths must be stored as strings internally so they can be serialized to JSON!
-        # self.__fromPath = None
-        # self.__misalignFactor = None
-        # self.__alignFactor = None
-        # self.__sensorAlignerExternalMatrices = None
-        # self.__moduleAlignAnchorPointFile = None
-        # self.__moduleAlignAvgMisalignFile = None
-        # self.combiMat = ''
-        # self.stages = [True, True, True]
-        # self.misMatFile = None
-        # self.__mergeAlignmentMatrices = False
 
         #  keep these hidden variables
         self.__JobBaseDir = None
 
         # new porperties, plain and simple
-        # self.alignType = None
-        # self.alMatFile = None
         self.alMatFile = None
         self.misMatFile = None
         self.misalignFactor = None
         self.misalignType = None
-        # self.moduleAlignAvgMisalignFile = None
-        # self.moduleAlignAnchorPointFile = None
-        # self.sensorAlignExternalMatrixPath = None
-        # self.momentum = None
         self.trksNum = '100000'
         self.jobsNum = '100'
         self.misaligned = True
@@ -77,7 +59,6 @@ class LMDRunConfig:
         self.useIdentityAlignment = False
         self.forDisableCut = False
         self.updateEnvPaths()
-
 
     #! --------------------- for sortability
     def __lt__(self, other):
@@ -107,148 +88,6 @@ class LMDRunConfig:
     def __eq__(self, other):
         return (not self < other) and (not other < self)
 
-    #! --------------------- getters and setters
-
-    # def __getAlMatFile(self):
-    #     return self.alMatFile
-
-    # def __setAlMatFile(self, value):
-    #     self.alMatFile = value
-
-    # def setAlMat(self, value):
-    #     self.alMatFile = value
-
-    # alMatFile = property(__getAlMatFile, __setAlMatFile)
-
-    # def __getMisMatFile(self):
-    #     return self.misMatFile
-
-    # def __setMisMatFile(self, value):
-    #     self.misMatFile = value
-
-    # misMatFile = property(__getMisMatFile, __setMisMatFile)
-
-
-    # def __getAvgMisPath(self):
-    #     return self.__moduleAlignAvgMisalignFile
-
-    # def __setAvgMisPath(self, val):
-    #     self.__moduleAlignAvgMisalignFile = val
-
-    # moduleAlignAvgMisalignFile = property(__getAvgMisPath, __setAvgMisPath)
-
-    # def __getAnchorPath(self):
-    #     return self.__moduleAlignAnchorPointFile
-
-    # def __setAnchorPath(self, val):
-    #     self.__moduleAlignAnchorPointFile = val
-
-    # moduleAlignAnchorPointFile = property(__getAnchorPath, __setAnchorPath)
-
-    # def __getExMatPath(self):
-    #     return self.__sensorAlignerExternalMatrices
-
-    # def __setExMatPath(self, value):
-    #     self.__sensorAlignerExternalMatrices = value
-
-    # sensorAlignExternalMatrixPath = property(__getExMatPath, __setExMatPath)
-
-    # def __getMisalignFactor(self):
-    #     return self.__misalignFactor
-
-    # def __setMisalignFactor(self, value):
-    #     self.__misalignFactor = value
-
-    # misalignFactor = property(__getMisalignFactor, __setMisalignFactor)
-
-    # def __getMisalignType(self):
-    #     return self.misalignType
-
-    # def __setMisalignType(self, value):
-    #     self.misalignType = value
-
-    # misalignType = property(__getMisalignType, __setMisalignType)
-
-    # def __setUseIdentityAlignment(self, value):
-    #     self.useIdentityAlignment = value
-
-    # def __getUseIdentityAlignment(self):
-    #     return self.useIdentityAlignment
-
-    # useIdentityMisalignment = property(__getUseIdentityAlignment, __setUseIdentityAlignment)
-
-    # def __setMergeAlignmentMatrices(self, value):
-    #     self.mergeAlignmentMatrices = value
-
-    # def __getMergeAlignmentMatrices(self):
-    #     return self.mergeAlignmentMatrices
-
-    # mergeAlignmentMatrices = property(__getMergeAlignmentMatrices, __setMergeAlignmentMatrices)
-
-    # def __getDebug(self):
-    #     return self.useDebug
-
-    # def __setDebug(self, debug):
-    #     self.useDebug = debug
-
-    # useDebug = property(__getDebug, __setDebug)
-
-    # def __getDebugQueue(self):
-    #     return self.useDevQueue
-
-    # def __setDebugQueue(self, debug):
-    #     self.useDevQueue = debug
-
-    # useDevQueue = property(__getDebugQueue, __setDebugQueue)
-
-    # def __getMisaligned(self):
-    #     return self.misaligned
-
-    # def __setMisaligned(self, value):
-    #     self.misaligned = value
-
-    # misaligned = property(__getMisaligned, __setMisaligned)
-
-    # def __getAlignmentCorrection(self):
-    #     return self.alignmentCorrection
-
-    # def __setAlignmentCorrection(self, value):
-    #     self.alignmentCorrection = value
-
-    # alignmentCorrection = property(__getAlignmentCorrection, __setAlignmentCorrection)
-
-    # def __getJobsNum(self):
-    #     return self.jobsNum
-
-    # def __setJobsNum(self, value):
-    #     self.jobsNum = value
-
-    # jobsNum = property(__getJobsNum, __setJobsNum)
-
-    # def __getTrksNum(self):
-    #     return self.trksNum
-
-    # def __setTrksNum(self, value):
-    #     self.trksNum = value
-
-    # trksNum = property(__getTrksNum, __setTrksNum)
-
-    # def __getMomentum(self):
-    #     return self.momentum
-
-    # def __setMomentum(self, value):
-    #     self.momentum = value
-
-    # momentum = property(__getMomentum, __setMomentum)
-
-    # #! --------------------- constructor "overloading"
-    # @classmethod
-    # def fromPath(cls, path) -> 'LMDRunConfig':
-    #     temp = cls()
-    #     # temp.__fromPath = path
-    #     temp.parseFromString()
-    #     return temp
-
     #! --------------------- minimal default constructor
     @classmethod
     def minimalDefault(cls, mom='1.5', misalignType='identity', factor='1.00'):
@@ -258,93 +97,10 @@ class LMDRunConfig:
         temp.misalignType = misalignType
         return temp
 
-    # TODO: you never once used this function. may as well just delete it.
-    # def parseFromString(self):
-    #     pathParts = Path(self.__fromPath).parts
-
-    #     # search for plab, our dir tree begins here
-    #     index = 0
-    #     for part in pathParts:
-    #         match = re.search("plab_(.*)GeV", part)
-    #         if match:
-    #             self.momentum = match.groups()[0]
-    #             break
-    #         index += 1
-
-    #     # from here, we know the directory structure, no more guess work!
-    #     pathParts = pathParts[index:]
-
-    #     # we need at least the misalignment sub directory
-    #     # 0: plab
-    #     # 1: dpm
-    #     # 2: aligned or misalignment!
-    #     # 3: 1-500_uncut or 1-100_cut
-    #     # 4: Num Tracks
-    #     # 5: aligned or something else
-
-    #     if len(pathParts) < 3:
-    #         raise Exception(f'ERROR! path doesn\'t go deep enough, can not extract all information!')
-
-    #     if pathParts[2] == 'no_geo_misalignment':
-    #         self.misalignType = 'aligned'
-    #         self.__misalignFactor = '1.00'
-    #         self.misaligned = False
-
-    #     else:
-    #         match = re.search("geo_misalignmentmisMat-(\w+)-(\d+\.\d+)", pathParts[2])
-    #         if match:
-    #             if len(match.groups()) > 1:
-    #                 self.misalignType = match.groups()[0]
-    #                 self.__misalignFactor = match.groups()[1]
-    #                 self.misaligned = True
-    #         else:
-    #             print(f'can\'t parse info from {pathParts[2]}!')
-
-    #     # set misalign matrices from values!
-    #     self.misMatFile = str(self.pathMisMatrix())
-
-    #     # ? optional parser arguments
-    #     if len(pathParts) > 3:
-    #         self.trksNum = pathParts[3]
-
-    #     if len(pathParts) > 4:
-    #         match = re.search('1-(\d+)_uncut', pathParts[4])
-    #         if match:
-    #             self.jobsNum = match.groups()[0]
-
-    #     # alignment matrix
-    #     if len(pathParts) > 5:
-    #         match = re.search('aligned-alMat-(\w+)-(\d+\.\d+)', pathParts[5])
-    #         if match:
-    #             self.alignType = match.groups()[0]
-    #             self.__alignFactor = match.groups()[1]
-    #             self.alignmentCorrection = True
-
-    #             if (self.alignType != self.misalignType) and self.useDebug:
-    #                 print(f'DEBUG: Align type is not the same as misalign type. Is this correct?')
-
-    #             if (self.__alignFactor != self.__misalignFactor) and self.useDebug:
-    #                 print(f'DEBUG: Align factor is not the same as misalign type. Is this correct?')
-
-    #             self.alMatFile = str(self.pathAlMatrix())
-
     # #! --------------------- upadte env paths, for example when migrating to a different system
     # # TODO: remove once the whole autogen stuff is gone
     def updateEnvPaths(self):
-    #     alignmentDir = 'LMD_ALIGNMENT_DIR'
-    #     pndRootDir = 'VMCWORKDIR'
         simDirEnv = 'LMDFIT_DATA_DIR'
-    #     self.__cwd = str(Path.cwd())
-
-    #     try:
-    #         self.__alignmentDir = os.environ[alignmentDir]
-    #     except:
-    #         raise Exception(f"ERROR! Can't find LMDAlignment installation installation, please set {alignmentDir}!")
-
-    #     try:
-    #         self.__pandaRootDir = os.environ[pndRootDir]
-    #     except:
-    #         raise Exception(f"ERROR! Can't find PandaRoot installation, please set {pndRootDir}!")
 
         try:
             self.__simDataPath = os.environ[simDirEnv]
@@ -356,18 +112,6 @@ class LMDRunConfig:
     # TODO: nope, just nope. remove and set during creation.
     def generateMatrixNames(self):
         raise Exception(f"You're not supposed to call generateMatrixNames anymore!")
-
-        # if self.misalignType is None or self.__misalignFactor is None or self.momentum is None:
-        #     print(f'ERROR! not enough parameters set!')
-
-        # if self.alignType is None:
-        #     self.alignType = self.misalignType
-        # if self.__alignFactor is None:
-        #     self.__alignFactor = self.__misalignFactor
-
-        # self.misMatFile = str(self.pathMisMatrix())
-        # self.alMatFile = str(self.pathAlMatrix())
-        # self.generateJobBaseDir()
 
     # keep this in for now
     def generateJobBaseDir(self):
@@ -403,12 +147,6 @@ class LMDRunConfig:
         if self.momentum is None:
             raise Exception('ERROR! Beam Momentum not set!')
 
-
-    # def __checkIfNoneAreNone__(self):
-    #     for val in self.__dict__.values():
-    #         if val is None:
-    #             raise Exception(f'ERROR in LMDRunConfig: some values are not set!')
-
     #* ----- keep this one
     def __pathMom__(self):
         return Path(f'plab_{self.momentum}GeV')
@@ -422,7 +160,6 @@ class LMDRunConfig:
         if self.misalignType == 'aligned':
             return Path('no_geo_misalignment')
         else:
-            # return Path(f'geo_misalignmentmisMat-{self.misalignType}-{self.__misalignFactor}')
             return Path(f'geo_misalignment{str(Path(self.misMatFile).stem)}')
 
     #* ----- keep this one
@@ -483,42 +220,10 @@ class LMDRunConfig:
     # TODO: actually, this is pretty pointless here, do this during CREATION of the runConfigs and DELETE THIS FUNCTION
     def pathAlMatrix(self):
         raise Exception(f'You\'re not supposed to call pathAlMatrix anymore! Do you need the alMat filename?')
-        # self.__checkMinimum__()
-
-        # if self.useIdentityAlignment:
-        #     return Path(self.__alignmentDir) / Path('input') / Path('alMat-identity-all.json')
-
-        # elif self.__mergeAlignmentMatrices:
-        #     return self.pathAlMatrixPath() / Path(f'alMat-merged.json')
-
-        # else:
-        #     if self.misalignType == 'box' or self.misalignType == 'boxRotZ' or self.misalignType == 'box100':
-        #         return self.pathAlMatrixPath() / Path(f'alMat-IPalignment-{self.__misalignFactor}.json')
-
-        #     elif self.misalignType == 'sensors':
-        #         return self.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{self.__misalignFactor}.json')
-
-        #     elif self.misalignType == 'singlePlane':
-        #         return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
-
-        #     elif self.misalignType == 'modules':
-        #         return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
-
-        #     elif self.misalignType == 'modulesNoRot':
-        #         return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
-
-        #     elif self.misalignType == 'modulesOnlyRot':
-        #         return self.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{self.__misalignFactor}.json')
-        #     elif self.misalignType == 'combi':
-        #         return self.combiMat
 
     # TODO: no, just return stored value
     def pathMisMatrix(self):
         raise Exception(f'You\'re not supposed to call pathMisMatrix anymore! Do you need the alMat filename?')
-        # self.__checkMinimum__()
-        # return self.__resolveActual__(
-        #     Path(self.__pandaRootDir) / Path('macro') / Path('detectors') / Path('lmd') / Path('geo') / Path('misMatrices') /
-        #     Path(f'misMat-{self.misalignType}-{self.__misalignFactor}.json'))
 
     #* ----- keep this one
     def pathRecoIP(self):
@@ -555,12 +260,7 @@ class LMDRunConfig:
         result += (f'------------------------------\n')
         result += (f'DEBUG OUTPUT for LMDRunConfig:\n\n')
         result += (f'Job Base Dir: {self.__JobBaseDir}\n')
-        # result += (f'Path: {self.__fromPath}\n')
         result += (f'Momentum: {self.momentum}\n')
-        # result += (f'Misalign Type: {self.misalignType}\n')
-        # result += (f'Misalign Factor: {self.__misalignFactor}\n')
-        # result += (f'Align Type: {self.alignType}\n')
-        # result += (f'Align Factor: {self.__alignFactor}\n')
         result += (f'AlignMatrices: {self.alMatFile}\n')
         result += (f'MisalignMatrices: {self.misMatFile}\n')
         result += (f'TracksQA path: {self.pathTrksQA()}\n')
