@@ -14,7 +14,7 @@ from pathlib import Path
 # TODO: remove combiMat and stages, you don't actually need them. a single runCombi function does this work now.
 
 def copyCombiToSpecial():
-    alignerStages = [[False, True, True], [False, False, True], [False, True, False], [False, False, False]]
+    # alignerStages = [[False, True, True], [False, False, True], [False, True, False], [False, False, False]]
     combiName = ['combiSen', 'combiSenMod', 'combiSenIP', 'combiSenModIP']
     
     for i in range(4):
@@ -26,11 +26,11 @@ def copyCombiToSpecial():
                 config = LMDRunConfig.fromJSON(fileName)
                 alMatPath = config.pathAlMatrixPath()
                 matFile = str(Path(alMatPath) / Path(f'alMat-{combiName[i]}-{fac}.json'))
-
+                config.alMatPath = matFile
                 # change alignment matrix
-                config.combiMat = matFile
-                config.generateMatrixNames()
-                config.stages = alignerStages[i]
+                # config.combiMat = matFile
+                # config.generateMatrixNames()
+                # config.stages = alignerStages[i]
 
                 if i < 3:
                     config.forDisableCut = True
@@ -60,7 +60,7 @@ def copyCombiToMultiSeed():
                 config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/multi/misMat-combiSeed{seedID}-{fac}.json'
 
                 # set more events per job
-                config.trksNum = 200000
+                config.trksNum = '200000'
 
                 config.generateJobBaseDir()
 
@@ -75,5 +75,5 @@ def copyCombiToMultiSeed():
 
 
 if __name__ == "__main__":
-    # copyCombiToSpecial()
+    copyCombiToSpecial()
     copyCombiToMultiSeed()

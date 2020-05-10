@@ -119,13 +119,13 @@ def done():
 
 def runAligners(runConfig, threadID=None):
 
-    stages = runConfig.stages
+    # stages = runConfig.stages
 
     print(f'Thread {threadID}: starting!')
-    print(f'Stages:')
-    print(f'Sensor Align: {stages[0]}')
-    print(f'Module Align: {stages[1]}')
-    print(f'Target Align: {stages[2]}')
+    # print(f'Stages:')
+    # print(f'Sensor Align: {stages[0]}')
+    # print(f'Module Align: {stages[1]}')
+    # print(f'Target Align: {stages[2]}')
 
     sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
@@ -144,41 +144,38 @@ def runAligners(runConfig, threadID=None):
     thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-Alignment-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
     thislogger.log(runConfig.dump())
 
-    if stages[0]:
-        #* create alignerSensors, run
-        print(f'\n====================================\n')
-        print(f'        running sensor aligner')
-        print(f'\n====================================\n')
-        sensorAligner = alignerSensors.fromRunConfig(runConfig)
-        sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath)  # TODO: do implicitly, aligners always start with a run config
-        sensorAligner.sortPairs()
-        sensorAligner.findMatrices()
-        sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
-        sensorAligner.combineAlignmentMatrices()
-        sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+    #* create alignerSensors, run
+    print(f'\n====================================\n')
+    print(f'        running sensor aligner')
+    print(f'\n====================================\n')
+    sensorAligner = alignerSensors.fromRunConfig(runConfig)
+    sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath)  # TODO: do implicitly, aligners always start with a run config
+    sensorAligner.sortPairs()
+    sensorAligner.findMatrices()
+    sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
+    sensorAligner.combineAlignmentMatrices()
+    sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
 
-    if stages[1]:
-        #* create alignerModules, run
-        print(f'\n====================================\n')
-        print(f'        running module aligner')
-        print(f'\n====================================\n')
-        moduleAligner = alignerModules.fromRunConfig(runConfig)
-        moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)  # TODO: do implicitly, aligners always start with a run config
-        moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)  # TODO: do implicitly, aligners always start with a run config
-        moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
-        moduleAligner.readTracks(moduleAlignTrackFile)
-        moduleAligner.alignModules()
-        moduleAligner.saveMatrices(moduleAlignerResultName)
+    #* create alignerModules, run
+    print(f'\n====================================\n')
+    print(f'        running module aligner')
+    print(f'\n====================================\n')
+    moduleAligner = alignerModules.fromRunConfig(runConfig)
+    moduleAligner.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)  # TODO: do implicitly, aligners always start with a run config
+    moduleAligner.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)  # TODO: do implicitly, aligners always start with a run config
+    moduleAligner.convertRootTracks(moduleAlignDataPath, moduleAlignTrackFile)
+    moduleAligner.readTracks(moduleAlignTrackFile)
+    moduleAligner.alignModules()
+    moduleAligner.saveMatrices(moduleAlignerResultName)
 
-    if stages[2]:
-        #* create alignerIP, run
-        print(f'\n====================================\n')
-        print(f'        running box rotation aligner')
-        print(f'\n====================================\n')
-        IPaligner = alignerIP.fromRunConfig(runConfig)
-        IPaligner.logger = thislogger
-        IPaligner.computeAlignmentMatrix()
-        IPaligner.saveAlignmentMatrix(IPalignerResultName)
+    #* create alignerIP, run
+    print(f'\n====================================\n')
+    print(f'        running box rotation aligner')
+    print(f'\n====================================\n')
+    IPaligner = alignerIP.fromRunConfig(runConfig)
+    IPaligner.logger = thislogger
+    IPaligner.computeAlignmentMatrix()
+    IPaligner.saveAlignmentMatrix(IPalignerResultName)
 
     #! ignore stages here for now. only if all stages have run all alignment matrices exist, but since all are run initally, that should be okay.
     # TODO: handle case when not all stages have run
@@ -231,7 +228,7 @@ def runCombi(runConfig, threadID=None):
         return
 
     # actually, stages should be irrelevant here, they were an ungly hack anyway
-    stages = runConfig.stages
+    # stages = runConfig.stages
     print(f'Thread {threadID}: starting!')
     # print(f'Stages:')
     # print(f'Sensor Align: {stages[0]}')
@@ -283,18 +280,20 @@ def runCombi(runConfig, threadID=None):
     combi0Result = {**resSensors}
     with open(combi0Name, 'w') as f:
         json.dump(combi0Result, f, indent=2, sort_keys=True)
-    runConfig.combiMat = combi0Name
+    # runConfig.combiMat = combi0Name       # TODO: delete when certain
+    runConfig.alMatFile = combi0Name
 
     #! ========== Sensors are now aligned
 
     #TODO: MAYBE the track, reco and recoMerged files have to be deleted before this step, and again after module alignment. fuck me if I know, but I'll see soon enough.
 
     #* ---------- half run again, use sensor Align Matrix (combi0)
-    # enable correction this time
+    # enable correction this time #! this was important because it changed the internal state of the runConfig somehow. check that!
     runConfig.alignmentCorrection = True
     # force cut off, otherwise too many tracks will be discarded
     runConfig.forDisableCut = True
-    runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc
+    #! this was important because it changed the internal state of the runConfig somehow. check that!
+    # runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc# TODO: delete when certain
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -303,10 +302,6 @@ def runCombi(runConfig, threadID=None):
     # run all
     prealignWrapper.runSimulations()  # non blocking, so we have to wait
     prealignWrapper.waitForJobCompletion()  # blocking
-    # ---------- don't perform lumi fit
-    # prealignWrapper.detLumi()                  # not blocking
-    # prealignWrapper.waitForJobCompletion()     # waiting
-    # prealignWrapper.extractLumi()              # blocking
 
     #* ---------- align modules
     print(f'\n====================================\n')
@@ -314,7 +309,7 @@ def runCombi(runConfig, threadID=None):
     print(f'\n====================================\n')
 
     # prepare paths, don't do this earlier!
-    runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc
+    # runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc   # TODO: delete when certain
     moduleAlignDataPath = runConfig.pathTrksQA()
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
 
@@ -334,8 +329,9 @@ def runCombi(runConfig, threadID=None):
     combi1Result = {**resSensors, **resModules}
     with open(combi1Name, 'w') as f:
         json.dump(combi1Result, f, indent=2, sort_keys=True)
-    runConfig.combiMat = combi1Name
-    runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc
+    # runConfig.combiMat = combi1Name # TODO: delete when certain
+    # runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc # TODO: delete when certain
+    runConfig.alMatFile = combi1Name
 
     #! ========== Modules are now aligned
 
@@ -373,8 +369,9 @@ def runCombi(runConfig, threadID=None):
     combi3Result = {**resSensors, **resModules, **resIPalign}
     with open(combi3Name, 'w') as f:
         json.dump(combi3Result, f, indent=2, sort_keys=True)
-    runConfig.combiMat = combi3Name
-    runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc
+    # runConfig.combiMat = combi3Name  # TODO: delete when certain
+    # runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc  # TODO: delete when certain
+    runConfig.alMatFile = combi3Name
 
     #! ========== ALL is now aligned
 
@@ -559,7 +556,8 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
         # combi is a special case becasue there are combi0 to combi3
         if configs[0].misalignType == 'combi':
-            fileName2 = Path(f'output/LumiResults/All/{Path(configs[0].combiMat).stem}-{corrStr}')
+            raise Exception(f'You didnt finish this function yet!')
+            # fileName2 = Path(f'output/LumiResults/All/{Path(configs[0].combiMat).stem}-{corrStr}')
         else:
             fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
         fileName2.parent.mkdir(exist_ok=True, parents=True)
@@ -597,7 +595,7 @@ def histogramRunConfig(runConfig, threadId=0):
     # box rotation comparator
     comparator = boxComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-    # comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+    # comparator.loadDesignMisalignments(runConfig.misMatFile)
     comparator.loadDesignMisalignments("/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json")
     comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     boxResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.pdf')
@@ -606,21 +604,21 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator = overlapComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
-    comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+    comparator.loadDesignMisalignments(runConfig.misMatFile)
     comparator.loadSensorAlignerOverlapMatrices(targetDir / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
     overlapResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
 
     # module comparator
     comparator = moduleComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-    comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+    comparator.loadDesignMisalignments(runConfig.misMatFile)
     comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     moduleResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/modules-{runConfig.misalignFactor}.pdf')
 
     # combined comparator
     comparator = combinedComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
-    comparator.loadDesignMisalignments(runConfig.pathMisMatrix())
+    comparator.loadDesignMisalignments(runConfig.misMatFile)
     comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     sensorResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.pdf')
 
@@ -765,20 +763,41 @@ def createMultipleDefaultConfigs():
                         corrPath = 'corrected'
                     else:
                         corrPath = 'uncorrected'
-
                     dest = Path('runConfigs') / Path(corrPath) / Path(misType) / Path(mom) / Path(f'factor-{fac}.json')
                     dest.parent.mkdir(parents=True, exist_ok=True)
 
                     config = LMDRunConfig.minimalDefault()
 
+                    #* set all misalignment matrix file names
+                    vmcworkdir = os.environ['VMCWORKDIR']
+                    if misType == 'aligned':
+                        config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json'
+                        config.alMatFile = None
+
+                    if misType == 'identity':
+                        config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json'
+                        config.alMatFile = str(Path('input/alMat-identity-all.json'))
+
+                    if misType == 'box100':
+                        config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-box100-{fac}.json'
+                        config.alMatFile = str(config.pathAlMatrixPath() / Path(f'alMat-IPalignment-{fac}.json'))  # TODO check!
+
+                    if misType == 'combi':
+                        config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-combi-{fac}.json'
+                        config.alMatFile = None  # this is set during runCombi, otherwise it cannot work
+
+                    if misType == 'modules':
+                        config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-modules-{fac}.json'
+                        config.alMatFile = str(config.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{fac}.json'))
+
+                    if misType == 'sensors':
+                        config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-sensors-{fac}.json'
+                        config.alMatFile = str(config.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{fac}.json'))
+
                     config.misalignFactor = fac
                     config.misalignType = misType
                     config.momentum = mom
                     config.alignmentCorrection = corr
-
-                    # yet another ugly hack: corrected runs don't usually need another alignment run EXCEPT for combis. But those are generated elsewhere.
-                    if corr:
-                        config.stages = [False, False, False]
 
                     # identity and aligned don't get factors, only momenta and need fewer pairs
                     if misType == 'aligned' or misType == 'identity':
@@ -805,19 +824,20 @@ def createMultipleDefaultConfigs():
                     if misType == 'aligned':
                         config.misaligned = False
 
-                    if Path(dest).exists():
-                        # don;t overwrite, just continue
-                        pass
-
+                    # if Path(dest).exists():
+                    #     # don;t overwrite, just continue
+                    #     pass
+                    config.generateJobBaseDir()
                     config.toJSON(dest)
 
-    # regenerate missing fields
-    targetDir = Path('runConfigs')
-    configs = [x for x in targetDir.glob('**/factor*.json') if x.is_file()]
-    for fileName in configs:
-        conf = LMDRunConfig.fromJSON(fileName)
-        conf.generateMatrixNames()
-        conf.toJSON(fileName)
+    # # regenerate missing fields
+    # targetDir = Path('runConfigs')
+    # configs = [x for x in targetDir.glob('**/factor*.json') if x.is_file()]
+    # for fileName in configs:
+    #     conf = LMDRunConfig.fromJSON(fileName)
+    #     # conf.generateMatrixNames()
+    #     conf.generateJobBaseDir()
+    #     conf.toJSON(fileName)
 
 
 # ? =========== main user interface
@@ -883,13 +903,6 @@ if __name__ == "__main__":
     global runNumber
     runNumber = random.randint(0, 100)
 
-    # ? =========== helper functions
-    if args.makeDefault:
-        dest = Path('runConfigs/identity-1.00.json')
-        print(f'saving default config to {dest}')
-        LMDRunConfig.minimalDefault().toJSON(dest)
-        done()
-
     if args.makeMultipleDefaults:
         createMultipleDefaultConfigs()
         done()
@@ -904,7 +917,7 @@ if __name__ == "__main__":
         for fileName in configs:
             conf = LMDRunConfig.fromJSON(fileName)
             conf.updateEnvPaths()
-            conf.generateMatrixNames()
+            conf.generateJobBaseDir()
             conf.toJSON(fileName)
         done()
 

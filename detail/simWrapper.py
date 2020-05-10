@@ -91,10 +91,10 @@ class simWrapper:
         dpm = 'dpm_elastic'
 
         almatp = '--alignment_matrices_path'
-        almatv = str(self.config.pathAlMatrix())
+        almatv = str(self.config.alMatFile)
 
         mismatp = '--misalignment_matrices_path'
-        mismatv = str(self.config.pathMisMatrix())
+        mismatv = str(self.config.misMatFile)
 
         debugArg = '--debug'
         devQueueArg = '--use_devel_queue'

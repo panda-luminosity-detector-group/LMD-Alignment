@@ -3,7 +3,7 @@ def histCompareResults(self):
     with open(self.idealDetectorMatrixPath) as ideasF:
         idealDetectorMatrices = json.load(ideasF)
 
-    with open(self.config.pathMisMatrix()) as f:
+    with open(self.config.misMatFile) as f:
         misMatrices = json.load(f)
 
     comparator = overlapComparator()
