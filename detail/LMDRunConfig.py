@@ -14,12 +14,6 @@ pathlib wrapper specifically for our LMD case. a config object only hold the par
 
 uses pathlib internally and stores some additional values as well:
 
-# TODO: remove combiMat and stages, you don't actually need them. a single runCombi function does this work now.
-
-# TODO: this thing was a huge mistake. all those hidden variabled don't need to be hidden and getters and setters are so no neccessary. just make everything a dict entry and be done with it.
-
-TODO: oh and ffs don't auto generate matrix names. just set them at creation time and let the user change them. wtf were you thinking.
-
 - alignment matrix used
 - misalignment matrix used
 - alignment factor
@@ -28,7 +22,6 @@ TODO: oh and ffs don't auto generate matrix names. just set them at creation tim
 
 handles these things implicitly:
 - uses json matrices by default
-- converts root matrices to json matrices (using ROOT)
 
 most importantly, can also create paths given these parameters:
 - beam momentum
@@ -72,7 +65,7 @@ class LMDRunConfig:
         factorEq = float(self.misalignFactor) == float(other.misalignFactor)
 
         corrLt = self.alignmentCorrection < other.alignmentCorrection
-        corrEq = self.alignmentCorrection == other.alignmentCorrection
+        # corrEq = self.alignmentCorrection == other.alignmentCorrection
 
         if momLt:
             return True
@@ -153,7 +146,7 @@ class LMDRunConfig:
 
     #* ----- keep this one
     def __pathDPM__(self):
-        return Path('dpm_elastic_theta_*mrad_recoil_corrected')
+        return Path('dpm_elastic_theta_2.7-13.0mrad_recoil_corrected')
 
     #* ----- keep this one
     def __pathMisalignDir__(self):
@@ -217,7 +210,6 @@ class LMDRunConfig:
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
 
     # TODO: jesus christ just no. no no no no. delete this too.
-    # TODO: actually, this is pretty pointless here, do this during CREATION of the runConfigs and DELETE THIS FUNCTION
     def pathAlMatrix(self):
         raise Exception(f'You\'re not supposed to call pathAlMatrix anymore! Do you need the alMat filename?')
 
