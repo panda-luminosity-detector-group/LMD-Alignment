@@ -127,15 +127,16 @@ def runAligners(runConfig, threadID=None):
     # print(f'Module Align: {stages[1]}')
     # print(f'Target Align: {stages[2]}')
 
-    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
-    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
-    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
-    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
-    mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged-{runConfig.misalignFactor}.json')
-    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen-{runConfig.misalignFactor}.json')
-    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod-{runConfig.misalignFactor}.json')
-    combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP-{runConfig.misalignFactor}.json')
-    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-{runConfig.misalignFactor}.json')
+    # the follwong MUST be unique across all simulations, so set the seedID too! 
+    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    mergedAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-merged-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-seed{config.seedID}-{runConfig.misalignFactor}.json')
 
     moduleAlignDataPath = runConfig.pathTrksQA()
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
@@ -392,6 +393,13 @@ def runCombi(runConfig, threadID=None):
     print(f'=================================')
     print(f'== REJOICE, COMBI RUN IS DONE! ==')
     print(f'=================================')
+
+    # delete temp data
+    # delete: Lumi_Track_*.root
+    # delete: Lumi_recoMerged_*.root
+    # delete: Lumi_Pairs_*.root
+    # you save: original: 171G after delete: 58G (doesn't include boxdata) 
+    #workDir
 
 
 def runExtractLumi(runConfig, threadID=None):

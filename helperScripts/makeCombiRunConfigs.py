@@ -61,7 +61,7 @@ def copyCombiToMultiSeed():
                 config.alignmentCorrection = False
                 # set more events per job
                 config.trksNum = '200000'
-
+                config.seedID = seedID
                 config.generateJobBaseDir()
 
                 # save to new runConfig

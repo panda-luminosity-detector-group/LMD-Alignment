@@ -39,17 +39,18 @@ class LMDRunConfig:
         self.__JobBaseDir = None
 
         # new porperties, plain and simple
+        self.jobsNum = '100'
+        self.trksNum = '100000'
         self.alMatFile = None
         self.misMatFile = None
         self.misalignFactor = None
         self.misalignType = None
-        self.trksNum = '100000'
-        self.jobsNum = '100'
+        self.seedID = None
         self.misaligned = True
+        self.useIdentityAlignment = False
         self.alignmentCorrection = False
         self.useDebug = False
         self.useDevQueue = False
-        self.useIdentityAlignment = False
         self.forDisableCut = False
         self.updateEnvPaths()
 
