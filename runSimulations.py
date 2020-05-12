@@ -231,13 +231,13 @@ def runCombi(runConfig, threadID=None):
     print(f'Thread {threadID}: starting!')
 
     # the follwong MUST be unique across all simulations, so set the seedID too!
-    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-seed{config.seedID}-{runConfig.misalignFactor}.json')
-    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
-    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
-    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
-    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen-seed{config.seedID}-{runConfig.misalignFactor}.json')
-    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod-seed{config.seedID}-{runConfig.misalignFactor}.json')
-    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-seed{runConfig.seedID}-{runConfig.misalignFactor}.json')
+    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-seed{runConfig.seedID}-{runConfig.misalignFactor}.json')
+    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-seed{runConfig.seedID}-{runConfig.misalignFactor}.json')
+    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-seed{runConfig.seedID}-{runConfig.misalignFactor}.json')
+    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen-seed{runConfig.seedID}-{runConfig.misalignFactor}.json')
+    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod-seed{runConfig.seedID}-{runConfig.misalignFactor}.json')
+    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-seed{runConfig.seedID}-{runConfig.misalignFactor}.json')
 
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-combi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
