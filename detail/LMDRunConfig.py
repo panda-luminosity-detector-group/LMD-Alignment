@@ -103,10 +103,6 @@ class LMDRunConfig:
 
     #! --------------------- generate matrix name after minimal initialization
 
-    # TODO: nope, just nope. remove and set during creation.
-    def generateMatrixNames(self):
-        raise Exception(f"You're not supposed to call generateMatrixNames anymore!")
-
     # keep this in for now
     def generateJobBaseDir(self):
         self.__JobBaseDir = str(self.__resolveActual__(Path(self.__simDataPath) / self.__pathMom__() / self.__pathDPM__() / self.__pathMisalignDir__() / self.__pathTracksNum__()))
@@ -209,14 +205,6 @@ class LMDRunConfig:
     def pathAlMatrixPath(self):
         self.__checkMinimum__()
         return self.__resolveActual__(self.__jobBaseDir__()) / Path('alignmentMatrices')
-
-    # TODO: jesus christ just no. no no no no. delete this too.
-    def pathAlMatrix(self):
-        raise Exception(f'You\'re not supposed to call pathAlMatrix anymore! Do you need the alMat filename?')
-
-    # TODO: no, just return stored value
-    def pathMisMatrix(self):
-        raise Exception(f'You\'re not supposed to call pathMisMatrix anymore! Do you need the alMat filename?')
 
     #* ----- keep this one
     def pathRecoIP(self):

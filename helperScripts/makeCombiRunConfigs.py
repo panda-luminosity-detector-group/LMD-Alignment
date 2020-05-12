@@ -29,7 +29,6 @@ def copyCombiToSpecial():
                 config.alMatPath = matFile
                 # change alignment matrix
                 # config.combiMat = matFile
-                # config.generateMatrixNames()
                 # config.stages = alignerStages[i]
 
                 if i < 3:

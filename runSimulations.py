@@ -127,7 +127,7 @@ def runAligners(runConfig, threadID=None):
     # print(f'Module Align: {stages[1]}')
     # print(f'Target Align: {stages[2]}')
 
-    # the follwong MUST be unique across all simulations, so set the seedID too! 
+    # the follwong MUST be unique across all simulations, so set the seedID too!
     sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-seed{config.seedID}-{runConfig.misalignFactor}.json')
     sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
     moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
@@ -228,22 +228,16 @@ def runCombi(runConfig, threadID=None):
         print(f'Please only use UNcorrected combi runConfigs, this run does the rest')
         return
 
-    # actually, stages should be irrelevant here, they were an ungly hack anyway
-    # stages = runConfig.stages
     print(f'Thread {threadID}: starting!')
-    # print(f'Stages:')
-    # print(f'Sensor Align: {stages[0]}')
-    # print(f'Module Align: {stages[1]}')
-    # print(f'Target Align: {stages[2]}')
 
-    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json')
-    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-{runConfig.misalignFactor}.json')
-    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-{runConfig.misalignFactor}.json')
-    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-{runConfig.misalignFactor}.json')
-    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen-{runConfig.misalignFactor}.json')
-    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod-{runConfig.misalignFactor}.json')
-    # combi2Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenIP-{runConfig.misalignFactor}.json')
-    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-{runConfig.misalignFactor}.json')
+    # the follwong MUST be unique across all simulations, so set the seedID too!
+    sensorAlignerOverlapsResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorOverlaps-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    sensorAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-sensorAlignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    moduleAlignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-moduleAlignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    IPalignerResultName = runConfig.pathAlMatrixPath() / Path(f'alMat-IPalignment-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    combi0Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSen-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    combi1Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenMod-seed{config.seedID}-{runConfig.misalignFactor}.json')
+    combi3Name = runConfig.pathAlMatrixPath() / Path(f'alMat-combiSenModIP-seed{config.seedID}-{runConfig.misalignFactor}.json')
 
     # create logger
     thislogger = LMDrunLogger(f'./runLogs/{datetime.date.today()}/run{runNumber}-worker-combi-{runConfig.misalignType}-{runConfig.misalignFactor}-th{threadID}.txt')
@@ -293,8 +287,6 @@ def runCombi(runConfig, threadID=None):
     runConfig.alignmentCorrection = True
     # force cut off, otherwise too many tracks will be discarded
     runConfig.forDisableCut = True
-    #! this was important because it changed the internal state of the runConfig somehow. check that!
-    # runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc# TODO: delete when certain
 
     # create simWrapper from config
     prealignWrapper = simWrapper.fromRunConfig(runConfig)
@@ -310,7 +302,6 @@ def runCombi(runConfig, threadID=None):
     print(f'\n====================================\n')
 
     # prepare paths, don't do this earlier!
-    # runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc   # TODO: delete when certain
     moduleAlignDataPath = runConfig.pathTrksQA()
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
 
@@ -330,8 +321,6 @@ def runCombi(runConfig, threadID=None):
     combi1Result = {**resSensors, **resModules}
     with open(combi1Name, 'w') as f:
         json.dump(combi1Result, f, indent=2, sort_keys=True)
-    # runConfig.combiMat = combi1Name # TODO: delete when certain
-    # runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc # TODO: delete when certain
     runConfig.alMatFile = combi1Name
 
     #! ========== Modules are now aligned
@@ -370,8 +359,6 @@ def runCombi(runConfig, threadID=None):
     combi3Result = {**resSensors, **resModules, **resIPalign}
     with open(combi3Name, 'w') as f:
         json.dump(combi3Result, f, indent=2, sort_keys=True)
-    # runConfig.combiMat = combi3Name  # TODO: delete when certain
-    # runConfig.generateMatrixNames()  # this should update to combi0, combi1 etc  # TODO: delete when certain
     runConfig.alMatFile = combi3Name
 
     #! ========== ALL is now aligned
@@ -398,7 +385,7 @@ def runCombi(runConfig, threadID=None):
     # delete: Lumi_Track_*.root
     # delete: Lumi_recoMerged_*.root
     # delete: Lumi_Pairs_*.root
-    # you save: original: 171G after delete: 58G (doesn't include boxdata) 
+    # you save: original: 171G after delete: 58G (doesn't include boxdata)
     #workDir
 
 
@@ -564,8 +551,14 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
         # combi is a special case becasue there are combi0 to combi3
         if configs[0].misalignType == 'combi':
-            raise Exception(f'You didnt finish this function yet!')
-            # fileName2 = Path(f'output/LumiResults/All/{Path(configs[0].combiMat).stem}-{corrStr}')
+            # raise Exception(f'You didnt finish this function yet!')
+            fileName2 = str(Path(f'output/LumiResults/All/multi-alMat-combiSenMod-{configs[0].misalignFactor}.json'))
+
+            if configs[0].seedID is not None:
+                print(f'daring, are we?')
+                graph.multiSeed(fileName2)
+                done()
+
         else:
             fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
         fileName2.parent.mkdir(exist_ok=True, parents=True)
@@ -837,15 +830,6 @@ def createMultipleDefaultConfigs():
                     #     pass
                     config.generateJobBaseDir()
                     config.toJSON(dest)
-
-    # # regenerate missing fields
-    # targetDir = Path('runConfigs')
-    # configs = [x for x in targetDir.glob('**/factor*.json') if x.is_file()]
-    # for fileName in configs:
-    #     conf = LMDRunConfig.fromJSON(fileName)
-    #     # conf.generateMatrixNames()
-    #     conf.generateJobBaseDir()
-    #     conf.toJSON(fileName)
 
 
 # ? =========== main user interface

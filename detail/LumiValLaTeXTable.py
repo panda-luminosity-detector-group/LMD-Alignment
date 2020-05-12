@@ -2,12 +2,6 @@
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
-Note: of course this will somehow be line based since every line corresponds to a runConfig.
-
-But later I want it column based, so that I can just add or remove a column to a Table, 
-set it's header and specify which values from the runConfig go into the column.
-Then, I want to be able to quickly assemble a complete LaTeX table with arbitrary
-columns. But time is critical right now.
 """
 
 from pathlib import Path
@@ -114,9 +108,11 @@ class LumiValGraph(LumiValDisplay):
             if abs(float(lumi)) > 1e3:
                 continue
 
+            seedID = conf.seedID
+
             # write to np array
             if reallyAll:
-                values.append([conf.momentum, conf.misalignFactor, lumi, lumiErr])
+                values.append([conf.momentum, conf.misalignFactor, lumi, lumiErr, seedID])
             else:
                 values.append([conf.misalignFactor, lumi, lumiErr])
 
@@ -288,3 +284,26 @@ class LumiValGraph(LumiValDisplay):
                 # Plot will be occupy a maximum of available space
                 bbox_inches='tight')
             plt.close()
+
+    def multiSeed(self, fileName):
+        print(f'Yes. I am multiseeding.')
+
+        # go over all configs, count momenta, factors and seedIDs
+
+        for conf in self.configs:
+            conf.alMatFile = 'al'
+            conf.alignmentCorrection = True
+
+        values = self.getAllValues(reallyAll=True)
+
+        print(values)
+
+        # schema: every momentum and factor can have multiple seedIDs
+
+        # first, copy all of them to a temp directly
+
+        # copy all seeds for a given factor and mom in the same dir!
+
+        # read all lumi-values files to single table
+
+        # use numpy filters to extract sub-tables for plot
