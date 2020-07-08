@@ -48,12 +48,15 @@ class alignerModules:
 
     # words cannot describe how ugly this is, but I'm pressed for time and aesthetics wont get me my phd
     def convertRootTracks(self, dataPath, outJsonFile):
-
+        print(f'converting tracks from ROOT files to json file, using these paths:')
+        print(f'data path: {dataPath}')
+        print(f'out file: {outJsonFile}')
         if not Path(outJsonFile).exists():
             rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
+            print(f'Running root -l -q {rootArgs}')
             subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules')
         else:
-            print(f'processed tracks already aexist, skipping.')
+            print(f'processed tracks already exist, skipping.')
 
     def readTracks(self, fileName, isNumpy=False):
         print(f'reading processed tracks file...')

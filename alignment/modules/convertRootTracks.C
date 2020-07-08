@@ -8,13 +8,17 @@
 
 using nlohmann::json;
 
-void convertRootTracks(){
+int convertRootTracks(){
     cout << "\n\nUsage: convertRootTracks.C(dataPath, outJsonFile)\n\n";
+    return 1;
 }
 
-void convertRootTracks(std::string dataPath, std::string outJsonFile) {
+int convertRootTracks(std::string dataPath, std::string outJsonFile) {
     //*** output json
     json outJson;
+    
+    cout << "reading tracks from this dir:\n" << dataPath << "\n";
+    cout << "writing tracks to this file:\n" << outJsonFile << "\n";
 
     // TChain Version
     TChain *trackChain = new TChain("pndsim");
@@ -97,4 +101,5 @@ void convertRootTracks(std::string dataPath, std::string outJsonFile) {
     std::ofstream o(outJsonFile);
     o << std::setw(2) << outJson << std::endl;
     cout << "all done!\n";
+    return 0;
 }
