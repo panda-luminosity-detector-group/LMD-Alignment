@@ -75,8 +75,10 @@ class LumiValGraph(LumiValDisplay):
                 conf.misalignFactor = 0.0
                 conf.alignmentCorrection = False
 
-            # conf.tempDestPath = conf.pathLumiVals().parent
-            conf.tempDestPath = Path(f'output/temp/LumiVals/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-{conf.alignmentCorrection}')
+            if reallyAll and conf.seedID is not None:
+                conf.tempDestPath = Path(f'output/temp/LumiVals/multi/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-seed{conf.seedID}-{conf.alignmentCorrection}')
+            else:
+                conf.tempDestPath = Path(f'output/temp/LumiVals/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-{conf.alignmentCorrection}')
             conf.tempDestFile = conf.tempDestPath / Path(conf.pathLumiVals().name)
             conf.tempDestPath.mkdir(exist_ok=True, parents=True)
             conf.tempSourcePath = remotePrefix / Path(*conf.pathLumiVals().parts[7:])
@@ -285,25 +287,116 @@ class LumiValGraph(LumiValDisplay):
                 bbox_inches='tight')
             plt.close()
 
+
+    # this is the grand final, plots all factors for all momenta, averages over all seeds and calcs std errors
     def multiSeed(self, fileName):
         print(f'Yes. I am multiseeding.')
 
-        # go over all configs, count momenta, factors and seedIDs
+        values = self.getAllValues(reallyAll=True, copy=True)
+        if len(values) < 1:
+            raise Exception(f'Error! Value array is empty!')
+        # print(values)
 
-        for conf in self.configs:
-            conf.alMatFile = 'al'
-            conf.alignmentCorrection = True
+        # we're guranteed to only have one single misalign type, therefore we're looping over beam momenta
+        momenta = []
+        print('gathering momenta')
 
-        values = self.getAllValues(reallyAll=True)
+        for i in values:
+            momenta.append(i[0])
 
-        print(values)
+        # we only want unique entries
+        momenta = np.array(momenta)
+        momenta = np.sort(momenta)
+        momenta = np.unique(momenta, axis=0)
 
-        # schema: every momentum and factor can have multiple seedIDs
+        sizes = [(15 / 2.54, 9 / 2.54), (15 / 2.54, 4 / 2.54), (6.5 / 2.54, 4 / 2.54)]
+        titlesCorr = ['Luminosity Fit Error, With Alignment', 'Luminosity Fit Error, With Alignment', 'Luminosity Fit Error']
+        titlesUncorr = ['Luminosity Fit Error, Without Alignment', 'Luminosity Fit Error, Without Alignment', 'Luminosity Fit Error']
 
-        # first, copy all of them to a temp directly
+        import matplotlib.pyplot as plt
 
-        # copy all seeds for a given factor and mom in the same dir!
+        self.latexsigma = r'\textsigma{}'
+        self.latexmu = r'\textmu{}'
+        self.latexPercent = r'\%'
+        plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
+        plt.rc('text', usetex=True)
+        plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
-        # read all lumi-values files to single table
+        # plt.rcParams["legend.loc"] = 'upper left'
+        plt.rcParams["legend.loc"] = 'upper right'
 
-        # use numpy filters to extract sub-tables for plot
+        # Defining the figure and figure size
+
+        offsetscale = 1.0
+        offsets = np.arange(-0.02, 0.03, 0.01)
+
+        for i in range(len(sizes)):
+
+            fig, ax = plt.subplots(figsize=sizes[i])
+            colorI = 0
+
+            # colors = ['steelblue', 'red', 'green']
+            # these are the default colors, why change them
+            colors = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf']
+
+            for mom in momenta:
+                # print(f'for momentum {mom}, we find:')
+                mask = (values[:, 0] == mom)  # & (values[:, 2] > -0.3)
+                thseVals = values[mask]
+
+                # TODO: attention! the various seed thingies are still here! make mean and std from them before plotting! TEST THAT!
+
+                # sort 2D array by second column
+                thseVals = thseVals[thseVals[:, 1].argsort()]
+
+                # Plotting the error bars
+                ax.errorbar(thseVals[:, 1] + offsets[colorI] * offsetscale,
+                            thseVals[:, 2],
+                            yerr=thseVals[:, 3],
+                            fmt='d',
+                            ecolor='black',
+                            color=colors[colorI],
+                            capsize=2,
+                            elinewidth=0.6,
+                            label=f'{mom} GeV',
+                            ls='dashed',
+                            linewidth=0.4)
+                colorI += 1
+
+            # Adding plotting parameters
+            # no titles anymore
+            if False:
+                if self.corrected:
+                    ax.set_title(titlesCorr[i])
+                else:
+                    ax.set_title(titlesUncorr[i])
+
+            ax.set_xlabel(f'Misalign Factor')
+            # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
+            ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
+
+            # get handles
+            handles, labels = ax.get_legend_handles_labels()
+            # remove the errorbars
+            handles = [h[0] for h in handles]
+            # use them in the legend
+            # ax.legend(handles, labels, loc='upper left',numpoints=1)
+            # ax.legend(handles, labels, loc='upper right',numpoints=1)
+            ax.legend(handles, labels, loc='best', numpoints=1)
+
+            # draw vertical line to separate aligned and misaligned cases
+            plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.75)
+
+            plt.tight_layout()
+
+            plt.grid(color='grey', which='major', axis='y', linestyle=':', linewidth=0.5)
+            plt.grid(color='grey', which='major', axis='x', linestyle=':', linewidth=0.5)
+            # plt.legend()
+
+            plt.savefig(
+                f'{outFileName}-{i}.pdf',
+                #This is simple recomendation for publication plots
+                dpi=1000,
+                # Plot will be occupy a maximum of available space
+                bbox_inches='tight')
+            plt.close()

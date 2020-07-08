@@ -261,6 +261,7 @@ def runCombi(runConfig, threadID=None):
     print(f'\n====================================\n')
     print(f'        running sensor aligner')
     print(f'\n====================================\n')
+    runConfig.dump()        # debug output
     sensorAligner = alignerSensors.fromRunConfig(runConfig)
     sensorAligner.loadExternalMatrices(runConfig.sensorAlignExternalMatrixPath)  # TODO: do implicitly, aligners always start with a run config
     sensorAligner.sortPairs()
@@ -300,9 +301,9 @@ def runCombi(runConfig, threadID=None):
     print(f'\n====================================\n')
     print(f'        running module aligner')
     print(f'\n====================================\n')
-
+    runConfig.dump()        # debug output
     # prepare paths, don't do this earlier!
-    moduleAlignDataPath = runConfig.pathTrksQA()
+    moduleAlignDataPath = runConfig.pathTrksQA()        # TODO: there is an error here! This doesn't go into the proper subfolders! (1-100_uncut/no_alignment_correction)
     moduleAlignTrackFile = moduleAlignDataPath / Path('processedTracks.json')
 
     moduleAligner = alignerModules.fromRunConfig(runConfig)
@@ -344,6 +345,7 @@ def runCombi(runConfig, threadID=None):
     print(f'\n============================================\n')
     print(f'        running box rotation aligner        ')
     print(f'\n============================================\n')
+    runConfig.dump()        # debug output
     IPaligner = alignerIP.fromRunConfig(runConfig)
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()

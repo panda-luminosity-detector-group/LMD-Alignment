@@ -241,6 +241,7 @@ class LMDRunConfig:
         result += (f'------------------------------\n')
         result += (f'DEBUG OUTPUT for LMDRunConfig:\n\n')
         result += (f'Job Base Dir: {self.__JobBaseDir}\n')
+        result += (f'QA File Dir: {self.pathTrksQA}\n')
         result += (f'Momentum: {self.momentum}\n')
         result += (f'AlignMatrices: {self.alMatFile}\n')
         result += (f'MisalignMatrices: {self.misMatFile}\n')
