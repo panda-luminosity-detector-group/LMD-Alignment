@@ -54,7 +54,10 @@ class alignerModules:
         if not Path(outJsonFile).exists():
             rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
             print(f'Running root -l -q {rootArgs}')
-            subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules')
+            result = subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules', stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True) # I wish himster had python 3.7  ...
+            print(f'stdout: {result.stdout}')
+            print(f'stderr: {result.stderr}')
+            print(f'Root converter should be done now.')
         else:
             print(f'processed tracks already exist, skipping.')
 
