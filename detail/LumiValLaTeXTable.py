@@ -59,8 +59,9 @@ class LumiValGraph(LumiValDisplay):
         values = []
 
         # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/') # used to be roklasen here too, what was that about?
-        #remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/') #! this is the usual path directly after simulations have run
-        remotePrefix = Path('m23:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! this is the hand-picked path (results from different run sets)
+        # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/') #! this is the usual path directly after simulations have run
+        # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! this is the hand-picked path (results from different run sets)
+        remotePrefix = Path('himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! after himster hack
 
         self.corrected = self.configs[0].alignmentCorrection
         self.misalignType = self.configs[0].misalignType
@@ -76,6 +77,11 @@ class LumiValGraph(LumiValDisplay):
                 conf.alignmentCorrection = False
 
             if reallyAll and conf.seedID is not None:
+
+                # workaround for alignment matrix name which is not included in runConfig files
+                conf.alignmentCorrection = True
+                conf.alMatFile = f'alMat-combiSenMod-seed{conf.seedID}-{conf.misalignFactor}.json'
+                
                 conf.tempDestPath = Path(f'output/temp/LumiVals/multi/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-seed{conf.seedID}-{conf.alignmentCorrection}')
             else:
                 conf.tempDestPath = Path(f'output/temp/LumiVals/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-{conf.alignmentCorrection}')
@@ -292,7 +298,7 @@ class LumiValGraph(LumiValDisplay):
     def multiSeed(self, fileName):
         print(f'Yes. I am multiseeding.')
 
-        values = self.getAllValues(reallyAll=True, copy=True)
+        values = self.getAllValues(reallyAll=True, copy=False)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
         # print(values)
@@ -344,15 +350,27 @@ class LumiValGraph(LumiValDisplay):
                 mask = (values[:, 0] == mom)  # & (values[:, 2] > -0.3)
                 thseVals = values[mask]
 
-                # TODO: attention! the various seed thingies are still here! make mean and std from them before plotting! TEST THAT!
-
                 # sort 2D array by second column
                 thseVals = thseVals[thseVals[:, 1].argsort()]
 
-                # Plotting the error bars
-                ax.errorbar(thseVals[:, 1] + offsets[colorI] * offsetscale,
-                            thseVals[:, 2],
-                            yerr=thseVals[:, 3],
+                newArray = []
+                # ideally, get the factors from the array, but at this point I don't really care anymore
+                for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+                    facMask = (values[:, 1] == float(fac))
+                    maskedArray = values[facMask]
+                    mean = np.mean(maskedArray[:,2], axis=0)
+                    std = np.std(maskedArray[:,2], axis=0)
+
+                    if not np.isnan(mean) and not np.isnan(std):
+                        newLine = [mom,float(fac),mean,std]
+
+                newArray.append(newLine)
+                newArray = np.array(newArray)
+                print(f'newArray: {newArray}')
+
+                ax.errorbar(newArray[:,1] + offsets[colorI] * offsetscale,
+                            newArray[:,2],
+                            yerr=newArray[:,3],
                             fmt='d',
                             ecolor='black',
                             color=colors[colorI],
@@ -394,7 +412,7 @@ class LumiValGraph(LumiValDisplay):
             # plt.legend()
 
             plt.savefig(
-                f'{outFileName}-{i}.pdf',
+                f'{fileName}-{i}.pdf',
                 #This is simple recomendation for publication plots
                 dpi=1000,
                 # Plot will be occupy a maximum of available space

@@ -556,6 +556,7 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
             # raise Exception(f'You didnt finish this function yet!')
             fileName2 = str(Path(f'output/LumiResults/All/multi-alMat-combiSenMod-{configs[0].misalignFactor}.json'))
 
+            # this is the multi seed branch
             if configs[0].seedID is not None:
                 print(f'daring, are we?')
                 graph.multiSeed(fileName2)
@@ -563,6 +564,7 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
         else:
             fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
+        
         fileName2.parent.mkdir(exist_ok=True, parents=True)
         graph.saveAllMomenta(fileName2)
 
@@ -1055,9 +1057,10 @@ if __name__ == "__main__":
     if args.fitValuesConfigPath:
         #args.configPath = args.fitValuesConfigPath
         print(f'\n\n')
-        print(f'======================================')
-        print(f'  Remember to run --histPath before!')
-        print(f'======================================')
+        # I don't think thats valid anymore
+        # print(f'======================================')
+        # print(f'  Remember to run --histPath before!')
+        # print(f'======================================')
         print(f'\n\n')
         print(f'Graphing all Lumi values in {args.fitValuesConfigPath}')
         showLumiFitResults(args.fitValuesConfigPath, 0, True)
