@@ -658,7 +658,7 @@ def histogramRunConfig(runConfig, threadId=0):
 # ? =========== runAllConfigsMT that calls 'function' multithreaded
 
 
-def runConfigsMT(args, function, threads=64):
+def runConfigsMT(args, function, threads=8):    # for multiseed, change this back for single scenarios!
 
     configs = []
     # read all configs from path

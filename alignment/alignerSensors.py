@@ -102,7 +102,7 @@ class alignerSensors:
         else:
             numpyPath = Path(pairPath)
 
-        if self.config.useDebug:
+        if self.config.useDebug or True:    # for multiseed, change this back for single scenarios!
             print(f'Finding matrices single-threaded!')
             for overlapID in self.availableOverlapIDs:
                 self.findSingleMatrix(overlapID, numpyPath)
