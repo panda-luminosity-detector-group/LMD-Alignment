@@ -224,7 +224,7 @@ def runCombi(runConfig, threadID=None):
     """
 
     #* ---------- prepare config (aligner stages, combi mat names etc)
-    if runConfig.alignmentCorrection or runConfig.misalignType != 'combi':
+    if runConfig.alignmentCorrection or (runConfig.misalignType != 'combi' and runConfig.misalignType != 'aligned'):
         print(f'Please only use UNcorrected combi runConfigs, this run does the rest')
         return
 
@@ -269,6 +269,7 @@ def runCombi(runConfig, threadID=None):
     sensorAligner.saveOverlapMatrices(sensorAlignerOverlapsResultName)
     sensorAligner.combineAlignmentMatrices()
     sensorAligner.saveAlignmentMatrices(sensorAlignerResultName)
+    del sensorAligner
 
     # make intermediate result 0
     with open(sensorAlignerResultName, 'r') as f:
@@ -313,6 +314,7 @@ def runCombi(runConfig, threadID=None):
     moduleAligner.readTracks(moduleAlignTrackFile)
     moduleAligner.alignModules()
     moduleAligner.saveMatrices(moduleAlignerResultName)
+    del moduleAligner
 
     # make intermediate result 1
     with open(sensorAlignerResultName, 'r') as f:
@@ -350,6 +352,7 @@ def runCombi(runConfig, threadID=None):
     IPaligner.logger = thislogger
     IPaligner.computeAlignmentMatrix()
     IPaligner.saveAlignmentMatrix(IPalignerResultName)
+    del IPaligner
 
     # make intermediate result 3
     with open(sensorAlignerResultName, 'r') as f:
