@@ -14,8 +14,13 @@ plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':10})
 plt.rc('text', usetex=True)
 plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
-def saveAllMomenta(outFileName):
-    values = np.load('input/effValues.npy')
+def saveAllMomenta(outFileName, useAligned = False):
+
+    if useAligned:
+        values = np.load('input/effValuesAligned.npy')
+    else:
+        values = np.load('input/effValues.npy')
+    
     values = values.astype(np.float)
 
     # we're guranteed to only have one single misalign type, therefore we're looping over beam momenta
@@ -100,4 +105,5 @@ def saveAllMomenta(outFileName):
 
 if __name__ == "__main__":
     print('greetings, human')
-    saveAllMomenta('output/trackEfficiencies.pdf')
+    saveAllMomenta('output/trackEfficiencies.pdf', False)
+    saveAllMomenta('output/trackEfficienciesAligned.pdf', True)

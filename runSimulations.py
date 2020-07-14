@@ -277,7 +277,6 @@ def runCombi(runConfig, threadID=None):
     combi0Result = {**resSensors}
     with open(combi0Name, 'w') as f:
         json.dump(combi0Result, f, indent=2, sort_keys=True)
-    # runConfig.combiMat = combi0Name       # TODO: delete when certain
     runConfig.alMatFile = combi0Name
 
     #! ========== Sensors are now aligned

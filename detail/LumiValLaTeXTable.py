@@ -301,7 +301,7 @@ class LumiValGraph(LumiValDisplay):
         values = self.getAllValues(reallyAll=True, copy=False)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
-        # print(values)
+        print(values)
 
         # we're guranteed to only have one single misalign type, therefore we're looping over beam momenta
         momenta = []
@@ -356,17 +356,21 @@ class LumiValGraph(LumiValDisplay):
                 newArray = []
                 # ideally, get the factors from the array, but at this point I don't really care anymore
                 for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
-                    facMask = (values[:, 1] == float(fac))
-                    maskedArray = values[facMask]
+                    facMask = (thseVals[:, 1] == float(fac))
+                    maskedArray = thseVals[facMask]
+
+                    print(f'for factor {fac} at {mom}GeV, this is the masked array:\n{maskedArray}')
+
                     mean = np.mean(maskedArray[:,2], axis=0)
                     std = np.std(maskedArray[:,2], axis=0)
 
                     if not np.isnan(mean) and not np.isnan(std):
                         newLine = [mom,float(fac),mean,std]
+                        newArray.append(newLine)
+                        print(f'I will add this line: {newLine}')
 
-                newArray.append(newLine)
                 newArray = np.array(newArray)
-                print(f'newArray: {newArray}')
+                # print(f'newArray: {newArray}')
 
                 ax.errorbar(newArray[:,1] + offsets[colorI] * offsetscale,
                             newArray[:,2],

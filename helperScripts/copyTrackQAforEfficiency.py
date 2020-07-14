@@ -39,9 +39,10 @@ copy = False
 for fac in factors:
     for mom in momenta:
         # copy file
-        trkFile = 'Lumi_TrksQA_100000.root'
-        remotePath = Path(f'himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/plab_{mom}GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-combi-{fac}/100000/1-100_xy_m_cut_real/no_alignment_correction')
-        localPath = Path(f'p{mom}/f{fac}')
+        trkFile = 'Lumi_TrksQA_200000.root'
+        # remotePath = Path(f'himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/plab_{mom}GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-combi-{fac}/100000/1-100_xy_m_cut_real/no_alignment_correction')
+        remotePath = Path(f'himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_{mom}GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-combi-{fac}/100000/1-100_xy_m_cut_real/aligned-alMat-combiSenMod-{fac}')
+        localPath = Path(f'temp/p{mom}/f{fac}')
         
         localPath.mkdir(exist_ok=True, parents=True)
         if copy:
@@ -52,7 +53,7 @@ for mom in momenta:
     # copy file
     trkFile = 'Lumi_TrksQA_100000.root'
     remotePath = Path(f'himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/plab_{mom}GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/no_geo_misalignment/100000/1-100_xy_m_cut_real/no_alignment_correction')
-    localPath = Path(f'p{mom}/no')
+    localPath = Path(f'temp/p{mom}/no')
 
     localPath.mkdir(exist_ok=True, parents=True)
     
@@ -63,10 +64,11 @@ resArray = []
 
 for fac in factors:
     for mom in momenta:
-        trkFile = 'Lumi_TrksQA_100000.root'
-        localPath = Path(f'p{mom}/f{fac}')
+        trkFile = 'Lumi_TrksQA_200000.root'
+        trkFile1 = 'Lumi_TrksQA_100000.root'
+        localPath = Path(f'temp/p{mom}/f{fac}')
         
-        baseLineFile = Path(f'p{mom}/no/{trkFile}')
+        baseLineFile = Path(f'temp/p{mom}/no/{trkFile1}')
         baseline = getTrkNo(str(baseLineFile))
         
         try:
@@ -78,4 +80,5 @@ for fac in factors:
             pass
 
 resArray = np.array(resArray)
-np.save('effValues.npy', resArray)
+# np.save('input/effValues.npy', resArray)
+np.save('input/effValuesAligned.npy', resArray)
