@@ -71,7 +71,36 @@ def copyCombiToMultiSeed():
                 # you should now have 10 for each fac and seedID (100 total per momentum)
                 pass
 
+def copyCombiToMultiSeedAligned():
+    for mom in ['1.5', '4.06', '8.9', '11.91', '15.0']:
+        for fac in ['0.0']:
 
+            for seedID in ['1', '2', '3']:
+
+                # read original combi file for mom and fac (not seed obvs)
+                # do this each time so you don't reuse settings on accident
+
+                fileName = f'runConfigs/corrected/combi/{mom}/factor-{fac}.json'
+                config = LMDRunConfig.fromJSON(fileName)
+
+                # change misMat, extMat, avgMat names
+                vmcworkdir = os.environ['VMCWORKDIR'] # points to PandaRoot base dir
+                config.sensorAlignExternalMatrixPath = f'input/sensorAligner/externalMatrices-sensors-aligned.json'
+                config.moduleAlignAvgMisalignFile = f'input/moduleAlignment/avgMisalign-aligned.json'
+                config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json'
+                config.alignmentCorrection = False
+                # set more events per job
+                config.trksNum = '200000'
+                config.seedID = seedID
+                config.generateJobBaseDir()
+
+                # save to new runConfig
+                destPath = Path(f'runConfigs/special/multiSeed/{mom}/{fac}/factor-{fac}-seed{seedID}.json')
+                destPath.parent.mkdir(exist_ok=True, parents=True)
+                config.toJSON(destPath)
+
+                # you should now have 10 for each fac and seedID (100 total per momentum)
+                pass
 
 if __name__ == "__main__":
     copyCombiToSpecial()
