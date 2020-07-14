@@ -80,7 +80,7 @@ def copyCombiToMultiSeedAligned():
                 # read original combi file for mom and fac (not seed obvs)
                 # do this each time so you don't reuse settings on accident
 
-                fileName = f'runConfigs/corrected/combi/{mom}/factor-{fac}.json'
+                fileName = f'runConfigs/corrected/aligned/{mom}/factor-1.00.json'
                 config = LMDRunConfig.fromJSON(fileName)
 
                 # change misMat, extMat, avgMat names
@@ -105,3 +105,4 @@ def copyCombiToMultiSeedAligned():
 if __name__ == "__main__":
     copyCombiToSpecial()
     copyCombiToMultiSeed()
+    copyCombiToMultiSeedAligned()
