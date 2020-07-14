@@ -8,5 +8,7 @@ runLogs/*
 *.png
 *.pdf
 *.BAK
+temp/
+.vscode/
 
 !runConfigs/linkFacZero.sh
