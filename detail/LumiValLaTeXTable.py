@@ -367,6 +367,7 @@ class LumiValGraph(LumiValDisplay):
                 # ideally, get the factors from the array, but at this point I don't really care anymore
                 # for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
                 for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
+                # for fac in ['1.00']:
                     facMask = (thseVals[:, 1] == float(fac))
                     maskedArray = thseVals[facMask]
 
@@ -387,7 +388,7 @@ class LumiValGraph(LumiValDisplay):
                     if not np.isnan(mean) and not np.isnan(std):
                         newLine = [mom, float(fac), mean, std]
                         newArray.append(newLine)
-                        # print(f'I will add this line: {newLine}')
+                        print(f'I will add this line: {newLine}')
 
                 newArray = np.array(newArray)
                 # print(f'newArray: {newArray}')
