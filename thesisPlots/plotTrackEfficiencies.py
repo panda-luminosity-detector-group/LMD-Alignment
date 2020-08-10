@@ -75,7 +75,7 @@ def saveAllMomenta(outFileName, useAligned = False):
             colorI += 1
 
         ax.set_xlabel(f'Misalign Factor')
-        ax.set_ylabel(f'Efficiency [{latexPercent}]')
+        ax.set_ylabel(f'Track Efficiency [{latexPercent}]')
 
         # get handles
         handles, labels = ax.get_legend_handles_labels()
