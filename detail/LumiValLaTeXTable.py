@@ -10,6 +10,7 @@ import json
 import numpy as np
 import subprocess
 import sys
+import glob  # to resolve wildcards in lumi values path name
 
 
 class LumiValDisplay:
@@ -61,7 +62,9 @@ class LumiValGraph(LumiValDisplay):
         # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/') # used to be roklasen here too, what was that about?
         # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/') #! this is the usual path directly after simulations have run
         # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! this is the hand-picked path (results from different run sets)
-        remotePrefix = Path('himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! after himster hack
+        # remotePrefix = Path('himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! after himster hack, but now with 2FA, thats not working anymore either
+
+        remotePrefix = Path('/media/DataEnc2TBRaid1/Arbeit/VirtualDir')
 
         self.corrected = self.configs[0].alignmentCorrection
         self.misalignType = self.configs[0].misalignType
@@ -81,7 +84,7 @@ class LumiValGraph(LumiValDisplay):
                 # workaround for alignment matrix name which is not included in runConfig files
                 conf.alignmentCorrection = True
                 conf.alMatFile = f'alMat-combiSenMod-seed{conf.seedID}-{conf.misalignFactor}.json'
-                
+
                 conf.tempDestPath = Path(f'output/temp/LumiVals/multi/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-seed{conf.seedID}-{conf.alignmentCorrection}')
             else:
                 conf.tempDestPath = Path(f'output/temp/LumiVals/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-{conf.alignmentCorrection}')
@@ -89,9 +92,17 @@ class LumiValGraph(LumiValDisplay):
             conf.tempDestPath.mkdir(exist_ok=True, parents=True)
             conf.tempSourcePath = remotePrefix / Path(*conf.pathLumiVals().parts[7:])
 
+            # changed thus to use local directory, since rsyncing from python doesn't work anymore from himster
             if copy:
-                print(f'copying:\n{conf.tempSourcePath}\nto:\n{conf.tempDestPath}')
-                success = subprocess.run(['scp', conf.tempSourcePath, conf.tempDestPath]).returncode
+                # first, find the actual file, use bash auto completetion for wildcards:
+                resolved = glob.glob(str(conf.tempSourcePath))
+                if len(resolved) > 0:
+                    resolved = resolved[0]
+                else:
+                    continue
+
+                # print(f'copying:\n{resolved}\nto:\n{conf.tempDestPath}')
+                success = subprocess.run(['cp', resolved, conf.tempDestPath]).returncode  #! use cp instead of scp for copies from local dirs
 
                 if success > 0:
                     print(f'\n\n')
@@ -293,15 +304,14 @@ class LumiValGraph(LumiValDisplay):
                 bbox_inches='tight')
             plt.close()
 
-
     # this is the grand final, plots all factors for all momenta, averages over all seeds and calcs std errors
     def multiSeed(self, fileName):
         print(f'Yes. I am multiseeding.')
 
-        values = self.getAllValues(reallyAll=True, copy=False)
+        values = self.getAllValues(reallyAll=True, copy=True)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
-        print(values)
+        # print(values)
 
         # we're guranteed to only have one single misalign type, therefore we're looping over beam momenta
         momenta = []
@@ -333,7 +343,7 @@ class LumiValGraph(LumiValDisplay):
 
         # Defining the figure and figure size
 
-        offsetscale = 1.0
+        offsetscale = 2.0
         offsets = np.arange(-0.02, 0.03, 0.01)
 
         for i in range(len(sizes)):
@@ -355,28 +365,38 @@ class LumiValGraph(LumiValDisplay):
 
                 newArray = []
                 # ideally, get the factors from the array, but at this point I don't really care anymore
-                for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+                # for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+                for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
                     facMask = (thseVals[:, 1] == float(fac))
                     maskedArray = thseVals[facMask]
 
-                    print(f'for factor {fac} at {mom}GeV, this is the masked array:\n{maskedArray}')
+                    if len(maskedArray) < 1:
+                        continue
 
-                    mean = np.mean(maskedArray[:,2], axis=0)
-                    std = np.std(maskedArray[:,2], axis=0)
+                    # print(f'for factor {fac} at {mom}GeV, this is the masked array BEFORE outlier rejection:\n{maskedArray}')
+                    # outlier rejection, sort 2D array by second column
+                    # maskedArray = maskedArray[np.abs(maskedArray[:, 2]).argsort()]
+                    # maskedArray = maskedArray[:-2]
+                    # print(f'for factor {fac} at {mom}GeV, this is the masked array AFTER outlier rejection:\n{maskedArray}')
+                    #! NOPE! We use data thats not available at the real experiment, the reference luminosity!
+                    #! NO OUTLIER REJECTION! Keep this comment so you don't forget that.
+
+                    mean = np.mean(maskedArray[:, 2], axis=0)
+                    std = np.std(maskedArray[:, 2], axis=0)
 
                     if not np.isnan(mean) and not np.isnan(std):
-                        newLine = [mom,float(fac),mean,std]
+                        newLine = [mom, float(fac), mean, std]
                         newArray.append(newLine)
-                        print(f'I will add this line: {newLine}')
+                        # print(f'I will add this line: {newLine}')
 
                 newArray = np.array(newArray)
                 # print(f'newArray: {newArray}')
 
-                ax.errorbar(newArray[:,1] + offsets[colorI] * offsetscale,
-                            newArray[:,2],
-                            yerr=newArray[:,3],
+                ax.errorbar(newArray[:, 1] + offsets[colorI] * offsetscale,
+                            newArray[:, 2],
+                            yerr=newArray[:, 3],
                             fmt='d',
-                            ecolor='black',
+                            ecolor=colors[colorI],
                             color=colors[colorI],
                             capsize=2,
                             elinewidth=0.6,
@@ -394,6 +414,12 @@ class LumiValGraph(LumiValDisplay):
                     ax.set_title(titlesUncorr[i])
 
             ax.set_xlabel(f'Misalign Factor')
+            # ax.set_xticks(np.arange(-0.25, 2, step=0.25))
+            
+            # set ticks exactly to the misalign factors
+            start, end = ax.get_xlim()
+            ax.xaxis.set_ticks(np.arange(0.0, end, 0.25))
+            
             # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
             ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
 
