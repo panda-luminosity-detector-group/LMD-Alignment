@@ -3,6 +3,7 @@ __pycache__
 runConfigs/*
 runLogs/*
 .testscripts/
+testscripts/*.json
 .vscode/*
 .vscode/settings.json
 *.png
