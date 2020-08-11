@@ -31,6 +31,7 @@ class CorridorFitter():
             if self.useAnchor:
                 trackRecos = np.vstack((self.anchorPoint[:3], trackRecos))
 
+            # see https://stackoverflow.com/questions/2298390/fitting-a-line-in-3d
             meanPoint = trackRecos.mean(axis=0)
             _, _, vv = np.linalg.svd(trackRecos - meanPoint)
 
