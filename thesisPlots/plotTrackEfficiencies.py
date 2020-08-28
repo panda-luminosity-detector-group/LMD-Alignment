@@ -33,6 +33,8 @@ def saveAllMomenta(outFileName, useAligned = False):
 
     latexsigma = r'\textsigma{}'
     latexmu = r'\textmu{}'
+    latexEpsilon = r'\epsilon'
+    slashtext = r'\text'
     latexPercent = r'\%'
     plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
     plt.rc('text', usetex=True)
@@ -75,7 +77,7 @@ def saveAllMomenta(outFileName, useAligned = False):
             colorI += 1
 
         ax.set_xlabel(f'Misalign Factor')
-        ax.set_ylabel(f'Track Efficiency [{latexPercent}]')
+        ax.set_ylabel(r'$ \epsilon_{\textrm{misalignment}} $ [\%]')
 
         # get handles
         handles, labels = ax.get_legend_handles_labels()
@@ -85,6 +87,11 @@ def saveAllMomenta(outFileName, useAligned = False):
         # ax.legend(handles, labels, loc='upper left',numpoints=1)
         # ax.legend(handles, labels, loc='upper right',numpoints=1)
         ax.legend(handles, labels, loc='best', numpoints=1)
+        
+        # set ticks exactly to the misalign factors
+        start, end = ax.get_xlim()
+        ax.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        # ax.xaxis.set_view_interval(start, end)
 
         # draw vertical line to separate aligned and misaligned cases
         #plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.75)
