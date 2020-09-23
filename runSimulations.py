@@ -555,20 +555,21 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
         # combi is a special case becasue there are combi0 to combi3
         if configs[0].misalignType == 'combi':
-            # raise Exception(f'You didnt finish this function yet!')
+            fileName2 = Path(f'output/LumiResults/All/multi-alMat-combiSenMod-{configs[0].misalignFactor}.json')
+            fileName2.parent.mkdir(exist_ok=True, parents=True)
             fileName2 = str(Path(f'output/LumiResults/All/multi-alMat-combiSenMod-{configs[0].misalignFactor}.json'))
 
             # this is the multi seed branch
             if configs[0].seedID is not None:
+                # raise Exception(f'You didnt finish this function yet!')
                 print(f'daring, are we?')
                 graph.multiSeed(fileName2)
                 done()
 
-        else:
-            fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
-        
-        fileName2.parent.mkdir(exist_ok=True, parents=True)
-        graph.saveAllMomenta(fileName2)
+            else:
+                fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
+                graph.saveAllMomenta(fileName2)
+                done()
 
     else:
         print(f'printing to stdout:')
