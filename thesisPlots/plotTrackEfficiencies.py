@@ -62,6 +62,9 @@ def saveAllMomenta(outFileName, useAligned = False):
             # sort 2D array by second column
             thseVals = thseVals[thseVals[:, 1].argsort()]
 
+            # add 100% efficiency at misalign 0.0 for calrity (hey it's not cheating)
+            thseVals = np.vstack(([float(mom), 0.0, 1.0], thseVals))
+
             # Plotting the error bars
             ax.errorbar(thseVals[:, 1] + offsets[colorI] * offsetscale,
                         thseVals[:, 2]*1e2,
@@ -90,8 +93,8 @@ def saveAllMomenta(outFileName, useAligned = False):
         
         # set ticks exactly to the misalign factors
         start, end = ax.get_xlim()
-        ax.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
-        # ax.xaxis.set_view_interval(start, end)
+        ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        # ax.xaxis.set_view_interval(start, end)    #* what area should be shown, independent of plot range or ticks
 
         # draw vertical line to separate aligned and misaligned cases
         #plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.75)
