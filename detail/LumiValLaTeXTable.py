@@ -70,6 +70,7 @@ class LumiValGraph(LumiValDisplay):
         self.misalignType = self.configs[0].misalignType
 
         for conf in self.configs:
+
             if (conf.alignmentCorrection != self.corrected) and (conf.misalignType != 'aligned'):
                 raise Exception(f'Error! You cannot mix corrected and uncorrected results!')
             if (conf.misalignType != self.misalignType) and (conf.misalignType != 'aligned'):
@@ -88,9 +89,14 @@ class LumiValGraph(LumiValDisplay):
                 conf.tempDestPath = Path(f'output/temp/LumiVals/multi/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-seed{conf.seedID}-{conf.alignmentCorrection}')
             else:
                 conf.tempDestPath = Path(f'output/temp/LumiVals/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-{conf.alignmentCorrection}')
+            
             conf.tempDestFile = conf.tempDestPath / Path(conf.pathLumiVals().name)
             conf.tempDestPath.mkdir(exist_ok=True, parents=True)
             conf.tempSourcePath = remotePrefix / Path(*conf.pathLumiVals().parts[7:])
+
+            # print(f'debug:')
+            # print(f'conf.tempSourcePath: {conf.tempSourcePath}')
+            # print(f'conf.tempDestPath: {conf.tempDestPath}')
 
             # changed thus to use local directory, since rsyncing from python doesn't work anymore from himster
             if copy:
@@ -147,7 +153,7 @@ class LumiValGraph(LumiValDisplay):
         values = self.getAllValues()
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
-        print(values)
+        # print(values)
 
         sizes = [(15 / 2.54, 9 / 2.54), (15 / 2.54, 4 / 2.54), (6.5 / 2.54, 4 / 2.54)]
         titlesCorr = ['Luminosity Fit Error, With Alignment', 'Luminosity Fit Error, With Alignment', 'Luminosity Fit Error']
@@ -276,6 +282,15 @@ class LumiValGraph(LumiValDisplay):
 
             ax.set_xlabel(f'Misalign Factor')
             # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
+
+            # set ticks exactly to the misalign factors
+            start, end = ax.get_xlim()
+            # ax.xaxis.set_ticks(np.arange(0.0, end, 0.25))
+
+            #! change for sensors, they don't have 3.0
+            ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+            ax.xaxis.set_view_interval(start, end)
+
             ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
 
             # get handles
@@ -288,7 +303,7 @@ class LumiValGraph(LumiValDisplay):
             ax.legend(handles, labels, loc='best', numpoints=1)
 
             # draw vertical line to separate aligned and misaligned cases
-            plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.75)
+            plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.5)
 
             plt.tight_layout()
 
@@ -311,7 +326,7 @@ class LumiValGraph(LumiValDisplay):
         values = self.getAllValues(reallyAll=True, copy=True)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
-        # print(values)
+        print(values)
 
         # we're guranteed to only have one single misalign type, therefore we're looping over beam momenta
         momenta = []
@@ -365,7 +380,7 @@ class LumiValGraph(LumiValDisplay):
 
                 newArray = []
                 # ideally, get the factors from the array, but at this point I don't really care anymore
-                for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+                for fac in ['0.0', '0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
                 # for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
                 # for fac in ['1.00']:
                     facMask = (thseVals[:, 1] == float(fac))
@@ -436,7 +451,7 @@ class LumiValGraph(LumiValDisplay):
             ax.legend(handles, labels, loc='best', numpoints=1)
 
             # draw vertical line to separate aligned and misaligned cases
-            plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.75)
+            plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.5)
 
             plt.tight_layout()
 
