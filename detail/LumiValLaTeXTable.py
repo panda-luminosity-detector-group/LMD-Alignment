@@ -365,8 +365,8 @@ class LumiValGraph(LumiValDisplay):
 
                 newArray = []
                 # ideally, get the factors from the array, but at this point I don't really care anymore
-                # for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
-                for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
+                for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+                # for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
                 # for fac in ['1.00']:
                     facMask = (thseVals[:, 1] == float(fac))
                     maskedArray = thseVals[facMask]
@@ -419,8 +419,10 @@ class LumiValGraph(LumiValDisplay):
             
             # set ticks exactly to the misalign factors
             start, end = ax.get_xlim()
-            ax.xaxis.set_ticks(np.arange(0.0, end, 0.25))
-            
+            # ax.xaxis.set_ticks(np.arange(0.0, end, 0.25))
+            ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5])
+            ax.xaxis.set_view_interval(start, end)
+
             # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
             ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
 
