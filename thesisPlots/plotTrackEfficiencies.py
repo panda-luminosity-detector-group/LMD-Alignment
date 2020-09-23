@@ -93,7 +93,12 @@ def saveAllMomenta(outFileName, useAligned = False):
         
         # set ticks exactly to the misalign factors
         start, end = ax.get_xlim()
-        ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        
+        if not useAligned:
+            ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        else:
+            ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5])
+        
         # ax.xaxis.set_view_interval(start, end)    #* what area should be shown, independent of plot range or ticks
 
         # draw vertical line to separate aligned and misaligned cases
