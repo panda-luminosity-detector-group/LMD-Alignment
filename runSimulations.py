@@ -788,11 +788,11 @@ def createMultipleDefaultConfigs():
 
                     if misType == 'box100':
                         config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-box100-{fac}.json'
-                        config.alMatFile = str(config.pathAlMatrixPath() / Path(f'alMat-IPalignment-{fac}.json'))  # TODO check!
+                        config.alMatFile = str(config.pathAlMatrixPath() / Path(f'alMat-IPalignment-{fac}.json'))
 
                     if misType == 'combi':
                         config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-combi-{fac}.json'
-                        config.alMatFile = None  # this is set during runCombi, otherwise it cannot work
+                        config.alMatFile = str(config.pathAlMatrixPath() / Path(f'alMat-combiSenMod-{fac}.json'))  # this is a placeholder, the actual values are in the special subfolder after makeCombiRunConfigs
 
                     if misType == 'modules':
                         config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-modules-{fac}.json'
