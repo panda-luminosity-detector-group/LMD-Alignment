@@ -10,17 +10,23 @@ import sys
 latexmu = r'\textmu{}'
 latexsigma = r'\textsigma{}'
 latexPercent = r'\%'
-plt.rc('font',**{'family':'serif', 'serif':['Palatino'], 'size':10})
+plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
 plt.rc('text', usetex=True)
 plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+"""
+TODO: At the moment, I only have the TrksQA files from the aligned cases. So I can only do this for the aligned cases.
+"""
 
-def saveAllMomenta(outFileName, useAligned = False):
+useMultiSeed = True
+
+
+def saveAllMomenta(outFileName, useAligned=False):
 
     if useAligned:
-        values = np.load('input/effValuesAligned.npy')
+        values = np.load('input/effValuesNew.npy')
     else:
         values = np.load('input/effValues.npy')
-    
+
     values = values.astype(np.float)
 
     # we're guranteed to only have one single misalign type, therefore we're looping over beam momenta
@@ -62,22 +68,68 @@ def saveAllMomenta(outFileName, useAligned = False):
             # sort 2D array by second column
             thseVals = thseVals[thseVals[:, 1].argsort()]
 
-            # add 100% efficiency at misalign 0.0 for calrity (hey it's not cheating)
-            thseVals = np.vstack(([float(mom), 0.0, 1.0], thseVals))
+            if useMultiSeed:
 
-            # Plotting the error bars
-            ax.errorbar(thseVals[:, 1] + offsets[colorI] * offsetscale,
-                        thseVals[:, 2]*1e2,
-                        #yerr=thseVals[:, 3],
-                        fmt='d',
-                        ecolor='black',
-                        color=colors[colorI],
-                        capsize=2,
-                        elinewidth=0.6,
-                        label=f'{mom} GeV',
-                        ls='dashed',
-                        linewidth=0.4)
+                print(f'\n\nOkay, these are the values for {mom} :\n{thseVals}')
+
+                newArray = []
+                # ideally, get the factors from the array, but at this point I don't really care anymore
+                for fac in ['0.0', '0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+                    facMask = (thseVals[:, 1] == float(fac))
+                    maskedArray = thseVals[facMask]
+
+                    if len(maskedArray) < 1:
+                        continue
+                    
+                    maskedArray[:,2] = maskedArray[:,2] * (100 / 2) # the baseline was calculated on half a data set, hence the / 2
+
+                    mean = np.mean(maskedArray[:, 2], axis=0)
+                    std = np.std(maskedArray[:, 2], axis=0)
+
+                    if not np.isnan(mean) and not np.isnan(std):
+                        newLine = [float(mom), float(fac), mean, std]
+                        newArray.append(newLine)
+                        print(f'I will add this line: {newLine}')
+
+                newArray = np.array(newArray)
+
+                print(f'This is the newArray that I\'ll plot:\n{newArray}')
+
+                # add 100% efficiency at misalign 0.0 for calrity (hey it's not cheating)
+                newArray = np.vstack(([float(mom), 0.0, 100.0, 0.0], newArray))
+
+                ax.errorbar(newArray[:, 1] + offsets[colorI] * offsetscale,
+                            newArray[:, 2],
+                            yerr=newArray[:, 3],
+                            fmt='d',
+                            ecolor=colors[colorI],
+                            color=colors[colorI],
+                            capsize=2,
+                            elinewidth=0.6,
+                            label=f'{mom} GeV',
+                            ls='dashed',
+                            linewidth=0.4)
+
+            else:
+
+                # add 100% efficiency at misalign 0.0 for calrity (hey it's not cheating)
+                thseVals = np.vstack(([float(mom), 0.0, 1.0], thseVals))
+
+                # Plotting the error bars
+                ax.errorbar(
+                    thseVals[:, 1] + offsets[colorI] * offsetscale,
+                    thseVals[:, 2] * 1e2,
+                    #yerr=thseVals[:, 3],
+                    fmt='d',
+                    ecolor='black',
+                    color=colors[colorI],
+                    capsize=2,
+                    elinewidth=0.6,
+                    label=f'{mom} GeV',
+                    ls='dashed',
+                    linewidth=0.4)
             colorI += 1
+            print('\n\n')
 
         ax.set_xlabel(f'Misalign Factor')
         ax.set_ylabel(r'$ \epsilon_{\textrm{misalignment}} $ [\%]')
@@ -90,15 +142,15 @@ def saveAllMomenta(outFileName, useAligned = False):
         # ax.legend(handles, labels, loc='upper left',numpoints=1)
         # ax.legend(handles, labels, loc='upper right',numpoints=1)
         ax.legend(handles, labels, loc='best', numpoints=1)
-        
+
         # set ticks exactly to the misalign factors
         start, end = ax.get_xlim()
-        
+
         if not useAligned:
             ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
         else:
             ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5])
-        
+
         # ax.xaxis.set_view_interval(start, end)    #* what area should be shown, independent of plot range or ticks
 
         # draw vertical line to separate aligned and misaligned cases
@@ -118,7 +170,8 @@ def saveAllMomenta(outFileName, useAligned = False):
             bbox_inches='tight')
         plt.close()
 
+
 if __name__ == "__main__":
     print('greetings, human')
-    saveAllMomenta('output/trackEfficiencies.pdf', False)
+    # saveAllMomenta('output/trackEfficiencies.pdf', False)
     saveAllMomenta('output/trackEfficienciesAligned.pdf', True)
