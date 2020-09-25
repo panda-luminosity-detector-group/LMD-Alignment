@@ -76,20 +76,15 @@ for fac in factors:
                 #! this path is for the combiSeed shit
                 localPath = Path(f'/home/roklasen/temp/combiStuff/temp/p{mom}/f{fac}-seed{seedID}')
 
-                # localPath.mkdir(exist_ok=True, parents=True)
-
-                # if copy:
-                # subprocess.run(['rsync',remotePath / Path(trkFile), localPath / Path(trkFile)])
-                # else:
                 # print to some file or some shit
                 shitfile += f'mkdir -p {localPath}\n'
                 shitfile += f'cp {remotePath}/{trkFile} {localPath}\n'
-                # print(f'shitlist is now {shitfile}')
 
 with open('shitlist.sh', 'w') as f:
     f.write(shitfile)
 
 print(f'Copying some more shit for baseline')
+
 # establish baseline
 for mom in momenta:
     # copy file
@@ -119,6 +114,9 @@ for fac in factors:
 
             try:
                 recTracks = getTrkNo(str(localPath / Path(trkFile)))
+                # sometimes the reco tracks file is broken
+                if recTracks < 1000:
+                    continue
                 ratio = recTracks / baseline
                 #print(f'good track ratio: {ratio}')
                 resArray.append([mom, fac, ratio])
@@ -134,6 +132,9 @@ for fac in factors:
 
                 try:
                     recTracks = getTrkNo(str(localPath / Path(trkFile)))
+                    # sometimes the reco tracks file is broken
+                    if recTracks < 1000:
+                        continue
                     ratio = recTracks / baseline
                     #print(f'good track ratio: {ratio}')
                     resArray.append([mom, fac, ratio, seedID])
@@ -141,5 +142,9 @@ for fac in factors:
                     pass
 
 resArray = np.array(resArray)
-# np.save('input/effValues.npy', resArray)
-np.save('input/effValuesAligned.npy', resArray)
+print(f'I will save these values:\n{resArray}')
+if singleCombi:
+    np.save('input/effValues.npy', resArray)
+else:
+    np.save('input/effValuesNew.npy', resArray)
+    # np.save('input/effValuesAligned.npy', resArray)
