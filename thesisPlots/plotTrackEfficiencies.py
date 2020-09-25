@@ -70,7 +70,7 @@ def saveAllMomenta(outFileName, useAligned=False):
 
             if useMultiSeed:
 
-                print(f'\n\nOkay, these are the values for {mom} :\n{thseVals}')
+                # print(f'\n\nOkay, these are the values for {mom} :\n{thseVals}')
 
                 newArray = []
                 # ideally, get the factors from the array, but at this point I don't really care anymore
@@ -89,11 +89,11 @@ def saveAllMomenta(outFileName, useAligned=False):
                     if not np.isnan(mean) and not np.isnan(std):
                         newLine = [float(mom), float(fac), mean, std]
                         newArray.append(newLine)
-                        print(f'I will add this line: {newLine}')
+                        # print(f'I will add this line: {newLine}')
 
                 newArray = np.array(newArray)
 
-                print(f'This is the newArray that I\'ll plot:\n{newArray}')
+                # print(f'This is the newArray that I\'ll plot:\n{newArray}')
 
                 # add 100% efficiency at misalign 0.0 for calrity (hey it's not cheating)
                 newArray = np.vstack(([float(mom), 0.0, 100.0, 0.0], newArray))
@@ -129,7 +129,6 @@ def saveAllMomenta(outFileName, useAligned=False):
                     ls='dashed',
                     linewidth=0.4)
             colorI += 1
-            print('\n\n')
 
         ax.set_xlabel(f'Misalign Factor')
         ax.set_ylabel(r'$ \epsilon_{\textrm{misalignment}} $ [\%]')
