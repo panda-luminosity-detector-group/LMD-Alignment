@@ -80,8 +80,8 @@ def saveAllMomenta(outFileName, useAligned=False):
 
                     if len(maskedArray) < 1:
                         continue
-                    
-                    maskedArray[:,2] = maskedArray[:,2] * (100 / 2) # the baseline was calculated on half a data set, hence the / 2
+
+                    maskedArray[:, 2] = maskedArray[:, 2] * (100 / 2)  # the baseline was calculated on half a data set, hence the / 2
 
                     mean = np.mean(maskedArray[:, 2], axis=0)
                     std = np.std(maskedArray[:, 2], axis=0)

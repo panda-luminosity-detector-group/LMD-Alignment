@@ -23,6 +23,6 @@ if __name__ == "__main__":
     comp.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comp.loadSensorAlignerOverlapMatrices('/media/DataEnc2TBRaid1/Arbeit/LMDscripts/output/temp/alMats/sensors-15.0-1.00/alMat-sensorOverlaps-1.00.json')
     comp.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
-    comp.setSize((12/2.54,8/2.54))
+    comp.setSize((12 / 2.54, 8 / 2.54))
     comp.getValues()
     comp.saveHistogram(f'sensor-C2.pdf')
