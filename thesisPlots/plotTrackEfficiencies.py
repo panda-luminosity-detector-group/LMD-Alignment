@@ -95,7 +95,7 @@ def saveAllMomenta(outFileName, useAligned=False):
 
                 # print(f'This is the newArray that I\'ll plot:\n{newArray}')
 
-                # add 100% efficiency at misalign 0.0 for calrity (hey it's not cheating)
+                # add 100% efficiency at misalign 0.0 for clarity (hey it's not cheating)
                 newArray = np.vstack(([float(mom), 0.0, 100.0, 0.0], newArray))
 
                 ax.errorbar(newArray[:, 1] + offsets[colorI] * offsetscale,
@@ -112,7 +112,7 @@ def saveAllMomenta(outFileName, useAligned=False):
 
             else:
 
-                # add 100% efficiency at misalign 0.0 for calrity (hey it's not cheating)
+                # add 100% efficiency at misalign 0.0 for clarity (hey it's not cheating)
                 thseVals = np.vstack(([float(mom), 0.0, 1.0], thseVals))
 
                 # Plotting the error bars
