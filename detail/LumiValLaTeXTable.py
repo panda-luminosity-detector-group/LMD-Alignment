@@ -64,6 +64,7 @@ class LumiValGraph(LumiValDisplay):
         # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! this is the hand-picked path (results from different run sets)
         # remotePrefix = Path('himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! after himster hack, but now with 2FA, thats not working anymore either
 
+        #* all the above are now irrelevant, the himster was hacked and every access requires 2FA. you cannot copy files from here anymore and have to prepare them by hand.
         remotePrefix = Path('/media/DataEnc2TBRaid1/Arbeit/VirtualDir')
 
         self.corrected = self.configs[0].alignmentCorrection
@@ -96,6 +97,7 @@ class LumiValGraph(LumiValDisplay):
 
             # print(f'debug:')
             # print(f'conf.tempSourcePath: {conf.tempSourcePath}')
+            # print(f'conf.alignmentCorrection is {conf.alignmentCorrection}')
             # print(f'conf.tempDestPath: {conf.tempDestPath}')
 
             # changed thus to use local directory, since rsyncing from python doesn't work anymore from himster
@@ -119,10 +121,12 @@ class LumiValGraph(LumiValDisplay):
                     continue
 
             if not conf.tempDestFile.exists():
+                print(f'error! cannot find {conf.tempDestFile}')
                 continue
 
             with open(conf.tempDestFile) as file:
                 lumiVals = json.load(file)
+                # print(f'reading data from {conf.tempDestFile}')
 
             try:
                 lumi = lumiVals["relative_deviation_in_percent"][0]
@@ -326,7 +330,7 @@ class LumiValGraph(LumiValDisplay):
         values = self.getAllValues(reallyAll=True, copy=True)
         if len(values) < 1:
             raise Exception(f'Error! Value array is empty!')
-        print(values)
+        # print(values)
 
         # we're guranteed to only have one single misalign type, therefore we're looping over beam momenta
         momenta = []
@@ -339,6 +343,8 @@ class LumiValGraph(LumiValDisplay):
         momenta = np.array(momenta)
         momenta = np.sort(momenta)
         momenta = np.unique(momenta, axis=0)
+
+        print(f'Momenta: {momenta}')
 
         sizes = [(15 / 2.54, 9 / 2.54), (15 / 2.54, 4 / 2.54), (6.5 / 2.54, 4 / 2.54)]
         titlesCorr = ['Luminosity Fit Error, With Alignment', 'Luminosity Fit Error, With Alignment', 'Luminosity Fit Error']
@@ -381,7 +387,7 @@ class LumiValGraph(LumiValDisplay):
                 newArray = []
                 # ideally, get the factors from the array, but at this point I don't really care anymore
                 for fac in ['0.0', '0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
-                # for fac in ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
+                # for fac in ['0.0', '0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
                 # for fac in ['1.00']:
                     facMask = (thseVals[:, 1] == float(fac))
                     maskedArray = thseVals[facMask]
@@ -403,7 +409,7 @@ class LumiValGraph(LumiValDisplay):
                     if not np.isnan(mean) and not np.isnan(std):
                         newLine = [mom, float(fac), mean, std]
                         newArray.append(newLine)
-                        print(f'I will add this line: {newLine}')
+                        # print(f'I will add this line: {newLine}')
 
                 newArray = np.array(newArray)
                 # print(f'newArray: {newArray}')
@@ -461,6 +467,7 @@ class LumiValGraph(LumiValDisplay):
 
             plt.savefig(
                 f'{fileName}-{i}.pdf',
+                # f'{fileName}-{i}-subset.pdf',
                 #This is simple recomendation for publication plots
                 dpi=1000,
                 # Plot will be occupy a maximum of available space

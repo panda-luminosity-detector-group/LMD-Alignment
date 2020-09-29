@@ -213,8 +213,21 @@ class LMDRunConfig:
 
     #* ----- keep this one
     def pathLumiVals(self):
+        """
+        There is a small bug here. This works for all runConfigs that have the correct useAlignCorrection flag, except MultiSeeds.
+        Those are currently all set to false and we can only get the lumi vals for the corrected case. but we want uncorrected as well!
+        So there is a small hack here (please don't judge me)
+        
+        
+        wait I dont think this is needed anymore. the lumi fit is always done on cut data, because otherwise it reaches > 500%. That's why the true is in the if clause above
+        """
+
+        """
+        TODO: actually, this is only because the lumi fit was once done ALWAYS on cut data, then on UNcut but only if no alignment was done. This is a mess of course.
+        This can be fixed though.
+        """
         self.__checkMinimum__()
-        if self.alignmentCorrection or self.misalignType == 'aligned' or True: #! TODO: remove that True for gods sake
+        if (self.alignmentCorrection or self.misalignType == 'aligned') or True:
             return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__alignCorrectionSubDir__() / self.__bunches__() / self.__lumiVals__())
         else:
             return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__alignCorrectionSubDir__() / self.__bunches__() / self.__lumiVals__())

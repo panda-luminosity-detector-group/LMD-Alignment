@@ -71,6 +71,7 @@ def copyCombiToMultiSeed():
                 # you should now have 10 for each fac and seedID (100 total per momentum)
                 pass
 
+# This generates three NON-misaligned cases
 def copyCombiToMultiSeedAligned():
     for mom in ['1.5', '4.06', '8.9', '11.91', '15.0']:
         for fac in ['0.0']:
@@ -105,4 +106,4 @@ def copyCombiToMultiSeedAligned():
 if __name__ == "__main__":
     copyCombiToSpecial()
     copyCombiToMultiSeed()
-    copyCombiToMultiSeedAligned()
+    #copyCombiToMultiSeedAligned()      # don't do that for now
