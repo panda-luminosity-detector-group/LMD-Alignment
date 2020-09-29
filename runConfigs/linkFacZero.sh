@@ -70,3 +70,15 @@ ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15
 ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenMod/15.0/factor-0.00.json
 ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenIP/15.0/factor-0.00.json
 ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/combiSenModIP/15.0/factor-0.00.json
+
+mkdir -p /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/1.5/0.0
+mkdir -p /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/4.06/0.0
+mkdir -p /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/8.9/0.0
+mkdir -p /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/11.91/0.0
+mkdir -p /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/15.0/0.0
+
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/1.5/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/1.5/0.0/factor-0.00-seed0.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/4.06/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/4.06/0.0/factor-0.00-seed0.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/8.9/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/8.9/0.0/factor-0.00-seed0.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/11.91/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/11.91/0.0/factor-0.00-seed0.json
+ln -s /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/uncorrected/aligned/15.0/factor-1.00.json /media/DataEnc2TBRaid1/Arbeit/LMDscripts/runConfigs/special/multiSeed/15.0/0.0/factor-0.00-seed0.json
