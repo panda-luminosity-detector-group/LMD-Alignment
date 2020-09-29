@@ -84,7 +84,9 @@ class LumiValGraph(LumiValDisplay):
             if reallyAll and conf.seedID is not None:
 
                 # workaround for alignment matrix name which is not included in runConfig files
+                # if you want UNcorrected, leave this off
                 conf.alignmentCorrection = True
+                
                 conf.alMatFile = f'alMat-combiSenMod-seed{conf.seedID}-{conf.misalignFactor}.json'
 
                 conf.tempDestPath = Path(f'output/temp/LumiVals/multi/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-seed{conf.seedID}-{conf.alignmentCorrection}')
@@ -466,8 +468,9 @@ class LumiValGraph(LumiValDisplay):
             # plt.legend()
 
             plt.savefig(
-                f'{fileName}-{i}.pdf',
-                # f'{fileName}-{i}-subset.pdf',
+                # f'{fileName}-{i}.pdf',      # normal case
+                f'{fileName}-{i}-uncorrected.pdf',      # for the lumi from UNcorrected UNcut data
+                # f'{fileName}-{i}-subset.pdf',     # for the smaller misalign factor subset
                 #This is simple recomendation for publication plots
                 dpi=1000,
                 # Plot will be occupy a maximum of available space

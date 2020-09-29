@@ -225,9 +225,11 @@ class LMDRunConfig:
         """
         TODO: actually, this is only because the lumi fit was once done ALWAYS on cut data, then on UNcut but only if no alignment was done. This is a mess of course.
         This can be fixed though.
+
+        If you want the extracted lumi for multiSeed (yes, that is possible), always use the UNcor UNcorrected branch (set the if to always fail with an 'and False')
         """
         self.__checkMinimum__()
-        if (self.alignmentCorrection or self.misalignType == 'aligned') or True:
+        if (self.alignmentCorrection or self.misalignType == 'aligned') and False:
             return self.__resolveActual__(self.__jobBaseDir__() / self.__cut__() / self.__alignCorrectionSubDir__() / self.__bunches__() / self.__lumiVals__())
         else:
             return self.__resolveActual__(self.__jobBaseDir__() / self.__uncut__() / self.__alignCorrectionSubDir__() / self.__bunches__() / self.__lumiVals__())
