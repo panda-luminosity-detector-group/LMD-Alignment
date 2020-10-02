@@ -32,7 +32,7 @@ class LumiValLaTeXTable(LumiValDisplay):
 
         self.configs.sort()
 
-        print('Beam Momentum [GeV] & Misalign Type & Misalign Factor & Corrected & Lumi Deviation [\%] \\\\ \\hline')
+        print('Beam Momentum [GeV/c] & Misalign Type & Misalign Factor & Corrected & Lumi Deviation [\%] \\\\ \\hline')
         for conf in self.configs:
 
             if Path(conf.pathLumiVals()).exists():
@@ -84,8 +84,8 @@ class LumiValGraph(LumiValDisplay):
             if reallyAll and conf.seedID is not None:
 
                 # workaround for alignment matrix name which is not included in runConfig files
-                # if you want UNcorrected, leave this off
-                conf.alignmentCorrection = True
+                # if you want UNcorrected, turn this off
+                conf.alignmentCorrection = False
                 
                 conf.alMatFile = f'alMat-combiSenMod-seed{conf.seedID}-{conf.misalignFactor}.json'
 
@@ -136,7 +136,7 @@ class LumiValGraph(LumiValDisplay):
             except:
                 continue
 
-            if abs(float(lumi)) > 1e3:
+            if abs(float(lumi)) > 2e3:
                 continue
 
             seedID = conf.seedID
@@ -273,7 +273,7 @@ class LumiValGraph(LumiValDisplay):
                             color=colors[colorI],
                             capsize=2,
                             elinewidth=0.6,
-                            label=f'{mom} GeV',
+                            label=f'{mom} GeV/c',
                             ls='dashed',
                             linewidth=0.4)
                 colorI += 1
@@ -424,7 +424,7 @@ class LumiValGraph(LumiValDisplay):
                             color=colors[colorI],
                             capsize=2,
                             elinewidth=0.6,
-                            label=f'{mom} GeV',
+                            label=f'{mom} GeV/c',
                             ls='dashed',
                             linewidth=0.4)
                 colorI += 1
@@ -445,6 +445,7 @@ class LumiValGraph(LumiValDisplay):
             # ax.xaxis.set_ticks(np.arange(0.0, end, 0.25))
             ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5])
             ax.xaxis.set_view_interval(start, end)
+            # ax.set_ylim([0,2200])
 
             # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
             ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
