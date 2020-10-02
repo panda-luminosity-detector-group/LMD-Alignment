@@ -85,7 +85,7 @@ class LumiValGraph(LumiValDisplay):
 
                 # workaround for alignment matrix name which is not included in runConfig files
                 # if you want UNcorrected, turn this off
-                conf.alignmentCorrection = False
+                conf.alignmentCorrection = True
                 
                 conf.alMatFile = f'alMat-combiSenMod-seed{conf.seedID}-{conf.misalignFactor}.json'
 
@@ -109,6 +109,7 @@ class LumiValGraph(LumiValDisplay):
                 if len(resolved) > 0:
                     resolved = resolved[0]
                 else:
+                    print(f'skipping unresolvable file {conf.tempDestFile}')
                     continue
 
                 # print(f'copying:\n{resolved}\nto:\n{conf.tempDestPath}')
@@ -134,6 +135,7 @@ class LumiValGraph(LumiValDisplay):
                 lumi = lumiVals["relative_deviation_in_percent"][0]
                 lumiErr = lumiVals["relative_deviation_error_in_percent"][0]
             except:
+                print(f'skipping unradbale file {conf.tempDestFile}')
                 continue
 
             if abs(float(lumi)) > 2e3:
@@ -414,7 +416,7 @@ class LumiValGraph(LumiValDisplay):
                         # print(f'I will add this line: {newLine}')
 
                 newArray = np.array(newArray)
-                # print(f'newArray: {newArray}')
+                print(f'newArray: {newArray}')
 
                 ax.errorbar(newArray[:, 1] + offsets[colorI] * offsetscale,
                             newArray[:, 2],
@@ -469,8 +471,8 @@ class LumiValGraph(LumiValDisplay):
             # plt.legend()
 
             plt.savefig(
-                # f'{fileName}-{i}.pdf',      # normal case
-                f'{fileName}-{i}-uncorrected.pdf',      # for the lumi from UNcorrected UNcut data
+                f'{fileName}-{i}.pdf',      # normal case
+                # f'{fileName}-{i}-uncorrected.pdf',      # for the lumi from UNcorrected UNcut data
                 # f'{fileName}-{i}-subset.pdf',     # for the smaller misalign factor subset
                 #This is simple recomendation for publication plots
                 dpi=1000,

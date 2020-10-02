@@ -20,12 +20,10 @@ TODO: At the moment, I only have the TrksQA files from the aligned cases. So I c
 useMultiSeed = True
 
 
-def saveAllMomenta(outFileName, useAligned=False):
+def saveAllMomenta(outFileName):
 
-    if useAligned:
-        values = np.load('input/effValuesNew.npy')
-    else:
-        values = np.load('input/effValues.npy')
+    # values = np.load('input/effValuesAligned.npy')
+    values = np.load('input/effValuesNonAligned.npy')
 
     values = values.astype(np.float)
 
@@ -145,10 +143,8 @@ def saveAllMomenta(outFileName, useAligned=False):
         # set ticks exactly to the misalign factors
         start, end = ax.get_xlim()
 
-        if not useAligned:
-            ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
-        else:
-            ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5])
+        # ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5])
 
         # ax.xaxis.set_view_interval(start, end)    #* what area should be shown, independent of plot range or ticks
 
@@ -172,5 +168,5 @@ def saveAllMomenta(outFileName, useAligned=False):
 
 if __name__ == "__main__":
     print('greetings, human')
-    # saveAllMomenta('output/trackEfficiencies.pdf', False)
-    saveAllMomenta('output/trackEfficienciesAlignedMulti.pdf', True)
+    # saveAllMomenta('output/trackEfficienciesAlignedMulti.pdf')
+    saveAllMomenta('output/trackEfficienciesNonAlignedMulti.pdf')

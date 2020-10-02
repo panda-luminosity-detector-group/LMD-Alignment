@@ -41,6 +41,8 @@ class comparator:
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
+        plt.rcParams["legend.loc"] = 'best'
+
 
         #plt.rcParams['axes.spines.left'] = False
         plt.rcParams['axes.spines.right'] = False
@@ -157,7 +159,7 @@ class boxComparator(comparator):
         print(f' OI VALUES: {values}')
 
         histA.hist(values, bins=15, histtype='bar', label=bucketLabels, color=self.colors)  # this is only the z distance
-        histA.set_title('Residuals')   # change to mm!
+        # histA.set_title('Residuals')   # change to mm!
         histA.set_xlabel(f'd [{self.latexmu}rad]')
         histA.set_ylabel('count')
         plt.legend()
@@ -321,16 +323,18 @@ class overlapComparator(comparator):
 
         # plot difference hit array
         fig = plt.figure()
-        fig.set_size_inches(16/2.54, 9/2.54) 
+        # fig.set_size_inches(16/2.54, 9/2.54) 
+        fig.set_size_inches(7/2.54, 5/2.54) 
 
-        bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
+        # bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
+        bucketLabels = [f'{self.latexsigma}x={sigX}{self.latexmu}m', f'{self.latexsigma}y={sigY}{self.latexmu}m', f'{self.latexsigma} z={sigZ}']
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
         kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:2])
         histA.hist(values[...,:2], **kwargs)
-        histA.set_title('Overlap Matrices ICP/actual | 2\% 2D cut')   # change to mm!
+        # histA.set_title('Overlap Matrices ICP/actual | 2\% 2D cut')   # change to mm!
         histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
        
@@ -355,7 +359,7 @@ class overlapComparator(comparator):
             ICPmatrix = mi.baseTransform(ICPmatrix, inv(matModule))
             MisalignLikeICP = mi.baseTransform(MisalignLikeICP, inv(matModule))
         
-        # return values in {self.latexmu}m
+        # return values in um
         dMat = (MisalignLikeICP @ inv(ICPmatrix))*1e4
         returnArray = np.array([dMat[0,3], dMat[1,3], dMat[2,3]]).reshape(1,3)
         
@@ -380,7 +384,13 @@ class overlapComparator(comparator):
         differences = np.empty((0,3))
 
         for o in self.overlaps:
-            differences = np.append(differences, self.computeOneICP(o), axis=0)
+            theseValues = self.computeOneICP(o)
+
+            if (np.abs(theseValues[0][0]) > 30 or np.abs(theseValues[0][1]) > 30):
+                print(f'\n\n\n\n\nWARNING overlap residuals larger than 30um: {theseValues}, happend on {o} file {outputFileName}  \n\n\n\n\n')
+            
+            differences = np.append(differences, theseValues, axis=0)
+
 
         self.histValues(differences)
         plt.savefig(outputFileName,
@@ -556,7 +566,7 @@ class combinedComparator(comparator):
         kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:2])
         histA.hist(values[...,:2], **kwargs)
 
-        histA.set_title('Sensor Alignment Residuals')
+        # histA.set_title('Sensor Alignment Residuals')
         histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
 

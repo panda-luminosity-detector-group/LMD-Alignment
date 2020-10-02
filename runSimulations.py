@@ -547,10 +547,12 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
             corrStr = 'corrected'
         else:
             corrStr = 'uncorrected'
+        
         fileName = Path(f'output/LumiResults/{configs[0].momentum}/{configs[0].misalignType}/LumiFits-{corrStr}')
         fileName.parent.mkdir(exist_ok=True, parents=True)
 
         graph = LumiValGraph.fromConfigs(configs)
+        
         # graph.save(fileName)
 
         # combi is a special case becasue there are combi0 to combi3
@@ -566,10 +568,11 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
                 graph.multiSeed(fileName2)
                 done()
 
-            else:
-                fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
-                graph.saveAllMomenta(fileName2)
-                done()
+        else:
+            fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
+            print(f'saving graph to {fileName2}')
+            graph.saveAllMomenta(fileName2)
+            done()
 
     else:
         print(f'printing to stdout:')
@@ -582,15 +585,16 @@ def histogramRunConfig(runConfig, threadId=0):
     # copy matrices from himster to local folder
     oldTargetDir = Path(runConfig.pathAlMatrixPath())
 
-    remotePrefix = Path('/lustre/miifs05/scratch/him-specf/paluma/roklasen')
+    # remotePrefix = Path('/lustre/miifs05/scratch/him-specf/paluma/roklasen')
+    remotePrefix = Path('/media/DataEnc2TBRaid1/Arbeit/VirtualDir')
     targetDir = Path(f'output/temp/alMats/{runConfig.misalignType}-{runConfig.momentum}-{runConfig.misalignFactor}/')
     targetDir.mkdir(exist_ok=True, parents=True)
     # compose remote dir from local dir
-    remoteDir = 'm23:' + str(remotePrefix / Path(*oldTargetDir.parts[6:]) / Path('*'))
+    remoteDir = str(remotePrefix / Path(*oldTargetDir.parts[7:]))
     print(f'copying:\n{remoteDir}\nto:\n{targetDir}')
 
     if True:
-        success = subprocess.run(['scp', remoteDir, targetDir]).returncode
+        success = subprocess.run(['cp', '-r', remoteDir, targetDir]).returncode
 
         if success > 0:
             print(f'\n\n')
@@ -600,10 +604,13 @@ def histogramRunConfig(runConfig, threadId=0):
             print(f'\n\n')
             return
 
+    targetDir = targetDir / Path(f'alignmentMatrices')
+
     # box rotation comparator
     comparator = boxComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     # comparator.loadDesignMisalignments(runConfig.misMatFile)
+    # the design misalignment is so small, just use ideal as comparisond
     comparator.loadDesignMisalignments("/media/DataEnc2TBRaid1/Arbeit/Root/PandaRoot-New/macro/detectors/lmd/geo/misMatrices/misMat-aligned-1.00.json")
     comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
     boxResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/box-{runConfig.misalignFactor}-icp.pdf')
@@ -654,7 +661,7 @@ def histogramRunConfig(runConfig, threadId=0):
         'sensors': (np.array(sensorResultMean).tolist(), np.array(sensorResultSigma).tolist())
     }
 
-    print(values)
+    # print(values)
     return values
 
 
@@ -857,7 +864,7 @@ if __name__ == "__main__":
     parser.add_argument('-f', metavar='--fullRunConfig', type=str, dest='fullRunConfig', help='Do a full run (simulate mc data, find alignment, determine Luminosity)')
     parser.add_argument('-F', metavar='--fullRunConfigPath', type=str, dest='fullRunConfigPath', help='same as -f, but for all Configs in specified path')
 
-    parser.add_argument('-FS',
+    parser.add_argument('-FS', #TODO: deprecate, wasn't really used
                         metavar='--fullRunConfigSequencePath',
                         type=str,
                         dest='fullRunConfigSequencePath',

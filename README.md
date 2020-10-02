@@ -74,6 +74,10 @@ So, the runConfigs for those are not created automatically but must be created w
 
 They must also be called in sequence, the combi0 configs *must* be run before any other. I think SLURM supports job dependencies, but I don't know how yet.
 
+# Multiple Samples for Combined Misalignment
+
+Combi misalignment can be corrected if the individual methods are done in the right order. To get more statistics, each scenario (every misalign factor at every beam momentum) is done ten times with randomized misalignment matrices. This is called MultiSeed. The runConfigs for that are in the "special" sub directory.
+
 # TODO: Add parameters to runConfig
 
 - Add tracks/event to runConfig and simulation, should work with 1 - 10!

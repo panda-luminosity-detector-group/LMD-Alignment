@@ -146,5 +146,5 @@ print(f'I will save these values:\n{resArray}')
 if singleCombi:
     np.save('input/effValues.npy', resArray)
 else:
-    np.save('input/effValuesNew.npy', resArray)
+    np.save('input/effValuesNonAligned.npy', resArray)
     # np.save('input/effValuesAligned.npy', resArray)
