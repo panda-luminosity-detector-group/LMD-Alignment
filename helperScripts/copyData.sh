@@ -16,12 +16,19 @@ for srcDir in ../${newDataPath}/plab*/dpm*/no*/100000/1-100_x*/no*/bunches*/binn
   cp $srcDir/lumi-values.json ./$target/lumi-values.json
 done
 
+# copy alignment matrices
+for srcDir in ../backup_LumiFitOnUNcut/plab*/dpm*/no*/100000/alignmentMatrices; do
+  target=$(echo $srcDir | cut -d'/' -f3-)
+  mkdir -p $target
+  cp $srcDir/alMat*.json ./$target/
+done
+
 # -------------------------------------
 #          copy boxRot100 data
 # -------------------------------------
 
 #! check if this is the right directory!
-for srcDir in ../${oldDataPath}/plab*/dpm*/geo*box100*/100000/1-100_x*/aligned*/bunches*/binning*/merge*; do
+for srcDir in ../${newDataPath}/plab*/dpm*/geo*box100*/100000/1-100_x*/aligned*/bunches*/binning*/merge*; do
   target=$(echo $srcDir | cut -d'/' -f3-)
   mkdir -p $target
   cp $srcDir/lumi-values.json ./$target/lumi-values.json
@@ -34,7 +41,7 @@ for srcDir in ../${oldDataPath}/plab*/dpm*/geo*box100*/100000/1-100_x*/no_alignm
 done
 
 # copy alignment matrices
-for srcDir in ../${oldDataPath}/plab*/dpm*/geo*box100*/100000/alignmentMatrices; do
+for srcDir in ../${newDataPath}/plab*/dpm*/geo*box100*/100000/alignmentMatrices; do
   target=$(echo $srcDir | cut -d'/' -f3-)
   mkdir -p $target
   cp $srcDir/alMat*.json ./$target/
@@ -44,7 +51,7 @@ done
 #          copy modules data
 # -------------------------------------
 
-for srcDir in ../${oldDataPath}/plab*/dpm*/geo*modules*/100000/1-100_x*/aligned*/bunches*/binning*/merge*; do
+for srcDir in ../${newDataPath}/plab*/dpm*/geo*modules*/100000/1-100_x*/aligned*/bunches*/binning*/merge*; do
   target=$(echo $srcDir | cut -d'/' -f3-)
   mkdir -p $target
   cp $srcDir/lumi-values.json ./$target/lumi-values.json
@@ -57,7 +64,7 @@ for srcDir in ../${oldDataPath}/plab*/dpm*/geo*modules*/100000/1-100_x*/no_align
 done
 
 # copy alignment matrices
-for srcDir in ../${oldDataPath}/plab*/dpm*/geo*modules*/100000/alignmentMatrices; do
+for srcDir in ../${newDataPath}/plab*/dpm*/geo*modules*/100000/alignmentMatrices; do
   target=$(echo $srcDir | cut -d'/' -f3-)
   mkdir -p $target
   cp $srcDir/alMat*.json ./$target/
@@ -68,7 +75,7 @@ done
 # -------------------------------------
 
 # copy aligned lumi fit
-for srcDir in ../${oldDataPath}/plab*/dpm*/geo*sensors*/100000/1-100_x*/aligned*/bunches*/binning*/merge*; do
+for srcDir in ../${newDataPath}/plab*/dpm*/geo*sensors*/100000/1-100_x*/aligned*/bunches*/binning*/merge*; do
   target=$(echo $srcDir | cut -d'/' -f3-)
   mkdir -p $target
   cp $srcDir/lumi-values.json ./$target/lumi-values.json
@@ -82,7 +89,7 @@ for srcDir in ../${oldDataPath}/plab*/dpm*/geo*sensors*/100000/1-100_x*/no_align
 done
 
 # copy alignment matrices
-for srcDir in ../${oldDataPath}/plab*/dpm*/geo*sensors*/100000/alignmentMatrices; do
+for srcDir in ../${newDataPath}/plab*/dpm*/geo*sensors*/100000/alignmentMatrices; do
   target=$(echo $srcDir | cut -d'/' -f3-)
   mkdir -p $target
   cp $srcDir/alMat*.json ./$target/
