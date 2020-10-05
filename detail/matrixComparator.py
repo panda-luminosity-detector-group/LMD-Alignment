@@ -217,7 +217,7 @@ class moduleComparator(comparator):
         else:
             fig.set_size_inches(self.sizeExternal)
 
-        fig.suptitle('Module Alignment Residuals')
+        # fig.suptitle('Module Alignment Residuals')
         fig.subplots_adjust(wspace=0.05)
         # fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         # fig.tight_layout()

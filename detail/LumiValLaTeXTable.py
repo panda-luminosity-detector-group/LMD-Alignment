@@ -59,12 +59,7 @@ class LumiValGraph(LumiValDisplay):
 
         values = []
 
-        # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/backup_beamTiltEnabled/') # used to be roklasen here too, what was that about?
-        # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/') #! this is the usual path directly after simulations have run
-        # remotePrefix = Path('m22:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! this is the hand-picked path (results from different run sets)
-        # remotePrefix = Path('himster:/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/FINAL')  #! after himster hack, but now with 2FA, thats not working anymore either
-
-        #* all the above are now irrelevant, the himster was hacked and every access requires 2FA. you cannot copy files from here anymore and have to prepare them by hand.
+        # the himster was hacked and every access requires 2FA. you cannot copy files from here anymore and have to prepare them by hand.
         remotePrefix = Path('/media/DataEnc2TBRaid1/Arbeit/VirtualDir')
 
         self.corrected = self.configs[0].alignmentCorrection
@@ -295,9 +290,12 @@ class LumiValGraph(LumiValDisplay):
             start, end = ax.get_xlim()
             # ax.xaxis.set_ticks(np.arange(0.0, end, 0.25))
 
-            #! change for sensors, they don't have 3.0
             ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
-            ax.xaxis.set_view_interval(start, end)
+            ax.xaxis.set_view_interval(start, 3.172)
+            
+            if 'sensors' in str(outFileName):
+                ax.set_ylim(-0.75, 0.25)        # zoom in on good results
+                # ax.set_xlim(start, end)        # zoom in on good results
 
             ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
 
