@@ -553,20 +553,13 @@ def showLumiFitResults(runConfigPath, threadID=None, saveGraph=False):
 
         graph = LumiValGraph.fromConfigs(configs)
         
-        # graph.save(fileName)
+        fileName2 = Path(f'output/LumiResults/All/multi-alMat-combiSenMod-{configs[0].misalignFactor}.json')
+        fileName2.parent.mkdir(exist_ok=True, parents=True)
+        fileName2 = str(Path(f'output/LumiResults/All/multi-alMat-combiSenMod-{configs[0].misalignFactor}.json'))
 
-        # combi is a special case becasue there are combi0 to combi3
-        if configs[0].misalignType == 'combi':
-            fileName2 = Path(f'output/LumiResults/All/multi-alMat-combiSenMod-{configs[0].misalignFactor}.json')
-            fileName2.parent.mkdir(exist_ok=True, parents=True)
-            fileName2 = str(Path(f'output/LumiResults/All/multi-alMat-combiSenMod-{configs[0].misalignFactor}.json'))
-
-            # this is the multi seed branch
-            if configs[0].seedID is not None:
-                # raise Exception(f'You didnt finish this function yet!')
-                print(f'daring, are we?')
-                graph.multiSeed(fileName2)
-                done()
+        if (configs[0].misalignType == 'combi') and (configs[0].seedID is not None):
+            graph.multiSeed(fileName2)
+            done()
 
         else:
             fileName2 = Path(f'output/LumiResults/All/{configs[0].misalignType}-{corrStr}')
@@ -605,6 +598,14 @@ def histogramRunConfig(runConfig, threadId=0):
             return
 
     targetDir = targetDir / Path(f'alignmentMatrices')
+
+    # here be ugly hack
+    importantFile = Path(targetDir / Path(f'alMat-merged.json'))
+    if not importantFile.exists():
+        print(f'you failed')
+        if runConfig.misalignFactor == '3.00':
+            return
+        subprocess.run(['cp', Path(targetDir / Path(f'alMat-combiSenModIP-{runConfig.misalignFactor}.json')), importantFile])
 
     # box rotation comparator
     comparator = boxComparator(runConfig)
