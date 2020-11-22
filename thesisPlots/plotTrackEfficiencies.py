@@ -111,8 +111,8 @@ def saveAllMomenta(outFileName):
             else:
 
                 # add 100% efficiency at misalign 0.0 for clarity (hey it's not cheating)
-                thseVals = np.vstack(([float(mom), 0.0, 2.0, 0.0], thseVals))
-                thseVals[:, 2] = thseVals[:, 2] / 2.0  # man I love numpy
+                thseVals = np.vstack(([float(mom), 0.0, 1.0], thseVals))
+                # thseVals[:, 2] = thseVals[:, 2] / 2.0  # man I love numpy
 
                 # Plotting the error bars
                 ax.errorbar(
@@ -171,4 +171,5 @@ if __name__ == "__main__":
     print('greetings, human')
     # saveAllMomenta('output/trackEfficienciesAlignedMulti.pdf')
     # saveAllMomenta('output/trackEfficienciesNonAlignedMulti.pdf')
-    saveAllMomenta('output/trackEfficienciesNonAligned.pdf')
+    saveAllMomenta('output/trackEfficienciesAligned.pdf')
+    # saveAllMomenta('output/trackEfficienciesNonAligned.pdf')

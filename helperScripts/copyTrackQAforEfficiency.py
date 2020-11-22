@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""
+I was really angry when I wrote this, to this is an utter mess and there are no comments.
+
+For that I am sorry.
+"""
+
 import uproot
 import numpy as np
 from pathlib import Path
@@ -40,12 +46,13 @@ factors = ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50
 momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
 
 copy = False
-singleCombi = False
+singleCombi = True
 
 print(f'Copying some shit')
 
 shitfile = ''
 
+# none of this bloody fucking shit works anymore because the bloody fucking himster got bloody fucking hacked and I cant bloody fucking copy via bloody fucking script anymore.
 for fac in factors:
     for mom in momenta:
         # copy file
@@ -67,7 +74,7 @@ for fac in factors:
                 subprocess.run(['rsync', remotePath / Path(trkFile), localPath / Path(trkFile)])
 
         else:
-            for seedID in range(1, 11):
+            for seedID in range(1, 11): # dafuq why do we go from 1 to 11?
                 #! this path is for the combiSeed shit
                 remotePath = Path(
                     f'/lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_{mom}GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-combiSeed{seedID}-{fac}/200000/1-100_xy_m_cut_real/aligned-alMat-combiSenMod-seed{seedID}-{fac}'
@@ -144,7 +151,8 @@ for fac in factors:
 resArray = np.array(resArray)
 print(f'I will save these values:\n{resArray}')
 if singleCombi:
-    np.save('input/effValues.npy', resArray)
+    # np.save('input/effValues.npy', resArray)
+    np.save('input/effValuesNonAligned.npy', resArray)
 else:
     np.save('input/effValuesNonAligned.npy', resArray)
     # np.save('input/effValuesAligned.npy', resArray)
