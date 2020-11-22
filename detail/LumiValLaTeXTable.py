@@ -81,13 +81,13 @@ class LumiValGraph(LumiValDisplay):
                 # workaround for alignment matrix name which is not included in runConfig files
                 # if you want UNcorrected, turn this off
                 conf.alignmentCorrection = True
-                
+
                 conf.alMatFile = f'alMat-combiSenMod-seed{conf.seedID}-{conf.misalignFactor}.json'
 
                 conf.tempDestPath = Path(f'output/temp/LumiVals/multi/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-seed{conf.seedID}-{conf.alignmentCorrection}')
             else:
                 conf.tempDestPath = Path(f'output/temp/LumiVals/{conf.misalignType}-{conf.momentum}-{conf.misalignFactor}-{conf.alignmentCorrection}')
-            
+
             conf.tempDestFile = conf.tempDestPath / Path(conf.pathLumiVals().name)
             conf.tempDestPath.mkdir(exist_ok=True, parents=True)
             conf.tempSourcePath = remotePrefix / Path(*conf.pathLumiVals().parts[7:])
@@ -130,7 +130,7 @@ class LumiValGraph(LumiValDisplay):
                 lumi = lumiVals["relative_deviation_in_percent"][0]
                 lumiErr = lumiVals["relative_deviation_error_in_percent"][0]
             except:
-                print(f'skipping unradbale file {conf.tempDestFile}')
+                print(f'skipping unraedable file {conf.tempDestFile}')
                 continue
 
             if abs(float(lumi)) > 2e3:
@@ -288,13 +288,14 @@ class LumiValGraph(LumiValDisplay):
 
             # set ticks exactly to the misalign factors
             start, end = ax.get_xlim()
+            print(f'For reference: start and end are {start}, {end}.')
             # ax.xaxis.set_ticks(np.arange(0.0, end, 0.25))
 
             ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
             ax.xaxis.set_view_interval(start, 3.172)
-            
+
             if 'sensors' in str(outFileName):
-                ax.set_ylim(-0.75, 0.25)        # zoom in on good results
+                ax.set_ylim(-0.75, 0.25)  # zoom in on good results
                 # ax.set_xlim(start, end)        # zoom in on good results
 
             ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
@@ -388,9 +389,9 @@ class LumiValGraph(LumiValDisplay):
 
                 newArray = []
                 # ideally, get the factors from the array, but at this point I don't really care anymore
-                for fac in ['0.0', '0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
-                # for fac in ['0.0', '0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
-                # for fac in ['1.00']:
+                for fac in ['0.0', '0.25', '0.50', '0.75', '1.00', '1.25', '1.50']:
+                # for fac in ['0.0', '0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']:
+                    # for fac in ['1.00']:
                     facMask = (thseVals[:, 1] == float(fac))
                     maskedArray = thseVals[facMask]
 
@@ -430,22 +431,16 @@ class LumiValGraph(LumiValDisplay):
                 colorI += 1
 
             # Adding plotting parameters
-            # no titles anymore
-            if False:
-                if self.corrected:
-                    ax.set_title(titlesCorr[i])
-                else:
-                    ax.set_title(titlesUncorr[i])
-
             ax.set_xlabel(f'Misalign Factor')
-            # ax.set_xticks(np.arange(-0.25, 2, step=0.25))
-            
+
             # set ticks exactly to the misalign factors
             start, end = ax.get_xlim()
+            print(f'For reference: start and end are {start}, {end}.')
             # ax.xaxis.set_ticks(np.arange(0.0, end, 0.25))
-            ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5])
+            # ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+            ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5])
+            # ax.xaxis.set_view_interval(start, 3.172)
             ax.xaxis.set_view_interval(start, end)
-            # ax.set_ylim([0,2200])
 
             # ax.set_ylabel(f'Luminosity Error [{self.latexPercent}]')
             ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
@@ -455,8 +450,6 @@ class LumiValGraph(LumiValDisplay):
             # remove the errorbars
             handles = [h[0] for h in handles]
             # use them in the legend
-            # ax.legend(handles, labels, loc='upper left',numpoints=1)
-            # ax.legend(handles, labels, loc='upper right',numpoints=1)
             ax.legend(handles, labels, loc='best', numpoints=1)
 
             # draw vertical line to separate aligned and misaligned cases
@@ -466,12 +459,11 @@ class LumiValGraph(LumiValDisplay):
 
             plt.grid(color='grey', which='major', axis='y', linestyle=':', linewidth=0.5)
             plt.grid(color='grey', which='major', axis='x', linestyle=':', linewidth=0.5)
-            # plt.legend()
 
             plt.savefig(
-                f'{fileName}-{i}.pdf',      # normal case
+                # f'{fileName}-{i}.pdf',  # normal case
                 # f'{fileName}-{i}-uncorrected.pdf',      # for the lumi from UNcorrected UNcut data
-                # f'{fileName}-{i}-subset.pdf',     # for the smaller misalign factor subset
+                f'{fileName}-{i}-subset.pdf',     # for the smaller misalign factor subset
                 #This is simple recomendation for publication plots
                 dpi=1000,
                 # Plot will be occupy a maximum of available space

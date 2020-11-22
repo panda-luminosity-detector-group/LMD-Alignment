@@ -17,7 +17,7 @@ plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 TODO: At the moment, I only have the TrksQA files from the aligned cases. So I can only do this for the aligned cases.
 """
 
-useMultiSeed = True
+useMultiSeed = False
 
 
 def saveAllMomenta(outFileName):
@@ -111,7 +111,8 @@ def saveAllMomenta(outFileName):
             else:
 
                 # add 100% efficiency at misalign 0.0 for clarity (hey it's not cheating)
-                thseVals = np.vstack(([float(mom), 0.0, 1.0], thseVals))
+                thseVals = np.vstack(([float(mom), 0.0, 2.0, 0.0], thseVals))
+                thseVals[:, 2] = thseVals[:, 2] / 2.0  # man I love numpy
 
                 # Plotting the error bars
                 ax.errorbar(
@@ -131,6 +132,11 @@ def saveAllMomenta(outFileName):
         ax.set_xlabel(f'Misalign Factor')
         ax.set_ylabel(r'$ \epsilon_{\textrm{misalignment}} $ [\%]')
 
+        # set ticks exactly to the misalign factors
+        start, end = ax.get_xlim()
+        ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        ax.xaxis.set_view_interval(start, 3.172)
+
         # get handles
         handles, labels = ax.get_legend_handles_labels()
         # remove the errorbars
@@ -143,13 +149,8 @@ def saveAllMomenta(outFileName):
         # set ticks exactly to the misalign factors
         start, end = ax.get_xlim()
 
-        # ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
-        ax.xaxis.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5])
-
-        # ax.xaxis.set_view_interval(start, end)    #* what area should be shown, independent of plot range or ticks
-
         # draw vertical line to separate aligned and misaligned cases
-        #plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.75)
+        plt.axvline(x=0.125, color=r'#aa0000', linestyle='-', linewidth=0.5)
 
         plt.tight_layout()
 
@@ -169,4 +170,5 @@ def saveAllMomenta(outFileName):
 if __name__ == "__main__":
     print('greetings, human')
     # saveAllMomenta('output/trackEfficienciesAlignedMulti.pdf')
-    saveAllMomenta('output/trackEfficienciesNonAlignedMulti.pdf')
+    # saveAllMomenta('output/trackEfficienciesNonAlignedMulti.pdf')
+    saveAllMomenta('output/trackEfficienciesNonAligned.pdf')
