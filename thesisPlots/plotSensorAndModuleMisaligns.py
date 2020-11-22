@@ -76,13 +76,18 @@ def plotSensorMatrices(inputJson, outFileName):
             colorI += 1
 
         # Adding plotting parameters
-        ax.set_title(title)
-        ax2.set_title(title2)
 
         ax.set_xlabel(f'Misalign Factor')
         ax2.set_xlabel(f'Misalign Factor')
-        ax.set_ylabel(f'Residual Value [{latexmu}m]')
-        ax2.set_ylabel(f'Residual Value [{latexmu}m]')
+        ax.set_ylabel(f'Mean [{latexmu}m]')
+        ax2.set_ylabel(f'Standard Deviation [{latexmu}m]')
+
+        ax.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        ax2.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+
+        start, end = ax.get_xlim()
+        ax.xaxis.set_view_interval(start, 3.172)
+        ax2.xaxis.set_view_interval(start, 3.172)
         
         # get handles
         handles, labels = ax.get_legend_handles_labels()
@@ -125,10 +130,6 @@ def plotModuleMatrices(inputJson, outFileName):
 
     print(f'momenta: {momenta}')
 
-    # title = f'Matrix Residuals {pipe} Standard Deviation'
-    title = f'Module Alignment Matrix Residuals {pipe} Mean'
-    title2 = f'Module Alignment Matrix Residuals {pipe} Standard Deviation'
-
     for i in range(len(sizes)):
 
         fig, ax = plt.subplots(figsize=sizes[i])
@@ -152,14 +153,19 @@ def plotModuleMatrices(inputJson, outFileName):
             colorI += 1
 
         # Adding plotting parameters
-        ax.set_title(title)
-        ax2.set_title(title2)
 
         ax.set_xlabel(f'Misalign Factor')
         ax2.set_xlabel(f'Misalign Factor')
-        ax.set_ylabel(f'Residual Value [{latexmu}m]')
-        ax2.set_ylabel(f'Residual Value [{latexmu}m]')
+        ax.set_ylabel(f'Mean [{latexmu}m]')
+        ax2.set_ylabel(f'Standard Deviation [{latexmu}m]')
         
+        ax.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        ax2.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+
+        start, end = ax.get_xlim()
+        ax.xaxis.set_view_interval(start, 3.172)
+        ax2.xaxis.set_view_interval(start, 3.172)
+
         # get handles
         handles, labels = ax.get_legend_handles_labels()
         handles = [h[0] for h in handles]
@@ -224,10 +230,14 @@ def plotBoxMatrices(inputJson, outFileName):
             print(f'values:{thseVals}')
 
         # Adding plotting parameters
-        ax.set_title(title)
 
         ax.set_xlabel(f'Misalign Factor')
         ax.set_ylabel(f'Euler Angle Residual [{latexmu}rad]')
+
+        ax.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+
+        start, end = ax.get_xlim()
+        ax.xaxis.set_view_interval(start, 3.172)
         
         # get handles
         handles, labels = ax.get_legend_handles_labels()

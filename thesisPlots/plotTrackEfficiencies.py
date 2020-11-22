@@ -22,8 +22,9 @@ useMultiSeed = False
 
 def saveAllMomenta(outFileName):
 
-    # values = np.load('input/effValuesAligned.npy')
     values = np.load('input/effValuesNonAligned.npy')
+    # values = np.load('input/effValuesAligned.npy')
+    # values = np.load('input/effValuesAlignedMulti.npy')
 
     values = values.astype(np.float)
 
@@ -170,6 +171,6 @@ def saveAllMomenta(outFileName):
 if __name__ == "__main__":
     print('greetings, human')
     # saveAllMomenta('output/trackEfficienciesAlignedMulti.pdf')
-    # saveAllMomenta('output/trackEfficienciesNonAlignedMulti.pdf')
-    saveAllMomenta('output/trackEfficienciesAligned.pdf')
+    saveAllMomenta('output/trackEfficienciesNonAlignedMulti.pdf')
+    # saveAllMomenta('output/trackEfficienciesAligned.pdf')
     # saveAllMomenta('output/trackEfficienciesNonAligned.pdf')
