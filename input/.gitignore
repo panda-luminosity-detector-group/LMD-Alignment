@@ -11,5 +11,9 @@ LumiFit/
 trackResiduals/
 binaryPairFiles/
 *.npy
+
 # But never these files...
 !.gitignore
+!effValuesNonAligned.npy
+!effValuesAligned.npy
+!effValuesAlignedMulti.npy
