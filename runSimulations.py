@@ -989,7 +989,7 @@ if __name__ == "__main__":
             for key, value in values.items():
                 mom = key
                 theseValues = value
-                break  # just in case there is more than one, which shoul never be
+                break  # just in case there is more than one, which should never be
 
             # merge dict to current
             allVals[mom].update(theseValues)
