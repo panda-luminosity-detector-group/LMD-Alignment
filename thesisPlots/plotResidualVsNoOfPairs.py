@@ -168,8 +168,8 @@ def plotNPairs():
         ax2.errorbar(lines[:,0], lines[:,5], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexsigma}y', **lineOptions)
             
         # Adding plotting parameters
-        ax.set_title(title)
-        ax2.set_title(title2)
+        # ax.set_title(title)
+        # ax2.set_title(title2)
 
         ax.set_xlabel(f'Number of Pairs (log scale)')
         ax.set_ylabel(f'Mean [{latexmu}m]')
@@ -262,8 +262,8 @@ def plotPCut():
         ax2.errorbar(lines[:,0], lines[:,5], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexsigma}y', **lineOptions)
             
         # Adding plotting parameters
-        ax.set_title(title)
-        ax2.set_title(title2)
+        # ax.set_title(title)
+        # ax2.set_title(title2)
 
         ax.set_xlabel(f'Cut Percentage [\%]')
         ax.set_ylabel(f'Mean [{latexmu}m]')
@@ -280,6 +280,7 @@ def plotPCut():
         # ax.set_xlim((-1, 21))
         # ax.set_yscale('log')
         # ax.set_ylim((0, 100))
+        # draw vertical line to separate aligned and misaligned cases
 
         handles, labels = ax2.get_legend_handles_labels()
         handles = [h[0] for h in handles]
@@ -290,6 +291,7 @@ def plotPCut():
         # ax2.set_xlim((-1, 21))
         # ax2.set_yscale('log')
         # ax2.set_ylim((0, 100))
+        ax2.axvline(x=1.6, color=r'#aa0000', linestyle='-', linewidth=0.5)
 
         
         fig.tight_layout()
@@ -305,7 +307,7 @@ def plotPCut():
 if __name__ == "__main__":
 
     # calcVsPairs()
-    # plotNPairs()
+    plotNPairs()
 
     # calcVsCut()
     plotPCut()
