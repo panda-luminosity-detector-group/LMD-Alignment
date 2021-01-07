@@ -99,10 +99,10 @@ def histBinaryPairDistancesForDPG(binPairFile, cutPercent=0, overlap='0', use2Dc
     hit2H = np.ones((len(fileUsable), 4))
     hit2H[:, 0:3] = hit2
 
-    with open("../input/detectorMatricesIdeal.json", "r") as f:
+    with open("input/detectorMatricesIdeal.json", "r") as f:
         matrices = json.load(f)
 
-    with open("../input/detectorOverlapsIdeal.json", "r") as f:
+    with open("input/detectorOverlapsIdeal.json", "r") as f:
         overlaps = json.load(f)
 
     path1 = overlaps[overlap]['path1']
@@ -159,12 +159,12 @@ def pairDxDyDPG():
 
     overlap = '0'
     #pathpre = '/home/arbeit/RedPro3TB/simulationData/2018-08-himster2-'
-    pathpre = '../input/2018-08-himster2-'
+    pathpre = 'input/2018-08-himster2-'
     pathpost = '/binaryPairFiles/pairs-' + overlap + '-cm.bin'
     misaligns = [
         'misalign-200u',
     ]
-    outpath = Path('../output/forDPG')
+    outpath = Path('output/forDPG')
     cuts = [2]
     # cuts = [0, 2]
 

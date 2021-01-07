@@ -348,7 +348,7 @@ def plot1Dvs2DCuts():
     Srasterized = True
 
     # plot difference hit array
-    fig = plt.figure(figsize=(15/2.54, 10/2.54))
+    fig = plt.figure(figsize=(15/2.54, 10.5/2.54))
     
     ax1 = fig.add_subplot(2, 3, 4)
     ax1.hist2d(dHit1[:, 0]*10, dHit1[:, 1]*10, bins=Nbins, norm=LogNorm(), rasterized=Srasterized)
@@ -363,6 +363,7 @@ def plot1Dvs2DCuts():
     ax4 = fig.add_subplot(2, 3, 1)
     ax4.hist(pairs1[:, 6]*1e1, bins=150, log=True, range=[0.25, 1.2], rasterized=Srasterized)  # this is only the z distance
     ax4.set_title('No Cut')
+    ax4.set_xlabel('d [mm]')
     ax4.set_ylabel('Count (log)')
 
     pairsN = dynamicCut(pairs1, 2, False)
@@ -371,7 +372,7 @@ def plot1Dvs2DCuts():
     ax5 = fig.add_subplot(2, 3, 2, sharey=ax4)
     ax5.hist(pairsN[:, 6]*1e1, bins=150, log=True, range=[0.25, 1.2], rasterized=Srasterized)  # this is only the z distance
     ax5.set_title('1D Cut')
-    # ax5.set_xlabel('dx [mm]')
+    ax5.set_xlabel('d [mm]')
 
     ax2 = fig.add_subplot(2, 3, 5, sharey=ax1)
     ax2.hist2d(dHit1[:, 0]*10, dHit1[:, 1]*10, bins=Nbins, norm=LogNorm(), rasterized=Srasterized)
@@ -384,10 +385,10 @@ def plot1Dvs2DCuts():
     pairsN = dynamicCut(pairs1, 2)
     dHit1 = pairsN[:,3:6] - pairsN[:,:3]
 
-    ax6 = fig.add_subplot(2, 3, 3, sharey=ax4, sharex=ax4)
+    ax6 = fig.add_subplot(2, 3, 3, sharey=ax4)
     ax6.hist(pairsN[:, 6]*1e1, bins=150, log=True, range=[0.25, 1.2], rasterized=Srasterized)  # this is only the z distance
     ax6.set_title('2D Cut')
-    # ax6.set_xlabel('dx [mm]')
+    ax6.set_xlabel('d [mm]')
 
     ax3 = fig.add_subplot(2, 3, 6, sharey=ax1)
     ax3.hist2d(dHit1[:, 0]*10, dHit1[:, 1]*10, bins=Nbins, norm=LogNorm(), rasterized=Srasterized)
@@ -398,7 +399,7 @@ def plot1Dvs2DCuts():
     ax3.set_ylim([-01.2, 01.2])
 
     fig.tight_layout()
-    fig.subplots_adjust(hspace = .25)
+    # fig.subplots_adjust(hspace = .25)
     fig.savefig('pairs-dxdy-1Dvs2D.pdf', dpi=300, bbox_inches='tight', pad_inches = 0)
 
 if __name__ == "__main__":

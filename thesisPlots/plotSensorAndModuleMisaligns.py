@@ -281,7 +281,7 @@ def plotBoxMatrices(inputJson, outFileName):
 
             # The box rot values are ABSOLUTE, not residual. That means we have to subtract the design value by hand to get the residual
             # take care! I don't know of all data is generated the same way, you have to check each set individually :(
-            if True:
+            if False:
                 fixScale = 100  # the amount of misalignment at factor 1.0
                 fixFactors = np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]) * fixScale
                 print(f'Fix Table:\n{fixFactors}')
