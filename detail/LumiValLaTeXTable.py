@@ -295,8 +295,9 @@ class LumiValGraph(LumiValDisplay):
             ax.xaxis.set_view_interval(start, 3.172)
 
             if 'sensors' in str(outFileName):
-                ax.set_ylim(-0.75, 0.25)  # zoom in on good results
+                # ax.set_ylim(-0.75, 0.25)  # zoom in on good results
                 # ax.set_xlim(start, end)        # zoom in on good results
+                pass
 
             ax.set_ylabel(f'$\Delta L$ [{self.latexPercent}]')
 

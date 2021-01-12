@@ -622,21 +622,21 @@ def histogramRunConfig(runConfig, threadId=0):
     comparator.loadPerfectDetectorOverlaps('input/detectorOverlapsIdeal.json')
     comparator.loadDesignMisalignments(runConfig.misMatFile)
     comparator.loadSensorAlignerOverlapMatrices(targetDir / Path(f'alMat-sensorOverlaps-{runConfig.misalignFactor}.json'))
-    overlapResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp.pdf')
+    overlapResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensor-overlaps-{runConfig.misalignFactor}-icp')
 
     # module comparator
     comparator = moduleComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.misMatFile)
     comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
-    moduleResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/modules-{runConfig.misalignFactor}.pdf')
+    moduleResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/modules-{runConfig.misalignFactor}')
 
     # combined comparator
     comparator = combinedComparator(runConfig)
     comparator.loadIdealDetectorMatrices('input/detectorMatricesIdeal.json')
     comparator.loadDesignMisalignments(runConfig.misMatFile)
     comparator.loadAlignerMatrices(targetDir / Path(f'alMat-merged.json'))
-    sensorResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments.pdf')
+    sensorResult = comparator.saveHistogram(f'output/comparison/{runConfig.momentum}/misalign-{runConfig.misalignType}/sensors-{runConfig.misalignFactor}-misalignments')
 
     # refine
     if runConfig.misalignType == 'aligned':
