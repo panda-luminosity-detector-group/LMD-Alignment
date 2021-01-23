@@ -602,7 +602,7 @@ class cycleComparator(comparator):
         histB = fig.add_subplot(1, 2, 1)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=15, label=bucketLabels, color=self.colors[0])
+        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=10, label=bucketLabels, color=self.colors[0])
         histB.hist(values[..., 0], **kwargs)
         histB.set_xlabel(f'dx [{self.latexmu}m]')
         histB.set_ylabel('count')
@@ -612,7 +612,7 @@ class cycleComparator(comparator):
         histC = fig.add_subplot(1, 2, 2)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=15, label=bucketLabels, color=self.colors[1])
+        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=10, label=bucketLabels, color=self.colors[1])
         histC.hist(values[..., 1], **kwargs)
         histC.set_xlabel(f'dy [{self.latexmu}m]')
         histC.set_ylabel('count')
