@@ -16,7 +16,6 @@ import subprocess
 import sys
 
 from pathlib import Path
-
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
@@ -29,6 +28,7 @@ steps:
 
 #TODO: maybe also do with millepede
 """
+
 
 class alignerModules:
     def __init__(self):
@@ -44,7 +44,7 @@ class alignerModules:
         temp.config = runConfig
         temp.readAnchorPoints(runConfig.moduleAlignAnchorPointFile)
         temp.readAverageMisalignments(runConfig.moduleAlignAvgMisalignFile)
-        return temp    
+        return temp
 
     # words cannot describe how ugly this is, but I'm pressed for time and aesthetics wont get me my phd
     def convertRootTracks(self, dataPath, outJsonFile):
@@ -52,9 +52,10 @@ class alignerModules:
         print(f'data path: {dataPath}')
         print(f'out file: {outJsonFile}')
         if not Path(outJsonFile).exists():
-            rootArgs=f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
+            rootArgs = f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
             print(f'Running root -l -q {rootArgs}')
-            result = subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules', stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True) # I wish himster had python 3.7  ...
+            result = subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules', stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    universal_newlines=True)  # I wish himster had python 3.7  ...
             print(f'stdout: {result.stdout}')
             print(f'stderr: {result.stderr}')
             print(f'Root converter should be done now.')
@@ -76,45 +77,45 @@ class alignerModules:
 
     def setIterations(self, iterations):
         self.iterations = iterations
-    
+
     #? cuts on track x,y direction
     def dynamicTrackCut(self, newTracks, cutPercent=2):
-        com = np.average(newTracks[:,1,:3], axis=0)
+        com = np.average(newTracks[:, 1, :3], axis=0)
 
         # shift newhit2 by com of differences
-        newhit2 = newTracks[:,1,:3] - com
+        newhit2 = newTracks[:, 1, :3] - com
         newDist = np.power(newhit2[:, 0], 2) + np.power(newhit2[:, 1], 2)
 
-        cut = int(len(newhit2) * (cutPercent/100.0))
+        cut = int(len(newhit2) * (cutPercent / 100.0))
         newTracks = newTracks[newDist.argsort()]
         newTracks = newTracks[:-cut]
         return newTracks
-    
+
     #? cuts on reco-track distance
     def dynamicRecoTrackDistanceCut(self, newTracks, cutPercent=1):
-        
+
         tempTracks = newTracks
 
         for i in range(4):
             trackPosArr = tempTracks[:, 0, :3]
             trackDirArr = tempTracks[:, 1, :3]
-            recoPosArr = tempTracks[:, 2+i, :3]
+            recoPosArr = tempTracks[:, 2 + i, :3]
 
             # norm momentum vectors, this is important for the distance formula!
             trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
 
             # vectorized distance calculation
             tempV1 = (trackPosArr - recoPosArr)
-            tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
+            tempV2 = (tempV1 * trackDirArr).sum(axis=1)
             dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
             dVec = dVec[:, :2]
             newDist = np.power(dVec[:, 0], 2) + np.power(dVec[:, 1], 2)
-            
+
             # cut
-            cut = int(len(dVec) * (cutPercent/100.0))
+            cut = int(len(dVec) * (cutPercent / 100.0))
             tempTracks = tempTracks[newDist.argsort()]
             tempTracks = tempTracks[:-cut]
-        
+
         return tempTracks
 
     def alignModules(self, maxNoOfTracks=0, multiThreaded=False):
@@ -130,7 +131,7 @@ class alignerModules:
         else:
             maxThreads = 8
             print(f'running in {maxThreads} threads.')
-            
+
             futureList = []
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
@@ -153,11 +154,11 @@ class alignerModules:
 
     def alignSectorICP(self, sector=0, maxNoTrks=0):
         # check if anchor points were set
-        assert hasattr(self, 'anchorPoints') 
+        assert hasattr(self, 'anchorPoints')
 
         # TODO: add to config!
         preTransform = False
-        useOldFormat = True     # don't change yet, new format is not ready yet!
+        useOldFormat = True  # don't change yet, new format is not ready yet!
 
         np.set_printoptions(precision=6)
         np.set_printoptions(suppress=True)
@@ -166,10 +167,10 @@ class alignerModules:
         modulePaths = self.reader.getModulePathsInSector(sector)
 
         # make 4x4 matrices to module positions
-        moduleMatrices = np.zeros((4,4,4))
+        moduleMatrices = np.zeros((4, 4, 4))
         for i in range(len(modulePaths)):
             path = modulePaths[i]
-            moduleMatrices[i] = np.array(self.reader.detectorMatrices[path]).reshape(4,4)
+            moduleMatrices[i] = np.array(self.reader.detectorMatrices[path]).reshape(4, 4)
 
         #* use average misalignment
         averageShift = self.avgMisalignments[str(sector)]
@@ -199,15 +200,15 @@ class alignerModules:
         sectorString = str(sector)
         # transform all recos to LMD local
         if preTransform:
-            matToLMD = np.linalg.inv(np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4)))
+            matToLMD = np.linalg.inv(np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4, 4)))
             for i in range(4):
-                newTracks[:,i + 2] = (matToLMD @ newTracks[:,i + 2].T).T
-        
+                newTracks[:, i + 2] = (matToLMD @ newTracks[:, i + 2].T).T
+
         # transform anchorPoints to PANDA global
         else:
-            matFromLMD = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4,4))
+            matFromLMD = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4, 4))
             self.anchorPoints[sectorString] = (matFromLMD @ self.anchorPoints[sectorString])
-        
+
         print(f'==================================================')
         print(f'        module aligner for sector {sector}')
         print(f'==================================================')
@@ -216,63 +217,74 @@ class alignerModules:
         print(f'anchor point: {self.anchorPoints[sectorString]}')
 
         # do a first track fit, otherwise we have no starting tracks
-        recos = newTracks[:,2:6]
+        recos = newTracks[:, 2:6]
         corrFitter = CorridorFitter(recos)
         corrFitter.useAnchorPoint(self.anchorPoints[sectorString][:3])
         resultTracks = corrFitter.fitTracksSVD()
-        
+
         # update current tracks
-        newTracks[:,0,:3] = resultTracks[:,0]
-        newTracks[:,1,:3] = resultTracks[:,1]
+        newTracks[:, 0, :3] = resultTracks[:, 0]
+        newTracks[:, 1, :3] = resultTracks[:, 1]
 
         # prepare total matrices
-        totalMatrices = np.zeros((4,4,4))
+        totalMatrices = np.zeros((4, 4, 4))
         for i in range(4):
             totalMatrices[i] = np.identity(4)
 
-        newTracks = self.dynamicTrackCut(newTracks, 3)      # TODO really 5% ?! seems awfully much
-        
+        # ugly hack to plot intermediate track directions for my Diss
+        np.save('output/alignmentModules/trackDirections/newTracks-BeforeFirstCut', newTracks)
+
+        newTracks = self.dynamicTrackCut(newTracks, 3)
+
+        # ugly hack to plot intermediate track directions for my Diss
+        np.save('output/alignmentModules/trackDirections/newTracks-AfterFirstCut', newTracks)
+
         #* =========== iterate cuts and calculation
         for iIteration in range(self.iterations):
             print(f'running iteration {iIteration}, {len(newTracks)} tracks remaining...')
+
+            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}', newTracks)
+
             newTracks = self.dynamicRecoTrackDistanceCut(newTracks)
-            
+
+            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-post', newTracks)
+
             # 4 planes per sector
             for i in range(4):
                 trackPosArr = newTracks[:, 0, :3]
                 trackDirArr = newTracks[:, 1, :3]
-                recoPosArr = newTracks[:, 2+i, :3]
+                recoPosArr = newTracks[:, 2 + i, :3]
 
                 # norm momentum vectors, this is important for the distance formula!
                 trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
 
                 # vectorized distance calculation
                 tempV1 = (trackPosArr - recoPosArr)
-                tempV2 = (tempV1 * trackDirArr ).sum(axis=1)
+                tempV2 = (tempV1 * trackDirArr).sum(axis=1)
                 dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
 
                 # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
-                pIntersection = recoPosArr+dVec
-                
+                pIntersection = recoPosArr + dVec
+
                 # we want FROM tracks TO recos
                 T0inv = self.getMatrix(recoPosArr, pIntersection, preTransform)
                 totalMatrices[i] = T0inv @ totalMatrices[i]
 
                 # transform recos
                 newTracks[:, i + 2] = (T0inv @ newTracks[:, i + 2].T).T
-            
+
             # direction cut again
             if iIteration < 5:
                 newTracks = self.dynamicTrackCut(newTracks, 1)
-                       
+
             # do track fit
-            corrFitter = CorridorFitter(newTracks[:,2:6])
+            corrFitter = CorridorFitter(newTracks[:, 2:6])
             resultTracks = corrFitter.fitTracksSVD()
-            
+
             # update current tracks
-            newTracks[:,0,:3] = resultTracks[:,0]
-            newTracks[:,1,:3] = resultTracks[:,1]
-            
+            newTracks[:, 0, :3] = resultTracks[:, 0]
+            newTracks[:, 1, :3] = resultTracks[:, 1]
+
         #* =========== store matrices
         # 4 planes per sector
 
@@ -287,12 +299,12 @@ class alignerModules:
                 totalMatrices[i] = mi.baseTransform(totalMatrices[i], toModMat, True)
             else:
                 totalMatrices[i] = mi.baseTransform(totalMatrices[i], toModMat, True)
-       
+
             # add average shift
             totalMatrices[i] = totalMatrices[i] @ averageShift
             # yield modulePaths[i], totalMatrices[i]
             result.append((modulePaths[i], totalMatrices[i]))
-        
+
         print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         print(f'        module aligner for sector {sector} done!         ')
         print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
@@ -321,13 +333,13 @@ class alignerModules:
         milleOut = f'output/millepede/moduleAlignment-sector{sector}-aligned.bin'
 
         MyMille = pyMille.Mille(milleOut, True, True)
-        
+
         # sigmaScale = 2.11*1.74*1.71*1.09
-        sigmaScale = 6.85 # mille wants it so
+        sigmaScale = 6.85  # mille wants it so
         gotems = 0
         endCalls = 0
 
-        labels = np.array([1,2,3,4,5,6,7,8,9,10,11,12])
+        labels = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
         # labels = np.array([1,2,3])
 
         outFile = ""
@@ -338,7 +350,7 @@ class alignerModules:
                 #     continue
 
                 # Attention: this order of parameters does't match the reader interface!
-                MyMille.write(params[1], params[0], labels, params[2], params[3]*sigmaScale)
+                MyMille.write(params[1], params[0], labels, params[2], params[3] * sigmaScale)
                 # print(f'params: {paramsN}')
                 # print(f'residual: {params[2]}, sigma: {params[3]*sigmaScale} (factor {params[2]/(params[3]*sigmaScale)})')
                 # labels += 3
@@ -347,14 +359,14 @@ class alignerModules:
                 outFile += f'{params[1]}, {params[0]}, {labels}, {params[2]}, {params[3]*sigmaScale}\n'
 
             if (gotems % 250) == 0:
-                    endCalls += 1
-                    MyMille.end()
+                endCalls += 1
+                MyMille.end()
 
         MyMille.end()
 
         print(f'Mille binary data ({gotems} records) written to {milleOut}!')
         print(f'endCalls: {endCalls}')
         # now, pede must be called
-    
+
         # with open('writtenData.txt', 'w') as f:
-            # f.write(outFile)
+        # f.write(outFile)
