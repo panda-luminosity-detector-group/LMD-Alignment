@@ -30,8 +30,8 @@ def plot(inputFile, outputFile, title):
     newTracks = np.load(inputFile)
 
     axis = fig.add_subplot(1, 1, 1)
-    axis.hist2d(newTracks[:, 1, 0] * 1e4  - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
-    axis.set_title(title)
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
+    fig.suptitle(title)
     axis.yaxis.tick_left()
     axis.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis.set_ylabel(r'$\vec{p}_y$ [µm]')
@@ -47,8 +47,9 @@ def plot(inputFile, outputFile, title):
     # axis2.yaxis.set_label_position("right")
 
     fig.tight_layout()
-    fig.savefig(outputFile)
+    fig.savefig(outputFile, dpi=1000, bbox_inches='tight')
     plt.close(fig)
+
 
 def TriplePlot(in1, in2, in3, outF):
     import matplotlib
@@ -64,7 +65,7 @@ def TriplePlot(in1, in2, in3, outF):
     newTracks = np.load(in1)
 
     axis = fig.add_subplot(1, 3, 1)
-    axis.hist2d(newTracks[:, 1, 0] * 1e4  - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
     axis.set_title('Before Alignment')
     axis.yaxis.tick_left()
     axis.set_xlabel(r'$\vec{p}_x$ [µm]')
@@ -78,8 +79,8 @@ def TriplePlot(in1, in2, in3, outF):
     thisrange = [[xmin, xmax], [ymin, ymax]]
 
     newTracks2 = np.load(in2)
-    axis2 = fig.add_subplot(1,3,2, sharey=axis)
-    axis2.hist2d(newTracks2[:, 1, 0] * 1e4  - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
+    axis2 = fig.add_subplot(1, 3, 2, sharey=axis)
+    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
     axis2.set_title('After Direction Cut')
     axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis2.set_yticklabels([])
@@ -87,8 +88,8 @@ def TriplePlot(in1, in2, in3, outF):
     # axis2.yaxis.set_label_position("left")
 
     newTracks3 = np.load(in3)
-    axis3 = fig.add_subplot(1,3,3, sharey=axis)
-    axis3.hist2d(newTracks3[:, 1, 0] * 1e4  - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
+    axis3 = fig.add_subplot(1, 3, 3, sharey=axis)
+    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
     axis3.set_title('After Residual Cut')
     axis3.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis3.set_yticklabels([])
@@ -103,7 +104,7 @@ def TriplePlot(in1, in2, in3, outF):
 if __name__ == '__main__':
     inF0 = 'output/alignmentModules/trackDirections/newTracks-BeforeFirstCut.npy'
     inF1 = 'output/alignmentModules/trackDirections/newTracks-AfterFirstCut.npy'
-       
+
     outD = 'output/alignmentModules/test/trackDirections/'
 
     plot(inF0, outD + 'noCuts.pdf', 'No Cuts')
@@ -117,11 +118,16 @@ if __name__ == '__main__':
         inFit4 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step4-afterDirectionCut.npy'
         inFit5 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step5-afterTrackFit.npy'
 
-    
-        plot(inFit1, outD + f'it{it}s1.pdf', f'Iteration {it} Step 1')
-        plot(inFit2, outD + f'it{it}s2.pdf', f'Iteration {it} Step 2')
-        plot(inFit3, outD + f'it{it}s3.pdf', f'Iteration {it} Step 3')
-        plot(inFit4, outD + f'it{it}s4.pdf', f'Iteration {it} Step 4')
-        plot(inFit5, outD + f'it{it}s5.pdf', f'Iteration {it} Step 5')
+        plot(inFit1, outD + f'it{it}s1.pdf', f'Before Residual Cut')
+        plot(inFit2, outD + f'it{it}s2.pdf', f'After Residual Cut')
+        plot(inFit3, outD + f'it{it}s3.pdf', f'After Hit Transformation')
+        plot(inFit4, outD + f'it{it}s4.pdf', f'After Direction Cut')
+        plot(inFit5, outD + f'it{it}s5.pdf', f'After Track Fit')
+
+    # TriplePlot(inF0, inF1, inF3, outD + 'trackDirections.pdf')
+
+    # inTrip1 =
+    # inTrip2 =
+    # inTrip3 =
 
     # TriplePlot(inF0, inF1, inF3, outD + 'trackDirections.pdf')
