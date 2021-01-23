@@ -234,20 +234,21 @@ class alignerModules:
         # ugly hack to plot intermediate track directions for my Diss
         np.save('output/alignmentModules/trackDirections/newTracks-BeforeFirstCut', newTracks)
 
-        newTracks = self.dynamicTrackCut(newTracks, 3)
+        newTracks = self.dynamicTrackCut(newTracks, 1)
 
         # ugly hack to plot intermediate track directions for my Diss
         np.save('output/alignmentModules/trackDirections/newTracks-AfterFirstCut', newTracks)
 
         #* =========== iterate cuts and calculation
+        # TODO: Check if the reco and direction cuts are even neccessary in the iterations anymore. Seems that one cut at the beginning is enough.
         for iIteration in range(self.iterations):
             print(f'running iteration {iIteration}, {len(newTracks)} tracks remaining...')
 
-            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}', newTracks)
+            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step1-noRecoCut', newTracks)
 
             newTracks = self.dynamicRecoTrackDistanceCut(newTracks)
 
-            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-post', newTracks)
+            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step2-afterRecoCut', newTracks)
 
             # 4 planes per sector
             for i in range(4):
@@ -273,9 +274,13 @@ class alignerModules:
                 # transform recos
                 newTracks[:, i + 2] = (T0inv @ newTracks[:, i + 2].T).T
 
+                np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step3-afterFit', newTracks)
+
             # direction cut again
-            if iIteration < 5:
+            if iIteration < 3:
                 newTracks = self.dynamicTrackCut(newTracks, 1)
+            
+            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step4-afterDirectionCut', newTracks)
 
             # do track fit
             corrFitter = CorridorFitter(newTracks[:, 2:6])
@@ -284,6 +289,8 @@ class alignerModules:
             # update current tracks
             newTracks[:, 0, :3] = resultTracks[:, 0]
             newTracks[:, 1, :3] = resultTracks[:, 1]
+
+            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step5-afterTrackFit', newTracks)
 
         #* =========== store matrices
         # 4 planes per sector

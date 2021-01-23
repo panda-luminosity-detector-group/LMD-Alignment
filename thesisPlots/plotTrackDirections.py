@@ -103,18 +103,25 @@ def TriplePlot(in1, in2, in3, outF):
 if __name__ == '__main__':
     inF0 = 'output/alignmentModules/trackDirections/newTracks-BeforeFirstCut.npy'
     inF1 = 'output/alignmentModules/trackDirections/newTracks-AfterFirstCut.npy'
-    inF2 = 'output/alignmentModules/trackDirections/newTracks-it0.npy'
-    inF3 = 'output/alignmentModules/trackDirections/newTracks-it0-post.npy'
-    inF4 = 'output/alignmentModules/trackDirections/newTracks-it1.npy'
-    inF5 = 'output/alignmentModules/trackDirections/newTracks-it1-post.npy'
-    
+       
     outD = 'output/alignmentModules/test/trackDirections/'
 
-    # plot(inF0, outD + '1.pdf', 'Before Alignment')
-    # plot(inF1, outD + '2.pdf', 'After Direction Cut')
-    # plot(inF2, outD + '3.pdf', 'title')
-    # plot(inF3, outD + '4.pdf', 'After Residual Cut')
-    # plot(inF4, outD + '5.pdf', 'Iteration 1')
-    # plot(inF5, outD + '6.pdf', 'title')
+    plot(inF0, outD + 'noCuts.pdf', 'No Cuts')
+    plot(inF1, outD + 'initialDirCut.pdf', 'After Direction Cut')
 
-    TriplePlot(inF0, inF1, inF3, outD + 'trackDirections.pdf')
+    for it in [0, 1, 2]:
+
+        inFit1 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step1-noRecoCut.npy'
+        inFit2 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step2-afterRecoCut.npy'
+        inFit3 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step3-afterFit.npy'
+        inFit4 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step4-afterDirectionCut.npy'
+        inFit5 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step5-afterTrackFit.npy'
+
+    
+        plot(inFit1, outD + f'it{it}s1.pdf', f'Iteration {it} Step 1')
+        plot(inFit2, outD + f'it{it}s2.pdf', f'Iteration {it} Step 2')
+        plot(inFit3, outD + f'it{it}s3.pdf', f'Iteration {it} Step 3')
+        plot(inFit4, outD + f'it{it}s4.pdf', f'Iteration {it} Step 4')
+        plot(inFit5, outD + f'it{it}s5.pdf', f'Iteration {it} Step 5')
+
+    # TriplePlot(inF0, inF1, inF3, outD + 'trackDirections.pdf')
