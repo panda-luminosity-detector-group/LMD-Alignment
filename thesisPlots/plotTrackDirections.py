@@ -51,6 +51,64 @@ def plot(inputFile, outputFile, title):
     plt.close(fig)
 
 
+def quadPlot(in1, in2, in3, in4, outF):
+    import matplotlib
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
+
+    plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
+    plt.rc('text', usetex=True)
+    plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+
+    # plot difference hit array
+    fig = plt.figure(figsize=(16 / 2.54, 7 / 2.54))
+    newTracks = np.load(in1)
+
+    axis = fig.add_subplot(1, 4, 1)
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
+    axis.set_title('Before Alignment')
+    axis.yaxis.tick_left()
+    axis.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis.set_ylabel(r'$\vec{p}_y$ [µm]')
+    # axis.tick_params(direction='in')
+    # axis.yaxis.set_label_position("left")
+
+    xmin, xmax = axis.get_xlim()
+    ymin, ymax = axis.get_ylim()
+
+    thisrange = [[xmin, xmax], [ymin, ymax]]
+
+    newTracks2 = np.load(in2)
+    axis2 = fig.add_subplot(1, 4, 2, sharey=axis)
+    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
+    axis2.set_title('After Direction Cut')
+    axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis2.set_yticklabels([])
+    # axis2.tick_params(direction='in')
+    # axis2.yaxis.set_label_position("left")
+
+    newTracks3 = np.load(in3)
+    axis3 = fig.add_subplot(1, 4, 3, sharey=axis)
+    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
+    axis3.set_title('After Residual Cut')
+    axis3.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis3.set_yticklabels([])
+    # axis3.tick_params(direction='in')
+    # axis3.yaxis.set_label_position("left")
+
+    newTracks4 = np.load(in4)
+    axis4 = fig.add_subplot(1, 4, 4, sharey=axis)
+    axis4.hist2d(newTracks4[:, 1, 0] * 1e4 - 425, newTracks4[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
+    axis4.set_title('After Residual Cut')
+    axis4.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis4.set_yticklabels([])
+    # axis4.tick_params(direction='in')
+    # axis3.yaxis.set_label_position("left")
+
+    fig.tight_layout()
+    fig.savefig(outF)
+    plt.close(fig)
+
 def TriplePlot(in1, in2, in3, outF):
     import matplotlib
     import matplotlib.pyplot as plt
@@ -66,12 +124,12 @@ def TriplePlot(in1, in2, in3, outF):
 
     axis = fig.add_subplot(1, 3, 1)
     axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
-    axis.set_title('Before Alignment')
+    axis.set_title('All Valid Tracks')
     axis.yaxis.tick_left()
     axis.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis.set_ylabel(r'$\vec{p}_y$ [µm]')
-    axis.tick_params(direction='in')
-    axis.yaxis.set_label_position("left")
+    # axis.tick_params(direction='in')
+    # axis.yaxis.set_label_position("left")
 
     xmin, xmax = axis.get_xlim()
     ymin, ymax = axis.get_ylim()
@@ -79,27 +137,115 @@ def TriplePlot(in1, in2, in3, outF):
     thisrange = [[xmin, xmax], [ymin, ymax]]
 
     newTracks2 = np.load(in2)
-    axis2 = fig.add_subplot(1, 3, 2, sharey=axis)
+    axis2 = fig.add_subplot(1, 3, 2)#, sharey=axis)
     axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
     axis2.set_title('After Direction Cut')
     axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis2.set_yticklabels([])
-    axis2.tick_params(direction='in')
+    # axis2.tick_params(direction='in')
     # axis2.yaxis.set_label_position("left")
 
     newTracks3 = np.load(in3)
-    axis3 = fig.add_subplot(1, 3, 3, sharey=axis)
+    axis3 = fig.add_subplot(1, 3, 3)#, sharey=axis)
     axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis3.set_title('After Residual Cut')
+    axis3.set_title('After Both Cuts')
     axis3.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis3.set_yticklabels([])
-    axis3.tick_params(direction='in')
+    # axis3.tick_params(direction='in')
     # axis3.yaxis.set_label_position("left")
 
     fig.tight_layout()
     fig.savefig(outF)
     plt.close(fig)
 
+def dualPlot(in1, in2, outF):
+    import matplotlib
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
+
+    plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
+    plt.rc('text', usetex=True)
+    plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+
+    # plot difference hit array
+    fig = plt.figure(figsize=(12 / 2.54, 7 / 2.54))
+    newTracks = np.load(in1)
+
+    axis = fig.add_subplot(1, 2, 1)
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
+    axis.set_title('All Valid Tracks')
+    axis.yaxis.tick_left()
+    axis.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis.set_ylabel(r'$\vec{p}_y$ [µm]')
+    # axis.tick_params(direction='in')
+    # axis.yaxis.set_label_position("left")
+
+    xmin, xmax = axis.get_xlim()
+    ymin, ymax = axis.get_ylim()
+
+    thisrange = [[xmin, xmax], [ymin, ymax]]
+
+    newTracks2 = np.load(in2)
+    axis2 = fig.add_subplot(1, 2, 2)#, sharey=axis)
+    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
+    axis2.set_title('After Direction Cut')
+    axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis2.set_yticklabels([])
+    # axis2.tick_params(direction='in')
+    # axis2.yaxis.set_label_position("left")
+
+    fig.tight_layout()
+    fig.savefig(outF)
+    plt.close(fig)
+
+def TriplePlotTwo(in1, in2, in3, outF):
+    import matplotlib
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
+
+    plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
+    plt.rc('text', usetex=True)
+    plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+
+    # plot difference hit array
+    fig = plt.figure(figsize=(16 / 2.54, 7 / 2.54))
+    newTracks = np.load(in1)
+
+    axis = fig.add_subplot(1, 3, 1)
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
+    axis.set_title('After Track Fit')
+    axis.yaxis.tick_left()
+    axis.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis.set_ylabel(r'$\vec{p}_y$ [µm]')
+    # axis.tick_params(direction='in')
+    # axis.yaxis.set_label_position("left")
+
+    xmin, xmax = axis.get_xlim()
+    ymin, ymax = axis.get_ylim()
+
+    thisrange = [[xmin, xmax], [ymin, ymax]]
+
+    newTracks2 = np.load(in2)
+    axis2 = fig.add_subplot(1, 3, 2)#, sharey=axis)
+    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
+    axis2.set_title('After Direction Cut')
+    axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis2.set_yticklabels([])
+    # axis2.tick_params(direction='in')
+    # axis2.yaxis.set_label_position("left")
+
+    newTracks3 = np.load(in3)
+    axis3 = fig.add_subplot(1, 3, 3)#, sharey=axis)
+    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
+    axis3.set_title('After Both Cuts')
+    axis3.set_xlabel(r'$\vec{p}_x$ [µm]')
+    axis3.set_yticklabels([])
+    # axis3.tick_params(direction='in')
+    # axis3.yaxis.set_label_position("left")
+
+    fig.tight_layout()
+    fig.savefig(outF)
+    plt.close(fig)
 
 if __name__ == '__main__':
     inF0 = 'output/alignmentModules/trackDirections/newTracks-BeforeFirstCut.npy'
@@ -110,8 +256,12 @@ if __name__ == '__main__':
     plot(inF0, outD + 'noCuts.pdf', 'No Cuts')
     plot(inF1, outD + 'initialDirCut.pdf', 'After Direction Cut')
 
+
+
+
     for it in [0, 1, 2]:
 
+        continue
         inFit1 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step1-noRecoCut.npy'
         inFit2 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step2-afterRecoCut.npy'
         inFit3 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step3-afterFit.npy'
@@ -124,7 +274,22 @@ if __name__ == '__main__':
         plot(inFit4, outD + f'it{it}s4.pdf', f'After Direction Cut')
         plot(inFit5, outD + f'it{it}s5.pdf', f'After Track Fit')
 
-    # TriplePlot(inF0, inF1, inF3, outD + 'trackDirections.pdf')
+    it = 0
+    inFit2 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step2-afterRecoCut.npy'
+    inFit5 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step5-afterTrackFit.npy'
+    dualPlot(inF0, inF1, outD + 'trackDirectionsCut.pdf')
+    TriplePlot(inF0, inF1, inFit2, outD + 'trackDirections.pdf')
+    
+    it = 1
+
+    inFit1 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step1-noRecoCut.npy'
+    inFit2 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step2-afterRecoCut.npy'
+    inFit3 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step3-afterFit.npy'
+    inFit4 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step4-afterDirectionCut.npy'
+    inFit5 = f'output/alignmentModules/trackDirections/newTracks-it{it}-step5-afterTrackFit.npy'
+
+    TriplePlotTwo(inFit1, inFit2, inFit4, outD + 'trackDirectionsNext.pdf')
+    # quadPlot(inF0, inF1, inFit2, inFit5, outD + 'trackDirections4.pdf')
 
     # inTrip1 =
     # inTrip2 =
