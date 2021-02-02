@@ -142,11 +142,6 @@ def plotNTrk():
     lines = np.array(lines)
     lines = lines[lines[:,0].argsort()]
 
-    # plot it
-    # title = f'Matrix Residuals {pipe} Standard Deviation'
-    title = f'Module Alignment Matrix Residuals {pipe} Mean'
-    title2 = f'Module Alignment Matrix Residuals {pipe} Standard Deviation'
-    
     for i in range(len(sizes)):
 
         fig, ax = plt.subplots(figsize=sizes[i])
@@ -160,10 +155,6 @@ def plotNTrk():
         ax2.errorbar(lines[:,0]-10, lines[:,4], fmt='.', ecolor=colors[colorI], color=colors[colorI], label=f'{latexsigma}x', **lineOptions)
         ax2.errorbar(lines[:,0]+10, lines[:,5], fmt='.', ecolor=colors[colorI+1], color=colors[colorI+1], label=f'{latexsigma}y', **lineOptions)
             
-        # Adding plotting parameters
-        # ax.set_title(title)
-        # ax2.set_title(title2)
-
         ax.set_xlabel(f'Number of Tracks (log scale)')
         ax.set_ylabel(f'Mean [{latexmu}m]')
         
@@ -299,5 +290,5 @@ def plotNIter():
 if __name__ == "__main__":
     # calcVsTrks()
     # calcVsIterations()
-    # plotNTrk()
-    plotNIter()
+    plotNTrk()
+    # plotNIter()

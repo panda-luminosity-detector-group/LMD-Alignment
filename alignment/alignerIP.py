@@ -41,6 +41,7 @@ class alignerIP:
     
     see https://math.stackexchange.com/a/476311
     or https://en.wikipedia.org/wiki/Cross_product
+    and https://en.wikipedia.org/wiki/Rotation_matrix#Conversion_from_rotation_matrix_and_to_axis%E2%80%93angle
     
     This function works on 3D points only, do not give homogenous coordinates to this!
     """
@@ -69,12 +70,20 @@ class alignerIP:
         crossMatrix = (dVector @ cVector.T) - (cVector @ dVector.T)
 
         # compute rotation matrix
+        # TODO wait, shouldn't there be a sine somewhere here? check that 1/1+cos again!
         R = np.identity(3) + crossMatrix + np.dot(crossMatrix, crossMatrix) * (1/(1+cosine))
 
         return R
 
     # different method, just to be sure
     def getRotWiki(self, apparent, actual):
+
+        # this method is similar to the one above, but derived from math from Wikipedia, not Stack Overflow.
+        # I did it to be really, really sure if outputs the correct matrix. derivation is simple:
+        # the axis of rotation is perpendicular to BOTH vectors -> cross product!
+        # then we have the axis of rotation. construct a rotation matrix from that vector
+        # angle is easy to calculate
+        # see https://en.wikipedia.org/wiki/Rotation_matrix#Conversion_from_rotation_matrix_and_to_axis%E2%80%93angle
 
         # error handling
         if np.linalg.norm(apparent) == 0 or np.linalg.norm(actual) == 0:
@@ -153,7 +162,7 @@ class alignerIP:
         R1 = np.identity(4)
         R1[:3, :3] = Ra
 
-        # after that, add the remaining translation (direct shift towards IP)
+        # after that, add the remaining translation (direct shift towards IP), not implemented yet
         self.resultJson = {"/cave_1/lmd_root_0": R1}
         self.logger.log(f'Interaction point alignment done!\n')
 

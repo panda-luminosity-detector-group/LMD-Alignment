@@ -754,7 +754,7 @@ def createMultipleDefaultConfigs():
     momenta = ['1.5', '4.06', '8.9', '11.91', '15.0']
     misFactors = {}
     # misTypes = ['aligned', 'identity', 'sensors', 'box', 'box100', 'boxRotZ', 'modules', 'modulesNoRot', 'modulesOnlyRot', 'combi']
-    misTypes = ['aligned', 'identity', 'sensors', 'box100', 'modules', 'combi']
+    misTypes = ['aligned', 'identity', 'sensors', 'box100', 'boxRotZ', 'modules', 'combi']
 
     setOne = ['0.25', '0.50', '0.75', '1.00', '1.25', '1.50', '1.75', '2.00', '2.50', '3.00']
     setTwo = ['0.25', '0.50', '0.75', '1.00', '1.50', '2.00', '3.00', '5.00', '7.50', '10.00']
@@ -796,6 +796,10 @@ def createMultipleDefaultConfigs():
 
                     if misType == 'box100':
                         config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-box100-{fac}.json'
+                        config.alMatFile = str(config.pathAlMatrixPath() / Path(f'alMat-IPalignment-{fac}.json'))
+
+                    if misType == 'boxRotZ':
+                        config.misMatFile = f'{vmcworkdir}/macro/detectors/lmd/geo/misMatrices/misMat-boxRotZ-{fac}.json'
                         config.alMatFile = str(config.pathAlMatrixPath() / Path(f'alMat-IPalignment-{fac}.json'))
 
                     if misType == 'combi':
