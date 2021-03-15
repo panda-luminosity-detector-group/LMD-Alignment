@@ -36,6 +36,8 @@ class comparator:
         self.colors = [goodColors[1], goodColors[3], goodColors[5]]
         self.latexsigma = r'\textsigma{}'
         self.latexmu = r'\textmu{}'
+        self.latexDelta = r'$\Delta$'
+        self.latexPhi = r'$\Phi$'
         plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
@@ -658,17 +660,17 @@ class combinedComparator(comparator):
         histA = fig.add_subplot(1, 1, 1)
 
         # bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
-        bucketLabels = [f'{self.latexsigma}x={sigX}{self.latexmu}m', f'{self.latexsigma}y={sigY}{self.latexmu}m', f'{self.latexsigma} z={sigZ}']
+        bucketLabels = [f'{self.latexsigma}x={sigX}{self.latexmu}m', f'{self.latexsigma}y={sigY}{self.latexmu}m', f'{self.latexsigma}{self.latexPhi}={sigZ}mrad']
 
-        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:2])
-        histA.hist(values[..., :2], **kwargs)
+        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:3])
+        histA.hist(values[..., :3], **kwargs)
 
         # histA.set_title('Sensor Alignment Residuals')
         histA.set_xlabel(f'd [{self.latexmu}m]')
         histA.set_ylabel('count')
 
         handles, labels = plt.gca().get_legend_handles_labels()
-        order = [1, 0]
+        order = [2, 1, 0]
         plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order])
 
         #You must select the correct size of the plot in advance
@@ -683,8 +685,8 @@ class combinedComparator(comparator):
         #! and plot x and y individually (but also same PDF)
 
         fig = plt.figure()
-        fig.set_size_inches(14 / 2.54, 5 / 2.54)
-        histB = fig.add_subplot(1, 2, 1)
+        fig.set_size_inches(16 / 2.54, 5 / 2.54)
+        histB = fig.add_subplot(1, 3, 1)
 
         # histA.set_title('Sensor Alignment Residuals')
         kwargs = dict(histtype='stepfilled', alpha=1.0, bins=50, label=bucketLabels, color=self.colors[0])
@@ -692,18 +694,24 @@ class combinedComparator(comparator):
         histB.set_xlabel(f'dx [{self.latexmu}m]')
         histB.set_ylabel('count')
         # histB.set_xlim(-5.5, 5.5)
-        plt.legend([handles[1]], [labels[1]])
+        plt.legend([handles[2]], [labels[2]])
 
-        histC = fig.add_subplot(1, 2, 2)
-
-        # histA.set_title('Sensor Alignment Residuals')
+        histC = fig.add_subplot(1, 3, 2)
         kwargs = dict(histtype='stepfilled', alpha=1.0, bins=50, label=bucketLabels, color=self.colors[1])
         histC.hist(values[..., 1], **kwargs)
         histC.set_xlabel(f'dy [{self.latexmu}m]')
-        histC.set_ylabel('count')
-
         histC.get_shared_y_axes().join(histB, histC)
+        plt.legend([handles[1]], [labels[1]])
+
+        histD = fig.add_subplot(1, 3, 3)
+        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=50, label=bucketLabels, color=self.colors[2])
+        histD.hist(values[..., 2], **kwargs)
+        histD.set_xlabel(f'{self.latexDelta}{self.latexPhi} [mrad]')
+        histD.get_shared_y_axes().join(histB, histD)
+
+        print(f'handles: {handles}, labels: {labels}')
         plt.legend([handles[0]], [labels[0]])
+
 
         plt.savefig(
             outputFileName + '-sbs.pdf',
