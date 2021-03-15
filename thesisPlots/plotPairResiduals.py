@@ -126,7 +126,7 @@ def plotResiduals1Dand2D(pairs, overlap):
     histA.hist(fileUsable[:, 6]*1e1, bins=150, log=True, range=[0.25, 1.2])  # this is only the z distance
     # histA.set_title('Distance')   # change to mm!
     # histA.set_xlabel('d [mm]')
-    histA.set_ylabel('Count (log)')
+    histA.set_ylabel('Entries (log)')
 
     histB = fig.add_subplot(2, 3, 4)
     histB.hist2d(dHit[:, 0]*10, dHit[:, 1]*10, bins=150, norm=LogNorm(), range=[[-01.3, 01.3], [-01.3, 01.3]], label='Count (log)')
@@ -364,7 +364,7 @@ def plot1Dvs2DCuts():
     ax4.hist(pairs1[:, 6]*1e1, bins=150, log=True, range=[0.25, 1.2], rasterized=Srasterized)  # this is only the z distance
     ax4.set_title('No Cut')
     ax4.set_xlabel('d [mm]')
-    ax4.set_ylabel('Count (log)')
+    ax4.set_ylabel('Entries (log)')
 
     pairsN = dynamicCut(pairs1, 2, False)
     dHit1 = pairsN[:,3:6] - pairsN[:,:3]
@@ -400,7 +400,7 @@ def plot1Dvs2DCuts():
 
     fig.tight_layout()
     # fig.subplots_adjust(hspace = .25)
-    fig.savefig('pairs-dxdy-1Dvs2D.pdf', dpi=300, bbox_inches='tight', pad_inches = 0)
+    fig.savefig('pairs-dxdy-1Dvs2D.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.05)
 
 if __name__ == "__main__":
     print(f'greetings human.')
