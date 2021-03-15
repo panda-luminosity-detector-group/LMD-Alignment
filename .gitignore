@@ -11,5 +11,6 @@ testscripts/*.json
 *.BAK
 temp/
 .vscode/
+.history
 
 !runConfigs/linkFacZero.sh
