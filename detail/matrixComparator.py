@@ -150,7 +150,6 @@ class boxComparator(comparator):
 
         # TODO: better title
         fig.suptitle('Box Rotation Alignment Residuals')
-
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
@@ -730,26 +729,24 @@ class combinedComparator(comparator):
 
         for p in self.alignerResults:
             # check if this path is for a sensor!
+            # also, skip sensors 0 and 1, they are measured externally
             if 'sensor' not in p or 'sensor_0' in p or 'sensor_1' in p:
                 continue
+            # try to read matMisalign, it it doesn't exist, use identity
             try:
                 matResult = self.alignerResults[p]
                 matMisalign = self.misalignMatrices[p]
+                dMat = (matResult @ inv(matMisalign))
+                dAlpha = mi.rotationMatrixToEulerAngles(dMat)
 
-                # return values in {self.latexmu}m
-                dMat = (matResult @ inv(matMisalign)) * 1e4
-                values = np.array([dMat[0, 3], dMat[1, 3], dMat[2, 3]]).reshape(1, 3)
-
-                differences = np.append(differences, values, axis=0)
             except:
                 matResult = self.alignerResults[p]
                 matMisalign = np.identity(4)
+                dMat = (matResult @ inv(matMisalign)) 
+                dAlpha = mi.rotationMatrixToEulerAngles(dMat)
 
-                # return values in {self.latexmu}m
-                dMat = (matResult @ inv(matMisalign)) * 1e4
-                values = np.array([dMat[0, 3], dMat[1, 3], dMat[2, 3]]).reshape(1, 3)
-
-                differences = np.append(differences, values, axis=0)
+            values = np.array([dMat[0, 3] * 1e4, dMat[1, 3] * 1e4, dAlpha[2] * 1e3]).reshape(1, 3)
+            differences = np.append(differences, values, axis=0)
 
         self.histValues(differences, outputFileName)
 
