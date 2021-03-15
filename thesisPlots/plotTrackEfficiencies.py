@@ -17,11 +17,13 @@ plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 TODO: At the moment, I only have the TrksQA files from the aligned cases. So I can only do this for the aligned cases.
 """
 
+#! enable for aligned multi
 useMultiSeed = False
 
 
 def saveAllMomenta(outFileName):
 
+    #! change input file here
     values = np.load('input/effValuesNonAligned.npy')
     # values = np.load('input/effValuesAligned.npy')
     # values = np.load('input/effValuesAlignedMulti.npy')
@@ -105,15 +107,19 @@ def saveAllMomenta(outFileName):
                             color=colors[colorI],
                             capsize=2,
                             elinewidth=0.6,
-                            label=f'{mom} GeV',
+                            label=f'{mom} GeV / c',
                             ls='dashed',
                             linewidth=0.4)
 
             else:
 
                 # add 100% efficiency at misalign 0.0 for clarity (hey it's not cheating)
-                thseVals = np.vstack(([float(mom), 0.0, 1.0], thseVals))
-                # thseVals[:, 2] = thseVals[:, 2] / 2.0  # man I love numpy
+
+                if True:   #! use for non-aligned
+                    thseVals = np.vstack(([float(mom), 0.0, 1.0], thseVals))
+                else:       #! use for aligned multi
+                    thseVals = np.vstack(([float(mom), 0.0, 2.0, 0.0], thseVals))
+                    thseVals[:, 2] = thseVals[:, 2] / 2.0  # man I love numpy   
 
                 # Plotting the error bars
                 ax.errorbar(
@@ -125,13 +131,14 @@ def saveAllMomenta(outFileName):
                     color=colors[colorI],
                     capsize=2,
                     elinewidth=0.6,
-                    label=f'{mom} GeV',
+                    label=f'{mom} GeV / c',
                     ls='dashed',
                     linewidth=0.4)
             colorI += 1
 
         ax.set_xlabel(f'Misalign Factor')
-        ax.set_ylabel(r'$ \epsilon_{\textrm{misalignment}} $ [\%]')
+        # ax.set_ylabel(r'$ \epsilon_{\textrm{misalignment}} $ [\%]')
+        ax.set_ylabel(r'$ \Delta \epsilon $ [\%]')
 
         # set ticks exactly to the misalign factors
         start, end = ax.get_xlim()
@@ -171,6 +178,6 @@ def saveAllMomenta(outFileName):
 if __name__ == "__main__":
     print('greetings, human')
     # saveAllMomenta('output/trackEfficienciesAlignedMulti.pdf')
-    saveAllMomenta('output/trackEfficienciesNonAlignedMulti.pdf')
+    # saveAllMomenta('output/trackEfficienciesNonAlignedMulti.pdf')
     # saveAllMomenta('output/trackEfficienciesAligned.pdf')
-    # saveAllMomenta('output/trackEfficienciesNonAligned.pdf')
+    saveAllMomenta('output/trackEfficienciesNonAligned.pdf')
