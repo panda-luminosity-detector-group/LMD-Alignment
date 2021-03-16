@@ -191,7 +191,9 @@ def test():
     plotResiduals1Dand2D(pairs, overlap)
 
 def plotFourPlanes():
-
+    """
+    This plots the hit pair residuals on planes 1 through 4
+    """
     area = '1'
 
     # read binary Pairs for corridor
@@ -405,7 +407,7 @@ def plot1Dvs2DCuts():
 if __name__ == "__main__":
     print(f'greetings human.')
     # test()
-    # plotFourPlanes()
+    plotFourPlanes()
     # plotMultipleCuts()
     # plotResiduals1Dand2D()
     plot1Dvs2DCuts()

@@ -27,19 +27,18 @@ plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
 lineOptions = {'capsize': 2, 'elinewidth': 0.6, 'linewidth': 0.4}
 
-# sizes = [(17 / 2.54, 7 / 2.54), (15 / 2.54, 4 / 2.54), (6.5 / 2.54, 4 / 2.54)]
-sizes = [(17 / 2.54, 7 / 2.54)]  #, (15 / 2.54, 4 / 2.54), (6.5 / 2.54, 4 / 2.54)]
+sizes = [(17 / 2.54, 7 / 2.54), (17 / 2.54, 5 / 2.54)]
 offsetscale = 1.0
 offsets = np.arange(-0.02, 0.03, 0.01)
 colors = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf']
 
 
-def omniPlots(sensorVals, i, momenta, outTypeName):
+def omniPlots(sensorVals, momenta, outTypeName):
 
-    fig, ax = plt.subplots(figsize=sizes[i])
-    fig2, ax2 = plt.subplots(figsize=sizes[i])
-    fig3, ax3 = plt.subplots(figsize=sizes[i])
-    fig4, ax4 = plt.subplots(figsize=sizes[i])
+    fig, ax = plt.subplots(figsize=sizes[0])
+    fig2, ax2 = plt.subplots(figsize=sizes[0])
+    fig3, ax3 = plt.subplots(figsize=sizes[1])
+    fig4, ax4 = plt.subplots(figsize=sizes[1])
     colorI = 0
 
     for mom in momenta:
@@ -95,7 +94,7 @@ def omniPlots(sensorVals, i, momenta, outTypeName):
                      fmt='2',
                      ecolor=colors[colorI],
                      color=colors[colorI],
-                     label=f'x @ {mom} GeV/c',
+                     label=f'{mom} GeV/c',
                      ls='dashed',
                      **lineOptions)
 
@@ -105,7 +104,7 @@ def omniPlots(sensorVals, i, momenta, outTypeName):
                      fmt='2',
                      ecolor=colors[colorI],
                      color=colors[colorI],
-                     label=f'x @ {mom} GeV/c',
+                     label=f'{mom} GeV/c',
                      ls='dashed',
                      **lineOptions)
 
@@ -120,7 +119,7 @@ def omniPlots(sensorVals, i, momenta, outTypeName):
     ax.set_ylabel(f'Mean [{latexmu}m]')
     ax2.set_ylabel(f'Standard Deviation [{latexmu}m]')
     ax3.set_ylabel(f'Mean [mrad]')
-    ax4.set_ylabel(f'Standard Deviation [mrad]')
+    ax4.set_ylabel(f'Std. Deviation [mrad]')
 
     ax.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
     ax2.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
@@ -146,6 +145,8 @@ def omniPlots(sensorVals, i, momenta, outTypeName):
     handles, labels = ax4.get_legend_handles_labels()
     handles = [h[0] for h in handles]
     ax4.legend(handles, labels, loc='center left', numpoints=1, bbox_to_anchor=(1, 0.5))
+
+    i=0
 
     fig.tight_layout()
     ax.grid(color='lightgrey', which='major', axis='both', linestyle='dotted')
@@ -185,8 +186,7 @@ def plotSensorMatrices(inputJson, outFileName):
     momenta = np.sort(momenta)
     momenta = np.unique(momenta, axis=0)
 
-    for i in range(len(sizes)):
-        omniPlots(sensorVals, i, momenta, 'sensors')
+    omniPlots(sensorVals, momenta, 'sensors')
 
 
 def plotModuleMatrices(inputJson, outFileName):
@@ -210,9 +210,7 @@ def plotModuleMatrices(inputJson, outFileName):
 
     print(f'momenta: {momenta}')
 
-    for i in range(len(sizes)):
-
-        omniPlots(moduleVals, i, momenta, 'modules')
+    omniPlots(moduleVals, momenta, 'modules')
 
 
 def plotBoxMatrices(inputJson, outFileName):
