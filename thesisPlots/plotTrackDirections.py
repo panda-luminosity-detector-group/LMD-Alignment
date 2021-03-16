@@ -13,7 +13,14 @@ latexPercent = r'\%'
 plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
 plt.rc('text', usetex=True)
 plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+limit = 75
 
+myRange = ((-limit,limit), (-limit,limit))
+
+twoSize=(11 / 2.54, 6 / 2.54)
+threeSize=(16 / 2.54, 6 / 2.54)
+fourSize=(16 / 2.54, 6 / 2.54)
+titles=False
 
 def plot(inputFile, outputFile, title):
 
@@ -30,13 +37,14 @@ def plot(inputFile, outputFile, title):
     newTracks = np.load(inputFile)
 
     axis = fig.add_subplot(1, 1, 1)
-    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
     fig.suptitle(title)
     axis.yaxis.tick_left()
     axis.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis.set_ylabel(r'$\vec{p}_y$ [µm]')
     axis.tick_params(direction='out')
     axis.yaxis.set_label_position("left")
+    axis.set_aspect('equal')
 
     # axis2 = fig.add_subplot(1,2,2)
     # axis2.hist(newTracks[:, 1, 2]*1e4, bins=50)#, range=((-300,300), (-300,300)))
@@ -46,8 +54,7 @@ def plot(inputFile, outputFile, title):
     # axis2.set_ylabel('count')
     # axis2.yaxis.set_label_position("right")
 
-    fig.tight_layout()
-    fig.savefig(outputFile, dpi=1000, bbox_inches='tight')
+    fig.savefig(outputFile, dpi=300, bbox_inches='tight', pad_inches = 0.05)
     plt.close(fig)
 
 
@@ -61,15 +68,18 @@ def quadPlot(in1, in2, in3, in4, outF):
     plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
     # plot difference hit array
-    fig = plt.figure(figsize=(16 / 2.54, 7 / 2.54))
+    fig = plt.figure(figsize=fourSize)
     newTracks = np.load(in1)
 
     axis = fig.add_subplot(1, 4, 1)
-    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
-    axis.set_title('Before Alignment')
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    
+    if titles:
+        axis.set_title('Before Alignment')
     axis.yaxis.tick_left()
     axis.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis.set_ylabel(r'$\vec{p}_y$ [µm]')
+    axis.set_aspect('equal')
     # axis.tick_params(direction='in')
     # axis.yaxis.set_label_position("left")
 
@@ -80,33 +90,38 @@ def quadPlot(in1, in2, in3, in4, outF):
 
     newTracks2 = np.load(in2)
     axis2 = fig.add_subplot(1, 4, 2, sharey=axis)
-    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis2.set_title('After Direction Cut')
+    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis2.set_title('After Direction Cut')
     axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis2.set_yticklabels([])
+    axis2.set_aspect('equal')
     # axis2.tick_params(direction='in')
     # axis2.yaxis.set_label_position("left")
 
     newTracks3 = np.load(in3)
     axis3 = fig.add_subplot(1, 4, 3, sharey=axis)
-    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis3.set_title('After Residual Cut')
+    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis3.set_title('After Residual Cut')
     axis3.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis3.set_yticklabels([])
+    axis3.set_aspect('equal')
     # axis3.tick_params(direction='in')
     # axis3.yaxis.set_label_position("left")
 
     newTracks4 = np.load(in4)
     axis4 = fig.add_subplot(1, 4, 4, sharey=axis)
-    axis4.hist2d(newTracks4[:, 1, 0] * 1e4 - 425, newTracks4[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis4.set_title('After Residual Cut')
+    axis4.hist2d(newTracks4[:, 1, 0] * 1e4 - 425, newTracks4[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis4.set_title('After Residual Cut')
     axis4.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis4.set_yticklabels([])
+    axis4.set_aspect('equal')
     # axis4.tick_params(direction='in')
     # axis3.yaxis.set_label_position("left")
 
-    fig.tight_layout()
-    fig.savefig(outF)
+    fig.savefig(outF, dpi=300, bbox_inches='tight', pad_inches = 0.05)
     plt.close(fig)
 
 def TriplePlot(in1, in2, in3, outF):
@@ -119,15 +134,17 @@ def TriplePlot(in1, in2, in3, outF):
     plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
     # plot difference hit array
-    fig = plt.figure(figsize=(16 / 2.54, 7 / 2.54))
+    fig = plt.figure(figsize=threeSize)
     newTracks = np.load(in1)
 
     axis = fig.add_subplot(1, 3, 1)
-    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
-    axis.set_title('All Valid Tracks')
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis.set_title('All Valid Tracks')
     axis.yaxis.tick_left()
     axis.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis.set_ylabel(r'$\vec{p}_y$ [µm]')
+    axis.set_aspect('equal')
     # axis.tick_params(direction='in')
     # axis.yaxis.set_label_position("left")
 
@@ -138,24 +155,27 @@ def TriplePlot(in1, in2, in3, outF):
 
     newTracks2 = np.load(in2)
     axis2 = fig.add_subplot(1, 3, 2)#, sharey=axis)
-    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis2.set_title('After Direction Cut')
+    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis2.set_title('After Direction Cut')
     axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis2.set_yticklabels([])
+    axis2.set_aspect('equal')
     # axis2.tick_params(direction='in')
     # axis2.yaxis.set_label_position("left")
 
     newTracks3 = np.load(in3)
     axis3 = fig.add_subplot(1, 3, 3)#, sharey=axis)
-    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis3.set_title('After Both Cuts')
+    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis3.set_title('After Both Cuts')
     axis3.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis3.set_yticklabels([])
+    axis3.set_aspect('equal')
     # axis3.tick_params(direction='in')
     # axis3.yaxis.set_label_position("left")
 
-    fig.tight_layout()
-    fig.savefig(outF)
+    fig.savefig(outF, dpi=300, bbox_inches='tight', pad_inches = 0.05)
     plt.close(fig)
 
 def dualPlot(in1, in2, outF):
@@ -168,15 +188,17 @@ def dualPlot(in1, in2, outF):
     plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
     # plot difference hit array
-    fig = plt.figure(figsize=(12 / 2.54, 7 / 2.54))
+    fig = plt.figure(figsize=twoSize)
     newTracks = np.load(in1)
 
     axis = fig.add_subplot(1, 2, 1)
-    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
-    axis.set_title('All Valid Tracks')
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis.set_title('All Valid Tracks')
     axis.yaxis.tick_left()
     axis.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis.set_ylabel(r'$\vec{p}_y$ [µm]')
+    axis.set_aspect('equal')
     # axis.tick_params(direction='in')
     # axis.yaxis.set_label_position("left")
 
@@ -187,15 +209,16 @@ def dualPlot(in1, in2, outF):
 
     newTracks2 = np.load(in2)
     axis2 = fig.add_subplot(1, 2, 2)#, sharey=axis)
-    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis2.set_title('After Direction Cut')
+    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis2.set_title('After Direction Cut')
     axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis2.set_yticklabels([])
+    axis2.set_aspect('equal')
     # axis2.tick_params(direction='in')
     # axis2.yaxis.set_label_position("left")
 
-    fig.tight_layout()
-    fig.savefig(outF)
+    fig.savefig(outF, dpi=300, bbox_inches='tight', pad_inches = 0.05)
     plt.close(fig)
 
 def TriplePlotTwo(in1, in2, in3, outF):
@@ -208,15 +231,18 @@ def TriplePlotTwo(in1, in2, in3, outF):
     plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
 
     # plot difference hit array
-    fig = plt.figure(figsize=(16 / 2.54, 7 / 2.54))
+    fig = plt.figure(figsize=threeSize)
     newTracks = np.load(in1)
 
     axis = fig.add_subplot(1, 3, 1)
-    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)')  #, range=((-300,300), (-300,300)))
-    axis.set_title('After Track Fit')
+    axis.hist2d(newTracks[:, 1, 0] * 1e4 - 425, newTracks[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    # axis2.set_title('After Direction Cut')
+    if titles:
+        axis.set_title('After Track Fit')
     axis.yaxis.tick_left()
     axis.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis.set_ylabel(r'$\vec{p}_y$ [µm]')
+    axis.set_aspect('equal')
     # axis.tick_params(direction='in')
     # axis.yaxis.set_label_position("left")
 
@@ -227,24 +253,27 @@ def TriplePlotTwo(in1, in2, in3, outF):
 
     newTracks2 = np.load(in2)
     axis2 = fig.add_subplot(1, 3, 2)#, sharey=axis)
-    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis2.set_title('After Direction Cut')
+    axis2.hist2d(newTracks2[:, 1, 0] * 1e4 - 425, newTracks2[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis2.set_title('After Direction Cut')
     axis2.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis2.set_yticklabels([])
+    axis2.set_aspect('equal')
     # axis2.tick_params(direction='in')
     # axis2.yaxis.set_label_position("left")
 
     newTracks3 = np.load(in3)
     axis3 = fig.add_subplot(1, 3, 3)#, sharey=axis)
-    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=thisrange)
-    axis3.set_title('After Both Cuts')
+    axis3.hist2d(newTracks3[:, 1, 0] * 1e4 - 425, newTracks3[:, 1, 1] * 1e4, bins=50, norm=LogNorm(), label='Count (log)', range=myRange)
+    if titles:
+        axis3.set_title('After Both Cuts')
     axis3.set_xlabel(r'$\vec{p}_x$ [µm]')
     axis3.set_yticklabels([])
+    axis3.set_aspect('equal')
     # axis3.tick_params(direction='in')
     # axis3.yaxis.set_label_position("left")
 
-    fig.tight_layout()
-    fig.savefig(outF)
+    fig.savefig(outF, dpi=300, bbox_inches='tight', pad_inches = 0.05)
     plt.close(fig)
 
 if __name__ == '__main__':
@@ -255,9 +284,6 @@ if __name__ == '__main__':
 
     plot(inF0, outD + 'noCuts.pdf', 'No Cuts')
     plot(inF1, outD + 'initialDirCut.pdf', 'After Direction Cut')
-
-
-
 
     for it in [0, 1, 2]:
 
