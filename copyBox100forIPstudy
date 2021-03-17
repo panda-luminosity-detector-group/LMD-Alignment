@@ -1,0 +1,10 @@
+
+mkdir -p ipDist/1.5/box-0.0/ ipDist/1.5/box-1.0/ ipDist/1.5/box-2.0/
+cp /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/no_geo_misalignment/100000/1-100_uncut/no_alignment_correction/Lumi_TrksQA_1000000.root                    ipDist/1.5/box-0.0/Lumi_TrksQA_1000000.root
+cp /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box100-1.00/100000/1-100_uncut/no_alignment_correction/Lumi_TrksQA_1000000.root     ipDist/1.5/box-1.0/Lumi_TrksQA_1000000.root
+cp /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_1.5GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box100-2.00/100000/1-100_uncut/no_alignment_correction/Lumi_TrksQA_1000000.root     ipDist/1.5/box-2.0/Lumi_TrksQA_1000000.root
+
+mkdir -p ipDist/15.0/box-0.0/ ipDist/15.0/box-1.0/ ipDist/15.0/box-2.0/
+cp /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/no_geo_misalignment/100000/1-100_uncut/no_alignment_correction/Lumi_TrksQA_1000000.root                   ipDist/15.0/box-0.0/Lumi_TrksQA_1000000.root
+cp /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box100-1.00/100000/1-100_uncut/no_alignment_correction/Lumi_TrksQA_1000000.root    ipDist/15.0/box-1.0/Lumi_TrksQA_1000000.root
+cp /lustre/miifs05/scratch/him-specf/paluma/roklasen/LumiFit/plab_15.0GeV/dpm_elastic_theta_2.7-13.0mrad_recoil_corrected/geo_misalignmentmisMat-box100-2.00/100000/1-100_uncut/no_alignment_correction/Lumi_TrksQA_1000000.root    ipDist/15.0/box-2.0/Lumi_TrksQA_1000000.root
