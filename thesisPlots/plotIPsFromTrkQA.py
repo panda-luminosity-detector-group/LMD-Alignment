@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from collections import defaultdict  # to concatenate dictionaries
+import matplotlib.ticker as plticker
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -85,45 +86,126 @@ if __name__ == "__main__":
     plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
     plt.rc('text', usetex=True)
     plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+    # plt.rcParams["legend.loc"] = 'lower right'
 
     # read some 10 files
     # this is the same as in the actual align code
     # box = 'box-0.0'
 
+    path = '/media/DataEnc2TBRaid1/Arbeit/VirtualDir/boxIPdist-uncut'
+
     if False:
-        for box in ['box-0.0', 'box-1.0', 'box-1.5', 'box-2.0']:
-            files = f'/home/remus/temp/rootcompare/{box}/Lumi_TrksQA_1000*.root'
+        for mom in ('1.5', '15.0'):
+            for box in ['box-0.0', 'box-1.0', 'box-2.0']:
+                files = f'{path}/{mom}/{box}/Lumi_TrksQA_1000*.root'
 
-            array = getIPfromTrksQA(files)
-            print(f'Number of Tracks: {len(array)}')
+                array = getIPfromTrksQA(files)
+                print(f'Number of Tracks: {len(array)}')
 
-            for cut in [0, 2, 4, 6]:
+                for cut in [0]:#, 2, 4, 6, 8, 10, 15, 20]:
 
-                array2 = quantileCut(array, cut)
-                ip = extractIP(array2)
+                    #* individual plots
+                    array2 = quantileCut(array, cut)
 
-                mus = np.average(ip, axis=0)
-                sigmas = np.std(ip, axis=0)
+                    # default ROOT units are cm, we want mm here
+                    ip = extractIP(array2) * 10
 
-                fig, ax = plt.subplots(figsize=(7 / 2.54, 6 / 2.54))
+                    mus = np.average(ip, axis=0)
+                    sigmas = np.std(ip, axis=0)
 
-                # plot IP x vs y
-                ax.hist2d(ip[:, 0], ip[:, 1], bins=50, norm=LogNorm(), rasterized=True)
-                ax.set_xlabel(f'$i_x$, {latexmu}x={np.round(mus[0], 1)}, {latexsigma}x={np.round(sigmas[0], 1)} [cm]')
-                ax.set_ylabel(f'$i_y$, {latexmu}y={np.round(mus[1], 1)}, {latexsigma}y={np.round(sigmas[1], 1)} [cm]')
-                fig.tight_layout()
-                # plt.show()
-                #plt.figure(figsize=(10/2.54, 10/2.54))
-                fig.savefig(f'output/ipDistribution/{box}-cut{cut}.pdf', dpi=1000, bbox_inches='tight')
+                    fig, ax = plt.subplots(figsize=(10 / 2.54, 10 / 2.54))
+                    ax.set_aspect('equal')
+
+                    # plot IP x vs y
+                    ax.hist2d(ip[:, 0], ip[:, 1], bins=50, norm=LogNorm(), rasterized=True)
+                    ax.set_xlabel(f'$i_x$ [mm]\n{latexmu}x={mus[0]:.2f} [mm], {latexsigma}x={sigmas[0]:.2f} [mm]')
+                    ax.set_ylabel(f'$i_y$ [mm]\n{latexmu}y={mus[1]:.2f} [mm], {latexsigma}y={sigmas[1]:.2f} [mm]')
+
+                    fig.tight_layout()
+                    fig.savefig(f'output/ipDistribution/{box}-cut{cut}-{mom}.pdf', dpi=1000, bbox_inches='tight')
+                    plt.close(fig)
+    if True:
+        for box in ['box-0.0', 'box-1.0', 'box-2.0']:
+
+            file1 = f'{path}/1.5/{box}/Lumi_TrksQA_1000*.root'
+            file2 = f'{path}/15.0/{box}/Lumi_TrksQA_1000*.root'
+
+            array1 = getIPfromTrksQA(file1)
+            array2 = getIPfromTrksQA(file2)
+
+            for cut in [0, 4, 8, 12, 16]:
+
+                array1 = quantileCut(array1, cut)
+                array2 = quantileCut(array2, cut)
+
+                # default ROOT units are cm, we want mm here
+                ip1 = extractIP(array1) * 10
+                ip2 = extractIP(array2) * 10
+
+                mus1 = np.average(ip1, axis=0)
+                mus2 = np.average(ip2, axis=0)
+                sigmas1 = np.std(ip1, axis=0)
+                sigmas2 = np.std(ip2, axis=0)
+
+                xmin1 = np.min(ip1[:,0])
+                xmax1 = np.max(ip1[:,0])
+                ymin1 = np.min(ip1[:,1])
+                ymax1 = np.max(ip1[:,1])
+
+                xmin2 = np.min(ip2[:,0])
+                xmax2 = np.max(ip2[:,0])
+                ymin2 = np.min(ip2[:,1])
+                ymax2 = np.max(ip2[:,1])
+
+                xmin = min(xmin1, xmin2)
+                ymin = min(ymin1, ymin2)
+                xmax = max(xmax1, xmax2)
+                ymax = max(ymax1, ymax2)
+
+                thisrange = [[xmin, xmax], [ymin, ymax]]
+               
+
+                #* combined plots
+                fig, axis = plt.subplots(1, 2, sharex=True, sharey=True)
+
+                axis[0].hist2d(ip1[:, 0], ip1[:, 1], bins=100, norm=LogNorm(), rasterized=True, range=thisrange)
+                axis[0].set_xlabel(f'$i_x$ [mm]\n{latexmu}x={mus1[0]:.2f} [mm], {latexsigma}x={sigmas1[0]:.2f} [mm]')
+                axis[0].set_ylabel(f'$i_y$ [mm]\n{latexmu}y={mus1[1]:.2f} [mm], {latexsigma}y={sigmas1[1]:.2f} [mm]')
+                axis[0].set_aspect('equal')
+
+
+                axis[1].hist2d(ip2[:, 0], ip2[:, 1], bins=100, norm=LogNorm(), rasterized=True, range=thisrange)
+                axis[1].set_xlabel(f'$i_x$ [mm]\n{latexmu}x={np.round(mus2[0], 1)} [mm], {latexsigma}x={np.round(sigmas2[0], 1)} [mm]')
+                axis[1].set_ylabel(f'$i_y$ [mm]\n{latexmu}y={np.round(mus2[1], 1)} [mm], {latexsigma}y={np.round(sigmas2[1], 1)} [mm]')
+                axis[1].yaxis.set_label_position('right')
+                axis[1].yaxis.set_ticks_position('none')
+                axis[1].set_aspect('equal')
+
+                axis[0].set_xlim(xmin, xmax)
+                axis[0].set_ylim(ymin, ymax)
+
+
+
+                loc = plticker.MultipleLocator(round((xmax-xmin)/3)) # this locator puts ticks at regular intervals
+                axis[0].xaxis.set_major_locator(loc)
+                axis[0].yaxis.set_major_locator(loc)
+                axis[1].xaxis.set_major_locator(loc)
+                axis[1].yaxis.set_major_locator(loc)
+
+                fig.set_size_inches((15 / 2.54, 8 / 2.54))
+                fig.subplots_adjust(wspace=0, hspace=0)
+                fig.savefig(f'output/ipDistribution/{box}-cut{cut}-both.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.05)
                 plt.close(fig)
 
-    # plot sigma vs Ntracks, select cutoff as appropriate
-    if True:
+
+
+    # plot sigma vs quantile cut, select cutoff as appropriate
+    if False:
         for mom in ('1.5', '15.0'):
-            cuts = np.arange(0.1, 5.1, 0.05)
+            cuts = np.arange(0.0, 5.1, 0.05)
 
             for box in ['box-0.0', 'box-1.0', 'box-2.0']:
-                files = f'/media/DataEnc2TBRaid1/Arbeit/VirtualDir/boxIPdist/{mom}/{box}/Lumi_TrksQA_1000*.root'
+                files = f'{path}/{mom}/{box}/Lumi_TrksQA_1000*.root'
                 cut = 0.0
 
                 muArr = []
@@ -136,13 +218,19 @@ if __name__ == "__main__":
                     #print(f'cut: {cut}')
 
                     array2 = quantileCut(array, cut)
-                    ip = extractIP(array2)
+
+                    # default ROOT units are cm, we want mm here
+                    ip = extractIP(array2)*1e1
 
                     mus = np.average(ip, axis=0)
                     sigmas = np.std(ip, axis=0)
 
                     muArr.append(mus)
                     sigmaArr.append(sigmas)
+
+                    if abs(cut - 4.0) < 0.001:
+                        mx, my = mus[0], mus[1]
+                        sx, sy = sigmas[0], sigmas[1]
 
                 muArr = np.array(muArr)
                 sigmaArr = np.array(sigmaArr)
@@ -151,18 +239,23 @@ if __name__ == "__main__":
                 fig2, ax2 = plt.subplots(figsize=(14 / 2.54, 5 / 2.54))
 
                 # plot IP x vs y
-                ax.plot(cuts, muArr[:, 0]*1e1, rasterized=True, marker='1', linestyle='', label=f'{latexmu} x')
-                ax.plot(cuts, muArr[:, 1]*1e1, rasterized=True, marker='2', linestyle='', label=f'{latexmu} y')
+                ax.plot(cuts, muArr[:, 0], rasterized=True, marker='1', linestyle='', label=f'{latexmu}x @ 4{latexPercent}={mx:.3f}mm')
+                ax.plot(cuts, muArr[:, 1], rasterized=True, marker='2', linestyle='', label=f'{latexmu}y @ 4{latexPercent}={my:.3f}mm')
                 ax.set_xlabel(f'Quantile Cut [{latexPercent}]')
                 ax.set_ylabel(f'Mean [mm]')
 
-                ax2.plot(cuts, sigmaArr[:, 0]*1e1, rasterized=True, marker='3', linestyle='', label=f'{latexsigma} x')
-                ax2.plot(cuts, sigmaArr[:, 1]*1e1, rasterized=True, marker='4', linestyle='', label=f'{latexsigma} y')
+                ax2.plot(cuts, sigmaArr[:, 0], rasterized=True, marker='3', linestyle='', label=f'{latexsigma}x @ 4{latexPercent}={sx:.3f}mm')
+                ax2.plot(cuts, sigmaArr[:, 1], rasterized=True, marker='4', linestyle='', label=f'{latexsigma}y @ 4{latexPercent}={sy:.3f}mm')
                 ax2.set_xlabel(f'Quantile Cut [{latexPercent}]')
                 ax2.set_ylabel(f'Std. Deviation [mm]')
 
-                ax.legend()
-                ax2.legend()
+                ax.set_ylim([-6.5,1.5])
+
+                ax.axvline(x=4, color=r'#aa0000', linestyle='-', linewidth=0.5)
+                ax2.axvline(x=4, color=r'#aa0000', linestyle='-', linewidth=0.5)
+
+                ax.legend(loc='lower right')
+                ax2.legend(loc='upper right')
 
                 fig.tight_layout()
                 fig2.tight_layout()
