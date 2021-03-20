@@ -217,6 +217,7 @@ def plotBoxMatrices(inputJson, outFileName):
     # now, this contains one misalignment, multiple momenta and for each momentum, multiple factors
     boxVals = []
     momenta = []
+    absoluteValues = True
 
     for mom in mainDict.keys():
         momenta.append(float(mom))
@@ -249,7 +250,7 @@ def plotBoxMatrices(inputJson, outFileName):
 
             #! The box rot values are ABSOLUTE, not residual. That means we have to subtract the design value by hand to get the residual
             # take care! I don't know of all data is generated the same way, you have to check each set individually :(
-            if True:
+            if not absoluteValues:
                 fixScale = 100  # the amount of misalignment at factor 1.0
                 fixFactors = np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]) * fixScale
                 print(f'Fix Table (Box Plot):\n{fixFactors}')
@@ -281,7 +282,10 @@ def plotBoxMatrices(inputJson, outFileName):
         # Adding plotting parameters
 
         ax.set_xlabel(f'Misalign Factor')
-        ax.set_ylabel(f'Euler Angle Residual [{latexmu}rad]')
+        if absoluteValues:
+            ax.set_ylabel(f'Remaining Euler Angle [{latexmu}rad]')
+        else:
+            ax.set_ylabel(f'Euler Angle Residual [{latexmu}rad]')
 
         ax.xaxis.set_ticks([0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
 
