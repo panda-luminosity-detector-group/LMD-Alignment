@@ -124,7 +124,7 @@ if __name__ == "__main__":
                     fig.tight_layout()
                     fig.savefig(f'output/ipDistribution/{box}-cut{cut}-{mom}.pdf', dpi=1000, bbox_inches='tight')
                     plt.close(fig)
-    if True:
+    if False:
         for box in ['box-0.0', 'box-1.0', 'box-2.0']:
 
             file1 = f'{path}/1.5/{box}/Lumi_TrksQA_1000*.root'
@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
 
     # plot sigma vs quantile cut, select cutoff as appropriate
-    if False:
+    if True:
         for mom in ('1.5', '15.0'):
             cuts = np.arange(0.0, 5.1, 0.05)
 
@@ -239,13 +239,13 @@ if __name__ == "__main__":
                 fig2, ax2 = plt.subplots(figsize=(14 / 2.54, 5 / 2.54))
 
                 # plot IP x vs y
-                ax.plot(cuts, muArr[:, 0], rasterized=True, marker='1', linestyle='', label=f'{latexmu}x @ 4{latexPercent}={mx:.3f}mm')
-                ax.plot(cuts, muArr[:, 1], rasterized=True, marker='2', linestyle='', label=f'{latexmu}y @ 4{latexPercent}={my:.3f}mm')
+                ax.plot(cuts, muArr[:, 0], rasterized=True, marker='1', linestyle='', label=f'{latexmu}x @ 4{latexPercent}={mx:.2f}mm')
+                ax.plot(cuts, muArr[:, 1], rasterized=True, marker='2', linestyle='', label=f'{latexmu}y @ 4{latexPercent}={my:.2f}mm')
                 ax.set_xlabel(f'Quantile Cut [{latexPercent}]')
                 ax.set_ylabel(f'Mean [mm]')
 
-                ax2.plot(cuts, sigmaArr[:, 0], rasterized=True, marker='3', linestyle='', label=f'{latexsigma}x @ 4{latexPercent}={sx:.3f}mm')
-                ax2.plot(cuts, sigmaArr[:, 1], rasterized=True, marker='4', linestyle='', label=f'{latexsigma}y @ 4{latexPercent}={sy:.3f}mm')
+                ax2.plot(cuts, sigmaArr[:, 0], rasterized=True, marker='3', linestyle='', label=f'{latexsigma}x @ 4{latexPercent}={sx:.2f}mm')
+                ax2.plot(cuts, sigmaArr[:, 1], rasterized=True, marker='4', linestyle='', label=f'{latexsigma}y @ 4{latexPercent}={sy:.2f}mm')
                 ax2.set_xlabel(f'Quantile Cut [{latexPercent}]')
                 ax2.set_ylabel(f'Std. Deviation [mm]')
 
@@ -272,7 +272,7 @@ if __name__ == "__main__":
     if True:
         for mom in ('1.5', '15.0'):
             for box in ['box-0.0', 'box-1.0', 'box-2.0']:
-                files = f'/media/DataEnc2TBRaid1/Arbeit/VirtualDir/boxIPdist/{mom}/{box}/Lumi_TrksQA_1000*.root'
+                files = f'{path}/{mom}/{box}/Lumi_TrksQA_1000*.root'
                 array = getIPfromTrksQA(files)
                 print(f'Number of Tracks: {len(array)}')
 
@@ -283,13 +283,17 @@ if __name__ == "__main__":
                 for number in nTracks:
                     array2 = array[:number]
                     array3 = quantileCut(array2, 4.0)
-                    ip = extractIP(array3)
+                    ip = extractIP(array3)*1e1
 
                     mus = np.average(ip, axis=0)
                     sigmas = np.std(ip, axis=0)
 
                     muArr.append(mus)
                     sigmaArr.append(sigmas)
+
+                    if abs(number - 4e4) < 0.001:
+                        mx, my = mus[0], mus[1]
+                        sx, sy = sigmas[0], sigmas[1]
 
                 muArr = np.array(muArr)
                 sigmaArr = np.array(sigmaArr)
@@ -298,18 +302,19 @@ if __name__ == "__main__":
                 fig2, ax2 = plt.subplots(figsize=(14 / 2.54, 5 / 2.54))
 
                 # plot IP x vs y
-                ax.plot(nTracks, muArr[:, 0]*1e1, rasterized=True, marker='1', linestyle='', label=f'{latexmu} x')
-                ax.plot(nTracks, muArr[:, 1]*1e1, rasterized=True, marker='2', linestyle='', label=f'{latexmu} y')
+                ax.plot(nTracks, muArr[:, 0], rasterized=True, marker='1', linestyle='', label=f'{latexmu}x @ 40000 Tracks={mx:.2f}mm')
+                ax.plot(nTracks, muArr[:, 1], rasterized=True, marker='2', linestyle='', label=f'{latexmu}y @ 40000 Tracks={my:.2f}mm')
                 ax.set_xlabel(f'Number of Tracks')
                 ax.set_ylabel(f'Mean [mm]')
 
-                ax2.plot(nTracks, sigmaArr[:, 0]*1e1, rasterized=True, marker='3', linestyle='', label=f'{latexsigma} x')
-                ax2.plot(nTracks, sigmaArr[:, 1]*1e1, rasterized=True, marker='4', linestyle='', label=f'{latexsigma} y')
+                ax2.plot(nTracks, sigmaArr[:, 0], rasterized=True, marker='3', linestyle='', label=f'{latexsigma}x @ 40000 Tracks={sx:.2f}mm')
+                ax2.plot(nTracks, sigmaArr[:, 1], rasterized=True, marker='4', linestyle='', label=f'{latexsigma}y @ 40000 Tracks={sy:.2f}mm')
                 ax2.set_xlabel(f'Number of Tracks')
                 ax2.set_ylabel(f'Std. Deviation [mm]')
 
                 ax.legend()
                 ax2.legend()
+                ax.set_ylim([-1.5,2.5])
 
                 fig.tight_layout()
                 fig2.tight_layout()
