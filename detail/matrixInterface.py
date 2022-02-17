@@ -62,6 +62,10 @@ def baseTransform(mat, matFromAtoB, inverse=False):
 
     You can set inverse to True if matFromAtoB points in the wrong direction
     """
+
+    # only works on 4x4 matrices, not points
+    assert mat.shape == matFromAtoB.shape()
+
     if inverse:
         return inv(matFromAtoB) @ mat @ matFromAtoB
     else:
