@@ -1,15 +1,4 @@
 # Ignore large data directories
-2018*
-lustre/
-TrksQA/
-plab*/
-LumiPairsTest/*
-modulesAlTest/
-misMatrices/
-LumiFit/*
-LumiFit/
-trackResiduals/
-binaryPairFiles/
 *.npy
 
 # But never these files...
