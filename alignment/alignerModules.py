@@ -9,13 +9,15 @@ import detail.matrixInterface as mi
 
 import concurrent
 import numpy as np
-#import pyMille
+
+# import pyMille
 import random
 import re
 import subprocess
 import sys
 
 from pathlib import Path
+
 """
 Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
 
@@ -35,7 +37,7 @@ class alignerModules:
         self.alignMatrices = {}
         self.reader = trackReader()
         self.iterations = 5
-        print(f'reading detector parameters...')
+        print(f"reading detector parameters...")
         self.reader.readDetectorParameters()
 
     @classmethod
@@ -48,22 +50,27 @@ class alignerModules:
 
     # words cannot describe how ugly this is, but I'm pressed for time and aesthetics wont get me my phd
     def convertRootTracks(self, dataPath, outJsonFile):
-        print(f'converting tracks from ROOT files to json file, using these paths:')
-        print(f'data path: {dataPath}')
-        print(f'out file: {outJsonFile}')
+        print(f"converting tracks from ROOT files to json file, using these paths:")
+        print(f"data path: {dataPath}")
+        print(f"out file: {outJsonFile}")
         if not Path(outJsonFile).exists():
             rootArgs = f'convertRootTracks.C("{str(dataPath)}","{str(outJsonFile)}")'
-            print(f'Running root -l -q {rootArgs}')
-            result = subprocess.run(['root', '-l', '-q', rootArgs], cwd='alignment/modules', stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    universal_newlines=True)  # I wish himster had python 3.7  ...
-            print(f'stdout: {result.stdout}')
-            print(f'stderr: {result.stderr}')
-            print(f'Root converter should be done now.')
+            print(f"Running root -l -q {rootArgs}")
+            result = subprocess.run(
+                ["root", "-l", "-q", rootArgs],
+                cwd="alignment/modules",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+            )  # I wish himster had python 3.7  ...
+            print(f"stdout: {result.stdout}")
+            print(f"stderr: {result.stderr}")
+            print(f"Root converter should be done now.")
         else:
-            print(f'processed tracks already exist, skipping.')
+            print(f"processed tracks already exist, skipping.")
 
     def readTracks(self, fileName, isNumpy=False):
-        print(f'reading processed tracks file...')
+        print(f"reading processed tracks file...")
         if not isNumpy:
             self.reader.readTracksFromJson(fileName)
         else:
@@ -78,7 +85,7 @@ class alignerModules:
     def setIterations(self, iterations):
         self.iterations = iterations
 
-    #? cuts on track x,y direction
+    # ? cuts on track x,y direction
     def dynamicTrackCut(self, newTracks, cutPercent=2):
         com = np.average(newTracks[:, 1, :3], axis=0)
 
@@ -91,7 +98,7 @@ class alignerModules:
         newTracks = newTracks[:-cut]
         return newTracks
 
-    #? cuts on reco-track distance
+    # ? cuts on reco-track distance
     def dynamicRecoTrackDistanceCut(self, newTracks, cutPercent=1):
 
         tempTracks = newTracks
@@ -102,12 +109,14 @@ class alignerModules:
             recoPosArr = tempTracks[:, 2 + i, :3]
 
             # norm momentum vectors, this is important for the distance formula!
-            trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+            trackDirArr = (
+                trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+            )
 
             # vectorized distance calculation
-            tempV1 = (trackPosArr - recoPosArr)
+            tempV1 = trackPosArr - recoPosArr
             tempV2 = (tempV1 * trackDirArr).sum(axis=1)
-            dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
+            dVec = tempV1 - tempV2[np.newaxis].T * trackDirArr
             dVec = dVec[:, :2]
             newDist = np.power(dVec[:, 0], 2) + np.power(dVec[:, 1], 2)
 
@@ -130,16 +139,20 @@ class alignerModules:
         # multi-threaded version
         else:
             maxThreads = 8
-            print(f'running in {maxThreads} threads.')
+            print(f"running in {maxThreads} threads.")
 
             futureList = []
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=maxThreads) as executor:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=maxThreads
+            ) as executor:
                 # Start the load operations and mark each future with its URL
                 for sector in range(10):
-                    futureList.append(executor.submit(self.alignSectorICP, sector, int(maxNoOfTracks)))
+                    futureList.append(
+                        executor.submit(self.alignSectorICP, sector, int(maxNoOfTracks))
+                    )
 
-            print('waiting for remaining jobs...')
+            print("waiting for remaining jobs...")
             executor.shutdown(wait=True)
 
             # get all results from the future
@@ -154,7 +167,7 @@ class alignerModules:
 
     def alignSectorICP(self, sector=0, maxNoTrks=0):
         # check if anchor points were set
-        assert hasattr(self, 'anchorPoints')
+        assert hasattr(self, "anchorPoints")
 
         # TODO: add to config!
         preTransform = False
@@ -170,28 +183,30 @@ class alignerModules:
         moduleMatrices = np.zeros((4, 4, 4))
         for i in range(len(modulePaths)):
             path = modulePaths[i]
-            moduleMatrices[i] = np.array(self.reader.detectorMatrices[path]).reshape(4, 4)
+            moduleMatrices[i] = np.array(self.reader.detectorMatrices[path]).reshape(
+                4, 4
+            )
 
-        #* use average misalignment
+        # * use average misalignment
         averageShift = self.avgMisalignments[str(sector)]
 
         # get Reco Points from reader
         # TODO: update format or read with uproot directly!
         if useOldFormat:
             allTracks = self.reader.getAllTracksInSector(sector)
-            #? new format! np array with track oris, track dirs, and recos
+            # ? new format! np array with track oris, track dirs, and recos
             nTrks = len(allTracks)
             newTracks = np.ones((nTrks, 6, 4))
 
             for i in range(nTrks):
-                newTracks[i, 0, :3] = allTracks[i]['trkPos']
-                newTracks[i, 1, :3] = allTracks[i]['trkMom']
-                newTracks[i, 2, :3] = allTracks[i]['recoHits'][0]['pos']
-                newTracks[i, 3, :3] = allTracks[i]['recoHits'][1]['pos']
-                newTracks[i, 4, :3] = allTracks[i]['recoHits'][2]['pos']
-                newTracks[i, 5, :3] = allTracks[i]['recoHits'][3]['pos']
+                newTracks[i, 0, :3] = allTracks[i]["trkPos"]
+                newTracks[i, 1, :3] = allTracks[i]["trkMom"]
+                newTracks[i, 2, :3] = allTracks[i]["recoHits"][0]["pos"]
+                newTracks[i, 3, :3] = allTracks[i]["recoHits"][1]["pos"]
+                newTracks[i, 4, :3] = allTracks[i]["recoHits"][2]["pos"]
+                newTracks[i, 5, :3] = allTracks[i]["recoHits"][3]["pos"]
         else:
-            raise Exception(f'new track format is not implemented yet!')
+            raise Exception(f"new track format is not implemented yet!")
 
         # use only N tracks:
         if maxNoTrks > 0:
@@ -200,21 +215,29 @@ class alignerModules:
         sectorString = str(sector)
         # transform all recos to LMD local
         if preTransform:
-            matToLMD = np.linalg.inv(np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4, 4)))
+            matToLMD = np.linalg.inv(
+                np.array(self.reader.detectorMatrices["/cave_1/lmd_root_0"]).reshape(
+                    (4, 4)
+                )
+            )
             for i in range(4):
                 newTracks[:, i + 2] = (matToLMD @ newTracks[:, i + 2].T).T
 
         # transform anchorPoints to PANDA global
         else:
-            matFromLMD = np.array(self.reader.detectorMatrices['/cave_1/lmd_root_0']).reshape((4, 4))
-            self.anchorPoints[sectorString] = (matFromLMD @ self.anchorPoints[sectorString])
+            matFromLMD = np.array(
+                self.reader.detectorMatrices["/cave_1/lmd_root_0"]
+            ).reshape((4, 4))
+            self.anchorPoints[sectorString] = (
+                matFromLMD @ self.anchorPoints[sectorString]
+            )
 
-        print(f'==================================================')
-        print(f'        module aligner for sector {sector}')
-        print(f'==================================================')
+        print(f"==================================================")
+        print(f"        module aligner for sector {sector}")
+        print(f"==================================================")
 
-        print(f'number of tracks: {len(newTracks)}')
-        print(f'anchor point: {self.anchorPoints[sectorString]}')
+        print(f"number of tracks: {len(newTracks)}")
+        print(f"anchor point: {self.anchorPoints[sectorString]}")
 
         # do a first track fit, otherwise we have no starting tracks
         recos = newTracks[:, 2:6]
@@ -232,23 +255,36 @@ class alignerModules:
             totalMatrices[i] = np.identity(4)
 
         # ugly hack to plot intermediate track directions for my Diss
-        np.save('output/alignmentModules/trackDirections/newTracks-BeforeFirstCut', newTracks)
+        np.save(
+            "output/alignmentModules/trackDirections/newTracks-BeforeFirstCut",
+            newTracks,
+        )
 
         newTracks = self.dynamicTrackCut(newTracks, 1)
 
         # ugly hack to plot intermediate track directions for my Diss
-        np.save('output/alignmentModules/trackDirections/newTracks-AfterFirstCut', newTracks)
+        np.save(
+            "output/alignmentModules/trackDirections/newTracks-AfterFirstCut", newTracks
+        )
 
-        #* =========== iterate cuts and calculation
+        # * =========== iterate cuts and calculation
         # TODO: Check if the reco and direction cuts are even neccessary in the iterations anymore. Seems that one cut at the beginning is enough.
         for iIteration in range(self.iterations):
-            print(f'running iteration {iIteration}, {len(newTracks)} tracks remaining...')
+            print(
+                f"running iteration {iIteration}, {len(newTracks)} tracks remaining..."
+            )
 
-            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step1-noRecoCut', newTracks)
+            np.save(
+                f"output/alignmentModules/trackDirections/newTracks-it{iIteration}-step1-noRecoCut",
+                newTracks,
+            )
 
             newTracks = self.dynamicRecoTrackDistanceCut(newTracks)
 
-            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step2-afterRecoCut', newTracks)
+            np.save(
+                f"output/alignmentModules/trackDirections/newTracks-it{iIteration}-step2-afterRecoCut",
+                newTracks,
+            )
 
             # 4 planes per sector
             for i in range(4):
@@ -257,12 +293,14 @@ class alignerModules:
                 recoPosArr = newTracks[:, 2 + i, :3]
 
                 # norm momentum vectors, this is important for the distance formula!
-                trackDirArr = trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+                trackDirArr = (
+                    trackDirArr / np.linalg.norm(trackDirArr, axis=1)[np.newaxis].T
+                )
 
                 # vectorized distance calculation
-                tempV1 = (trackPosArr - recoPosArr)
+                tempV1 = trackPosArr - recoPosArr
                 tempV2 = (tempV1 * trackDirArr).sum(axis=1)
-                dVec = (tempV1 - tempV2[np.newaxis].T * trackDirArr)
+                dVec = tempV1 - tempV2[np.newaxis].T * trackDirArr
 
                 # the vector thisReco+dVec now points from the reco hit to the intersection of the track and the sensor
                 pIntersection = recoPosArr + dVec
@@ -274,13 +312,19 @@ class alignerModules:
                 # transform recos
                 newTracks[:, i + 2] = (T0inv @ newTracks[:, i + 2].T).T
 
-                np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step3-afterFit', newTracks)
+                np.save(
+                    f"output/alignmentModules/trackDirections/newTracks-it{iIteration}-step3-afterFit",
+                    newTracks,
+                )
 
             # direction cut again
             if iIteration < 3:
                 newTracks = self.dynamicTrackCut(newTracks, 1)
-            
-            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step4-afterDirectionCut', newTracks)
+
+            np.save(
+                f"output/alignmentModules/trackDirections/newTracks-it{iIteration}-step4-afterDirectionCut",
+                newTracks,
+            )
 
             # do track fit
             corrFitter = CorridorFitter(newTracks[:, 2:6])
@@ -290,9 +334,12 @@ class alignerModules:
             newTracks[:, 0, :3] = resultTracks[:, 0]
             newTracks[:, 1, :3] = resultTracks[:, 1]
 
-            np.save(f'output/alignmentModules/trackDirections/newTracks-it{iIteration}-step5-afterTrackFit', newTracks)
+            np.save(
+                f"output/alignmentModules/trackDirections/newTracks-it{iIteration}-step5-afterTrackFit",
+                newTracks,
+            )
 
-        #* =========== store matrices
+        # * =========== store matrices
         # 4 planes per sector
 
         result = []
@@ -312,16 +359,18 @@ class alignerModules:
             # yield modulePaths[i], totalMatrices[i]
             result.append((modulePaths[i], totalMatrices[i]))
 
-        print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
-        print(f'        module aligner for sector {sector} done!         ')
-        print(f'-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+        print(f"-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+        print(f"        module aligner for sector {sector} done!         ")
+        print(f"-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
         return result
 
     def getMatrix(self, trackPositions, recoPositions, use2D=False):
 
         # use 2D, use only in LMD local!
         if use2D:
-            T, _, _ = icp.best_fit_transform(trackPositions[..., :2], recoPositions[..., :2])
+            T, _, _ = icp.best_fit_transform(
+                trackPositions[..., :2], recoPositions[..., :2]
+            )
 
             # homogenize
             resultMat = np.identity(4)
@@ -337,7 +386,7 @@ class alignerModules:
 
         sector = 0
 
-        milleOut = f'output/millepede/moduleAlignment-sector{sector}-aligned.bin'
+        milleOut = f"output/millepede/moduleAlignment-sector{sector}-aligned.bin"
 
         MyMille = pyMille.Mille(milleOut, True, True)
 
@@ -351,19 +400,21 @@ class alignerModules:
 
         outFile = ""
 
-        print(f'Running pyMille...')
+        print(f"Running pyMille...")
         for params in self.reader.generatorMilleParameters():
             if params[4] == sector:
                 #     continue
 
                 # Attention: this order of parameters does't match the reader interface!
-                MyMille.write(params[1], params[0], labels, params[2], params[3] * sigmaScale)
+                MyMille.write(
+                    params[1], params[0], labels, params[2], params[3] * sigmaScale
+                )
                 # print(f'params: {paramsN}')
                 # print(f'residual: {params[2]}, sigma: {params[3]*sigmaScale} (factor {params[2]/(params[3]*sigmaScale)})')
                 # labels += 3
                 gotems += 1
 
-                outFile += f'{params[1]}, {params[0]}, {labels}, {params[2]}, {params[3]*sigmaScale}\n'
+                outFile += f"{params[1]}, {params[0]}, {labels}, {params[2]}, {params[3]*sigmaScale}\n"
 
             if (gotems % 250) == 0:
                 endCalls += 1
@@ -371,8 +422,8 @@ class alignerModules:
 
         MyMille.end()
 
-        print(f'Mille binary data ({gotems} records) written to {milleOut}!')
-        print(f'endCalls: {endCalls}')
+        print(f"Mille binary data ({gotems} records) written to {milleOut}!")
+        print(f"endCalls: {endCalls}")
         # now, pede must be called
 
         # with open('writtenData.txt', 'w') as f:

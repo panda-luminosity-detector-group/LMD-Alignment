@@ -18,11 +18,11 @@ from numpy.linalg import inv
 
 def loadMatrices(fileName, reshape=True):
     if fileName is None:
-        raise Exception(f'ERROR! Filename is None, something went wrong!')
+        raise Exception(f"ERROR! Filename is None, something went wrong!")
     if not Path(fileName).exists():
-        raise Exception(f'ERROR! File not found: {fileName}!')
+        raise Exception(f"ERROR! File not found: {fileName}!")
 
-    with open(fileName, 'r') as f:
+    with open(fileName, "r") as f:
         temp = json.load(f)
 
     if reshape:
@@ -39,7 +39,7 @@ def saveMatrices(matrices, fileName):
 
     # warn if overwriting
     if Path(fileName).exists():
-        print(f'WARNING. Replacing file: {fileName}!\n')
+        print(f"WARNING. Replacing file: {fileName}!\n")
         Path(fileName).unlink()
 
     # flatten matrices, make a copy (pass-by-reference!)
@@ -47,7 +47,7 @@ def saveMatrices(matrices, fileName):
     for p in matrices:
         saveMatrices[p] = np.ndarray.tolist(np.ndarray.flatten(matrices[p]))
 
-    with open(fileName, 'w') as f:
+    with open(fileName, "w") as f:
         json.dump(saveMatrices, f, indent=2, sort_keys=True)
 
 
@@ -71,13 +71,15 @@ def baseTransform(mat, matFromAtoB, inverse=False):
     else:
         return matFromAtoB @ mat @ inv(matFromAtoB)
 
+
 # from https://www.learnopencv.com/rotation-matrix-to-euler-angles/
 # Calculates rotation matrix to euler angles
 
+
 def rotationMatrixToEulerAngles(R):
 
-    assert(R.shape == (4, 4) or R.shape == (3, 3))
-    
+    assert R.shape == (4, 4) or R.shape == (3, 3)
+
     sy = np.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
     singular = sy < 1e-6
 

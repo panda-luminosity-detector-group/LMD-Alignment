@@ -23,10 +23,11 @@ Info: all positional vectors are row-major!
 
 
 class alignerIP:
-
     def __init__(self):
         self.logger = None
-        self.idealDetectorMatrixPath = Path('input') / Path('detectorMatricesIdeal.json')
+        self.idealDetectorMatrixPath = Path("input") / Path(
+            "detectorMatricesIdeal.json"
+        )
         self.idealDetectorMatrices = mi.loadMatrices(self.idealDetectorMatrixPath)
 
     @classmethod
@@ -35,18 +36,17 @@ class alignerIP:
         temp.config = runConfig
         return temp
 
-    """
-    computes rotation from A to B when rotated through origin.
-    shift A and B before, if rotation did not already occur through origin!
-    
-    see https://math.stackexchange.com/a/476311
-    or https://en.wikipedia.org/wiki/Cross_product
-    and https://en.wikipedia.org/wiki/Rotation_matrix#Conversion_from_rotation_matrix_and_to_axis%E2%80%93angle
-    
-    This function works on 3D points only, do not give homogenous coordinates to this!
-    """
-
     def getRot(self, apparent, actual):
+        """
+        computes rotation from A to B when rotated through origin.
+        shift A and B before, if rotation did not already occur through origin!
+
+        see https://math.stackexchange.com/a/476311
+        or https://en.wikipedia.org/wiki/Cross_product
+        and https://en.wikipedia.org/wiki/Rotation_matrix#Conversion_from_rotation_matrix_and_to_axis%E2%80%93angle
+
+        This function works on 3D points only, do not give homogeneous coordinates to this!
+        """
         # error handling
         if np.linalg.norm(apparent) == 0 or np.linalg.norm(actual) == 0:
             self.logger.log("\nERROR. can't create rotation with null vector!\n")
@@ -71,7 +71,11 @@ class alignerIP:
 
         # compute rotation matrix
         # TODO wait, shouldn't there be a sine somewhere here? check that 1/1+cos again!
-        R = np.identity(3) + crossMatrix + np.dot(crossMatrix, crossMatrix) * (1/(1+cosine))
+        R = (
+            np.identity(3)
+            + crossMatrix
+            + np.dot(crossMatrix, crossMatrix) * (1 / (1 + cosine))
+        )
 
         return R
 
@@ -110,11 +114,23 @@ class alignerIP:
         uy = axisN[1]
         uz = axisN[2]
 
-        R1 = [[
-            cos+ux*ux*(1-cos),      ux*uy*(1-cos)-uz*sin,   ux*uz*(1-cos)+uy*sin], [
-            uy*ux*(1-cos)+uz*sin,   cos+uy*uy*(1-cos),      uy*uz*(1-cos)-ux*sin], [
-            uz*ux*(1-cos)-uy*sin,   uz*uy*(1-cos)+ux*sin,   cos+uz*uz*(1-cos)
-        ]]
+        R1 = [
+            [
+                cos + ux * ux * (1 - cos),
+                ux * uy * (1 - cos) - uz * sin,
+                ux * uz * (1 - cos) + uy * sin,
+            ],
+            [
+                uy * ux * (1 - cos) + uz * sin,
+                cos + uy * uy * (1 - cos),
+                uy * uz * (1 - cos) - ux * sin,
+            ],
+            [
+                uz * ux * (1 - cos) - uy * sin,
+                uz * uy * (1 - cos) + ux * sin,
+                cos + uz * uz * (1 - cos),
+            ],
+        ]
         return R1
 
         # # alternate way
@@ -130,15 +146,17 @@ class alignerIP:
 
     def computeAlignmentMatrix(self):
         if not self.config:
-            self.logger.log(f'ERROR! Config not set!\n')
+            self.logger.log(f"ERROR! Config not set!\n")
             return
         trksQApath = self.config.pathTrksQA()
-        self.logger.log(f'I\'m looking for the IP here: {trksQApath}\n')
+        self.logger.log(f"I'm looking for the IP here: {trksQApath}\n")
 
         ipApparent = np.array([0.0, 0.0, 0.0, 1.0])
 
         # TODO: create list with about 3 TrksQA files by searching through the directory, no more hard coded values!
-        trksQAfile = trksQApath / Path('Lumi_TrksQA_1000*.root')        # this will find 1-4 files, should be okay for now
+        trksQAfile = trksQApath / Path(
+            "Lumi_TrksQA_1000*.root"
+        )  # this will find 1-4 files, should be okay for now
         ipApparent = getIPfromTrksQA(str(trksQAfile))
 
         # FIXME later: read from config or PANDA db/survey
@@ -147,11 +165,11 @@ class alignerIP:
         # this is from empirical data
         ipActual = np.array([-0.023392, 0.00718, 0.004023, 1.0])
 
-        self.logger.log(f'IP apparent:\n{ipApparent}\n')
-        self.logger.log(f'IP actual:\n{ipActual}\n')
+        self.logger.log(f"IP apparent:\n{ipApparent}\n")
+        self.logger.log(f"IP actual:\n{ipActual}\n")
 
         # we want the rotation of the lumi box, so we have to change the basis
-        matPndtoLmd = self.idealDetectorMatrices['/cave_1/lmd_root_0']
+        matPndtoLmd = self.idealDetectorMatrices["/cave_1/lmd_root_0"]
         ipApparentLMD = mi.baseTransform(ipApparent, inv(matPndtoLmd))[:3]
         ipActualLMD = mi.baseTransform(ipActual, inv(matPndtoLmd))[:3]
 
@@ -164,13 +182,13 @@ class alignerIP:
 
         # after that, add the remaining translation (direct shift towards IP), not implemented yet
         self.resultJson = {"/cave_1/lmd_root_0": R1}
-        self.logger.log(f'Interaction point alignment done!\n')
+        self.logger.log(f"Interaction point alignment done!\n")
 
     def saveAlignmentMatrix(self, fileName):
         outFileName = fileName
 
         if Path(outFileName).exists():
-            self.logger.log(f'WARNING. Replacing file: {outFileName}!\n')
+            self.logger.log(f"WARNING. Replacing file: {outFileName}!\n")
             Path(outFileName).unlink()
 
         if not Path(outFileName).parent.exists():
