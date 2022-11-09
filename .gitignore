@@ -10,6 +10,7 @@ testscripts/*.json
 *.pdf
 *.BAK
 temp/
+comparisonData/
 .vscode/
 .history
 
