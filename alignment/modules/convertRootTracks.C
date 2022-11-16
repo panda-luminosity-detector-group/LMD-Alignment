@@ -2,13 +2,13 @@
 
 //* call with root -l -q convertRootTracks.C(dataPath, jsonFile)
 
-// TODO: dump result to binary file with 6*3 values: trkOri, trkDir, reco1 - reco4, each having (x,y,z) 
+// TODO: dump result to binary file with 6*3 values: trkOri, trkDir, reco1 - reco4, each having (x,y,z)
 // TODO: sometimes some values are null, and those are stored to json as well. Skip them!
 // also, the python stuff must be able to read that
 
 using nlohmann::json;
 
-int convertRootTracks(){
+int convertRootTracks() {
     cout << "\n\nUsage: convertRootTracks.C(dataPath, outJsonFile)\n\n";
     return 1;
 }
@@ -16,9 +16,11 @@ int convertRootTracks(){
 int convertRootTracks(std::string dataPath, std::string outJsonFile) {
     //*** output json
     json outJson;
-    
-    cout << "reading tracks from this dir:\n" << dataPath << "\n";
-    cout << "writing tracks to this file:\n" << outJsonFile << "\n";
+
+    cout << "reading tracks from this dir:\n"
+         << dataPath << "\n";
+    cout << "writing tracks to this file:\n"
+         << outJsonFile << "\n";
 
     // TChain Version
     TChain *trackChain = new TChain("pndsim");
@@ -65,13 +67,13 @@ int convertRootTracks(std::string dataPath, std::string outJsonFile) {
             double trackPX = paramFirst.GetPx();
             double trackPY = paramFirst.GetPy();
             double trackPZ = paramFirst.GetPz();
-            
+
             // can also be done with GetPosition() and GetMomentum(), return TVector3!
             auto thisEvent = json({});
 
             thisEvent.push_back({"trkPos", {trackX, trackY, trackZ}});
             thisEvent.push_back({"trkMom", {trackPX, trackPY, trackPZ}});
-            
+
             // hit loop per candidate
             for (int iHit = 0; iHit < numPts; iHit++) {
                 PndTrackCandHit theHit = thisCandidate.GetSortedHit(iHit);  // get hit
@@ -93,7 +95,7 @@ int convertRootTracks(std::string dataPath, std::string outJsonFile) {
             //*** skip remaining tracks, they are copies of the first
             break;
         }
-        if(event == 2000000){
+        if (event == 2000000) {
             break;
         }
     }

@@ -64,7 +64,7 @@ def baseTransform(mat, matFromAtoB, inverse=False):
     """
 
     # only works on 4x4 matrices, not points
-    assert mat.shape == matFromAtoB.shape()
+    assert mat.shape == matFromAtoB.shape
 
     if inverse:
         return inv(matFromAtoB) @ mat @ matFromAtoB

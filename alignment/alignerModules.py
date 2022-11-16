@@ -10,11 +10,7 @@ import detail.matrixInterface as mi
 import concurrent
 import numpy as np
 
-# import pyMille
-import random
-import re
 import subprocess
-import sys
 
 from pathlib import Path
 
@@ -27,8 +23,6 @@ steps:
 - determine distance from recos to tracks
 - move recos with this matrix
 - iteratively repeat
-
-#TODO: maybe also do with millepede
 """
 
 
@@ -101,6 +95,7 @@ class alignerModules:
     # ? cuts on reco-track distance
     def dynamicRecoTrackDistanceCut(self, newTracks, cutPercent=1):
 
+        # don't worry, numpy arrays are copied by reference
         tempTracks = newTracks
 
         for i in range(4):
@@ -356,7 +351,6 @@ class alignerModules:
 
             # add average shift
             totalMatrices[i] = totalMatrices[i] @ averageShift
-            # yield modulePaths[i], totalMatrices[i]
             result.append((modulePaths[i], totalMatrices[i]))
 
         print(f"-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
@@ -381,50 +375,3 @@ class alignerModules:
         else:
             T, _, _ = icp.best_fit_transform(trackPositions, recoPositions)
             return T
-
-    def alignMillepede(self):
-
-        sector = 0
-
-        milleOut = f"output/millepede/moduleAlignment-sector{sector}-aligned.bin"
-
-        MyMille = pyMille.Mille(milleOut, True, True)
-
-        # sigmaScale = 2.11*1.74*1.71*1.09
-        sigmaScale = 6.85  # mille wants it so
-        gotems = 0
-        endCalls = 0
-
-        labels = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-        # labels = np.array([1,2,3])
-
-        outFile = ""
-
-        print(f"Running pyMille...")
-        for params in self.reader.generatorMilleParameters():
-            if params[4] == sector:
-                #     continue
-
-                # Attention: this order of parameters does't match the reader interface!
-                MyMille.write(
-                    params[1], params[0], labels, params[2], params[3] * sigmaScale
-                )
-                # print(f'params: {paramsN}')
-                # print(f'residual: {params[2]}, sigma: {params[3]*sigmaScale} (factor {params[2]/(params[3]*sigmaScale)})')
-                # labels += 3
-                gotems += 1
-
-                outFile += f"{params[1]}, {params[0]}, {labels}, {params[2]}, {params[3]*sigmaScale}\n"
-
-            if (gotems % 250) == 0:
-                endCalls += 1
-                MyMille.end()
-
-        MyMille.end()
-
-        print(f"Mille binary data ({gotems} records) written to {milleOut}!")
-        print(f"endCalls: {endCalls}")
-        # now, pede must be called
-
-        # with open('writtenData.txt', 'w') as f:
-        # f.write(outFile)
