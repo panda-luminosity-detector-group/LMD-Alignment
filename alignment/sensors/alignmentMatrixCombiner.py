@@ -19,7 +19,6 @@ description, refer to my PhD thesis.
 
 
 class alignmentMatrixCombiner:
-
     def __init__(self, modulePath):
         self.modulePath = modulePath
         self.alignmentMatrices = {}
@@ -61,7 +60,7 @@ class alignmentMatrixCombiner:
         # matrix from pnd global to sen2
         m2 = self.idealDetectorMatrices[path2]
         # matrix from sen1 to sen2
-        return m2@inv(m1)
+        return m2 @ inv(m1)
 
     def baseTransform(self, mat, matFromAtoB):
         """
@@ -75,9 +74,9 @@ class alignmentMatrixCombiner:
 
     def combine1to2(self):
 
-        p1 = self.modulePath + '/sensor_1'
-        p2 = self.modulePath + '/sensor_2'
-        p8 = self.modulePath + '/sensor_8'
+        p1 = self.modulePath + "/sensor_1"
+        p2 = self.modulePath + "/sensor_2"
+        p8 = self.modulePath + "/sensor_8"
 
         m1 = self.idealDetectorMatrices[p1]
         m2 = self.idealDetectorMatrices[p2]
@@ -88,8 +87,8 @@ class alignmentMatrixCombiner:
         # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
         # mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP2t8 = self.overlapMatrices['5']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP2t8 = self.overlapMatrices["5"]
 
         # * this is the actual computation
         m1to2FromICP = inv(inv(mICP2t8) @ mICP1t8) @ m1to2Ideal
@@ -107,9 +106,9 @@ class alignmentMatrixCombiner:
         # * matrix path: mat1t8 -> mat8to3
         # the rest is pretty much like in 1->2
 
-        p1 = self.modulePath + '/sensor_1'
-        p3 = self.modulePath + '/sensor_3'
-        p8 = self.modulePath + '/sensor_8'
+        p1 = self.modulePath + "/sensor_1"
+        p3 = self.modulePath + "/sensor_3"
+        p8 = self.modulePath + "/sensor_8"
 
         m1 = self.idealDetectorMatrices[p1]
         m3 = self.idealDetectorMatrices[p3]
@@ -120,8 +119,8 @@ class alignmentMatrixCombiner:
         # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
         # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP3t8 = self.overlapMatrices['1']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP3t8 = self.overlapMatrices["1"]
 
         # * this is the actual computation
         m1to3FromICP = inv(inv(mICP3t8) @ mICP1t8) @ m1to3Ideal
@@ -137,11 +136,11 @@ class alignmentMatrixCombiner:
     def combine1to4a(self):
         # * matrix path: mat1t8 -> mat8to2 -> mat2to9 -> mat9to4
 
-        p1 = self.modulePath + '/sensor_1'
-        p2 = self.modulePath + '/sensor_2'
-        p4 = self.modulePath + '/sensor_4'
-        p8 = self.modulePath + '/sensor_8'
-        p9 = self.modulePath + '/sensor_9'
+        p1 = self.modulePath + "/sensor_1"
+        p2 = self.modulePath + "/sensor_2"
+        p4 = self.modulePath + "/sensor_4"
+        p8 = self.modulePath + "/sensor_8"
+        p9 = self.modulePath + "/sensor_9"
 
         m1 = self.idealDetectorMatrices[p1]
         m4 = self.idealDetectorMatrices[p4]
@@ -154,10 +153,10 @@ class alignmentMatrixCombiner:
         # mICP2t9 = self.getOverlapMisalignLikeICP(p2, p9)
         # mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP2t8 = self.overlapMatrices['5']
-        mICP2t9 = self.overlapMatrices['6']
-        mICP4t9 = self.overlapMatrices['2']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP2t8 = self.overlapMatrices["5"]
+        mICP2t9 = self.overlapMatrices["6"]
+        mICP4t9 = self.overlapMatrices["2"]
 
         # * this is the actual computation
         m1to4FromICP = inv(inv(mICP4t9) @ mICP2t9 @ inv(mICP2t8) @ mICP1t8) @ m1to4Ideal
@@ -173,11 +172,11 @@ class alignmentMatrixCombiner:
     def combine1to4b(self):
         # * matrix path: mat1t8 -> mat8to3 -> mat3to7 -> mat7to4
 
-        p1 = self.modulePath + '/sensor_1'
-        p3 = self.modulePath + '/sensor_3'
-        p4 = self.modulePath + '/sensor_4'
-        p7 = self.modulePath + '/sensor_7'
-        p8 = self.modulePath + '/sensor_8'
+        p1 = self.modulePath + "/sensor_1"
+        p3 = self.modulePath + "/sensor_3"
+        p4 = self.modulePath + "/sensor_4"
+        p7 = self.modulePath + "/sensor_7"
+        p8 = self.modulePath + "/sensor_8"
 
         m1 = self.idealDetectorMatrices[p1]
         m4 = self.idealDetectorMatrices[p4]
@@ -190,10 +189,10 @@ class alignmentMatrixCombiner:
         # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
         # mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP3t7 = self.overlapMatrices['7']
-        mICP3t8 = self.overlapMatrices['1']
-        mICP4t7 = self.overlapMatrices['8']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP3t7 = self.overlapMatrices["7"]
+        mICP3t8 = self.overlapMatrices["1"]
+        mICP4t7 = self.overlapMatrices["8"]
 
         # * this is the actual computation
         m1to4FromICP = inv(inv(mICP4t7) @ mICP3t7 @ inv(mICP3t8) @ mICP1t8) @ m1to4Ideal
@@ -209,8 +208,8 @@ class alignmentMatrixCombiner:
     def combine0to5(self):
         # * matrix path: mat0t5
 
-        p0 = self.modulePath + '/sensor_0'
-        p5 = self.modulePath + '/sensor_5'
+        p0 = self.modulePath + "/sensor_0"
+        p5 = self.modulePath + "/sensor_5"
 
         m0 = self.idealDetectorMatrices[p0]
         m5 = self.idealDetectorMatrices[p5]
@@ -220,7 +219,7 @@ class alignmentMatrixCombiner:
 
         # mICP0t5 = self.getOverlapMisalignLikeICP(p0, p5)
 
-        mICP0t5 = self.overlapMatrices['0']
+        mICP0t5 = self.overlapMatrices["0"]
 
         # * this is the actual computation
         m0to5FromICP = inv(mICP0t5) @ m0to5Ideal
@@ -236,10 +235,10 @@ class alignmentMatrixCombiner:
     def combine1to6(self):
         # * matrix path: mat1t8 -> mat8to3 -> mat3to6
 
-        p1 = self.modulePath + '/sensor_1'
-        p3 = self.modulePath + '/sensor_3'
-        p6 = self.modulePath + '/sensor_6'
-        p8 = self.modulePath + '/sensor_8'
+        p1 = self.modulePath + "/sensor_1"
+        p3 = self.modulePath + "/sensor_3"
+        p6 = self.modulePath + "/sensor_6"
+        p8 = self.modulePath + "/sensor_8"
 
         m1 = self.idealDetectorMatrices[p1]
         m6 = self.idealDetectorMatrices[p6]
@@ -251,9 +250,9 @@ class alignmentMatrixCombiner:
         # mICP3t6 = self.getOverlapMisalignLikeICP(p3, p6)
         # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP3t6 = self.overlapMatrices['3']
-        mICP3t8 = self.overlapMatrices['1']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP3t6 = self.overlapMatrices["3"]
+        mICP3t8 = self.overlapMatrices["1"]
 
         # * this is the actual computation
         m1to6FromICP = inv(mICP3t6 @ inv(mICP3t8) @ mICP1t8) @ m1to6Ideal
@@ -269,10 +268,10 @@ class alignmentMatrixCombiner:
     def combine1to7a(self):
         # * matrix path: mat1t8 -> mat8to3 -> mat3to7
 
-        p1 = self.modulePath + '/sensor_1'
-        p3 = self.modulePath + '/sensor_3'
-        p7 = self.modulePath + '/sensor_7'
-        p8 = self.modulePath + '/sensor_8'
+        p1 = self.modulePath + "/sensor_1"
+        p3 = self.modulePath + "/sensor_3"
+        p7 = self.modulePath + "/sensor_7"
+        p8 = self.modulePath + "/sensor_8"
 
         m1 = self.idealDetectorMatrices[p1]
         m7 = self.idealDetectorMatrices[p7]
@@ -284,9 +283,9 @@ class alignmentMatrixCombiner:
         # mICP3t8 = self.getOverlapMisalignLikeICP(p3, p8)
         # mICP3t7 = self.getOverlapMisalignLikeICP(p3, p7)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP3t8 = self.overlapMatrices['1']
-        mICP3t7 = self.overlapMatrices['7']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP3t8 = self.overlapMatrices["1"]
+        mICP3t7 = self.overlapMatrices["7"]
 
         # * this is the actual computation
         m1to7FromICP = inv(mICP3t7 @ inv(mICP3t8) @ mICP1t8) @ m1to7Ideal
@@ -302,12 +301,12 @@ class alignmentMatrixCombiner:
     def combine1to7b(self):
         # * matrix path: mat1t8 -> mat8to2 -> mat2to9 -> mat9to4 -> mat4to7
 
-        p1 = self.modulePath + '/sensor_1'
-        p2 = self.modulePath + '/sensor_2'
-        p4 = self.modulePath + '/sensor_4'
-        p7 = self.modulePath + '/sensor_7'
-        p8 = self.modulePath + '/sensor_8'
-        p9 = self.modulePath + '/sensor_9'
+        p1 = self.modulePath + "/sensor_1"
+        p2 = self.modulePath + "/sensor_2"
+        p4 = self.modulePath + "/sensor_4"
+        p7 = self.modulePath + "/sensor_7"
+        p8 = self.modulePath + "/sensor_8"
+        p9 = self.modulePath + "/sensor_9"
 
         m1 = self.idealDetectorMatrices[p1]
         m7 = self.idealDetectorMatrices[p7]
@@ -321,14 +320,16 @@ class alignmentMatrixCombiner:
         # mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
         # mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP2t8 = self.overlapMatrices['5']
-        mICP2t9 = self.overlapMatrices['6']
-        mICP4t7 = self.overlapMatrices['8']
-        mICP4t9 = self.overlapMatrices['2']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP2t8 = self.overlapMatrices["5"]
+        mICP2t9 = self.overlapMatrices["6"]
+        mICP4t7 = self.overlapMatrices["8"]
+        mICP4t9 = self.overlapMatrices["2"]
 
         # * this is the actual computation
-        m1to7FromICP = inv(mICP4t7 @ inv(mICP4t9) @ mICP2t9 @ inv(mICP2t8) @ mICP1t8) @ m1to7Ideal
+        m1to7FromICP = (
+            inv(mICP4t7 @ inv(mICP4t9) @ mICP2t9 @ inv(mICP2t8) @ mICP1t8) @ m1to7Ideal
+        )
 
         # transform this matrix to the system of misaligned sensor1
         m1to7FromICPInAstar = self.baseTransform(m1to7FromICP, m1misInPnd)
@@ -341,8 +342,8 @@ class alignmentMatrixCombiner:
     def combine1to8(self):
         # * matrix path: mat1t8 -> mat8to3 -> mat3to6
 
-        p1 = self.modulePath + '/sensor_1'
-        p8 = self.modulePath + '/sensor_8'
+        p1 = self.modulePath + "/sensor_1"
+        p8 = self.modulePath + "/sensor_8"
 
         m1 = self.idealDetectorMatrices[p1]
         m8 = self.idealDetectorMatrices[p8]
@@ -352,7 +353,7 @@ class alignmentMatrixCombiner:
 
         # mICP1t8 = self.getOverlapMisalignLikeICP(p1, p8)
 
-        mICP1t8 = self.overlapMatrices['4']
+        mICP1t8 = self.overlapMatrices["4"]
 
         # * this is the actual computation
         m1to8FromICP = inv(mICP1t8) @ m1to8Ideal
@@ -368,10 +369,10 @@ class alignmentMatrixCombiner:
     def combine1to9a(self):
         # * matrix path: mat1t8 -> mat8to2 -> mat2to9
 
-        p1 = self.modulePath + '/sensor_1'
-        p2 = self.modulePath + '/sensor_2'
-        p8 = self.modulePath + '/sensor_8'
-        p9 = self.modulePath + '/sensor_9'
+        p1 = self.modulePath + "/sensor_1"
+        p2 = self.modulePath + "/sensor_2"
+        p8 = self.modulePath + "/sensor_8"
+        p9 = self.modulePath + "/sensor_9"
 
         m1 = self.idealDetectorMatrices[p1]
         m9 = self.idealDetectorMatrices[p9]
@@ -383,12 +384,12 @@ class alignmentMatrixCombiner:
         # mICP2t8 = self.getOverlapMisalignLikeICP(p2, p8)
         # mICP2t9 = self.getOverlapMisalignLikeICP(p2, p9)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP2t8 = self.overlapMatrices['5']
-        mICP2t9 = self.overlapMatrices['6']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP2t8 = self.overlapMatrices["5"]
+        mICP2t9 = self.overlapMatrices["6"]
 
         # * this is the actual computation
-        m1to9FromICP = inv(mICP2t9 @ inv(mICP2t8)  @ mICP1t8) @ m1to9Ideal
+        m1to9FromICP = inv(mICP2t9 @ inv(mICP2t8) @ mICP1t8) @ m1to9Ideal
 
         # transform this matrix to the system of misaligned sensor1
         m1to9FromICPInAstar = self.baseTransform(m1to9FromICP, m1misInPnd)
@@ -401,12 +402,12 @@ class alignmentMatrixCombiner:
     def combine1to9b(self):
         # * matrix path: mat1t8 -> mat8to3 -> mat3to7 -> mat7to4 -> mat4to9
 
-        p1 = self.modulePath + '/sensor_1'
-        p3 = self.modulePath + '/sensor_3'
-        p4 = self.modulePath + '/sensor_4'
-        p7 = self.modulePath + '/sensor_7'
-        p8 = self.modulePath + '/sensor_8'
-        p9 = self.modulePath + '/sensor_9'
+        p1 = self.modulePath + "/sensor_1"
+        p3 = self.modulePath + "/sensor_3"
+        p4 = self.modulePath + "/sensor_4"
+        p7 = self.modulePath + "/sensor_7"
+        p8 = self.modulePath + "/sensor_8"
+        p9 = self.modulePath + "/sensor_9"
 
         m1 = self.idealDetectorMatrices[p1]
         m9 = self.idealDetectorMatrices[p9]
@@ -420,14 +421,16 @@ class alignmentMatrixCombiner:
         # mICP4t7 = self.getOverlapMisalignLikeICP(p4, p7)
         # mICP4t9 = self.getOverlapMisalignLikeICP(p4, p9)
 
-        mICP1t8 = self.overlapMatrices['4']
-        mICP3t7 = self.overlapMatrices['7']
-        mICP3t8 = self.overlapMatrices['1']
-        mICP4t7 = self.overlapMatrices['8']
-        mICP4t9 = self.overlapMatrices['2']
+        mICP1t8 = self.overlapMatrices["4"]
+        mICP3t7 = self.overlapMatrices["7"]
+        mICP3t8 = self.overlapMatrices["1"]
+        mICP4t7 = self.overlapMatrices["8"]
+        mICP4t9 = self.overlapMatrices["2"]
 
         # * this is the actual computation
-        m1to9FromICP = inv(mICP4t9 @ inv(mICP4t7) @ mICP3t7 @ inv(mICP3t8) @ mICP1t8) @ m1to9Ideal
+        m1to9FromICP = (
+            inv(mICP4t9 @ inv(mICP4t7) @ mICP3t7 @ inv(mICP3t8) @ mICP1t8) @ m1to9Ideal
+        )
 
         # transform this matrix to the system of misaligned sensor1
         m1to9FromICPInAstar = self.baseTransform(m1to9FromICP, m1misInPnd)
@@ -440,10 +443,14 @@ class alignmentMatrixCombiner:
     def combineMatrices(self):
         # checks here
         if self.overlapMatrices is None or self.idealDetectorMatrices is None:
-            raise Exception(f'ERROR! Please set overlaps, overlap matrices and ideal detector matrices first!')
+            raise Exception(
+                f"ERROR! Please set overlaps, overlap matrices and ideal detector matrices first!"
+            )
 
         if self.externalMatrices is None:
-            raise Exception(f'ERROR! Please set the externally measured matrices for sensor 0 and 1 for module {self.modulePath}!')
+            raise Exception(
+                f"ERROR! Please set the externally measured matrices for sensor 0 and 1 for module {self.modulePath}!"
+            )
 
         # the overlap matrices from the matrix finders still have their entire overlapID, but we need only the smallOverlap
         self.sortOverlapMatrices()
@@ -465,24 +472,30 @@ class alignmentMatrixCombiner:
         mat9bmis = self.combine1to9b()
 
         # compute averages for the matrices that can be reached two ways
-        mat4mis = (mat4amis + mat4bmis) / 2     # man I love numpy
+        mat4mis = (mat4amis + mat4bmis) / 2  # man I love numpy
         mat7mis = (mat7amis + mat7bmis) / 2
         mat9mis = (mat9amis + mat9bmis) / 2
 
         # now, all the overlap misalignments are in PND global!
 
         # copy the given misalignments, so that all are in the final set!
-        self.alignmentMatrices[self.modulePath + '/sensor_0'] = self.externalMatrices[self.modulePath + '/sensor_0']
-        self.alignmentMatrices[self.modulePath + '/sensor_1'] = self.externalMatrices[self.modulePath + '/sensor_1']
+        self.alignmentMatrices[self.modulePath + "/sensor_0"] = self.externalMatrices[
+            self.modulePath + "/sensor_0"
+        ]
+        self.alignmentMatrices[self.modulePath + "/sensor_1"] = self.externalMatrices[
+            self.modulePath + "/sensor_1"
+        ]
 
         # store computed misalignment matrices to internal dict
-        self.alignmentMatrices[self.modulePath + '/sensor_2'] = mat2mis
-        self.alignmentMatrices[self.modulePath + '/sensor_3'] = mat3mis
-        self.alignmentMatrices[self.modulePath + '/sensor_4'] = mat4mis
-        self.alignmentMatrices[self.modulePath + '/sensor_5'] = mat5mis
-        self.alignmentMatrices[self.modulePath + '/sensor_6'] = mat6mis
-        self.alignmentMatrices[self.modulePath + '/sensor_7'] = mat7mis
-        self.alignmentMatrices[self.modulePath + '/sensor_8'] = mat8mis
-        self.alignmentMatrices[self.modulePath + '/sensor_9'] = mat9mis
+        self.alignmentMatrices[self.modulePath + "/sensor_2"] = mat2mis
+        self.alignmentMatrices[self.modulePath + "/sensor_3"] = mat3mis
+        self.alignmentMatrices[self.modulePath + "/sensor_4"] = mat4mis
+        self.alignmentMatrices[self.modulePath + "/sensor_5"] = mat5mis
+        self.alignmentMatrices[self.modulePath + "/sensor_6"] = mat6mis
+        self.alignmentMatrices[self.modulePath + "/sensor_7"] = mat7mis
+        self.alignmentMatrices[self.modulePath + "/sensor_8"] = mat8mis
+        self.alignmentMatrices[self.modulePath + "/sensor_9"] = mat9mis
 
-        print(f'successfully computed misalignments on module {self.modulePath} for {len(self.alignmentMatrices)} sensors!')
+        print(
+            f"successfully computed misalignments on module {self.modulePath} for {len(self.alignmentMatrices)} sensors!"
+        )

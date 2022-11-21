@@ -14,7 +14,6 @@ Finds the overlap matrix for two sensors. Requires an overlapID and the set of i
 
 
 class sensorMatrixFinder:
-
     def __init__(self, overlapID):
         self.overlap = overlapID
         self.use2D = True
@@ -27,16 +26,16 @@ class sensorMatrixFinder:
 
     def readNumpyFiles(self, path):
 
-        fileName = path / Path(f'pairs-{self.overlap}.npy')
+        fileName = path / Path(f"pairs-{self.overlap}.npy")
         # read binary pairs
         try:
             self.PairData = np.load(fileName)
         except:
-            raise Exception(f'ERROR! Can not read {fileName}!')
+            raise Exception(f"ERROR! Can not read {fileName}!")
 
         # reduce to maxPairs
         if self.PairData.shape > (7, int(self.maxPairs)):
-            self.PairData = self.PairData[..., :int(self.maxPairs)]
+            self.PairData = self.PairData[..., : int(self.maxPairs)]
 
         # the new python Root Reader stores them slightly different...
         self.PairData = np.transpose(self.PairData)
@@ -61,7 +60,7 @@ class sensorMatrixFinder:
         newDist = np.power(dRaw[:, 0], 2) + np.power(dRaw[:, 1], 2)
 
         # sort by distance and cut some percent from start and end (discard outliers)
-        cut = int(len(hitPairs) * cutPercent/100.0)
+        cut = int(len(hitPairs) * cutPercent / 100.0)
         # sort by new distance
         hitPairs = hitPairs[newDist.argsort()]
         # cut off largest distances, NOT lowest
@@ -72,10 +71,12 @@ class sensorMatrixFinder:
     def findMatrix(self):
 
         if self.idealOverlapInfos is None or self.PairData is None:
-            raise Exception(f'Error! Please load ideal detector matrices and numpy pairs!')
+            raise Exception(
+                f"Error! Please load ideal detector matrices and numpy pairs!"
+            )
 
         if len(self.idealDetectorMatrices) < 1:
-            raise Exception('ERROR! Please set ideal detector matrices!')
+            raise Exception("ERROR! Please set ideal detector matrices!")
 
         # Make C a homogeneous representation of hits1 and hits2
         hit1H = np.ones((len(self.PairData), 4))
@@ -93,7 +94,7 @@ class sensorMatrixFinder:
         if transformToLocalSensor:
             icpDimension = 2
             # get matrix lmd to module
-            modulePath = self.idealOverlapInfos[str(self.overlap)]['pathModule']
+            modulePath = self.idealOverlapInfos[str(self.overlap)]["pathModule"]
             matToModule = self.idealDetectorMatrices[modulePath]
 
             # invert to transform pairs from lmd to sensor
@@ -104,8 +105,8 @@ class sensorMatrixFinder:
             hit2T = np.matmul(toModInv, hit2H.T).T
 
         else:
-            print('WARNING! ICP working in Panda global, NOT sensor local.')
-            print('This will likely produce wrong overlap matrices!')
+            print("WARNING! ICP working in Panda global, NOT sensor local.")
+            print("This will likely produce wrong overlap matrices!")
             hit1T = hit1H
             hit2T = hit2H
 
@@ -138,9 +139,11 @@ class sensorMatrixFinder:
             # remember, matToModule goes from Pnd->Module
             # base trafo is T A T^-1,
             # T = Pnd->Module
-            self.overlapMatrix = (matToModule) @ self.overlapMatrix @ np.linalg.inv(matToModule)
+            self.overlapMatrix = (
+                (matToModule) @ self.overlapMatrix @ np.linalg.inv(matToModule)
+            )
 
     def getOverlapMatrix(self):
         if self.overlapMatrix is None:
-            print(f'Error! Please compute matrix first!')
+            print(f"Error! Please compute matrix first!")
         return self.overlapMatrix
