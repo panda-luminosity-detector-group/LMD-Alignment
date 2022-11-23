@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 
 """
-Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de or r.klasen@ep1.rub.de
 
 steps:
 - read tracks and reco files

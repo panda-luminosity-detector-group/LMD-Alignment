@@ -4,7 +4,7 @@ import numpy as np
 from numpy.linalg import inv
 
 """
-Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de or r.klasen@ep1.rub.de
 
 Uses multiple overlap matrices and the ideal detector matrices to compute alignment matrices for each sensor.
 Each combiner is responsible for a single module.

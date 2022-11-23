@@ -8,7 +8,7 @@ import numpy as np
 import concurrent.futures
 
 """
-Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de or r.klasen@ep1.rub.de
 
 Sorts HitPairs from Lumi_Pairs_*.root to numpy arrays
 """

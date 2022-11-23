@@ -14,7 +14,7 @@ import sys
 
 """
 
-Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de or r.klasen@ep1.rub.de
 
 This file handles reading of lmd_tracks and lmd reco_files, and extracts tracks with their corresponding reco hist.
 

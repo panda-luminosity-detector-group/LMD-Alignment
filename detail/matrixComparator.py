@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 import re
 
-matplotlib.use('Agg')  # so matplotlib works over ssh/with no DISPLAY
+matplotlib.use("Agg")  # so matplotlib works over ssh/with no DISPLAY
 """
-Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de
+Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de or r.klasen@ep1.rub.de
 
 Comapre ICP matrices from sensor overlap with actual misalignment matrices from PandaROOT.
 
@@ -32,42 +32,49 @@ class comparator:
         self.idealDetectorMatrices = {}
         self.misalignMatrices = {}
         self.resultArray = np.zeros(1)
-        goodColors = ['xkcd:coral', 'xkcd:pale orange', 'xkcd:dark lilac', 'xkcd:teal green', 'xkcd:bluish grey', 'xkcd:dark sky blue']
+        goodColors = [
+            "xkcd:coral",
+            "xkcd:pale orange",
+            "xkcd:dark lilac",
+            "xkcd:teal green",
+            "xkcd:bluish grey",
+            "xkcd:dark sky blue",
+        ]
         self.colors = [goodColors[1], goodColors[3], goodColors[5]]
-        self.latexsigma = r'\textsigma{}'
-        self.latexmu = r'\textmu{}'
-        self.latexDelta = r'$\Delta$'
-        self.latexPhi = r'$\Phi$'
-        plt.rc('font', **{'family': 'serif', 'serif': ['Palatino'], 'size': 10})
-        plt.rc('text', usetex=True)
-        plt.rc('text.latex', preamble=r'\usepackage[euler]{textgreek}')
+        self.latexsigma = r"\textsigma{}"
+        self.latexmu = r"\textmu{}"
+        self.latexDelta = r"$\Delta$"
+        self.latexPhi = r"$\Phi$"
+        plt.rc("font", **{"family": "serif", "serif": ["Palatino"], "size": 10})
+        plt.rc("text", usetex=True)
+        plt.rc("text.latex", preamble=r"\usepackage[euler]{textgreek}")
 
-        plt.rcParams["legend.loc"] = 'best'
+        plt.rcParams["legend.loc"] = "best"
 
-        #plt.rcParams['axes.spines.left'] = False
-        plt.rcParams['axes.spines.right'] = False
-        plt.rcParams['axes.spines.top'] = False
-        #plt.rcParams['axes.spines.bottom'] = False
+        # plt.rcParams['axes.spines.left'] = False
+        plt.rcParams["axes.spines.right"] = False
+        plt.rcParams["axes.spines.top"] = False
+        # plt.rcParams['axes.spines.bottom'] = False
 
-        plt.rcParams["legend.loc"] = 'upper left'
+        plt.rcParams["legend.loc"] = "upper left"
 
     def loadIdealDetectorMatrices(self, filename):
-        print(f'loading ideal detector matrices from:\n{filename}')
+        print(f"loading ideal detector matrices from:\n{filename}")
         self.idealDetectorMatrices = mi.loadMatrices(filename)
 
     def loadDesignMisalignments(self, filename):
-        print(f'loading design misalignments from:\n{filename}')
+        print(f"loading design misalignments from:\n{filename}")
         self.misalignMatrices = mi.loadMatrices(filename)
 
     def loadAlignerMatrices(self, filename):
-        print(f'loading align matrices from:\n{filename}')
+        print(f"loading align matrices from:\n{filename}")
         self.alignerResults = mi.loadMatrices(filename)
 
     def getOverlapMisalignLikeICP(self, p1, p2):
         """Returns a 4x4 matrix that looks just like the one found by the ICP, but infinitely precise (well, double precision)."""
 
         if len(self.idealDetectorMatrices) < 400 or len(self.misalignMatrices) < 1:
-            raise Exception('ERROR! Please load ideal and misalignment matrices first!')
+            raise Exception("ERROR! Please load ideal and misalignment matrices first!")
 
         # TODO: include a filter for overlapping sensors!
         # this code works for any sensor pair (which is good),
@@ -113,9 +120,17 @@ class comparator:
         # prepare args, labels
         # bucketLabels = [f'{self.latexsigma} dx={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma} dy={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
         bucketLabels = [
-            f'{self.latexsigma}x={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma}y={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad'
+            f"{self.latexsigma}x={sigX[0]:.2f}{self.latexmu}m",
+            f"{self.latexsigma}y={sigX[1]:.2f}{self.latexmu}m",
+            f"{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad",
         ]
-        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=0.75,
+            bins=15,
+            label=bucketLabels,
+            color=self.colors[:2],
+        )
 
         # histogram
         histA.hist(theseValues[..., :2], **kwargs)  # this is only the z distance
@@ -134,10 +149,11 @@ class comparator:
     def saveHist(self, outputFileName):
         plt.savefig(
             outputFileName,
-            #This is simple recomendation for publication plots
+            # This is simple recomendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
+            bbox_inches="tight",
+        )
         plt.close()
 
 
@@ -151,37 +167,41 @@ class boxComparator(comparator):
         fig = plt.figure(figsize=(6, 4))
 
         # TODO: better title
-        fig.suptitle('Box Rotation Alignment Residuals')
+        fig.suptitle("Box Rotation Alignment Residuals")
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
 
-        bucketLabels = ['rot x', 'rot y', 'rot z']
+        bucketLabels = ["rot x", "rot y", "rot z"]
 
-        print(f' OI VALUES: {values}')
+        print(f" OI VALUES: {values}")
 
-        histA.hist(values, bins=15, histtype='bar', label=bucketLabels, color=self.colors)  # this is only the z distance
+        histA.hist(
+            values, bins=15, histtype="bar", label=bucketLabels, color=self.colors
+        )  # this is only the z distance
         # histA.set_title('Residuals')   # change to mm!
-        histA.set_xlabel(f'd [{self.latexmu}rad]')
-        histA.set_ylabel('count')
+        histA.set_xlabel(f"d [{self.latexmu}rad]")
+        histA.set_ylabel("count")
         plt.legend()
         return fig
 
     def saveHistogram(self, outputFileName):
 
         if self.alignerResults is None:
-            raise Exception(f'Aligner results not found! Skipping...')
+            raise Exception(f"Aligner results not found! Skipping...")
         if self.idealDetectorMatrices is None:
-            raise Exception(f'Ideal Detector Matrices not found! Skipping...')
+            raise Exception(f"Ideal Detector Matrices not found! Skipping...")
         if self.misalignMatrices is None:
-            raise Exception(f'Design Misalignments not found! Skipping...')
+            raise Exception(f"Design Misalignments not found! Skipping...")
 
         Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
 
         try:
             misMat = self.misalignMatrices["/cave_1/lmd_root_0"]
         except (KeyError):
-            print(f'Misalignment Matrix not found in misalignments file. That means this volume was not misaligned.')
+            print(
+                f"Misalignment Matrix not found in misalignments file. That means this volume was not misaligned."
+            )
             misMat = np.identity(4)
 
         alMat = self.alignerResults["/cave_1/lmd_root_0"]
@@ -192,9 +212,9 @@ class boxComparator(comparator):
         eActual = mi.rotationMatrixToEulerAngles(misMat)
         eFound = mi.rotationMatrixToEulerAngles(alMat)
 
-        print(f'Euler from actual: {eActual}')
-        print(f'Euler from found: {eFound}')
-        print(f'Difference: {(eActual-eFound)*1e6} urad')
+        print(f"Euler from actual: {eActual}")
+        print(f"Euler from found: {eFound}")
+        print(f"Difference: {(eActual-eFound)*1e6} urad")
 
         d = (eActual - eFound).reshape((1, 3)) * 1e6  # reshape, scale to um
 
@@ -214,7 +234,7 @@ class moduleComparator(comparator):
         # prepare figure
         fig = plt.figure()
 
-        if not hasattr(self, 'sizeExternal'):
+        if not hasattr(self, "sizeExternal"):
             fig.set_size_inches(7 / 2.54, 5 / 2.54)
         else:
             fig.set_size_inches(self.sizeExternal)
@@ -231,8 +251,18 @@ class moduleComparator(comparator):
 
         # prepare args, labels
         # bucketLabels = [f'{self.latexsigma} dx={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma} dy={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}{self.latexmu}rad']
-        bucketLabels = [f'{self.latexsigma}x={sigX[0]:.2f}{self.latexmu}m', f'{self.latexsigma}y={sigX[1]:.2f}{self.latexmu}m', f'{self.latexsigma} rot z={sigX[2]:.2f}mrad']
-        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
+        bucketLabels = [
+            f"{self.latexsigma}x={sigX[0]:.2f}{self.latexmu}m",
+            f"{self.latexsigma}y={sigX[1]:.2f}{self.latexmu}m",
+            f"{self.latexsigma} rot z={sigX[2]:.2f}mrad",
+        ]
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=0.75,
+            bins=15,
+            label=bucketLabels,
+            color=self.colors[:2],
+        )
 
         # histogram
         histA.hist(values[..., :2], **kwargs)  # this is only the z distance
@@ -240,22 +270,23 @@ class moduleComparator(comparator):
         # print(values[:,2])
 
         # names, titles
-        histA.set_xlabel(f'd [{self.latexmu}m]')
-        histA.set_ylabel('count')
+        histA.set_xlabel(f"d [{self.latexmu}m]")
+        histA.set_ylabel("count")
 
         # manually set legend order
         handles, labels = histA.get_legend_handles_labels()
         handles = [handles[1], handles[0]]
         labels = [labels[1], labels[0]]
         histA.legend(handles, labels, loc=2)
-        
+
         plt.savefig(
-            outputFileName + '-sbs.pdf',
-            #This is simple recomendation for publication plots
+            outputFileName + "-sbs.pdf",
+            # This is simple recomendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
-        
+            bbox_inches="tight",
+        )
+
         #! and plot x and y individually (but also same PDF)
 
         fig = plt.figure()
@@ -263,41 +294,54 @@ class moduleComparator(comparator):
         histB = fig.add_subplot(1, 2, 1)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=15, label=bucketLabels, color=self.colors[0])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=15,
+            label=bucketLabels,
+            color=self.colors[0],
+        )
         histB.hist(values[..., 0], **kwargs)
-        histB.set_xlabel(f'dx [{self.latexmu}m]')
-        histB.set_ylabel('count')
+        histB.set_xlabel(f"dx [{self.latexmu}m]")
+        histB.set_ylabel("count")
         # histB.set_xlim(-5.5, 5.5)
         plt.legend([handles[0]], [labels[0]])
 
         histC = fig.add_subplot(1, 2, 2)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=15, label=bucketLabels, color=self.colors[1])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=15,
+            label=bucketLabels,
+            color=self.colors[1],
+        )
         histC.hist(values[..., 1], **kwargs)
-        histC.set_xlabel(f'dy [{self.latexmu}m]')
-        histC.set_ylabel('count')
+        histC.set_xlabel(f"dy [{self.latexmu}m]")
+        histC.set_ylabel("count")
 
         histC.get_shared_y_axes().join(histB, histC)
         plt.legend([handles[1]], [labels[1]])
 
         plt.savefig(
-            outputFileName + '-sbs.pdf',
-            #This is simple rec omendation for publication plots
+            outputFileName + "-sbs.pdf",
+            # This is simple rec omendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
+            bbox_inches="tight",
+        )
 
         plt.close()
 
     def saveHistogram(self, outputFileName):
 
         if self.alignerResults is None:
-            raise Exception(f'Aligner results not found! Skipping...')
+            raise Exception(f"Aligner results not found! Skipping...")
         if self.idealDetectorMatrices is None:
-            raise Exception(f'Ideal Detector Matrices not found! Skipping...')
+            raise Exception(f"Ideal Detector Matrices not found! Skipping...")
         if self.misalignMatrices is None:
-            raise Exception(f'Design Misalignments not found! Skipping...')
+            raise Exception(f"Design Misalignments not found! Skipping...")
 
         Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
 
@@ -319,7 +363,10 @@ class moduleComparator(comparator):
         for mod in modules:
             alMat = self.alignerResults[mod]
 
-            if self.config.misalignType == 'modules' or self.config.misalignType == 'combi':
+            if (
+                self.config.misalignType == "modules"
+                or self.config.misalignType == "combi"
+            ):
                 actualMat = self.misalignMatrices[mod]
             else:
                 actualMat = np.identity(4)
@@ -333,7 +380,6 @@ class moduleComparator(comparator):
         resValues = np.array(resValues)
 
         self.histValues(resValues, outputFileName)
-        
 
         return np.array(resValues)
 
@@ -362,27 +408,38 @@ class overlapComparator(comparator):
         fig.set_size_inches(7 / 2.54, 5 / 2.54)
 
         # bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
-        bucketLabels = [f'{self.latexsigma}x={sigX}{self.latexmu}m', f'{self.latexsigma}y={sigY}{self.latexmu}m', f'{self.latexsigma} z={sigZ}']
+        bucketLabels = [
+            f"{self.latexsigma}x={sigX}{self.latexmu}m",
+            f"{self.latexsigma}y={sigY}{self.latexmu}m",
+            f"{self.latexsigma} z={sigZ}",
+        ]
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
-        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:2])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=0.75,
+            bins=50,
+            label=bucketLabels,
+            color=self.colors[:2],
+        )
         histA.hist(values[..., :2], **kwargs)
         # histA.set_title('Overlap Matrices ICP/actual | 2\% 2D cut')   # change to mm!
-        histA.set_xlabel(f'd [{self.latexmu}m]')
-        histA.set_ylabel('count')
+        histA.set_xlabel(f"d [{self.latexmu}m]")
+        histA.set_ylabel("count")
 
         handles, labels = plt.gca().get_legend_handles_labels()
         order = [1, 0]
         plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order])
 
         plt.savefig(
-            outputFileName + '.pdf',
-            #This is simple recomendation for publication plots
+            outputFileName + ".pdf",
+            # This is simple recomendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
+            bbox_inches="tight",
+        )
 
         #! and plot x and y individually (but also same PDF)
 
@@ -391,30 +448,43 @@ class overlapComparator(comparator):
         histB = fig.add_subplot(1, 2, 1)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=50, label=bucketLabels, color=self.colors[0])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=50,
+            label=bucketLabels,
+            color=self.colors[0],
+        )
         histB.hist(values[..., 0], **kwargs)
-        histB.set_xlabel(f'dx [{self.latexmu}m]')
-        histB.set_ylabel('count')
+        histB.set_xlabel(f"dx [{self.latexmu}m]")
+        histB.set_ylabel("count")
         # histB.set_xlim(-5.5, 5.5)
         plt.legend([handles[1]], [labels[1]])
 
         histC = fig.add_subplot(1, 2, 2)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=50, label=bucketLabels, color=self.colors[1])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=50,
+            label=bucketLabels,
+            color=self.colors[1],
+        )
         histC.hist(values[..., 1], **kwargs)
-        histC.set_xlabel(f'dy [{self.latexmu}m]')
-        histC.set_ylabel('count')
+        histC.set_xlabel(f"dy [{self.latexmu}m]")
+        histC.set_ylabel("count")
 
         histC.get_shared_y_axes().join(histB, histC)
         plt.legend([handles[0]], [labels[0]])
 
         plt.savefig(
-            outputFileName + '-sbs.pdf',
-            #This is simple rec omendation for publication plots
+            outputFileName + "-sbs.pdf",
+            # This is simple rec omendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
+            bbox_inches="tight",
+        )
 
         plt.close()
 
@@ -422,13 +492,13 @@ class overlapComparator(comparator):
     def computeOneICP(self, overlapID):
 
         ICPmatrix = self.overlapMatrices[overlapID]
-        p1 = self.overlaps[overlapID]['path1']
-        p2 = self.overlaps[overlapID]['path2']
+        p1 = self.overlaps[overlapID]["path1"]
+        p2 = self.overlaps[overlapID]["path2"]
         MisalignLikeICP = self.getOverlapMisalignLikeICP(p1, p2)
 
         if True:
             # transform to module system so that dz is zero and the matrices are more easily comparable
-            modulePath = self.overlaps[overlapID]['pathModule']
+            modulePath = self.overlaps[overlapID]["pathModule"]
             matModule = self.idealDetectorMatrices[modulePath]
             ICPmatrix = mi.baseTransform(ICPmatrix, inv(matModule))
             MisalignLikeICP = mi.baseTransform(MisalignLikeICP, inv(matModule))
@@ -442,15 +512,17 @@ class overlapComparator(comparator):
     def saveHistogram(self, outputFileName):
 
         if self.overlapMatrices is None:
-            print(f'Overlap ICP Matrices not found! Skipping...')
+            print(f"Overlap ICP Matrices not found! Skipping...")
             return
         if len(self.overlapMatrices) < 360:
-            raise Exception(f'not all matrices are in overlap file. something went VERY wrong!')
+            raise Exception(
+                f"not all matrices are in overlap file. something went VERY wrong!"
+            )
         if self.idealDetectorMatrices is None:
-            print(f'Ideal Detector Matrices not found! Skipping...')
+            print(f"Ideal Detector Matrices not found! Skipping...")
             return
         if self.misalignMatrices is None:
-            print(f'Design Misalignments not found! Skipping...')
+            print(f"Design Misalignments not found! Skipping...")
             return
 
         Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
@@ -460,13 +532,14 @@ class overlapComparator(comparator):
         for o in self.overlaps:
             theseValues = self.computeOneICP(o)
 
-            if (np.abs(theseValues[0][0]) > 30 or np.abs(theseValues[0][1]) > 30):
-                print(f'\n\n\n\n\nWARNING overlap residuals larger than 30um: {theseValues}, happend on {o} file {outputFileName}  \n\n\n\n\n')
+            if np.abs(theseValues[0][0]) > 30 or np.abs(theseValues[0][1]) > 30:
+                print(
+                    f"\n\n\n\n\nWARNING overlap residuals larger than 30um: {theseValues}, happend on {o} file {outputFileName}  \n\n\n\n\n"
+                )
 
             differences = np.append(differences, theseValues, axis=0)
 
         self.histValues(differences, outputFileName)
-        
 
         return np.array(differences)
 
@@ -525,27 +598,27 @@ class cycleComparator(comparator):
             m6 = inv(self.overlapMatrices[str(tIDs[5])])
 
             # transform to module system so that dz is zero and the matrices are more easily comparable
-            modulePath = self.overlaps[str(tIDs[0])]['pathModule']
+            modulePath = self.overlaps[str(tIDs[0])]["pathModule"]
             matModule = self.idealDetectorMatrices[modulePath]
             m1 = mi.baseTransform(m1, inv(matModule))
 
-            modulePath = self.overlaps[str(tIDs[1])]['pathModule']
+            modulePath = self.overlaps[str(tIDs[1])]["pathModule"]
             matModule = self.idealDetectorMatrices[modulePath]
             m2 = mi.baseTransform(m2, inv(matModule))
 
-            modulePath = self.overlaps[str(tIDs[2])]['pathModule']
+            modulePath = self.overlaps[str(tIDs[2])]["pathModule"]
             matModule = self.idealDetectorMatrices[modulePath]
             m3 = mi.baseTransform(m3, inv(matModule))
 
-            modulePath = self.overlaps[str(tIDs[3])]['pathModule']
+            modulePath = self.overlaps[str(tIDs[3])]["pathModule"]
             matModule = self.idealDetectorMatrices[modulePath]
             m4 = mi.baseTransform(m4, inv(matModule))
 
-            modulePath = self.overlaps[str(tIDs[4])]['pathModule']
+            modulePath = self.overlaps[str(tIDs[4])]["pathModule"]
             matModule = self.idealDetectorMatrices[modulePath]
             m5 = mi.baseTransform(m5, inv(matModule))
 
-            modulePath = self.overlaps[str(tIDs[5])]['pathModule']
+            modulePath = self.overlaps[str(tIDs[5])]["pathModule"]
             matModule = self.idealDetectorMatrices[modulePath]
             m6 = mi.baseTransform(m6, inv(matModule))
 
@@ -573,28 +646,38 @@ class cycleComparator(comparator):
         fig = plt.figure()
         fig.set_size_inches(16 / 2.54, 9 / 2.54)
 
-        bucketLabels = [f'{self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'{self.latexmu}y={muY}, {self.latexsigma}y={sigY}']
+        bucketLabels = [
+            f"{self.latexmu}x={muX}, {self.latexsigma}x={sigX}",
+            f"{self.latexmu}y={muY}, {self.latexsigma}y={sigY}",
+        ]
 
         fig.subplots_adjust(wspace=0.05)
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         histA = fig.add_subplot(1, 1, 1)
-        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=15, label=bucketLabels, color=self.colors[:2])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=0.75,
+            bins=15,
+            label=bucketLabels,
+            color=self.colors[:2],
+        )
         # kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, color=self.colors[:2])
         histA.hist(values[..., :2], **kwargs)
         # histA.set_title('Cyclic Matrices')   # change to mm!
-        histA.set_xlabel(f'd [{self.latexmu}m]')
-        histA.set_ylabel('count')
+        histA.set_xlabel(f"d [{self.latexmu}m]")
+        histA.set_ylabel("count")
 
         handles, labels = plt.gca().get_legend_handles_labels()
         order = [1, 0]
         plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order])
 
         plt.savefig(
-            outputFileName + '.pdf',
-            #This is simple recomendation for publication plots
+            outputFileName + ".pdf",
+            # This is simple recomendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
+            bbox_inches="tight",
+        )
 
         #! and plot x and y individually (but also same PDF)
 
@@ -603,30 +686,43 @@ class cycleComparator(comparator):
         histB = fig.add_subplot(1, 2, 1)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=10, label=bucketLabels, color=self.colors[0])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=10,
+            label=bucketLabels,
+            color=self.colors[0],
+        )
         histB.hist(values[..., 0], **kwargs)
-        histB.set_xlabel(f'dx [{self.latexmu}m]')
-        histB.set_ylabel('count')
+        histB.set_xlabel(f"dx [{self.latexmu}m]")
+        histB.set_ylabel("count")
         # histB.set_xlim(-5.5, 5.5)
         plt.legend([handles[1]], [labels[1]])
 
         histC = fig.add_subplot(1, 2, 2)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=10, label=bucketLabels, color=self.colors[1])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=10,
+            label=bucketLabels,
+            color=self.colors[1],
+        )
         histC.hist(values[..., 1], **kwargs)
-        histC.set_xlabel(f'dy [{self.latexmu}m]')
-        histC.set_ylabel('count')
+        histC.set_xlabel(f"dy [{self.latexmu}m]")
+        histC.set_ylabel("count")
 
         histC.get_shared_y_axes().join(histB, histC)
         plt.legend([handles[0]], [labels[0]])
 
         plt.savefig(
-            outputFileName + '-sbs.pdf',
-            #This is simple rec omendation for publication plots
+            outputFileName + "-sbs.pdf",
+            # This is simple rec omendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
+            bbox_inches="tight",
+        )
 
         plt.close()
 
@@ -655,32 +751,43 @@ class combinedComparator(comparator):
         fig = plt.figure()
         fig.set_size_inches(7 / 2.54, 5 / 2.54)
 
-        #fig.subplots_adjust(wspace=0.05)
-        #fig.tight_layout(rect=[0.5, 0.03, 1, 0.45])
+        # fig.subplots_adjust(wspace=0.05)
+        # fig.tight_layout(rect=[0.5, 0.03, 1, 0.45])
         histA = fig.add_subplot(1, 1, 1)
 
         # bucketLabels = [f'dx, {self.latexmu}x={muX}, {self.latexsigma}x={sigX}', f'dy, {self.latexmu}y={muY}, {self.latexsigma}y={sigY}', f'dz, {self.latexmu}z={muZ}, {self.latexsigma} z={sigZ}']
-        bucketLabels = [f'{self.latexsigma}x={sigX}{self.latexmu}m', f'{self.latexsigma}y={sigY}{self.latexmu}m', f'{self.latexsigma}{self.latexPhi}={sigZ}mrad']
+        bucketLabels = [
+            f"{self.latexsigma}x={sigX}{self.latexmu}m",
+            f"{self.latexsigma}y={sigY}{self.latexmu}m",
+            f"{self.latexsigma}{self.latexPhi}={sigZ}mrad",
+        ]
 
-        kwargs = dict(histtype='stepfilled', alpha=0.75, bins=50, label=bucketLabels, color=self.colors[:3])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=0.75,
+            bins=50,
+            label=bucketLabels,
+            color=self.colors[:3],
+        )
         histA.hist(values[..., :3], **kwargs)
 
         # histA.set_title('Sensor Alignment Residuals')
-        histA.set_xlabel(f'd [{self.latexmu}m]')
-        histA.set_ylabel('count')
+        histA.set_xlabel(f"d [{self.latexmu}m]")
+        histA.set_ylabel("count")
 
         handles, labels = plt.gca().get_legend_handles_labels()
         order = [2, 1, 0]
         plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order])
 
-        #You must select the correct size of the plot in advance
+        # You must select the correct size of the plot in advance
 
         plt.savefig(
-            outputFileName + '.pdf',
-            #This is simple recomendation for publication plots
+            outputFileName + ".pdf",
+            # This is simple recomendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
+            bbox_inches="tight",
+        )
 
         #! and plot x and y individually (but also same PDF)
 
@@ -689,47 +796,65 @@ class combinedComparator(comparator):
         histB = fig.add_subplot(1, 3, 1)
 
         # histA.set_title('Sensor Alignment Residuals')
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=50, label=bucketLabels, color=self.colors[0])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=50,
+            label=bucketLabels,
+            color=self.colors[0],
+        )
         histB.hist(values[..., 0], **kwargs)
-        histB.set_xlabel(f'dx [{self.latexmu}m]')
-        histB.set_ylabel('count')
+        histB.set_xlabel(f"dx [{self.latexmu}m]")
+        histB.set_ylabel("count")
         # histB.set_xlim(-5.5, 5.5)
         plt.legend([handles[2]], [labels[2]])
 
         histC = fig.add_subplot(1, 3, 2)
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=50, label=bucketLabels, color=self.colors[1])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=50,
+            label=bucketLabels,
+            color=self.colors[1],
+        )
         histC.hist(values[..., 1], **kwargs)
-        histC.set_xlabel(f'dy [{self.latexmu}m]')
+        histC.set_xlabel(f"dy [{self.latexmu}m]")
         histC.get_shared_y_axes().join(histB, histC)
         plt.legend([handles[1]], [labels[1]])
 
         histD = fig.add_subplot(1, 3, 3)
-        kwargs = dict(histtype='stepfilled', alpha=1.0, bins=50, label=bucketLabels, color=self.colors[2])
+        kwargs = dict(
+            histtype="stepfilled",
+            alpha=1.0,
+            bins=50,
+            label=bucketLabels,
+            color=self.colors[2],
+        )
         histD.hist(values[..., 2], **kwargs)
-        histD.set_xlabel(f'{self.latexDelta}{self.latexPhi} [mrad]')
+        histD.set_xlabel(f"{self.latexDelta}{self.latexPhi} [mrad]")
         histD.get_shared_y_axes().join(histB, histD)
 
-        print(f'handles: {handles}, labels: {labels}')
+        print(f"handles: {handles}, labels: {labels}")
         plt.legend([handles[0]], [labels[0]])
 
-
         plt.savefig(
-            outputFileName + '-sbs.pdf',
-            #This is simple recomendation for publication plots
+            outputFileName + "-sbs.pdf",
+            # This is simple recomendation for publication plots
             dpi=1000,
             # Plot will be occupy a maximum of available space
-            bbox_inches='tight')
+            bbox_inches="tight",
+        )
 
         plt.close()
 
     def saveHistogram(self, outputFileName):
 
         if self.alignerResults is None:
-            raise Exception(f'Aligner results not found! Skipping...')
+            raise Exception(f"Aligner results not found! Skipping...")
         if self.idealDetectorMatrices is None:
-            raise Exception(f'Ideal Detector Matrices not found! Skipping...')
+            raise Exception(f"Ideal Detector Matrices not found! Skipping...")
         if self.misalignMatrices is None:
-            raise Exception(f'Design Misalignments not found! Skipping...')
+            raise Exception(f"Design Misalignments not found! Skipping...")
 
         Path(outputFileName).parent.mkdir(parents=True, exist_ok=True)
 
@@ -738,22 +863,24 @@ class combinedComparator(comparator):
         for p in self.alignerResults:
             # check if this path is for a sensor!
             # also, skip sensors 0 and 1, they are measured externally
-            if 'sensor' not in p or 'sensor_0' in p or 'sensor_1' in p:
+            if "sensor" not in p or "sensor_0" in p or "sensor_1" in p:
                 continue
             # try to read matMisalign, it it doesn't exist, use identity
             try:
                 matResult = self.alignerResults[p]
                 matMisalign = self.misalignMatrices[p]
-                dMat = (matResult @ inv(matMisalign))
+                dMat = matResult @ inv(matMisalign)
                 dAlpha = mi.rotationMatrixToEulerAngles(dMat)
 
             except:
                 matResult = self.alignerResults[p]
                 matMisalign = np.identity(4)
-                dMat = (matResult @ inv(matMisalign)) 
+                dMat = matResult @ inv(matMisalign)
                 dAlpha = mi.rotationMatrixToEulerAngles(dMat)
 
-            values = np.array([dMat[0, 3] * 1e4, dMat[1, 3] * 1e4, dAlpha[2] * 1e3]).reshape(1, 3)
+            values = np.array(
+                [dMat[0, 3] * 1e4, dMat[1, 3] * 1e4, dAlpha[2] * 1e3]
+            ).reshape(1, 3)
             differences = np.append(differences, values, axis=0)
 
         self.histValues(differences, outputFileName)
