@@ -1,0 +1,62 @@
+{
+  "0": [
+    "/cave_1/lmd_root_0/half_0/plane_0/module_0",
+    "/cave_1/lmd_root_0/half_0/plane_1/module_0",
+    "/cave_1/lmd_root_0/half_0/plane_2/module_0",
+    "/cave_1/lmd_root_0/half_0/plane_3/module_0"
+  ],
+  "1": [
+    "/cave_1/lmd_root_0/half_0/plane_0/module_1",
+    "/cave_1/lmd_root_0/half_0/plane_1/module_1",
+    "/cave_1/lmd_root_0/half_0/plane_2/module_1",
+    "/cave_1/lmd_root_0/half_0/plane_3/module_1"
+  ],
+  "2": [
+    "/cave_1/lmd_root_0/half_0/plane_1/module_2",
+    "/cave_1/lmd_root_0/half_0/plane_0/module_2",
+    "/cave_1/lmd_root_0/half_0/plane_2/module_2",
+    "/cave_1/lmd_root_0/half_0/plane_3/module_2"
+  ],
+  "3": [
+    "/cave_1/lmd_root_0/half_0/plane_1/module_3",
+    "/cave_1/lmd_root_0/half_0/plane_2/module_3",
+    "/cave_1/lmd_root_0/half_0/plane_0/module_3",
+    "/cave_1/lmd_root_0/half_0/plane_3/module_3"
+  ],
+  "4": [
+    "/cave_1/lmd_root_0/half_0/plane_1/module_4",
+    "/cave_1/lmd_root_0/half_0/plane_2/module_4",
+    "/cave_1/lmd_root_0/half_0/plane_3/module_4",
+    "/cave_1/lmd_root_0/half_0/plane_0/module_4"
+  ],
+  "5": [
+    "/cave_1/lmd_root_0/half_1/plane_1/module_0",
+    "/cave_1/lmd_root_0/half_1/plane_2/module_0",
+    "/cave_1/lmd_root_0/half_1/plane_3/module_0",
+    "/cave_1/lmd_root_0/half_1/plane_0/module_0"
+  ],
+  "6": [
+    "/cave_1/lmd_root_0/half_1/plane_1/module_1",
+    "/cave_1/lmd_root_0/half_1/plane_2/module_1",
+    "/cave_1/lmd_root_0/half_1/plane_3/module_1",
+    "/cave_1/lmd_root_0/half_1/plane_0/module_1"
+  ],
+  "7": [
+    "/cave_1/lmd_root_0/half_1/plane_1/module_2",
+    "/cave_1/lmd_root_0/half_1/plane_2/module_2",
+    "/cave_1/lmd_root_0/half_1/plane_3/module_2",
+    "/cave_1/lmd_root_0/half_1/plane_0/module_2"
+  ],
+  "8": [
+    "/cave_1/lmd_root_0/half_1/plane_1/module_3",
+    "/cave_1/lmd_root_0/half_1/plane_2/module_3",
+    "/cave_1/lmd_root_0/half_1/plane_3/module_3",
+    "/cave_1/lmd_root_0/half_1/plane_0/module_3"
+  ],
+  "9": [
+    "/cave_1/lmd_root_0/half_1/plane_1/module_4",
+    "/cave_1/lmd_root_0/half_1/plane_2/module_4",
+    "/cave_1/lmd_root_0/half_1/plane_3/module_4",
+    "/cave_1/lmd_root_0/half_1/plane_0/module_4"
+  ]
+}
