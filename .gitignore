@@ -14,5 +14,7 @@ comparisonData/
 .vscode/
 .history
 *.root
+testFiles/*
+alignment-venv
 
 !runConfigs/linkFacZero.sh
