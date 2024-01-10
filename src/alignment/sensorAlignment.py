@@ -17,6 +17,7 @@ Author: R. Klasen, roklasen@uni-mainz.de or r.klasen@gsi.de or r.klasen@ep1.rub.
 Performs sensor alignment using the ICP algorithm.
 """
 
+
 class SensorAligner:
     idealDetectorMatrices = loadMatrices("config/detectorMatricesIdeal.json")
     availableOverlapIDs = range(7)
@@ -228,7 +229,9 @@ class SensorAligner:
 
     def combineMatricesOnAllModules(self):
         for moduleID in self.availableModuleIDs:
-            combiner = alignmentMatrixCombiner(moduleID, self.moduleIdToModulePath[str(moduleID)])
+            combiner = alignmentMatrixCombiner(
+                moduleID, self.moduleIdToModulePath[str(moduleID)]
+            )
             combiner.setIdealDetectorMatrices(self.idealDetectorMatrices)
             combiner.setOverlapMatrices(self.overlapMatrices)
             combiner.setExternallyMeasuredMatrices(self.externalMatrices)
@@ -241,7 +244,7 @@ class SensorAligner:
         outputMatixName="matrices/100u-case-1/EXAMPLE-sensorAlignmentMatrices.json",
     ):
         # sort hit pairs from root files to npy files
-        # self.sortPairs(PairROOTFilesPath)
+        self.sortPairs(PairROOTFilesPath)
 
         # then find all overlap matrices
         self.findAllOverlapMatrices()
