@@ -24,9 +24,7 @@ class SensorAligner:
     availableModuleIDs = range(40)
     overlapMatrices = {}
     sensorAlignMatrices = {}
-    externalMatrices = loadMatrices(
-        "matrices/100u-case-1/externalMatrices-sensors.json"
-    )
+    externalMatrices = None
     npyOutputDir = Path("temp/npPairs")
     use2D = True
 
@@ -234,9 +232,13 @@ class SensorAligner:
             )
             combiner.setIdealDetectorMatrices(self.idealDetectorMatrices)
             combiner.setOverlapMatrices(self.overlapMatrices)
-            combiner.setExternallyMeasuredMatrices(self.externalMatrices)
+            if self.externalMatrices is not None:
+                combiner.setExternallyMeasuredMatrices(self.externalMatrices)
             combiner.combineMatrices()
             self.sensorAlignMatrices.update(combiner.getAlignmentMatrices())
+
+    def setExternalMatrices(self, externalMatricesPath):
+        self.externalMatrices = loadMatrices(externalMatricesPath)
 
     def alignSensors(
         self,
@@ -244,7 +246,7 @@ class SensorAligner:
         outputMatixName="matrices/100u-case-1/EXAMPLE-sensorAlignmentMatrices.json",
     ):
         # sort hit pairs from root files to npy files
-        self.sortPairs(PairROOTFilesPath)
+        # self.sortPairs(PairROOTFilesPath)
 
         # then find all overlap matrices
         self.findAllOverlapMatrices()

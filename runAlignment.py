@@ -38,6 +38,8 @@ if __name__ == "__main__":
         print("Running sensor alignment")
         path = "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-dkohUogm/data/reco_uncut/aligned-alignment-matrices/"
         aligner = SensorAligner()
+        # replace these with the correct matrices!
+        aligner.setExternalMatrices("matrices/100u-case-1/externalMatrices-sensors.json")
         aligner.alignSensors(path)
 
 
