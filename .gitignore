@@ -10,7 +10,11 @@ testscripts/*.json
 *.pdf
 *.BAK
 temp/
+comparisonData/
 .vscode/
 .history
+*.root
+testFiles/*
+alignment-venv
 
 !runConfigs/linkFacZero.sh
