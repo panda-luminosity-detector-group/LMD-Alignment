@@ -2,11 +2,11 @@
 
 import json
 from pathlib import Path
+from typing import Optional
 
-import awkward as ak
 import numpy as np
-import uproot
 
+from src.alignment.readers.lumiPairReader import LumiPairReader
 from src.alignment.sensorAlignmentMatixCombiner import alignmentMatrixCombiner
 from src.util.bestFitTransform import best_fit_transform
 from src.util.matrix import loadMatrices, saveMatrices
@@ -19,91 +19,29 @@ Performs sensor alignment using the ICP algorithm.
 
 
 class SensorAligner:
-    idealDetectorMatrices = loadMatrices("config/detectorMatricesIdeal.json")
+    # must be set before alignment!
+    externalMatrices: Optional[dict] = None
+
+    # default values, no need to change
     availableOverlapIDs = range(7)
     availableModuleIDs = range(40)
-    overlapMatrices = {}
-    sensorAlignMatrices = {}
-    externalMatrices = None
     npyOutputDir = Path("temp/npPairs")
     use2D = True
+    idealDetectorMatrices = loadMatrices("config/detectorMatricesIdeal.json")
+
+    # placeholders, will be filled by the methods
+    overlapMatrices = {}
+    alignmentMatrices = {}
+    sensorAlignMatrices = {}
 
     with open("config/moduleIDtoModulePath.json") as f:
         moduleIdToModulePath = json.load(f)
 
-    def sortPairs(self, rootFilePath: Path):
+    def quantileCut(self, hitPairs: np.array, cutPercent=2) -> np.array:
         """
-        Sorts the pairs from root files to numpy files.
-
-        Returns:
-            None
+        Applies a quantile cut to the hit pairs.
         """
-        print("Sorting pairs from root files to numpy files. This may take a while.")
-        rootFileWildcard = "Lumi_Pairs_*.root:pndsim"
 
-        runIndex = 0
-        maxNoOfFiles = 50
-
-        # delete old files
-        if Path(self.npyOutputDir).exists():
-            for file in self.npyOutputDir.glob("*.npy"):
-                file.unlink()
-
-        if not Path(self.npyOutputDir).exists():
-            Path(self.npyOutputDir).mkdir(parents=True)
-
-        for arrays in uproot.iterate(
-            rootFilePath + rootFileWildcard,
-            [
-                "PndLmdHitPair._moduleID",
-                "PndLmdHitPair._overlapID",
-                "PndLmdHitPair._hit1",
-                "PndLmdHitPair._hit2",
-            ],
-            # library="np", # DONT use numpy yet, we need the awkward array for the TVector3
-            allow_missing=True,  # some files may be empty, skip those):
-        ):
-            runIndex += 1
-
-            # some evvents have no hits, but thats not a problem
-            # after the arrays are flattened, those empty events
-            # simply disappear
-            moduleIDs = np.array(ak.flatten(arrays["PndLmdHitPair._moduleID"]))
-            overlapIDs = np.array(ak.flatten(arrays["PndLmdHitPair._overlapID"]))
-            hit1x = ak.flatten(arrays["PndLmdHitPair._hit1"].fX)
-            hit1y = ak.flatten(arrays["PndLmdHitPair._hit1"].fY)
-            hit1z = ak.flatten(arrays["PndLmdHitPair._hit1"].fZ)
-            hit2x = ak.flatten(arrays["PndLmdHitPair._hit2"].fX)
-            hit2y = ak.flatten(arrays["PndLmdHitPair._hit2"].fY)
-            hit2z = ak.flatten(arrays["PndLmdHitPair._hit2"].fZ)
-
-            arr = np.array(
-                (moduleIDs, hit1x, hit1y, hit1z, hit2x, hit2y, hit2z, overlapIDs)
-            ).T
-
-            for moduleID in self.availableModuleIDs:
-                mask = arr[:, 0] == moduleID
-                thisOverlapsArray = arr[mask][:, 1:]
-
-                # read array from disk
-                fileName = f"{self.npyOutputDir}/pairs-modID-{moduleID}.npy"
-
-                try:
-                    oldContent = np.load(fileName)
-                # first run, file not already present
-                except FileNotFoundError:
-                    oldContent = np.empty((0, 7))
-
-                # merge
-                newContent = np.concatenate((oldContent, thisOverlapsArray))
-
-                # write back to disk
-                np.save(file=fileName, arr=newContent, allow_pickle=False)
-
-            if runIndex == maxNoOfFiles:
-                break
-
-    def dynamicCut(self, hitPairs, cutPercent=2):
         if cutPercent == 0:
             return hitPairs
 
@@ -127,17 +65,15 @@ class SensorAligner:
 
         return hitPairs
 
-    def findMatrix(self, PairData, thisModule):
+    def findMatrix(self, PairData: np.array, thisModule: int) -> np.array:
+        """
+        Finds the overlap matrix for a given module and np array with pair data.
+        """
+
         # apply dynamic cut
-        PairData = self.dynamicCut(PairData, 2)
+        PairData = self.quantileCut(PairData, 2)
 
-        # if idealOverlapInfos is None or PairData is None:
-        #     raise Exception(f"Error! Please load ideal detector matrices and numpy pairs!")
-
-        # if len(idealDetectorMatrices) < 1:
-        #     raise Exception("ERROR! Please set ideal detector matrices!")
-
-        # Make C a homogeneous representation of hits1 and hits2
+        # Make homogeneous representations of hits1 and hits2
         hit1H = np.ones((len(PairData), 4))
         hit1H[:, 0:3] = PairData[:, :3]
 
@@ -145,7 +81,7 @@ class SensorAligner:
         hit2H[:, 0:3] = PairData[:, 3:6]
 
         # Attention! Always transform to module-local system,
-        # otherwise numerical errors will make the ICP matrices unusable!
+        # otherwise numerical errors will make the ICP matrices unstable!
         # (because z is at 11m, while x is 30cm and y is 0)
         # also, we're ignoring z distance, which we can not do if we're in
         # PND global, due to the 40mrad rotation.
@@ -206,11 +142,12 @@ class SensorAligner:
             )
         return thisOverlapMatrix
 
-    def findAllOverlapMatrices(self):
+    def findAllOverlapMatrices(self) -> None:
+        """
+        Finds all overlap matrices and saves them to self.overlapMatrices.
+        """
         for moduleID in self.availableModuleIDs:
             pairsOnModule = np.load(f"{self.npyOutputDir}/pairs-modID-{moduleID}.npy")
-
-            # print(f"Processing module {moduleID}, loading file {npyOutputDir}/pairs-modID-{moduleID}.npy")
 
             self.overlapMatrices[str(moduleID)] = {}
             for overlapID in self.availableOverlapIDs:
@@ -225,7 +162,10 @@ class SensorAligner:
                     pairsOnOverlap, moduleID
                 )
 
-    def combineMatricesOnAllModules(self):
+    def combineMatricesOnAllModules(self) -> None:
+        """
+        Combines all overlap matrices to sensor alignment matrices and saves them to self.sensorAlignMatrices.
+        """
         for moduleID in self.availableModuleIDs:
             combiner = alignmentMatrixCombiner(
                 moduleID, self.moduleIdToModulePath[str(moduleID)]
@@ -237,16 +177,24 @@ class SensorAligner:
             combiner.combineMatrices()
             self.sensorAlignMatrices.update(combiner.getAlignmentMatrices())
 
-    def setExternalMatrices(self, externalMatricesPath):
+    def setExternalMatrices(self, externalMatricesPath) -> None:
+        """
+        Sets the external matrices to use for alignment.
+        """
         self.externalMatrices = loadMatrices(externalMatricesPath)
 
     def alignSensors(
         self,
-        PairROOTFilesPath,
+        PairROOTFilesPath: Path,
         outputMatixName="matrices/100u-case-1/EXAMPLE-sensorAlignmentMatrices.json",
-    ):
+    ) -> None:
+        """
+        Performs sensor alignment, storing alignment matrices to specified destination.
+        """
+
         # sort hit pairs from root files to npy files
-        # self.sortPairs(PairROOTFilesPath)
+        reader = LumiPairReader()
+        reader.sortPairs(PairROOTFilesPath)
 
         # then find all overlap matrices
         self.findAllOverlapMatrices()

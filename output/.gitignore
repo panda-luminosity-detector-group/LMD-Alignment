@@ -1,5 +1,0 @@
-# everything except .gitignore
-*
-!.gitignore
-!misMat*
-!exter*

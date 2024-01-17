@@ -1,96 +1,15 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import uproot
 
+from src.alignment.readers.lumiTrkQAtoIPReader import LumiTrksQAReader
 from src.util.matrix import loadMatrices, saveMatrices
 
 
 class BoxAligner:
     idealDetectorMatrices = loadMatrices("config/detectorMatricesIdeal.json")
 
-    def quantileCut(self, xyzArray, cut=4):
-        if cut == 0:
-            return xyzArray
-
-        # calculate cut length
-        cut = int(len(xyzArray) * (cut / 100))
-
-        # calculate center of mass (where most points are)
-        # don't use average, some values are far too large, median is a better estimation
-        comMed = np.median(xyzArray[:, 3:6], axis=0)
-
-        # now, sort by distance and cut largest
-        # first, calculate distace of each point to center of mass
-        distVec = xyzArray[:, 3:6] - comMed
-
-        # calculate length of these distance vectors
-        distVecNorm = np.linalg.norm(distVec, axis=1)
-
-        # sort the entire array by this length
-        xyzArray = xyzArray[distVecNorm.argsort()]
-
-        # cut the largest values
-        resxyzArrayxyzArray = xyzArray[:-cut]
-
-        return resxyzArrayxyzArray
-
-    def getIPfromRootFiles(self, filename, maxNoOfFiles=0):
-        # fileTree = uproot.open(filename)['pndsim']
-
-        # make empty 2D (n times 4) result array for each individual IP position (that's per file)
-        IPs = np.empty((0, 4))
-
-        runIndex = 0
-        for array in uproot.iterate(
-            filename,
-            [
-                "LMDTrackQ.fTrkRecStatus",
-                "LMDTrackQ.fXrec",
-                "LMDTrackQ.fYrec",
-                "LMDTrackQ.fZrec",
-            ],
-            library="np",
-            allow_missing=True,
-        ):
-            recStat = np.concatenate(array["LMDTrackQ.fTrkRecStatus"]).ravel()
-            recX = np.concatenate(array["LMDTrackQ.fXrec"]).ravel()
-            recY = np.concatenate(array["LMDTrackQ.fYrec"]).ravel()
-            recZ = np.concatenate(array["LMDTrackQ.fZrec"]).ravel()
-
-            # apply mask for correctly reconstructed track and tracks within 5cm
-            # that means reconstructed IP must be within 5cm of 0 in all directions
-            thresh = 5
-            mask = (
-                (recStat == 0)
-                & (np.abs(recX) < thresh)
-                & (np.abs(recY) < thresh)
-                & (np.abs(recZ) < thresh)
-            )
-
-            recXmask = recX[mask]
-            recYmask = recY[mask]
-            recZmask = recZ[mask]
-
-            # don't worry, this is done by reference, nothing is copied here
-            outarray = np.array([recXmask, recYmask, recZmask]).T
-
-            outarray = self.quantileCut(outarray, 4)
-
-            foundIP = np.average(outarray, axis=0)
-            resultIPhomogeneous = np.ones(4)
-            resultIPhomogeneous[:3] = foundIP
-            # print(f"loaded {len(outarray)} tracks")
-            # print(f"found ip: {resultIPhomogeneous}")
-            IPs = np.vstack((IPs, resultIPhomogeneous))
-            runIndex += 1
-            if runIndex == maxNoOfFiles:
-                break
-
-        print(f"read {runIndex} file(s)")
-        return np.average(IPs, axis=0)
-
-    def getRot(self, apparentIP, actualIP):
+    def getRot(self, apparentIP: np.ndarray, actualIP: np.ndarray) -> np.ndarray:
         """
         computes rotation from A to B when rotated through origin.
         shift A and B before, if rotation did not already occur through origin!
@@ -100,6 +19,7 @@ class BoxAligner:
         and https://en.wikipedia.org/wiki/Rotation_matrix#Conversion_from_rotation_matrix_and_to_axis%E2%80%93angle
 
         This function works on 3D points only, do not give homogeneous coordinates to this!
+        Returns a 3x3 rotation matrix (not homogeneous!).
         """
         # error handling
         if np.linalg.norm(apparentIP) == 0 or np.linalg.norm(actualIP) == 0:
@@ -132,12 +52,18 @@ class BoxAligner:
 
         return R
 
-    def alignBox(self, path):
+    def alignBox(self, path) -> None:
+        """
+        Aligns the box to the IP.
+        Saves the alignment matrices to the given path.
+        """
+
         # even 10 is more than enough, I've had really good results with only 2 already.
         maxNoOfFiles = 5
 
-        rootFileWildcard = "Lumi_TrksQA_*.root:pndsim"
-        IPfromLMD = self.getIPfromRootFiles(path + rootFileWildcard, maxNoOfFiles)
+        reader = LumiTrksQAReader()
+        IPfromLMD = reader.getIPfromRootFiles(path, maxNoOfFiles)
+
         print(f"found this ip: {IPfromLMD}")
         ipApparent = IPfromLMD
 

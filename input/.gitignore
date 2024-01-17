@@ -1,8 +1,0 @@
-# Ignore large data directories
-*.npy
-
-# But never these files...
-!.gitignore
-!effValuesNonAligned.npy
-!effValuesAligned.npy
-!effValuesAlignedMulti.npy
