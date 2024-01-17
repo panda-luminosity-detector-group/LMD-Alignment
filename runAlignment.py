@@ -82,15 +82,15 @@ if __name__ == "__main__":
     if args.type == "sensors":
         print("Running sensor alignment")
         aligner = SensorAligner()
-        aligner.alignSensors(args.pathToData)
         aligner.setExternalMatrices(args.externalMatrices)
+        aligner.alignSensors(args.pathToData)
 
     if args.type == "modules":
         print("Running module alignment")
         aligner = ModuleAligner()
-        aligner.alignModules(args.pathToData)
         aligner.setExternalMatrices(args.externalMatrices)
         aligner.setAnchorPoints(args.anchorPoints)
+        aligner.alignModules(args.pathToData)
 
     if args.type == "box":
         print("Running box alignment")
