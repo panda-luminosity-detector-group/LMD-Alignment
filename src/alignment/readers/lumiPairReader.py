@@ -15,7 +15,10 @@ import uproot
 
 class LumiPairReader:
 
-    def sortPairs(self, rootFilePath: Path, maxNoOfFiles=50) -> None:
+    npyOutputDir = Path("temp/npPairs")
+    availableModuleIDs = range(40)
+
+    def sortPairs(self, rootFilePath: Path, maxNoOfFiles=0) -> None:
         """
         Sorts the pairs from root files to numpy files and saves them to disk.
         """
@@ -33,7 +36,7 @@ class LumiPairReader:
             Path(self.npyOutputDir).mkdir(parents=True)
 
         for arrays in uproot.iterate(
-            rootFilePath / rootFileWildcard,
+            (rootFilePath / rootFileWildcard).__str__(),
             [
                 "PndLmdHitPair._moduleID",
                 "PndLmdHitPair._overlapID",
