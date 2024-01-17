@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import Optional
 
 import awkward as ak
 import numpy as np
@@ -19,24 +20,27 @@ Performs sensor alignment using the ICP algorithm.
 
 
 class SensorAligner:
-    idealDetectorMatrices = loadMatrices("config/detectorMatricesIdeal.json")
+    # must be set before alignment!
+    externalMatrices: Optional[dict] = None
+
+    # default values, no need to change
     availableOverlapIDs = range(7)
     availableModuleIDs = range(40)
-    overlapMatrices = {}
-    sensorAlignMatrices = {}
-    externalMatrices = None
     npyOutputDir = Path("temp/npPairs")
     use2D = True
+    idealDetectorMatrices = loadMatrices("config/detectorMatricesIdeal.json")
+
+    # placeholders, will be filled by the methods
+    overlapMatrices = {}
+    alignmentMatrices = {}
+    sensorAlignMatrices = {}
 
     with open("config/moduleIDtoModulePath.json") as f:
         moduleIdToModulePath = json.load(f)
 
-    def sortPairs(self, rootFilePath: Path):
+    def sortPairs(self, rootFilePath: Path) -> None:
         """
-        Sorts the pairs from root files to numpy files.
-
-        Returns:
-            None
+        Sorts the pairs from root files to numpy files and saves them to disk.
         """
         print("Sorting pairs from root files to numpy files. This may take a while.")
         rootFileWildcard = "Lumi_Pairs_*.root:pndsim"
@@ -103,7 +107,11 @@ class SensorAligner:
             if runIndex == maxNoOfFiles:
                 break
 
-    def dynamicCut(self, hitPairs, cutPercent=2):
+    def quantileCut(self, hitPairs: np.array, cutPercent=2) -> np.array:
+        """
+        Applies a quantile cut to the hit pairs.
+        """
+
         if cutPercent == 0:
             return hitPairs
 
@@ -127,17 +135,15 @@ class SensorAligner:
 
         return hitPairs
 
-    def findMatrix(self, PairData, thisModule):
+    def findMatrix(self, PairData: np.array, thisModule: int) -> np.array:
+        """
+        Finds the overlap matrix for a given module and np array with pair data.
+        """
+
         # apply dynamic cut
-        PairData = self.dynamicCut(PairData, 2)
+        PairData = self.quantileCut(PairData, 2)
 
-        # if idealOverlapInfos is None or PairData is None:
-        #     raise Exception(f"Error! Please load ideal detector matrices and numpy pairs!")
-
-        # if len(idealDetectorMatrices) < 1:
-        #     raise Exception("ERROR! Please set ideal detector matrices!")
-
-        # Make C a homogeneous representation of hits1 and hits2
+        # Make homogeneous representations of hits1 and hits2
         hit1H = np.ones((len(PairData), 4))
         hit1H[:, 0:3] = PairData[:, :3]
 
@@ -145,7 +151,7 @@ class SensorAligner:
         hit2H[:, 0:3] = PairData[:, 3:6]
 
         # Attention! Always transform to module-local system,
-        # otherwise numerical errors will make the ICP matrices unusable!
+        # otherwise numerical errors will make the ICP matrices unstable!
         # (because z is at 11m, while x is 30cm and y is 0)
         # also, we're ignoring z distance, which we can not do if we're in
         # PND global, due to the 40mrad rotation.
@@ -206,7 +212,10 @@ class SensorAligner:
             )
         return thisOverlapMatrix
 
-    def findAllOverlapMatrices(self):
+    def findAllOverlapMatrices(self) -> None:
+        """
+        Finds all overlap matrices and saves them to self.overlapMatrices.
+        """
         for moduleID in self.availableModuleIDs:
             pairsOnModule = np.load(f"{self.npyOutputDir}/pairs-modID-{moduleID}.npy")
 
@@ -225,7 +234,10 @@ class SensorAligner:
                     pairsOnOverlap, moduleID
                 )
 
-    def combineMatricesOnAllModules(self):
+    def combineMatricesOnAllModules(self) -> None:
+        """
+        Combines all overlap matrices to sensor alignment matrices and saves them to self.sensorAlignMatrices.
+        """
         for moduleID in self.availableModuleIDs:
             combiner = alignmentMatrixCombiner(
                 moduleID, self.moduleIdToModulePath[str(moduleID)]
@@ -237,16 +249,23 @@ class SensorAligner:
             combiner.combineMatrices()
             self.sensorAlignMatrices.update(combiner.getAlignmentMatrices())
 
-    def setExternalMatrices(self, externalMatricesPath):
+    def setExternalMatrices(self, externalMatricesPath) -> None:
+        """
+        Sets the external matrices to use for alignment.
+        """
         self.externalMatrices = loadMatrices(externalMatricesPath)
 
     def alignSensors(
         self,
         PairROOTFilesPath,
         outputMatixName="matrices/100u-case-1/EXAMPLE-sensorAlignmentMatrices.json",
-    ):
+    ) -> None:
+        """
+        Performs sensor alignment, storing alignment matrices to specified destination.
+        """
+
         # sort hit pairs from root files to npy files
-        # self.sortPairs(PairROOTFilesPath)
+        self.sortPairs(PairROOTFilesPath)
 
         # then find all overlap matrices
         self.findAllOverlapMatrices()

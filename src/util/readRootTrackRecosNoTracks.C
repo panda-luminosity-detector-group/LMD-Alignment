@@ -40,7 +40,7 @@ int readRootTrackRecosNoTracks(std::string dataPath, std::string outCSVfile) {
             continue;
         }
         
-        // Manually unrolled loop - Iteration 0
+        // purposefully unrolled reco hit loop - Iteration 0
         PndSdsMergedHit *thisReco0 = (PndSdsMergedHit *)recoArray->At(0);
         TVector3 addPos0 = thisReco0->GetPosition();
         double xhit0 = addPos0.X();
@@ -48,7 +48,7 @@ int readRootTrackRecosNoTracks(std::string dataPath, std::string outCSVfile) {
         double zhit0 = addPos0.Z();
         int sensorID0 = thisReco0->GetSensorID();
         
-        // Manually unrolled loop - Iteration 1
+        // Iteration 1
         PndSdsMergedHit *thisReco1 = (PndSdsMergedHit *)recoArray->At(1);
         TVector3 addPos1 = thisReco1->GetPosition();
         double xhit1 = addPos1.X();
@@ -56,7 +56,7 @@ int readRootTrackRecosNoTracks(std::string dataPath, std::string outCSVfile) {
         double zhit1 = addPos1.Z();
         int sensorID1 = thisReco1->GetSensorID();
         
-        // Manually unrolled loop - Iteration 2
+        // Iteration 2
         PndSdsMergedHit *thisReco2 = (PndSdsMergedHit *)recoArray->At(2);
         TVector3 addPos2 = thisReco2->GetPosition();
         double xhit2 = addPos2.X();
@@ -64,7 +64,7 @@ int readRootTrackRecosNoTracks(std::string dataPath, std::string outCSVfile) {
         double zhit2 = addPos2.Z();
         int sensorID2 = thisReco2->GetSensorID();
         
-        // Manually unrolled loop - Iteration 3
+        // Iteration 3
         PndSdsMergedHit *thisReco3 = (PndSdsMergedHit *)recoArray->At(3);
         TVector3 addPos3 = thisReco3->GetPosition();
         double xhit3 = addPos3.X();

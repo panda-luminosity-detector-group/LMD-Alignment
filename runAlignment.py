@@ -5,17 +5,18 @@ import json
 from pathlib import Path
 
 from src.alignment.boxAlignment import BoxAligner
+from src.alignment.moduleAlign import ModuleAligner
 from src.alignment.sensorAlignment import SensorAligner
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run alignment")
 
     parser.add_argument(
-        "-e",
-        "--expConfig",
+        "-p",
+        "--pathToData",
         type=Path,
         default=Path(""),
-        help="Path to the experimentConfig.json file",
+        help="Path to the Lumi_*.root files (Lumi_Reco_* for module alignment, Lumi_Pairs_* for sensor alignment, Lumi_TrksQA_* for box alignment)",
         required=True,
     )
     parser.add_argument(
@@ -29,23 +30,25 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # load experiment config
-    with open(args.expConfig) as f:
-        expConfig = json.load(f)
-
     # switch case for alignment type
     if args.type == "sensors":
         print("Running sensor alignment")
         path = "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-dkohUogm/data/reco_uncut/aligned-alignment-matrices/"
         aligner = SensorAligner()
-        # replace these with the correct matrices!
-        aligner.setExternalMatrices("matrices/100u-case-1/externalMatrices-sensors.json")
+        aligner.setExternalMatrices(
+            "matrices/100u-case-1/externalMatrices-sensors.json"
+        )
         aligner.alignSensors(path)
-
 
     elif args.type == "modules":
         print("Running module alignment")
-        # run module alignment
+        path = "src/util/lmd-1.5-Vf.csv"  # TODO: change for root files, not csv
+        aligner = ModuleAligner()
+        aligner.setExternalMatrices(
+            "matrices/100u-case-1/externalMatrices-modules.json"
+        )
+        aligner.setAnchorPoints("config/anchorPoints/anchorPoints-1.5-aligned.json")
+        aligner.alignModules(path)
 
     elif args.type == "box":
         print("Running box alignment")

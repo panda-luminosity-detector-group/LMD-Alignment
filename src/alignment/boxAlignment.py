@@ -9,7 +9,10 @@ from src.util.matrix import loadMatrices, saveMatrices
 class BoxAligner:
     idealDetectorMatrices = loadMatrices("config/detectorMatricesIdeal.json")
 
-    def quantileCut(self, xyzArray, cut=4):
+    def quantileCut(self, xyzArray: np.ndarray, cut=4) -> np.ndarray:
+        """
+        Performs a quantile cut on the given array.
+        """
         if cut == 0:
             return xyzArray
 
@@ -31,12 +34,15 @@ class BoxAligner:
         xyzArray = xyzArray[distVecNorm.argsort()]
 
         # cut the largest values
-        resxyzArrayxyzArray = xyzArray[:-cut]
+        resultArray = xyzArray[:-cut]
 
-        return resxyzArrayxyzArray
+        return resultArray
 
-    def getIPfromRootFiles(self, filename, maxNoOfFiles=0):
-        # fileTree = uproot.open(filename)['pndsim']
+    def getIPfromRootFiles(self, filename: str, maxNoOfFiles=0) -> np.ndarray:
+        """
+        Reads the root files and returns the reconstruced average IP from the LMD.
+        Returns a 4D vector with the last value being 1 (homogeneous coordinates).
+        """
 
         # make empty 2D (n times 4) result array for each individual IP position (that's per file)
         IPs = np.empty((0, 4))
@@ -90,7 +96,7 @@ class BoxAligner:
         print(f"read {runIndex} file(s)")
         return np.average(IPs, axis=0)
 
-    def getRot(self, apparentIP, actualIP):
+    def getRot(self, apparentIP: np.ndarray, actualIP: np.ndarray) -> np.ndarray:
         """
         computes rotation from A to B when rotated through origin.
         shift A and B before, if rotation did not already occur through origin!
@@ -100,6 +106,7 @@ class BoxAligner:
         and https://en.wikipedia.org/wiki/Rotation_matrix#Conversion_from_rotation_matrix_and_to_axis%E2%80%93angle
 
         This function works on 3D points only, do not give homogeneous coordinates to this!
+        Returns a 3x3 rotation matrix (not homogeneous!).
         """
         # error handling
         if np.linalg.norm(apparentIP) == 0 or np.linalg.norm(actualIP) == 0:
@@ -132,7 +139,12 @@ class BoxAligner:
 
         return R
 
-    def alignBox(self, path):
+    def alignBox(self, path) -> None:
+        """
+        Aligns the box to the IP.
+        Saves the alignment matrices to the given path.
+        """
+
         # even 10 is more than enough, I've had really good results with only 2 already.
         maxNoOfFiles = 5
 
