@@ -9,13 +9,13 @@ Usage:
 Examples:
 
 Box:
-runAlignment.py -p "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-mmHRDIef/data/reco_uncut/no_alignment_correction/" box
+./runAlignment.py -p "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-mmHRDIef/data/reco_uncut/no_alignment_correction/" -t box
 
 Sensors:
-runAlignment.py -p "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-dkohUogm/data/reco_uncut/no_alignment_correction/" sensors --externalMatrices "matrices/100u-case-1/externalMatrices-sensors.json"
+./runAlignment.py -p "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-dkohUogm/data/reco_uncut/no_alignment_correction/" -t sensors --externalMatrices "matrices/100u-case-1/externalMatrices-sensors.json"
 
 Modules:
-runAlignment.py -p "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-jPzRgtxO/data/reco_uncut/no_alignment_correction" modules --externalMatrices "matrices/100u-case-1/externalMatrices-modules.json" --anchorPoints "config/anchorPoints/anchorPoints-15.00-aligned.json"
+./runAlignment.py -p "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-jPzRgtxO/data/reco_uncut/no_alignment_correction" -t modules --externalMatrices "matrices/100u-case-1/externalMatrices-modules.json" --anchorPoints "config/anchorPoints/anchorPoints-15.00-aligned.json"
 
 """
 
@@ -26,53 +26,57 @@ from src.alignment.boxAlignment import BoxAligner
 from src.alignment.moduleAlignment import ModuleAligner
 from src.alignment.sensorAlignment import SensorAligner
 
+
+def check_required_args(args):
+    if args.type == "sensors" and not args.externalMatrices:
+        parser.error("The --externalMatrices argument is required for sensors type.")
+    elif args.type == "modules":
+        if not args.externalMatrices:
+            parser.error(
+                "The --externalMatrices argument is required for modules type."
+            )
+        if not args.anchorPoints:
+            parser.error("The --anchorPoints argument is required for modules type.")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run alignment")
 
+    # Top level arguments
     parser.add_argument(
         "-p",
         "--pathToData",
         type=Path,
         default=Path(""),
-        help="Path to the Lumi_*.root files (Lumi_Reco_* for module alignment, Lumi_Pairs_* for sensor alignment, Lumi_TrksQA_* for box alignment)",
+        help="Path to Lumi_*.root files",
         required=True,
     )
 
-    subparsers = parser.add_subparsers(
-        dest="type", required=True, help="Type of alignment to run"
+    parser.add_argument(
+        "-t",
+        "--type",
+        choices=["box", "sensors", "modules"],
+        required=True,
+        help="Type of alignment to run",
     )
 
-    parser_box = subparsers.add_parser(
-        "box", help="Box Rotation alignment, specify path to LumiTrksQA files"
-    )
-
-    parser_sensors = subparsers.add_parser(
-        "sensors", help="Align sensors, requires externalMatrices"
-    )
-    parser_sensors.add_argument(
+    # Optional arguments that may be required based on the type chosen
+    parser.add_argument(
         "--externalMatrices",
         type=Path,
-        required=True,
-        help="External matrices path for sensor alignment",
+        help="External matrices path for sensor or module alignment",
     )
 
-    parser_modules = subparsers.add_parser(
-        "modules", help="Align modules, requires externalMatrices and anchorPoints"
-    )
-    parser_modules.add_argument(
-        "--externalMatrices",
-        type=Path,
-        required=True,
-        help="External matrices path for module alignment",
-    )
-    parser_modules.add_argument(
+    parser.add_argument(
         "--anchorPoints",
         type=Path,
-        required=True,
         help="Anchor points file path for module alignment",
     )
 
     args = parser.parse_args()
+
+    # Run the check to ensure required arguments are provided for specific types
+    check_required_args(args)
 
     # switch case for alignment type
     if args.type == "sensors":
