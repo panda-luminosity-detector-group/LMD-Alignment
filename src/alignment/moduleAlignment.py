@@ -7,7 +7,7 @@ Performs sensor alignment using the ICP algorithm.
 """
 
 import json
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Optional
 
@@ -282,7 +282,7 @@ class ModuleAligner:
                 self.alignmentMatices |= self.alignSectorICPWorker(self.npyOutputDir, iSector)
         else:
             print("aligning sectors multithreaded...")
-            with ThreadPoolExecutor(max_workers=8) as executor:
+            with ProcessPoolExecutor(max_workers=8) as executor:
                 futures = [executor.submit(self.alignSectorICPWorker, self.npyOutputDir, iSector) for iSector in range(10)]
 
                 # Collect the results as they complete
