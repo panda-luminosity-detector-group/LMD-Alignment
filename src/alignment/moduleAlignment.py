@@ -7,6 +7,8 @@ Performs sensor alignment using the ICP algorithm.
 """
 
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -25,46 +27,14 @@ class ModuleAligner:
     preTransform = True
     iterations = 5  # max number of iterations the module aligner will do
     idealDetectorMatrices = loadMatrices("config/detectorMatricesIdeal.json")
-
-    # load sensorID -> sectorID mapping
-    with open("config/sensorIDtoSectorID.json", "r") as f:
-        sensorIDdict = json.load(f)
-        sectorIDlut = np.empty(len(sensorIDdict))
-
-        # create a look up table for fast sensorID -> sectorID translation
-        for key, value in sensorIDdict.items():
-            sectorIDlut[int(key)] = value
+    npyOutputDir = Path("temp/sectorRecos")
+    debug = False
 
     # load geometryString -> sectorID mapping
     with open("config/sectorPaths.json") as f:
         allModulePaths = json.load(f)
 
     # ------------------- helper functions -------------------
-    def readRecoHitsFromCSVFile(self, filename) -> np.ndarray:
-        """
-        Reads reco hits from a csv file and returns them as a numpy array.
-        """
-        print(f"reading reco hits from {filename}...")
-
-        csvValues = np.genfromtxt(filename, delimiter=",")
-        # check if there really are n times 4 elements
-        if len(csvValues) % 4 != 0:
-            raise ValueError("entries are not a multiple of 4!")
-
-        nEvents = int(len(csvValues) / 4)
-
-        ids = np.array(csvValues[:, 0], dtype=int)
-        csvValues[:, 0] = self.sectorIDlut[ids]
-
-        csvValues = csvValues.reshape((nEvents, 4, 4))
-
-        return csvValues
-
-    def readRecoHitsFromRootFiles(self, filename) -> np.ndarray:
-        """
-        Reads reco hits from a root files and returns them as a numpy array.
-        """
-        print(f"reading reco hits from {filename}...")
 
     #  quantile cut on track direction
     def directionQuantileCut(
@@ -152,13 +122,13 @@ class ModuleAligner:
             T, _, _ = best_fit_transform(trackPositions, recoPositions)
             return T
 
-    def alignSectorICP(
-        self, sectorRecos: np.ndarray, sector: int, maxNoTrks=40000
-    ) -> dict:
+    def alignSectorICPWorker(self, recoNumpyPaht: Path, sector: int, maxNoTrks=40000) -> dict:
         """
         Aligns a sector using a slimmed down ICP algorithm.
         Returns a dictionary of alignment matrices for the modules.
         """
+        npFile = Path(f"sectorID-{sector}.npy")
+        sectorRecos = np.load(recoNumpyPaht / npFile)
 
         # get relevant module paths
         modulePaths = self.allModulePaths[str(sector)]
@@ -195,12 +165,13 @@ class ModuleAligner:
                 matFromLMD @ self.anchorPoints[sectorString]
             )
 
-        # print("==================================================")
-        # print(f"        module aligner for sector {sector}")
-        # print("==================================================")
+        if self.debug:
+            print("==================================================")
+            print(f"        module aligner for sector {sector}")
+            print("==================================================")
 
-        # print(f"number of tracks: {len(newTracks)}")
-        # print(f"anchor point: {self.anchorPoints[sectorString]}")
+            print(f"number of tracks: {len(newTracks)}")
+            print(f"anchor point: {self.anchorPoints[sectorString]}")
 
         # do a first track fit, otherwise we have no starting tracks
         recos = newTracks[:, 2:6]
@@ -285,12 +256,17 @@ class ModuleAligner:
             totalMatrices[i] = totalMatrices[i] @ averageShift
             result[modulePaths[i]] = totalMatrices[i]
 
-        # print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-        # print(f"        module aligner for sector {sector} done!         ")
-        # print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+        if self.debug:
+            print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+            print(f"        module aligner for sector {sector} done!         ")
+            print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+        
         return result
 
-    def alignSectors(self, allRecosArray) -> None:
+    def alignSectorWorker(self, reocNumpyFile: Path, sector: int) -> dict:
+        pass
+
+    def alignSectors(self) -> None:
         """
         Aligns all sectors using the ICP algorithm.
         Stores the alignment matrices in self.alignmentMatices.
@@ -300,23 +276,18 @@ class ModuleAligner:
         self.alignmentMatices = {}
 
         # translate the reco hits to format for module Aligner
-        for i in range(10):
-            print(f"aligning sector {i}...")
-            # apply mask so only one sector is chosen
-            # careful, this only checks if the first hit
-            # is in the correct sector!
-            sectorMask = allRecosArray[:, 0, 0] == i
+        if self.debug:
+            for iSector in range(10):
+                print(f"aligning sector {iSector}...")
+                self.alignmentMatices |= self.alignSectorICPWorker(self.npyOutputDir, iSector)
+        else:
+            print("aligning sectors multithreaded...")
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                futures = [executor.submit(self.alignSectorICPWorker, self.npyOutputDir, iSector) for iSector in range(10)]
 
-            # create new empty array thay has the required structure
-            sectorTracksXYZ = allRecosArray[sectorMask][:, :, 1:4]
-            nTrks = len(sectorTracksXYZ)
-
-            # assign recos from input array to new array for this sector
-            trackVectorForAligner = np.ones((nTrks, 6, 4))
-            trackVectorForAligner[:, 2:6, :3] = sectorTracksXYZ[:, 0:4]
-
-            # and acutally algin the sector
-            self.alignmentMatices |= self.alignSectorICP(trackVectorForAligner, i)
+                # Collect the results as they complete
+                for future in as_completed(futures):
+                    self.alignmentMatices |= future.result()
 
     def setExternalMatrices(self, externalMatricesFileName) -> None:
         """
@@ -360,10 +331,18 @@ class ModuleAligner:
         if self.avgMisalignments is None:
             raise Exception("ERROR! Please set external matrices before alignment!")
 
-        allRecos = self.readRecoHitsFromCSVFile(LumiRecoFilesPath)
+        if self.debug:
+            from src.alignment.readers.recoCSVReader import RecoCSVReader
+            reader = RecoCSVReader()
+            reader.sortCSVtoNumpy(LumiRecoFilesPath)
+
+        else:
+            from src.alignment.readers.lumiRecoReader import LumiRecoReader
+            reader = LumiRecoReader()
+            reader.sortRecoHitsFromRootFilesToNumpy(LumiRecoFilesPath)
 
         # align sectors
-        self.alignSectors(allRecos)
+        self.alignSectors()
 
         # save matrices
         saveMatrices(self.alignmentMatices, outputMatixName)

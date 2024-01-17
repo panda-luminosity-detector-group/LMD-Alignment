@@ -1,9 +1,10 @@
-import numpy as np
-from pathlib import Path
 import json
+from pathlib import Path
+
+import numpy as np
 
 
-def baseTransform(mat, matFromAtoB):
+def baseTransform(mat: np.ndarray, matFromAtoB: np.ndarray) -> np.ndarray:
     """
     Reminder: the way this works is that the matrix pointing from pnd to sen0 transforms a matrix IN sen0 back to Pnd
     If you want to transform a matrix from Pnd to sen0, and you have the matrix to sen0, then you need to give
@@ -14,7 +15,7 @@ def baseTransform(mat, matFromAtoB):
     return matFromAtoB @ mat @ np.linalg.inv(matFromAtoB)
 
 
-def loadMatrices(filename):
+def loadMatrices(filename: Path):
     with open(filename) as f:
         result = json.load(f)
     for key, value in result.items():
@@ -22,8 +23,7 @@ def loadMatrices(filename):
     return result
 
 
-def saveMatrices(matrices, fileName):
-
+def saveMatrices(matrices: dict, fileName: Path):
     # create path if needed
     if not Path(fileName).parent.exists():
         Path(fileName).parent.mkdir()
