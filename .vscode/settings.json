@@ -73,7 +73,8 @@
         "convertRootTracks copy.C": "cpp",
         "convertMergedHits.C": "cpp",
         "bit": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "readRootTrackRecosNoTracks.C": "cpp"
     },
     "restructuredtext.confPath": "${workspaceFolder}/pybind11/docs",
     "cmake.configureOnOpen": false,
