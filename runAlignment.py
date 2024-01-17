@@ -82,22 +82,17 @@ if __name__ == "__main__":
     if args.type == "sensors":
         print("Running sensor alignment")
         aligner = SensorAligner()
-        aligner.setExternalMatrices(args.externalMatrices)
         aligner.alignSensors(args.pathToData)
+        aligner.setExternalMatrices(args.externalMatrices)
 
-    elif args.type == "modules":
+    if args.type == "modules":
         print("Running module alignment")
-        path = "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-jPzRgtxO/data/reco_uncut/no_alignment_correction"
         aligner = ModuleAligner()
+        aligner.alignModules(args.pathToData)
         aligner.setExternalMatrices(args.externalMatrices)
         aligner.setAnchorPoints(args.anchorPoints)
-        aligner.alignModules(args.pathToData)
 
-    elif args.type == "box":
+    if args.type == "box":
         print("Running box alignment")
         aligner = BoxAligner()
         aligner.alignBox(args.pathToData)
-
-    else:
-        print("Invalid alignment type.")
-        exit(1)
