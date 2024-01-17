@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
-import json
 from pathlib import Path
 
+from alignment.moduleAlignment import ModuleAligner
+
 from src.alignment.boxAlignment import BoxAligner
-from src.alignment.moduleAlign import ModuleAligner
 from src.alignment.sensorAlignment import SensorAligner
 
 if __name__ == "__main__":
