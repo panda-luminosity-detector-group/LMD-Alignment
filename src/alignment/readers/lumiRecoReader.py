@@ -64,6 +64,9 @@ class LumiRecoReader:
             recoZ = arrayDict["LMDHitsMerged.fZ"]
 
             # create mask for events that have exactly 4 hits
+            # FIXME: this only works for 1 track per event.
+            # if you want more, you have to add a some form of track fitting
+            # here to map the correct reco hits together. This is not trivial!
             fourRecoMask = [event.size == 4 for event in ids]
 
             # make a real 2D array from array[array[ ]]
