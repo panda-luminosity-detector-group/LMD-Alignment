@@ -109,8 +109,6 @@ Alternatively, the `lumiRecoReader.py` in `src/alignment/readers` should work as
 
 A dictionary that shows which geometry paths belong to which assembly:
 
-````json
-
 ```json
 "box": [
     "/cave_1/lmd_root_0"
@@ -164,7 +162,7 @@ Mapping between moduleID and geometry path:
 Mapping between moduleID and which sectorID this module is in:
 
 ```json
-0": 0,
+"0": 0,
 "1": 1,
 "10": 0,
 "11": 1,
