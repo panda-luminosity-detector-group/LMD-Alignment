@@ -55,6 +55,7 @@ class LumiTrksQAReader:
 
         runIndex = 0
         for array in uproot.iterate(
+            # uproot doesn't like Path objects, so convert to string
             (rootFilesPath / rootFileWildcard).__str__(),
             [
                 "LMDTrackQ.fTrkRecStatus",

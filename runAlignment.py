@@ -4,7 +4,10 @@
 General alignment script.
 
 Usage:
-    python3 runAlignment.py -p <pathToData> <type> [options]
+    ./runAlignment.py -p <pathToData> -t <type> [options]
+    options:
+        --externalMatrices <externalMatricesPath> (required for sensors and modules)
+        --anchorPoints <anchorPointsPath> (required for modules)
 
 Examples:
 
@@ -16,7 +19,6 @@ Sensors:
 
 Modules:
 ./runAlignment.py -p "/mnt/himsterData/roklasen/LumiFit/LMD-15.00-jPzRgtxO/data/reco_uncut/no_alignment_correction" -t modules --externalMatrices "matrices/100u-case-1/externalMatrices-modules.json" --anchorPoints "config/anchorPoints/anchorPoints-15.00-aligned.json"
-
 """
 
 import argparse
@@ -30,6 +32,7 @@ from src.alignment.sensorAlignment import SensorAligner
 def check_required_args(args):
     if args.type == "sensors" and not args.externalMatrices:
         parser.error("The --externalMatrices argument is required for sensors type.")
+
     elif args.type == "modules":
         if not args.externalMatrices:
             parser.error(

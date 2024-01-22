@@ -122,7 +122,9 @@ class ModuleAligner:
             T, _, _ = best_fit_transform(trackPositions, recoPositions)
             return T
 
-    def alignSectorICPWorker(self, recoNumpyPaht: Path, sector: int, maxNoTrks=40000) -> dict:
+    def alignSectorICPWorker(
+        self, recoNumpyPaht: Path, sector: int, maxNoTrks=40000
+    ) -> dict:
         """
         Aligns a sector using a slimmed down ICP algorithm.
         Returns a dictionary of alignment matrices for the modules.
@@ -260,7 +262,7 @@ class ModuleAligner:
             print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
             print(f"        module aligner for sector {sector} done!         ")
             print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-        
+
         return result
 
     def alignSectorWorker(self, reocNumpyFile: Path, sector: int) -> dict:
@@ -275,15 +277,23 @@ class ModuleAligner:
         # actually run the aligner!
         self.alignmentMatices = {}
 
-        # translate the reco hits to format for module Aligner
+        # if debug, run single threaded
         if self.debug:
             for iSector in range(10):
                 print(f"aligning sector {iSector}...")
-                self.alignmentMatices |= self.alignSectorICPWorker(self.npyOutputDir, iSector)
+                self.alignmentMatices |= self.alignSectorICPWorker(
+                    self.npyOutputDir, iSector
+                )
+        # else run multithreaded (multiprocessing more specifically, but who gives a hoot)
         else:
             print("aligning sectors multithreaded...")
             with ProcessPoolExecutor(max_workers=8) as executor:
-                futures = [executor.submit(self.alignSectorICPWorker, self.npyOutputDir, iSector) for iSector in range(10)]
+                futures = [
+                    executor.submit(
+                        self.alignSectorICPWorker, self.npyOutputDir, iSector
+                    )
+                    for iSector in range(10)
+                ]
 
                 # Collect the results as they complete
                 for future in as_completed(futures):
@@ -333,11 +343,13 @@ class ModuleAligner:
 
         if self.debug:
             from src.alignment.readers.recoCSVReader import RecoCSVReader
+
             reader = RecoCSVReader()
             reader.sortCSVtoNumpy(LumiRecoFilesPath)
 
         else:
             from src.alignment.readers.lumiRecoReader import LumiRecoReader
+
             reader = LumiRecoReader()
             reader.sortRecoHitsFromRootFilesToNumpy(LumiRecoFilesPath)
 

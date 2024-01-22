@@ -36,6 +36,7 @@ class LumiPairReader:
             Path(self.npyOutputDir).mkdir(parents=True)
 
         for arrays in uproot.iterate(
+            # uproot doesn't like Path objects, so convert to string
             (rootFilePath / rootFileWildcard).__str__(),
             [
                 "PndLmdHitPair._moduleID",
@@ -64,6 +65,7 @@ class LumiPairReader:
                 (moduleIDs, hit1x, hit1y, hit1z, hit2x, hit2y, hit2z, overlapIDs)
             ).T
 
+            # sort by moduleID and save to disk
             for moduleID in self.availableModuleIDs:
                 mask = arr[:, 0] == moduleID
                 thisOverlapsArray = arr[mask][:, 1:]
