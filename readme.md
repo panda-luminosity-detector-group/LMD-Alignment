@@ -37,12 +37,13 @@ Table of Contents
   - [Module Alignment](#module-alignment)
     - [Module External Matrices](#module-external-matrices)
   - [Box Rotation Alignment](#box-rotation-alignment)
+- [Closing Words](#closing-words)
 
 # Introduction and TL;DR
 
 This repo contains all that you need to perform software alignment of the Luminosity Detector. It is written in pure python, although for legacy reasons there are also some ROOT macros that are used to generate the input files for the module alignment. Those must be run with PanadaROOT's `root -l -q myMacro.C`.
 
-Nonetheless, the actual alignment requires *no installed ROOT* as long as all config files are present. The aligners read ROOT files with the [uproot](https://github.com/scikit-hep/uproot5) package, which is a pure python implementation of ROOT's TTree reader and much faster that ROOT itself. The alignment was first written for uproot3 and has been updated to uproot4. It seems the current version is now uproot5, let's just hope this all still works.
+Nonetheless, the actual alignment requires _no installed ROOT_ as long as all config files are present. The aligners read ROOT files with the [uproot](https://github.com/scikit-hep/uproot5) package, which is a pure python implementation of ROOT's TTree reader and much faster that ROOT itself. The alignment was first written for uproot3 and has been updated to uproot4. It seems the current version is now uproot5, let's just hope this all still works.
 
 Once you have the Lumi\_\*.root files, you can run the alignment with the following command:
 
@@ -131,7 +132,7 @@ A dictionary that shows which geometry paths belong to which assembly:
     "/cave_1/lmd_root_0/half_0/plane_0/module_1",
     "/cave_1/lmd_root_0/half_0/plane_0/module_2",
 ...
-````
+```
 
 ## detectorMaticesIdeal
 
@@ -269,7 +270,7 @@ Residuals Matrix:
 --------------------------------------------------------:
 ```
 
-This is the homogeneous $4 \times 4$ residuals matrix (see chapter 5.3). Basically, the most important parameters will be the the entries at $m_{14}$ and $m_{24}$, so $0.137858$ and $-5.056183$. The usual units in ROOT are centimeters, but the resultant difference after alignment will be in the order of *micro*meters, so the entire matrix is scaled by `1e4` (thats $10 ^4$ in lazy). That means, the alignment of this specific sensor was off by $0.137858 \cdot 10^{-4} = 1.37858 \cdot 10^{-3} = 1.37858 \mu m$ in $x$ and $-5.056183 \cdot 10^{-4} = -5.056183 \mu m$ in $y$.
+This is the homogeneous $4 \times 4$ residuals matrix (see chapter 5.3). Basically, the most important parameters will be the the entries at $m_{14}$ and $m_{24}$, so $0.137858$ and $-5.056183$. The usual units in ROOT are centimeters, but the resultant difference after alignment will be in the order of *micro*meters, so the entire matrix is scaled by `1e4` (thats $10 ^4$ in lazy). That means, the alignment of this specific sensor was off by $1.37858 \mu m$ in $x$ and $-5.056183 \mu m$ in $y$.
 
 The rotation is encoded in the upper left $3 \times 3$ portion of the matix. Usually, ROOT uses degrees for all rotations, but in this case the matrix comes from the software alignment, which uses radians. So the rotation values are always $sin(\alpha), cos(\beta)$ etc with $\alpha, \beta$ being the rotation angles around the Euler angles. These values are also totally important to see if the alignment found the correct rotation, but chances are that the rotation is correct when the translation is correct.
 
@@ -277,10 +278,10 @@ The rotation is encoded in the upper left $3 \times 3$ portion of the matix. Usu
 
 Generates sets of misalignment matrices (see chapters 7.1, 8.1 and 9.1 for example numbers). It's very important to generate _sensible_ misalignment matrices, that means matrices that are rigid transformations. You can't just throw random numbers in each entry $m_{11}$ to $m_{44}$ and expect a sensible result. Instead you have to generate real rotation matrices and real translation matrices and combine them to one total rigid transformation matrix. Because $A \cdot B \neq B \cdot A$ for matrices $A$ and $B$, the _order_ matters. You can of course choose any order of rotations and translations that you like, but you should be consistent.
 
-For example, I've always used *first translation, then rotation* (remember, matrix multiplication order is right to left):
+For example, I've always used _first translation, then rotation_ (remember, matrix multiplication order is right to left):
 
 ```python
-# module matrices follow the same reasoning as sensors, 
+# module matrices follow the same reasoning as sensors,
 # but we need also the 1/4th of every transformation for the avg misalign (external matrix)
 def genModuleMatrix(avgShift, avgRot):
     shiftVals = np.random.normal(0, avgShift, 2)
@@ -302,7 +303,7 @@ Generates some of the config files in the `config` folder. This is valid only fo
 
 ALright, this is the real meat of the alignment (or the real tofu if you're vegetarian). The alignment is split into three parts: box, modules and sensors.
 
-Therefore the code is in `src/boxAlignment.py`, `src/moduleAlignment.py` and `src/sensorAlignment.py`. 
+Therefore the code is in `src/boxAlignment.py`, `src/moduleAlignment.py` and `src/sensorAlignment.py`.
 
 ## Utils
 
@@ -339,7 +340,7 @@ So, therefore I've included a ROOT macro that reads `Lumi_Track_*.root` **and** 
 However, there are several disadvantages here:
 
 - With misalignment, the track finder and track fitters may simply not work correctly. Both of them rely on correct module positions to check what could be a valid track. So if you want to use this, you should probably loosen some cutoffs to allow the fitters to work on misaligned data.
-- Ideally, I'd have written a reader that simply mimics this ROOT macro, but I haven't found out how uproot can read TClonesArrays in multiple files *with correct association*. But Jim Pivarksy is a wizard and very friendly, so maybe he can help with that.
+- Ideally, I'd have written a reader that simply mimics this ROOT macro, but I haven't found out how uproot can read TClonesArrays in multiple files _with correct association_. But Jim Pivarksy is a wizard and very friendly, so maybe he can help with that.
 - And of course this ROOT macro requires a working PandaROOT installation, with the associated tail of bullshit that comes with it. The containers provided by the LumiFit software help a lot though.
 
 #### Future Work
@@ -360,9 +361,9 @@ The actual sensor alignment logic. For details, read chapter 7 (or only 7.3 if y
 
 ### Sensor External Matrices
 
-Sensor alignment can only inter-align the sensors on a module. That means it can give the positions of all sensors on a module *relative to one chosen sensor*, but not relative to the module they're all on. Technically it doesn't matter which sensor you choose as reference, but sensor 0 is directly in a corner of a sensor module. So this one would be easiest to align w.r.t. to the module for example via microscope. Sensors 0 and 1 can't be inter-aligned because there is no overlap between them, but it should be possible to get sensors 0 and 1 on one silicon wafer as a single chip, so if we know where 0 is, we also know where 1 is.
+Sensor alignment can only inter-align the sensors on a module. That means it can give the positions of all sensors on a module _relative to one chosen sensor_, but not relative to the module they're all on. Technically it doesn't matter which sensor you choose as reference, but sensor 0 is directly in a corner of a sensor module. So this one would be easiest to align w.r.t. to the module for example via microscope. Sensors 0 and 1 can't be inter-aligned because there is no overlap between them, but it should be possible to get sensors 0 and 1 on one silicon wafer as a single chip, so if we know where 0 is, we also know where 1 is.
 
-Because of that, these two are chosen as reference sensors for all others on a sensor modules. And because they can't be found by alignment, but are are still *needed* by the alignment, they have to be supplied as external matrices to the sensor alignment. That's why they're called external matrices. But because they are no more special than any other sensor misalignment matrix, they are really only the offset of the sensors 0 and 1 from their design position in the module frame of reference. Those are easy to determine with a microscope.
+Because of that, these two are chosen as reference sensors for all others on a sensor modules. And because they can't be found by alignment, but are are still _needed_ by the alignment, they have to be supplied as external matrices to the sensor alignment. That's why they're called external matrices. But because they are no more special than any other sensor misalignment matrix, they are really only the offset of the sensors 0 and 1 from their design position in the module frame of reference. Those are easy to determine with a microscope.
 
 For example, if sensor 0 on module 0 on the first plane in the top half is **exactly** where it's supposed to be, the external matrix for it is the identity matrix $\mathrel{1}$ (because this matrix is only the deviation from the design position):
 
@@ -391,8 +392,65 @@ By the way, if later it's found that some other sensors are better suited as ext
 
 ## Module Alignment
 
-See chapter 8.3. The idea is deceptively simple, but there are a few traps here. First, just like in the sensor case, the module alignment can only align the modules relative to each other in a sector, but not relative to other sectors or the box. For that, additional measurements are needed.
+See chapter 8.3. The idea is deceptively simple, but there are a few traps here. First, just like in the sensor case, the module alignment can only align the modules relative to each other in a sector, but not relative to other sectors or the box. For that, additional measurements are needed. Secondly, there are global transformations that module alignment cannot eliminate, for details see chapter 8.5. Shearing and gobal rotation can in part be eliminated with the anchor points.
 
 ### Module External Matrices
 
+What remains is the average misalignment of all four modules in a sector. This is completely analogous to the sensor alignment case, in that we would need to know the position of one module in the sector to align the other three to it. But in contrast to the sensor alignment, here there is no easily accessible module that we can use as reference. Instead, I'm employing an average misalignment of all four modules. In the real detector, we'll have capacitive distance sensors that measure the position and orientation of the entire half detector (lower and upper half independently). But because these details weren't fleshed out yet, I'm trying to model this a different way.
+
+Suppose we know the positions of all four modules in a sector with respect to each other, but not to the box. We can then treat this sector as one solid object. This object will have a center of mass (or center of volume, doesn't really matter) that is offset from where it would be if the modules were perfectly aligned (the same goes for the orientation). This offset is the average misalignment of the modules in the sector. If we know this offset, we can align the modules to it. My argument is now that this total offset of the entire sector is caused by the sum of each contributing module misalignment times a factor of $\frac{1}{4}$. That means each module contributes one fourth of the misalignment of the sector.
+
+Now, because the details of how the capacitive sensors are arranged weren't known when I wrote this, the details of how to map their data to this average misalignment are still open and must be implemented in the future.
+
+To generate these averages programmatically during the generation of the misalignment matrices, I've added the quarter matrices here:
+
+```python
+# module matrices follow the same reasoning as sensors,
+# but we need also the 1/4th of every transformation for the avg misalign (external matrix)
+def genModuleMatrix(avgShift, avgRot):
+    shiftVals = np.random.normal(0, avgShift, 2)
+    rotVals = np.random.normal(0, avgRot, 1)
+    totalTrans = genTransY(shiftVals[1]) @ genTransX(shiftVals[0])
+    totalTransQ = genTransY(shiftVals[1]/4) @ genTransX(shiftVals[0]/4)
+    totalRot = genRotZ(rotVals[0])
+    totalRotQ = genRotZ(rotVals[0]/4)
+    return totalRot @ totalTrans, totalRotQ @ totalTransQ
+```
+
+This literally just generates a matrix that has one fourth of the shift and one fourth of the rotation of the total misalignment matrix. I'm collecting these four quarter matrices for each sector and multiply them together. The result is the average misalignment matrix for the sector. It must be done this way, because you can't really multiply or divide rigid transformation matrices with a scalar and still get a valid rigid transformation matrix. But simply applying all four quarter matrices in sequence works quite well. Technically, the order is important too, because matrix multiplication is not commutative, but I've found that the order doesn't matter here because all individual matrices are rather close to the identity matrix.
+
+```python
+misalignModules = {}
+misalignModulesQ = {}
+externalMatricesModules = {}
+for path in allPaths["modules"]:
+    misalignModules[path], misalignModulesQ[path] = genModuleMatrix(avgShiftInCM, avgRotInDeg)
+
+# gen external matrices
+for key, value in sectorPaths.items():
+    thisExternalMatrix = np.eye(4)
+    for path in value:
+        thisExternalMatrix = thisExternalMatrix @ misalignModulesQ[path]
+    externalMatricesModules[key] = thisExternalMatrix
+
+
+saveMatrices(misalignModules, "../output/misMat-modules.json")
+saveMatrices(externalMatricesModules, "../output/externalMatrices-modules.json")
+```
+
 ## Box Rotation Alignment
+
+This is thankfully quite easy, both conceptually and math-speaking-ly. See chapter 9.2, but the gist is:
+
+Say you're looking at a point very far. You set your frame of reference such that your "forward" points directly to that point. Now someone else comes along and says "Oh I know that point. In the RealWorldFrameOfReference™, it its at 45 degrees to the left". Then you know that your frame of reference is rotated by 45 degrees to the left w.r.t. the RealWorldFrameOfReference™ (as long as the origins of both frames are in the same place). Extend that to two dimensions and you basically have the math for the box rotation alignment.
+
+The point "we" are seeing is the reconstructed interaction point as it is seen from the LMD. The RealWorldFrameOfReference™ is the global coordinate system of the PANDA experiment. Because the rest of the experiment also has a reconstructed interaction point, and with very high precision, we can rotate the Lumi Box such that "their" interaction point is in the same place as "ours". We rotate about the center of mass of the Lumi Box, because offsets in any directions are insignificant compared to the rotation. And that's basically it.
+
+So there is no need for external matrices or anchor points here. There are still some free parameters however, which are very important:
+
+- The position of the interaction point determined by the rest of the PANDA experiment. I've hard-coded it to (0,,0,0) in the aligner for now, but it should be read from a file. Someone should add that code
+- The distance of the LMD to the interaction point. Well actually the entire position, distance and rotation, of the LMD inside the PANDA frame of reference. This is pretty easy though, since this matrix is known by design. In the code, it's the ideal transformation matrix to the frame "/cave_1/lmd_root_0". It's in the `detectorMatricesIdeal` config file by default.
+
+# Closing Words
+
+So this has been basically a brain dump of all the stuff I've done for the LMD alignment. I hope it's useful to someone. If you have any questions, please feel free to contact me, even if I'm no longer working on the LMD. I'm always happy to help. I really liked working for Miriam and PANDA as a whole and I'm really gonna miss it, but life goes on and I have to move on.
