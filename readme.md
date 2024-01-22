@@ -442,13 +442,13 @@ saveMatrices(externalMatricesModules, "../output/externalMatrices-modules.json")
 
 This is thankfully quite easy, both conceptually and math-speaking-ly. See chapter 9.2, but the gist is:
 
-Say you're looking at a point very far. You set your frame of reference such that your "forward" points directly to that point. Now someone else comes along and says "Oh I know that point. In the RealWorldFrameOfReference™, it its at 45 degrees to the left". Then you know that your frame of reference is rotated by 45 degrees to the left w.r.t. the RealWorldFrameOfReference™ (as long as the origins of both frames are in the same place). Extend that to two dimensions and you basically have the math for the box rotation alignment.
+Say you're looking at a point very far. You set your frame of reference such that your "forward" points directly to that point. Now someone else comes along and says "Oh I know that point. In the RealWorldFrameOfReference™, it's at 45 degrees to the left". Then you know that your frame of reference is rotated by 45 degrees to the left w.r.t. the RealWorldFrameOfReference™ (as long as the origins of both frames are in the same place). Extend that to two dimensions and you basically have the math for the box rotation alignment.
 
 The point "we" are seeing is the reconstructed interaction point as it is seen from the LMD. The RealWorldFrameOfReference™ is the global coordinate system of the PANDA experiment. Because the rest of the experiment also has a reconstructed interaction point, and with very high precision, we can rotate the Lumi Box such that "their" interaction point is in the same place as "ours". We rotate about the center of mass of the Lumi Box, because offsets in any directions are insignificant compared to the rotation. And that's basically it.
 
 So there is no need for external matrices or anchor points here. There are still some free parameters however, which are very important:
 
-- The position of the interaction point determined by the rest of the PANDA experiment. I've hard-coded it to (0,,0,0) in the aligner for now, but it should be read from a file. Someone should add that code
+- The position of the interaction point determined by the rest of the PANDA experiment. I've hard-coded it to (0,0,0) in the aligner for now, but it should be read from a file. Someone should add that code
 - The distance of the LMD to the interaction point. Well actually the entire position, distance and rotation, of the LMD inside the PANDA frame of reference. This is pretty easy though, since this matrix is known by design. In the code, it's the ideal transformation matrix to the frame "/cave_1/lmd_root_0". It's in the `detectorMatricesIdeal` config file by default.
 
 # Closing Words
