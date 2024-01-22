@@ -453,4 +453,4 @@ So there is no need for external matrices or anchor points here. There are still
 
 # Closing Words
 
-So this has been basically a brain dump of all the stuff I've done for the LMD alignment. I hope it's useful to someone. If you have any questions, please feel free to contact me, even if I'm no longer working on the LMD. I'm always happy to help. I really liked working for Miriam and PANDA as a whole and I'm really gonna miss it, but life goes on and I have to move on.
+So this has been basically a brain dump of all the stuff I've done for the LMD alignment. I hope it's useful to someone. If you have any questions, please feel free to contact me, even if I'm no longer working on the LMD. I'm always happy to help. I really liked working for Miriam and PANDA as a whole and I'm really gonna miss it. But life moves on and must I.
